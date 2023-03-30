@@ -4,7 +4,6 @@
 using System.IO;
 using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.Client
 {
@@ -44,9 +43,11 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <inheritdoc/>
-        public async override Task<T> GetObjectAsync<T>(Stream streamToConvert)
+        public override T GetObject<T>(Stream streamToConvert)
         {
-            return await JsonSerializer.DeserializeAsync<T>(streamToConvert).ConfigureAwait(false);
+            using var sw = new StreamReader(streamToConvert);
+            string jsonToConvert = sw.ReadToEnd();
+            return JsonSerializer.Deserialize<T>(jsonToConvert);
         }
 
         /// <inheritdoc/>

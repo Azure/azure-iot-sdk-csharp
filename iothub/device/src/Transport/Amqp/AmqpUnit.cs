@@ -32,7 +32,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         private readonly IotHubClientAmqpSettings _amqpSettings;
 
         private readonly Func<DirectMethodRequest, Task> _onMethodCallback;
-        private readonly Func<AmqpMessage, string, IotHubClientException, Task> _twinMessageListener;
+        private readonly Action<AmqpMessage, string, IotHubClientException> _twinMessageListener;
         private readonly Func<IncomingMessage, Task<MessageAcknowledgement>> _onMessageReceivedCallback;
         private readonly IAmqpConnectionHolder _amqpConnectionHolder;
         private readonly Action _onUnitDisconnected;
@@ -72,7 +72,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             IotHubClientAmqpSettings amqpSettings,
             IAmqpConnectionHolder amqpConnectionHolder,
             Func<DirectMethodRequest, Task> onMethodCallback,
-            Func<AmqpMessage, string, IotHubClientException, Task> twinMessageCallback,
+            Action<AmqpMessage, string, IotHubClientException> twinMessageCallback,
             Func<IncomingMessage, Task<MessageAcknowledgement>> onMessageReceivedCallback,
             Action onUnitDisconnected)
         {
@@ -976,7 +976,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
                 _twinReceivingLink.Closed += _twinReceiverLinkDisconnected;
 
-                _twinReceivingLink.RegisterTwinListener(OnDesiredPropertyReceivedAsync);
+                _twinReceivingLink.RegisterTwinListener(OnDesiredPropertyReceived);
 
                 if (Logging.IsEnabled)
                     Logging.Associate(this, _twinReceivingLink, nameof(_twinReceivingLink));
@@ -1013,22 +1013,19 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             }
         }
 
-        private async Task OnDesiredPropertyReceivedAsync(AmqpMessage responseFromService, string correlationId, IotHubClientException ex = default)
+        private void OnDesiredPropertyReceived(AmqpMessage responseFromService, string correlationId, IotHubClientException ex = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, responseFromService, nameof(OnDesiredPropertyReceivedAsync));
+                Logging.Enter(this, responseFromService, nameof(OnDesiredPropertyReceived));
 
             try
             {
-                if (_twinMessageListener != null)
-                {
-                    await _twinMessageListener.Invoke(responseFromService, correlationId, ex).ConfigureAwait(false);
-                }
+                _twinMessageListener?.Invoke(responseFromService, correlationId, ex);
             }
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, responseFromService, nameof(OnDesiredPropertyReceivedAsync));
+                    Logging.Exit(this, responseFromService, nameof(OnDesiredPropertyReceived));
             }
         }
 

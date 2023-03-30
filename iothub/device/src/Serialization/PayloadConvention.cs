@@ -47,7 +47,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <typeparam name="T">The type to convert to.</typeparam>
         /// <param name="streamToConvert">The stream to convert.</param>
         /// <returns>The converted object.</returns>
-        public abstract Task<T> GetObjectAsync<T>(Stream streamToConvert);
+        public abstract T GetObject<T>(Stream streamToConvert);
 
         /// <summary>
         /// Returns the object as the specified type.

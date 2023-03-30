@@ -69,11 +69,11 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <inheritdoc/>
-        public override Task<T> GetObjectAsync<T>(Stream streamToConvert)
+        public override T GetObject<T>(Stream streamToConvert)
         {
             using var sw = new StreamReader(streamToConvert);
             using var jtr = new JsonTextReader(sw);
-            return Task.FromResult(s_jsonSerializer.Deserialize<T>(jtr));
+            return s_jsonSerializer.Deserialize<T>(jtr);
         }
 
         /// <inheritdoc/>

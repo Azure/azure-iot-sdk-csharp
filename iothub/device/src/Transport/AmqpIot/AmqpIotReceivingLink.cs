@@ -25,7 +25,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         private Func<IncomingMessage, ArraySegment<byte>, Task> _onEventsReceived;
         private Func<IncomingMessage, ArraySegment<byte>, Task> _onDeviceMessageReceived;
         private Action<DirectMethodRequest> _onMethodReceived;
-        private Func<AmqpMessage, string, IotHubClientException, Task> _onTwinMessageReceived;
+        private Action<AmqpMessage, string, IotHubClientException> _onTwinMessageReceived;
 
         public AmqpIotReceivingLink(ReceivingAmqpLink receivingAmqpLink, PayloadConvention payloadConvention)
         {
@@ -191,7 +191,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
         #region Twin handling
 
-        internal void RegisterTwinListener(Func<AmqpMessage, string, IotHubClientException, Task> onDesiredPropertyReceived)
+        internal void RegisterTwinListener(Action<AmqpMessage, string, IotHubClientException> onDesiredPropertyReceived)
         {
             _onTwinMessageReceived = onDesiredPropertyReceived;
             _receivingAmqpLink.RegisterMessageListener(OnTwinChangesReceived);
@@ -266,12 +266,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                             };
                         }
 
-                        _onTwinMessageReceived.Invoke(null, correlationId, twinException).GetAwaiter().GetResult();
+                        _onTwinMessageReceived.Invoke(null, correlationId, twinException);
                     }
                 }
                 else
                 {
-                    _onTwinMessageReceived.Invoke(amqpMessage, correlationId, null).GetAwaiter().GetResult();
+                    _onTwinMessageReceived.Invoke(amqpMessage, correlationId, null);
                 }
             }
             finally
