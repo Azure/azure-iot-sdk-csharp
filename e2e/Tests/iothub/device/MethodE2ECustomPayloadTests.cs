@@ -137,13 +137,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             T expectedClientResponsePayload)
         {
             IotHubServiceClient serviceClient = TestDevice.ServiceClient;
-            VerboseTestLogger.WriteLine($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Invoke method {directMethodRequest.MethodName}.");
+            VerboseTestLogger.WriteLine($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Invoke method {directMethodRequest.MethodName} for device {deviceId}.");
 
             DirectMethodClientResponse methodResponse = await serviceClient.DirectMethods
                 .InvokeAsync(deviceId, directMethodRequest)
                 .ConfigureAwait(false);
 
-            VerboseTestLogger.WriteLine($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Method response status: {methodResponse.Status}.");
+            VerboseTestLogger.WriteLine($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Method response status: {methodResponse.Status} for device {deviceId}.");
             methodResponse.Status.Should().Be(200);
             methodResponse.TryGetPayload(out T actualClientResponsePayload).Should().BeTrue();
             JsonConvert.SerializeObject(actualClientResponsePayload).Should().BeEquivalentTo(JsonConvert.SerializeObject(expectedClientResponsePayload));

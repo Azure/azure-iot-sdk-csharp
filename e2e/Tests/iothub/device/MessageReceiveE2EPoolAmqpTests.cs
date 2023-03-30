@@ -168,7 +168,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 OutgoingMessage msg = OutgoingMessageHelper.ComposeOutgoingTestMessage(out string _, out string _);
 
                 await testDevice.OpenWithRetryAsync().ConfigureAwait(false);
-                await testDeviceCallbackHandler.SetMessageReceiveCallbackHandlerAsync<string>().ConfigureAwait(false);
+                await testDeviceCallbackHandler.SetMessageReceiveCallbackHandlerAndCompleteMessageAsync<string>().ConfigureAwait(false);
                 testDeviceCallbackHandler.ExpectedOutgoingMessage = msg;
 
                 await serviceClient.Messages.SendAsync(testDevice.Id, msg).ConfigureAwait(false);

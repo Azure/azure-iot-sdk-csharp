@@ -27,16 +27,16 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
         private OutgoingMessage _expectedOutgoingMessage
             ;
 
-        internal TestDeviceCallbackHandler(TestDevice testDevice)
+        internal TestDeviceCallbackHandler(IotHubDeviceClient deviceClient, string deviceId)
         {
-            _testDeviceId = testDevice.Id;
+            _testDeviceId = deviceId;
 
-            if (testDevice.DeviceClient == null)
+            if (deviceClient == null || deviceClient.ConnectionStatusInfo.Status != ConnectionStatus.Connected)
             {
-                throw new InvalidOperationException($"The {nameof(IotHubDeviceClient)} for device Id {_testDeviceId} hasn't been initialized yet." +
-                    $" Initialize the {nameof(IotHubDeviceClient)} before creating a {nameof(TestDeviceCallbackHandler)}.");
+                throw new InvalidOperationException($"The {nameof(IotHubDeviceClient)} for device Id {_testDeviceId}" +
+                    $" needs to be already initialized and opened before initializing {nameof(TestDeviceCallbackHandler)}.");
             }
-            _deviceClient = testDevice.DeviceClient;
+            _deviceClient = deviceClient;
         }
 
         internal DirectMethodServiceRequest ExpectedDirectMethodRequest
@@ -60,7 +60,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
 
         internal async Task SetDeviceReceiveMethodAndRespondAsync<T,H>(H deviceResponsePayload)
         {
-            await _deviceClient.OpenAsync().ConfigureAwait(false);
             await _deviceClient.SetDirectMethodCallbackAsync(
                 (request) =>
                 {
@@ -103,7 +102,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
 
         internal async Task SetTwinPropertyUpdateCallbackHandlerAndProcessAsync<T>(string expectedPropName, T expectedPropValue)
         {
-            await _deviceClient.OpenAsync().ConfigureAwait(false);
             await _deviceClient.SetDesiredPropertyUpdateCallbackAsync(
                 (patch) =>
                 {
@@ -137,12 +135,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
             _twinExceptionDispatch?.Throw();
         }
 
-        internal async Task SetMessageReceiveCallbackHandlerAsync<T>()
+        internal async Task SetMessageReceiveCallbackHandlerAndCompleteMessageAsync<T>()
         {
-            await _deviceClient.OpenAsync().ConfigureAwait(false);
             await _deviceClient.SetIncomingMessageCallbackAsync((IncomingMessage message) =>
             {
-                VerboseTestLogger.WriteLine($"{nameof(SetMessageReceiveCallbackHandlerAsync)}: DeviceClient {_testDeviceId} received message with Id: {message.MessageId}.");
+                VerboseTestLogger.WriteLine($"{nameof(SetMessageReceiveCallbackHandlerAndCompleteMessageAsync)}: DeviceClient {_testDeviceId} received message with Id: {message.MessageId}.");
 
                 try
                 {
@@ -154,12 +151,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                     var expectedPayload = (T)ExpectedOutgoingMessage.Payload;
                     payload.Should().Be(expectedPayload);
 
-                    VerboseTestLogger.WriteLine($"{nameof(SetMessageReceiveCallbackHandlerAsync)}: DeviceClient completed message with Id: {message.MessageId}.");
+                    VerboseTestLogger.WriteLine($"{nameof(SetMessageReceiveCallbackHandlerAndCompleteMessageAsync)}: DeviceClient completed message with Id: {message.MessageId}.");
                     return Task.FromResult(MessageAcknowledgement.Complete);
                 }
                 catch (Exception ex)
                 {
-                    VerboseTestLogger.WriteLine($"{nameof(SetMessageReceiveCallbackHandlerAsync)}: Error during DeviceClient receive message callback: {ex}.");
+                    VerboseTestLogger.WriteLine($"{nameof(SetMessageReceiveCallbackHandlerAndCompleteMessageAsync)}: Error during DeviceClient receive message callback: {ex}.");
                     _receiveMessageExceptionDispatch = ExceptionDispatchInfo.Capture(ex);
 
                     return Task.FromResult(MessageAcknowledgement.Abandon);

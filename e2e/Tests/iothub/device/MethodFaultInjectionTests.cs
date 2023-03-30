@@ -215,7 +215,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 .ConfigureAwait(false);
         }
 
-        private async Task ServiceSendMethodAndVerifyResponseAsync<T>(string deviceName, DirectMethodServiceRequest directMethodRequest, T expectedClientResponsePayload)
+        private async Task ServiceSendMethodAndVerifyResponseAsync<T>(string deviceId, DirectMethodServiceRequest directMethodRequest, T expectedClientResponsePayload)
         {
             var sw = Stopwatch.StartNew();
             bool done = false;
@@ -229,12 +229,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 {
                     using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
 
-                    VerboseTestLogger.WriteLine($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Invoke method {directMethodRequest.MethodName}.");
+                    VerboseTestLogger.WriteLine($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Invoke method {directMethodRequest.MethodName} for device {deviceId}.");
                     DirectMethodClientResponse clientResponse = await serviceClient.DirectMethods
-                        .InvokeAsync(deviceName, directMethodRequest)
+                        .InvokeAsync(deviceId, directMethodRequest)
                         .ConfigureAwait(false);
 
-                    VerboseTestLogger.WriteLine($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Method status: {clientResponse.Status}.");
+                    VerboseTestLogger.WriteLine($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Method status: {clientResponse.Status} for device {deviceId}.");
 
                     clientResponse.Status.Should().Be(200);
                     clientResponse.TryGetPayload(out T actualClientResponsePayload).Should().BeTrue();
@@ -268,7 +268,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             async Task InitOperationAsync(IotHubDeviceClient deviceClient, TestDevice testDevice)
             {
                 await deviceClient.OpenAsync().ConfigureAwait(false);
-                testDeviceCallbackHandler = new TestDeviceCallbackHandler(testDevice);
+                testDeviceCallbackHandler = new TestDeviceCallbackHandler(deviceClient, testDevice.Id);
                 await testDeviceCallbackHandler
                     .SetDeviceReceiveMethodAndRespondAsync<DirectMethodRequestPayload, DirectMethodResponsePayload>(s_deviceResponsePayload)
                     .ConfigureAwait(false);

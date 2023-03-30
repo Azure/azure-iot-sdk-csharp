@@ -340,7 +340,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             async Task InitOperationAsync(IotHubDeviceClient deviceClient, TestDevice testDevice)
             {
                 await deviceClient.OpenAsync().ConfigureAwait(false);
-                testDeviceCallbackHandler = new TestDeviceCallbackHandler(testDevice);
+                testDeviceCallbackHandler = new TestDeviceCallbackHandler(deviceClient, testDevice.Id);
                 await testDeviceCallbackHandler.SetTwinPropertyUpdateCallbackHandlerAndProcessAsync(propName, propValue).ConfigureAwait(false);
             }
 

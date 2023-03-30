@@ -126,15 +126,15 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         {
             await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(s_devicePrefix, type).ConfigureAwait(false);
             IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(transportSettings));
-            using var deviceHandler = new TestDeviceCallbackHandler(testDevice);
             await testDevice.OpenWithRetryAsync().ConfigureAwait(false);
+            using var deviceHandler = new TestDeviceCallbackHandler(deviceClient, testDevice.Id);
 
             IotHubServiceClient serviceClient = TestDevice.ServiceClient;
 
             await serviceClient.Messages.OpenAsync().ConfigureAwait(false);
 
             // Now, set a callback on the device client to receive C2D messages.
-            await deviceHandler.SetMessageReceiveCallbackHandlerAsync<string>().ConfigureAwait(false);
+            await deviceHandler.SetMessageReceiveCallbackHandlerAndCompleteMessageAsync<string>().ConfigureAwait(false);
 
             // Now, send a message to the device from the service.
             OutgoingMessage firstMsg = OutgoingMessageHelper.ComposeOutgoingTestMessage(out string _, out string _);
@@ -168,7 +168,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(s_devicePrefix, type).ConfigureAwait(false);
             IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(transportSettings));
             await testDevice.OpenWithRetryAsync().ConfigureAwait(false);
-            using var deviceHandler = new TestDeviceCallbackHandler(testDevice);
+            using var deviceHandler = new TestDeviceCallbackHandler(deviceClient, testDevice.Id);
 
             // Close and re-open the client under test.
             await deviceClient.CloseAsync().ConfigureAwait(false);
@@ -179,7 +179,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             await serviceClient.Messages.OpenAsync().ConfigureAwait(false);
 
             // Now, set a callback on the device client to receive C2D messages.
-            await deviceHandler.SetMessageReceiveCallbackHandlerAsync<string>().ConfigureAwait(false);
+            await deviceHandler.SetMessageReceiveCallbackHandlerAndCompleteMessageAsync<string>().ConfigureAwait(false);
 
             // Now, send a message to the device from the service.
             OutgoingMessage testMessage = OutgoingMessageHelper.ComposeOutgoingTestMessage(out string _, out string _);
@@ -212,10 +212,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
             await deviceClient.OpenAsync().ConfigureAwait(false);
 
-            using var testDeviceCallbackHandler = new TestDeviceCallbackHandler(testDevice);
+            using var testDeviceCallbackHandler = new TestDeviceCallbackHandler(deviceClient, testDevice.Id);
 
             // Subscribe to receive C2D messages over the callback.
-            await testDeviceCallbackHandler.SetMessageReceiveCallbackHandlerAsync<string>().ConfigureAwait(false);
+            await testDeviceCallbackHandler.SetMessageReceiveCallbackHandlerAndCompleteMessageAsync<string>().ConfigureAwait(false);
 
             // This will make the client unsubscribe from the mqtt c2d topic/close the amqp c2d link. Neither event
             // should close the connection as a whole, though.

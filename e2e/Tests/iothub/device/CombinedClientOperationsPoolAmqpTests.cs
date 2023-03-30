@@ -22,7 +22,12 @@ namespace Microsoft.Azure.Devices.E2ETests
     {
         private const string MethodName = "MethodE2ECombinedOperationsTest";
         private readonly string _devicePrefix = $"{nameof(CombinedClientOperationsPoolAmqpTests)}_";
-        private readonly TimeSpan _testOperationTimeSpan = TimeSpan.FromSeconds(30);
+
+        private static readonly DirectMethodResponsePayload s_deviceResponsePayload = new() { CurrentState = "on" };
+        private static readonly DirectMethodRequestPayload s_serviceRequestPayload = new() { DesiredState = "off" };
+
+        private static readonly TimeSpan s_testOperationTimeSpan = TimeSpan.FromSeconds(30);
+        private static readonly TimeSpan s_defaultMethodResponseTimeout = TimeSpan.FromMinutes(1);
 
         [TestMethod]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
@@ -51,10 +56,10 @@ namespace Microsoft.Azure.Devices.E2ETests
             // Twin properties
             var twinPropertyMap = new Dictionary<string, List<string>>();
 
-            async Task InitOperationAsync(TestDevice testDevice, TestDeviceCallbackHandler _)
+            async Task InitOperationAsync(TestDevice testDevice, TestDeviceCallbackHandler testDeviceCallbackHandler)
             {
                 IList<Task> initOperations = new List<Task>();
-                using var openServiceClientCts = new CancellationTokenSource(_testOperationTimeSpan);
+                using var openServiceClientCts = new CancellationTokenSource(s_testOperationTimeSpan);
                 await serviceClient.Messages.OpenAsync(openServiceClientCts.Token).ConfigureAwait(false);
 
                 // Send outgoing message
@@ -63,13 +68,13 @@ namespace Microsoft.Azure.Devices.E2ETests
                 VerboseTestLogger.WriteLine($"{nameof(CombinedClientOperationsPoolAmqpTests)}: messageId='{msg.MessageId}' userId='{msg.UserId}' payload='{payload}' p1Value='{p1Value}'");
                 outgoingMessagesSent.Add(testDevice.Id, Tuple.Create(msg, payload));
 
-                using var sendOutgoingMessageCts = new CancellationTokenSource(_testOperationTimeSpan);
+                using var sendOutgoingMessageCts = new CancellationTokenSource(s_testOperationTimeSpan);
                 Task sendOutgoingMessage = serviceClient.Messages.SendAsync(testDevice.Id, msg, sendOutgoingMessageCts.Token);
                 initOperations.Add(sendOutgoingMessage);
 
                 // Set method handler
                 VerboseTestLogger.WriteLine($"{nameof(CombinedClientOperationsPoolAmqpTests)}: Set direct method {MethodName} for device={testDevice.Id}");
-                Task<Task> methodReceivedTask = MethodE2ETests.SetDeviceReceiveMethodAsync(testDevice.DeviceClient, MethodName);
+                Task methodReceivedTask = testDeviceCallbackHandler.SetDeviceReceiveMethodAndRespondAsync<DirectMethodRequestPayload, DirectMethodResponsePayload>(s_deviceResponsePayload);
                 initOperations.Add(methodReceivedTask);
 
                 // Set the twin desired properties callback
@@ -83,7 +88,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 await Task.WhenAll(initOperations).ConfigureAwait(false);
             }
 
-            async Task TestOperationAsync(TestDevice testDevice, TestDeviceCallbackHandler _)
+            async Task TestOperationAsync(TestDevice testDevice, TestDeviceCallbackHandler testDeviceCallbackHandler)
             {
                 IList<Task> clientOperations = new List<Task>();
                 await testDevice.OpenWithRetryAsync().ConfigureAwait(false);
@@ -105,7 +110,14 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                 // Invoke direct methods
                 VerboseTestLogger.WriteLine($"{nameof(CombinedClientOperationsPoolAmqpTests)}: Operation 3: Direct methods test for device={testDevice.Id}");
-                Task serviceInvokeMethod = MethodE2ETests.ServiceSendMethodAndVerifyResponseAsync(testDevice.Id, MethodName, MethodE2ETests.s_deviceResponsePayload, MethodE2ETests.s_deviceResponsePayload);
+                var directMethodRequest = new DirectMethodServiceRequest(MethodName)
+                {
+                    Payload = s_serviceRequestPayload,
+                    ResponseTimeout = s_defaultMethodResponseTimeout,
+                };
+                testDeviceCallbackHandler.ExpectedDirectMethodRequest = directMethodRequest;
+
+                Task serviceInvokeMethod = MethodE2ETests.ServiceSendMethodAndVerifyResponseAsync(testDevice.Id, directMethodRequest, s_deviceResponsePayload);
                 clientOperations.Add(serviceInvokeMethod);
 
                 // Set reported twin properties
