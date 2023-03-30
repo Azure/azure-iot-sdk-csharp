@@ -2,9 +2,11 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure;
 using Mash.Logging;
 using Newtonsoft.Json;
 using static Microsoft.Azure.Devices.LongHaul.Service.LoggingConstants;
@@ -21,8 +23,10 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
         private static readonly TimeSpan s_directMethodInvokeInterval = TimeSpan.FromSeconds(3);
         private static readonly TimeSpan s_desiredPropertiesSetInterval = TimeSpan.FromSeconds(3);
         private static readonly TimeSpan s_c2dMessagesSentInterval = TimeSpan.FromSeconds(3);
+        private static readonly TimeSpan s_deviceCountMonitorInterval = TimeSpan.FromSeconds(30);
 
         private static IotHubServiceClient s_serviceClient;
+        private static HashSet<string> s_deviceSet;
 
         private long _totalMethodCallsCount = 0;
         private long _totalDesiredPropertiesUpdatesCount = 0;
@@ -47,6 +51,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                 Protocol = _transportProtocol,
             };
             s_serviceClient = new IotHubServiceClient(_hubConnectionString, options);
+            s_deviceSet = new HashSet<string>();
             _logger.Trace("Initialized a new service client instance.", TraceSeverity.Information);
         }
 
@@ -95,6 +100,33 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                 }
 
                 await Task.Delay(s_directMethodInvokeInterval, ct).ConfigureAwait(false);
+            }
+        }
+
+        public async Task MonitorConnectedDevicesAsync(CancellationToken ct)
+        {
+            while (!ct.IsCancellationRequested)
+            {
+                AsyncPageable<ClientTwin> allDevices = s_serviceClient.Query.Create<ClientTwin>(
+                    "SELECT deviceId, connectionState, lastActivityTime FROM devices where is_defined(properties.reported.runId)",
+                    ct);
+
+                await foreach (ClientTwin device in allDevices)
+                {
+                    if (s_deviceSet.Contains(device.DeviceId) && device.ConnectionState == ClientConnectionState.Disconnected)
+                    {
+                        s_deviceSet.Remove(device.DeviceId);
+                    }
+                    else if(!s_deviceSet.Contains(device.DeviceId) && device.ConnectionState == ClientConnectionState.Connected)
+                    {
+                        s_deviceSet.Add(device.DeviceId);
+                    }
+
+                    _logger.Trace($"Total number of connected devices: {s_deviceSet.Count}", TraceSeverity.Information);
+                }
+
+                await Task.Delay(s_deviceCountMonitorInterval, ct).ConfigureAwait(false);
+
             }
         }
 
