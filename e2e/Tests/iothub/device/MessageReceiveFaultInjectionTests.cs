@@ -203,7 +203,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             {
                 OutgoingMessage message = OutgoingMessageHelper.ComposeOutgoingTestMessage(out string payload, out string p1Value);
 
-                testDeviceCallbackHandler.ExpectedMessageSentByService = message;
+                testDeviceCallbackHandler.ExpectedOutgoingMessage = message;
 
                 await serviceClient.Messages.SendAsync(testDevice.Id, message).ConfigureAwait(false);
 

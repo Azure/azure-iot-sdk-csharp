@@ -341,7 +341,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             {
                 await deviceClient.OpenAsync().ConfigureAwait(false);
                 testDeviceCallbackHandler = new TestDeviceCallbackHandler(testDevice);
-                await testDeviceCallbackHandler.SetTwinPropertyUpdateCallbackHandlerAsync(propName, propValue).ConfigureAwait(false);
+                await testDeviceCallbackHandler.SetTwinPropertyUpdateCallbackHandlerAndProcessAsync(propName, propValue).ConfigureAwait(false);
             }
 
             // Change the twin from the service side and verify the device received it.

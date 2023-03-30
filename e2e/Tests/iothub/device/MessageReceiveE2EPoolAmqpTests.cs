@@ -169,7 +169,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
                 await testDevice.OpenWithRetryAsync().ConfigureAwait(false);
                 await testDeviceCallbackHandler.SetMessageReceiveCallbackHandlerAsync<string>().ConfigureAwait(false);
-                testDeviceCallbackHandler.ExpectedMessageSentByService = msg;
+                testDeviceCallbackHandler.ExpectedOutgoingMessage = msg;
 
                 await serviceClient.Messages.SendAsync(testDevice.Id, msg).ConfigureAwait(false);
             }

@@ -138,7 +138,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
             // Now, send a message to the device from the service.
             OutgoingMessage firstMsg = OutgoingMessageHelper.ComposeOutgoingTestMessage(out string _, out string _);
-            deviceHandler.ExpectedMessageSentByService = firstMsg;
+            deviceHandler.ExpectedOutgoingMessage = firstMsg;
             await serviceClient.Messages.SendAsync(testDevice.Id, firstMsg).ConfigureAwait(false);
             VerboseTestLogger.WriteLine($"Sent C2D message from service, messageId={firstMsg.MessageId} - to be received on callback");
 
@@ -183,7 +183,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
             // Now, send a message to the device from the service.
             OutgoingMessage testMessage = OutgoingMessageHelper.ComposeOutgoingTestMessage(out string _, out string _);
-            deviceHandler.ExpectedMessageSentByService = testMessage;
+            deviceHandler.ExpectedOutgoingMessage = testMessage;
             await serviceClient.Messages.SendAsync(testDevice.Id, testMessage).ConfigureAwait(false);
             VerboseTestLogger.WriteLine($"Sent C2D message from service, messageId={testMessage.MessageId} - to be received on callback");
 

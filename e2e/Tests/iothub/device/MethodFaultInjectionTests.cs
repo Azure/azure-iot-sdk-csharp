@@ -21,8 +21,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
     [TestCategory("IoTHub-Client")]
     public class MethodFaultInjectionTests : E2EMsTestBase
     {
-        private readonly string DevicePrefix = $"{nameof(MethodFaultInjectionTests)}_";
         private const string MethodName = "MethodE2ETest";
+        private readonly string DevicePrefix = $"{nameof(MethodFaultInjectionTests)}_";
+
+        private static readonly DirectMethodResponsePayload s_deviceResponsePayload = new() { CurrentState = "on" };
+        private static readonly DirectMethodRequestPayload s_serviceRequestPayload = new() { DesiredState = "off" };
+
+        private static readonly TimeSpan s_defaultMethodResponseTimeout = TimeSpan.FromMinutes(5);
 
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
@@ -210,7 +215,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 .ConfigureAwait(false);
         }
 
-        private async Task ServiceSendMethodAndVerifyResponseAsync<T>(string deviceName, string methodName, T deviceResponsePayload, object serviceRequestPayload)
+        private async Task ServiceSendMethodAndVerifyResponseAsync<T>(string deviceName, DirectMethodServiceRequest directMethodRequest, T expectedClientResponsePayload)
         {
             var sw = Stopwatch.StartNew();
             bool done = false;
@@ -224,22 +229,16 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 {
                     using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
 
-                    var directMethodRequest = new DirectMethodServiceRequest(methodName)
-                    {
-                        Payload = serviceRequestPayload,
-                        ResponseTimeout = TimeSpan.FromMinutes(5),
-                    };
-
-                    VerboseTestLogger.WriteLine($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Invoke method {methodName}.");
-                    DirectMethodClientResponse response = await serviceClient.DirectMethods
+                    VerboseTestLogger.WriteLine($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Invoke method {directMethodRequest.MethodName}.");
+                    DirectMethodClientResponse clientResponse = await serviceClient.DirectMethods
                         .InvokeAsync(deviceName, directMethodRequest)
                         .ConfigureAwait(false);
 
-                    VerboseTestLogger.WriteLine($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Method status: {response.Status}.");
+                    VerboseTestLogger.WriteLine($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Method status: {clientResponse.Status}.");
 
-                    response.Status.Should().Be(200);
-                    response.TryGetPayload<T>(out T actual).Should().BeTrue();
-                    JsonConvert.SerializeObject(actual).Should().Be(JsonConvert.SerializeObject(deviceResponsePayload));
+                    clientResponse.Status.Should().Be(200);
+                    clientResponse.TryGetPayload(out T actualClientResponsePayload).Should().BeTrue();
+                    JsonConvert.SerializeObject(actualClientResponsePayload).Should().Be(JsonConvert.SerializeObject(expectedClientResponsePayload));
 
                     done = true;
                 }
@@ -271,14 +270,21 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 await deviceClient.OpenAsync().ConfigureAwait(false);
                 testDeviceCallbackHandler = new TestDeviceCallbackHandler(testDevice);
                 await testDeviceCallbackHandler
-                    .SetDeviceReceiveMethodAsync(MethodName, MethodE2ETests.s_deviceResponsePayload, MethodE2ETests.s_serviceRequestPayload)
+                    .SetDeviceReceiveMethodAndRespondAsync<DirectMethodRequestPayload, DirectMethodResponsePayload>(s_deviceResponsePayload)
                     .ConfigureAwait(false);
             }
 
             // Call the method from the service side and verify the device received the call.
             async Task TestOperationAsync(IotHubDeviceClient deviceClient, TestDevice testDevice)
             {
-                Task serviceSendTask = ServiceSendMethodAndVerifyResponseAsync(testDevice.Id, MethodName, MethodE2ETests.s_deviceResponsePayload, MethodE2ETests.s_serviceRequestPayload);
+                var directMethodRequest = new DirectMethodServiceRequest(MethodName)
+                {
+                    Payload = s_serviceRequestPayload,
+                    ResponseTimeout = s_defaultMethodResponseTimeout,
+                };
+                testDeviceCallbackHandler.ExpectedDirectMethodRequest = directMethodRequest;
+
+                Task serviceSendTask = ServiceSendMethodAndVerifyResponseAsync(testDevice.Id, directMethodRequest, s_deviceResponsePayload);
 
                 using var cts = new CancellationTokenSource(FaultInjection.RecoveryTime);
                 Task methodReceivedTask = testDeviceCallbackHandler.WaitForMethodCallbackAsync(cts.Token);

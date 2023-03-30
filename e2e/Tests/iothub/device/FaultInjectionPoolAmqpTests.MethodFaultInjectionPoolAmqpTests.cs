@@ -17,6 +17,11 @@ namespace Microsoft.Azure.Devices.E2ETests
         private const string MethodDevicePrefix = "MethodFaultInjectionPoolAmqpTests";
         private const string MethodName = "MethodE2EFaultInjectionPoolAmqpTests";
 
+        private static readonly DirectMethodResponsePayload s_deviceResponsePayload = new() { CurrentState = "on" };
+        private static readonly DirectMethodRequestPayload s_serviceRequestPayload = new() { DesiredState = "off" };
+
+        private static readonly TimeSpan s_defaultMethodResponseTimeout = TimeSpan.FromMinutes(1);
+
         [TestMethod]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Method_DeviceSak_DeviceMethodTcpConnRecovery_MultipleConnections_Amqp()
@@ -199,11 +204,13 @@ namespace Microsoft.Azure.Devices.E2ETests
             string faultType,
             string reason)
         {
+            IotHubServiceClient serviceClient = TestDevice.ServiceClient;
+
             async Task InitOperationAsync(IotHubDeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler testDeviceCallbackHandler)
             {
                 await deviceClient.OpenAsync().ConfigureAwait(false);
                 await testDeviceCallbackHandler
-                    .SetDeviceReceiveMethodAsync(MethodName, MethodE2ETests.s_deviceResponsePayload, MethodE2ETests.s_serviceRequestPayload)
+                    .SetDeviceReceiveMethodAndRespondAsync<DirectMethodRequestPayload, DirectMethodResponsePayload>(s_deviceResponsePayload)
                     .ConfigureAwait(false);
             }
 
@@ -212,14 +219,16 @@ namespace Microsoft.Azure.Devices.E2ETests
                 using var cts = new CancellationTokenSource(FaultInjection.RecoveryTime);
 
                 VerboseTestLogger.WriteLine($"{nameof(MethodE2EPoolAmqpTests)}: Preparing to receive method for device {testDevice.Id}");
-                Task serviceSendTask = MethodE2ETests
-                    .ServiceSendMethodAndVerifyResponseAsync(
-                        testDevice.Id,
-                        MethodName,
-                        MethodE2ETests.s_deviceResponsePayload,
-                        MethodE2ETests.s_serviceRequestPayload);
-                Task methodReceivedTask = testDeviceCallbackHandler.WaitForMethodCallbackAsync(cts.Token);
 
+                var directMethodRequest = new DirectMethodServiceRequest(MethodName)
+                {
+                    Payload = s_serviceRequestPayload,
+                    ResponseTimeout = s_defaultMethodResponseTimeout,
+                };
+                testDeviceCallbackHandler.ExpectedDirectMethodRequest = directMethodRequest;
+
+                Task serviceSendTask = serviceClient.DirectMethods.InvokeAsync(testDevice.Id, directMethodRequest);
+                Task methodReceivedTask = testDeviceCallbackHandler.WaitForMethodCallbackAsync(cts.Token);
                 await Task.WhenAll(serviceSendTask, methodReceivedTask).ConfigureAwait(false);
             }
 
