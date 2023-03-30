@@ -2,8 +2,10 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure.Storage.Blobs;
 using Mash.Logging;
 using Newtonsoft.Json;
 using static Microsoft.Azure.Devices.LongHaul.Service.LoggingConstants;
@@ -14,20 +16,26 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
     {
         private readonly Logger _logger;
         private readonly string _hubConnectionString;
+        private readonly string _storageConnectionString;
         private readonly IotHubTransportProtocol _transportProtocol;
         private readonly string _deviceId;
 
         private static readonly TimeSpan s_directMethodInvokeInterval = TimeSpan.FromSeconds(3);
         private static readonly TimeSpan s_desiredPropertiesSetInterval = TimeSpan.FromSeconds(3);
+        private int _totalFileUploadNotificationsReceived;
+        private int _totalFileUploadNotificationsCompleted;
+        private int _totalFileUploadNotificationsAbandoned;
 
-        private static IotHubServiceClient s_serviceClient;
+        private IotHubServiceClient _serviceClient;
+        private BlobContainerClient _blobContainerClient;
 
-        public IotHub(Logger logger, string hubConnectionString, string deviceId, IotHubTransportProtocol transportProtocol)
+        public IotHub(Logger logger, Parameters parameters)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _hubConnectionString = hubConnectionString;
-            _deviceId = deviceId;
-            _transportProtocol = transportProtocol;
+            _hubConnectionString = parameters.IotHubConnectionString;
+            _deviceId = parameters.DeviceId;
+            _transportProtocol = parameters.TransportProtocol;
+            _storageConnectionString = parameters.StorageConnectionString;
         }
 
         /// <summary>
@@ -39,13 +47,18 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
             {
                 Protocol = _transportProtocol,
             };
-            s_serviceClient = new IotHubServiceClient(_hubConnectionString, options);
+            _serviceClient = new IotHubServiceClient(_hubConnectionString, options);
             _logger.Trace("Initialized a new service client instance.", TraceSeverity.Information);
+
+            _totalFileUploadNotificationsAbandoned = 0;
+            _totalFileUploadNotificationsReceived = 0;
+            _totalFileUploadNotificationsCompleted = 0;
+            _blobContainerClient = new BlobContainerClient(_storageConnectionString, "fileupload");
         }
 
         public Task<string> GetEventHubCompatibleConnectionStringAsync(CancellationToken ct)
         {
-            return s_serviceClient.GetEventHubCompatibleConnectionStringAsync(_hubConnectionString, ct);
+            return _serviceClient.GetEventHubCompatibleConnectionStringAsync(_hubConnectionString, ct);
         }
 
         public async Task InvokeDirectMethodAsync(CancellationToken ct)
@@ -70,7 +83,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                 _logger.Trace($"Invoking direct method for device: {_deviceId}", TraceSeverity.Information);
 
                 // Invoke the direct method asynchronously and get the response from the simulated device.
-                DirectMethodClientResponse response = await s_serviceClient.DirectMethods.InvokeAsync(_deviceId, methodInvocation, ct);
+                DirectMethodClientResponse response = await _serviceClient.DirectMethods.InvokeAsync(_deviceId, methodInvocation, ct);
 
                 if (response.TryGetPayload(out CustomDirectMethodPayload responsePayload))
                 {
@@ -91,22 +104,55 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
             {
                 var twin = new ClientTwin();
                 twin.Properties.Desired[keyName] = properties;
-                await s_serviceClient.Twins.UpdateAsync(_deviceId, twin, false, ct).ConfigureAwait(false);
+                await _serviceClient.Twins.UpdateAsync(_deviceId, twin, false, ct).ConfigureAwait(false);
 
                 await Task.Delay(s_desiredPropertiesSetInterval, ct).ConfigureAwait(false);
             }
         }
 
-        public async Task UploadFileAsync(CancellationToken ct)
+        public async Task ReceiveFileUploadAsync(CancellationToken ct)
         {
             // TODO 
+            _logger.Trace("Listening for file upload notifications from the service...");
+
+            AcknowledgementType FileUploadNotificationCallback(FileUploadNotification fileUploadNotification)
+            {
+                AcknowledgementType ackType = AcknowledgementType.Complete;
+                _totalFileUploadNotificationsReceived++;
+
+                var sb = new StringBuilder();
+                sb.Append($"Received file upload notification.");
+                sb.Append($"\tDeviceId: {fileUploadNotification.DeviceId ?? "N/A"}.");
+                sb.Append($"\tFileName: {fileUploadNotification.BlobName ?? "N/A"}.");
+                sb.Append($"\tEnqueueTimeUTC: {fileUploadNotification.EnqueuedOnUtc}.");
+                sb.Append($"\tBlobSizeInBytes: {fileUploadNotification.BlobSizeInBytes}.");
+                _logger.Trace(sb.ToString());
+
+                _blobContainerClient.DeleteBlobIfExists(fileUploadNotification.BlobName);
+
+                // TODO -- figure out if the total upload metrics are needed in the same way as the sample
+                return ackType;
+            }
+
+            _serviceClient.FileUploadNotifications.FileUploadNotificationProcessor = FileUploadNotificationCallback;
+            await _serviceClient.FileUploadNotifications.OpenAsync(ct).ConfigureAwait(false);
+
+            // Wait for cancellation and then print the summary
+            try
+            {
+                await Task.Delay(-1, ct);
+            }
+            catch (OperationCanceledException) { }
+
+            _logger.Trace($"Total File Notifications Received: {_totalFileUploadNotificationsReceived}.");
+            await _serviceClient.FileUploadNotifications.CloseAsync(CancellationToken.None);
         }
 
         public void Dispose()
         {
             _logger.Trace("Disposing", TraceSeverity.Verbose);
 
-            s_serviceClient?.Dispose();
+            _serviceClient?.Dispose();
 
             _logger.Trace($"IotHub instance disposed", TraceSeverity.Verbose);
         }

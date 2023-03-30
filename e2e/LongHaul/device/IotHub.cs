@@ -229,8 +229,6 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
 
             _logger.Trace($"Getting file upload SAS URI {fileName}...");
 
-            // TODO -- stopwatch?
-
             var fileUploadSasUriRequest = new FileUploadSasUriRequest(fileName);
             FileUploadSasUriResponse sasUri = await _deviceClient.GetFileUploadSasUriAsync(fileUploadSasUriRequest);
             Uri uploadUri = sasUri.GetBlobUri();
@@ -241,7 +239,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
             {
                 _logger.Trace($"Attempting to upload {fileName}...");
                 var blockBlobClient = new BlockBlobClient(uploadUri);
-                await blockBlobClient.UploadAsync(fileStreamSource, new BlobUploadOptions();
+                await blockBlobClient.UploadAsync(fileStreamSource, new BlobUploadOptions());
             }
             catch (Exception ex)
             {
@@ -255,6 +253,10 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
             _logger.Trace("File upload to Azure Storage was a success");
             var successfulFileUploadCompletionNotification = new FileUploadCompletionNotification(sasUri.CorrelationId, true);
             await _deviceClient.CompleteFileUploadAsync(successfulFileUploadCompletionNotification);
+
+            // TODO -- send telemetry message to let service client know that a file has been uploaded
+            // TODO -- incorporate specific device id
+            await _deviceClient.SendTelemetryAsync(new TelemetryMessage("File Upload"), cancellationToken);
         }
 
         public async ValueTask DisposeAsync()
