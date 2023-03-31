@@ -201,6 +201,16 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{8964
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SecurityProviderTpmSimulator", "security\tpm\samples\SecurityProviderTpmSimulator\SecurityProviderTpmSimulator.csproj", "{184F07FC-A5CA-43F5-8742-0B6DF6825A1F}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "prerequisites", "prerequisites", "{CA137E4E-4684-442D-92FC-20ADACCB5D62}"
+	ProjectSection(SolutionItems) = preProject
+		e2e\test\prerequisites\E2ETestsSetup\e2eTestsSetup.ps1 = e2e\test\prerequisites\E2ETestsSetup\e2eTestsSetup.ps1
+		e2e\test\prerequisites\E2ETestsSetup\generateArmTemplate.ps1 = e2e\test\prerequisites\E2ETestsSetup\generateArmTemplate.ps1
+		e2e\test\prerequisites\E2ETestsSetup\LoadEnvironmentVariablesFromKeyVault.ps1 = e2e\test\prerequisites\E2ETestsSetup\LoadEnvironmentVariablesFromKeyVault.ps1
+		e2e\test\prerequisites\readme.md = e2e\test\prerequisites\readme.md
+		e2e\test\prerequisites\E2ETestsSetup\test-resources.bicep = e2e\test\prerequisites\E2ETestsSetup\test-resources.bicep
+		e2e\test\prerequisites\E2ETestsSetup\test-resources.json = e2e\test\prerequisites\E2ETestsSetup\test-resources.json
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -525,6 +535,7 @@ Global
 		{B0562F71-1772-4451-9379-EC42D2A57C96} = {464E5F28-748B-4A6C-94B8-A5725F57F62C}
 		{89643F18-7B22-41BD-8342-49251943C984} = {4CF9A9B8-9D3F-44F6-B965-DF2B7EEA024E}
 		{184F07FC-A5CA-43F5-8742-0B6DF6825A1F} = {89643F18-7B22-41BD-8342-49251943C984}
+		{CA137E4E-4684-442D-92FC-20ADACCB5D62} = {9C260BF0-1CCA-45A2-AAB8-6419291B8B88}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {AF61665D-340A-494B-9705-571456BDC752}

@@ -50,6 +50,15 @@ $ErrorActionPreference = "Stop"
 $WarningActionPreference = "Continue"
 
 ########################################################################################################
+# Check PowerShell version
+########################################################################################################
+if ($PSversiontable.PSVersion -lt "7.0.0")
+{
+    Write-Error "This script requires PowerShell v7. Please install it and rerun."
+    exit
+}
+
+########################################################################################################
 # Log the values of optional parameters passed
 ########################################################################################################
 
