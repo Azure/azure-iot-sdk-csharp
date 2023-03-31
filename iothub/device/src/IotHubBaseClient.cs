@@ -192,6 +192,11 @@ namespace Microsoft.Azure.Devices.Client
         public async Task SendTelemetryAsync(IEnumerable<TelemetryMessage> messages, CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNullOrEmpty(messages, nameof(messages));
+            if (_clientOptions.TransportSettings is IotHubClientMqttSettings)
+            {
+                throw new InvalidOperationException("This operation is not supported over MQTT. Please refer to the API comments for additional details.");
+            }
+
             cancellationToken.ThrowIfCancellationRequested();
 
             foreach (TelemetryMessage message in messages)

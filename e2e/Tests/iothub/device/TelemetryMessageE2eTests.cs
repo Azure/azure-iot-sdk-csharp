@@ -190,6 +190,24 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             await OpenCloseOpenThenSendSingleMessage(TestDeviceType.Sasl, new IotHubClientMqttSettings(protocol), testMessage, ct).ConfigureAwait(false);
         }
 
+        [TestMethod]
+        public async Task IotHubDeviceClient_SendTelemetryAsync_ThrowsWithBulkOverMqtt()
+        {
+            // arrange
+
+            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(nameof(IotHubDeviceClient_SendTelemetryAsync_ThrowsWithBulkOverMqtt));
+            IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(new IotHubClientMqttSettings(IotHubClientTransportProtocol.Tcp)));
+            await testDevice.OpenWithRetryAsync().ConfigureAwait(false);
+
+            // act
+            Func<Task> act = async () => await deviceClient.SendTelemetryAsync(new[] { new TelemetryMessage() }).ConfigureAwait(false);
+
+            // assert
+            await act.Should()
+                .ThrowAsync<InvalidOperationException>()
+                .WithMessage("This operation is not supported over MQTT. Please refer to the API comments for additional details.");
+        }
+
         private async Task SendSingleMessageAsync(TestDeviceType type, IotHubClientTransportSettings transportSettings, TelemetryMessage testMessage, CancellationToken ct)
         {
             await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_idPrefix, type, ct).ConfigureAwait(false);

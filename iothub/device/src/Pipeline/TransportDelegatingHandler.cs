@@ -13,7 +13,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
     /// </summary>
     internal sealed class TransportDelegatingHandler : DefaultDelegatingHandler
     {
-        private SemaphoreSlim _handlerLock = new(1, 1);
+        private readonly SemaphoreSlim _handlerLock = new(1, 1);
 
         public TransportDelegatingHandler(PipelineContext context, IDelegatingHandler innerHandler)
             : base(context, innerHandler)
@@ -27,32 +27,54 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             cancellationToken.ThrowIfCancellationRequested();
 
+            await _handlerLock.WaitAsync(cancellationToken).ConfigureAwait(false);
             try
             {
-                await _handlerLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+                CreateNewTransportIfNotReady();
+                await base.OpenAsync(cancellationToken).ConfigureAwait(false);
 
-                try
+                // since Dispose is not synced with _handlerLock, double check if disposed.
+                if (_isDisposed)
                 {
-                    CreateNewTransportIfNotReady();
-                    await base.OpenAsync(cancellationToken).ConfigureAwait(false);
-
-                    // since Dispose is not synced with _handlerLock, double check if disposed.
-                    if (_isDisposed)
-                    {
-                        NextHandler?.Dispose();
-                        ThrowIfDisposed();
-                    }
-                }
-                finally
-                {
-                    _handlerLock.Release();
+                    NextHandler?.Dispose();
+                    ThrowIfDisposed();
                 }
             }
             finally
             {
+                _handlerLock.Release();
                 if (Logging.IsEnabled)
                     Logging.Exit(this, cancellationToken, $"{nameof(TransportDelegatingHandler)}.{nameof(OpenAsync)}");
             }
+        }
+
+        public override async Task WaitForTransportClosedAsync()
+        {
+            // Will throw OperationCancelledException if CloseAsync() or Dispose() has been called by the application.
+            await base.WaitForTransportClosedAsync().ConfigureAwait(false);
+
+            if (Logging.IsEnabled)
+                Logging.Info(this, "Client disconnected.", nameof(WaitForTransportClosedAsync));
+
+            await _handlerLock.WaitAsync().ConfigureAwait(false);
+            try
+            {
+                Debug.Assert(NextHandler != null);
+
+                // We don't need to double check since it's being handled in OpenAsync
+                CreateNewTransportIfNotReady();
+            }
+            finally
+            {
+                // Operations above should never throw. If they do, it's not safe to continue.
+                _handlerLock.Release();
+            }
+        }
+
+        protected private override void Dispose(bool disposing)
+        {
+            base.Dispose(disposing);
+            _handlerLock?.Dispose();
         }
 
         private void CreateNewTransportIfNotReady()
@@ -66,31 +88,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
                 innerHandler?.Dispose();
             }
-        }
-
-        public override async Task WaitForTransportClosedAsync()
-        {
-            // Will throw OperationCancelledException if CloseAsync() or Dispose() has been called by the application.
-            await base.WaitForTransportClosedAsync().ConfigureAwait(false);
-
-            if (Logging.IsEnabled)
-                Logging.Info(this, "Client disconnected.", nameof(WaitForTransportClosedAsync));
-
-            await _handlerLock.WaitAsync().ConfigureAwait(false);
-            Debug.Assert(NextHandler != null);
-
-            // We don't need to double check since it's being handled in OpenAsync
-            CreateNewTransportIfNotReady();
-
-            // Operations above should never throw. If they do, it's not safe to continue.
-            _handlerLock.Release();
-        }
-
-        protected private override void Dispose(bool disposing)
-        {
-            base.Dispose(disposing);
-            _handlerLock?.Dispose();
-            _handlerLock = null;
         }
     }
 }

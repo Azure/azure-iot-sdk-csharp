@@ -14,6 +14,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
+using Microsoft.Azure.Devices.Client.Transport.Mqtt;
 using MQTTnet;
 using MQTTnet.Adapter;
 using MQTTnet.Client;
@@ -21,7 +22,7 @@ using MQTTnet.Exceptions;
 using MQTTnet.Protocol;
 using Newtonsoft.Json;
 
-namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
+namespace Microsoft.Azure.Devices.Client.Transport
 {
     internal sealed class MqttTransportHandler : TransportHandler, IDisposable
     {
@@ -265,109 +266,124 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         public override async Task OpenAsync(CancellationToken cancellationToken)
         {
-            string clientId = string.IsNullOrWhiteSpace(_moduleId) ? _deviceId : $"{_deviceId}/{_moduleId}";
-            _mqttClientOptionsBuilder.WithClientId(clientId);
-
-            string username = $"{_hostName}/{clientId}/?{ClientApiVersionHelper.ApiVersionQueryStringLatest}&DeviceClientType={Uri.EscapeDataString(_productInfo.ToString())}";
-
-            if (!string.IsNullOrWhiteSpace(_modelId))
-            {
-                username += $"&model-id={Uri.EscapeDataString(_modelId)}";
-            }
-
-            if (!string.IsNullOrWhiteSpace(_mqttTransportSettings?.AuthenticationChain))
-            {
-                username += $"&auth-chain={Uri.EscapeDataString(_mqttTransportSettings.AuthenticationChain)}";
-            }
-
-            if (_connectionCredentials.SasTokenRefresher != null)
-            {
-                // Symmetric key authenticated connections need to set client Id, username, and password
-                string password = await _connectionCredentials.SasTokenRefresher.GetTokenAsync(_connectionCredentials.IotHubHostName).ConfigureAwait(false);
-                _mqttClientOptionsBuilder.WithCredentials(username, password);
-            }
-            else if (_connectionCredentials.SharedAccessSignature != null)
-            {
-                // Symmetric key authenticated connections need to set client Id, username, and password
-                string password = _connectionCredentials.SharedAccessSignature;
-                _mqttClientOptionsBuilder.WithCredentials(username, password);
-            }
-            else
-            {
-                // x509 authenticated connections only need to set client Id and username
-                _mqttClientOptionsBuilder.WithCredentials(username);
-            }
-
-            _mqttClientOptions = _mqttClientOptionsBuilder.Build();
+            if (Logging.IsEnabled)
+                Logging.Enter(this, cancellationToken, nameof(OpenAsync));
 
             try
             {
-                await _mqttClient.ConnectAsync(_mqttClientOptions, cancellationToken).ConfigureAwait(false);
-                _mqttClient.DisconnectedAsync += HandleDisconnectionAsync;
-                _mqttClient.ApplicationMessageReceivedAsync += HandleReceivedMessageAsync;
+                string clientId = string.IsNullOrWhiteSpace(_moduleId) ? _deviceId : $"{_deviceId}/{_moduleId}";
+                _mqttClientOptionsBuilder.WithClientId(clientId);
 
-                // The timer would invoke callback after every hour.
-                _twinTimeoutTimer.Change(s_twinResponseTimeout, s_twinResponseTimeout);
-            }
-            catch (MqttConnectingFailedException ex)
-            {
-                MqttClientConnectResultCode connectCode = ex.ResultCode;
-                switch (connectCode)
+                string username = $"{_hostName}/{clientId}/?{ClientApiVersionHelper.ApiVersionQueryStringLatest}&DeviceClientType={Uri.EscapeDataString(_productInfo.ToString())}";
+
+                if (!string.IsNullOrWhiteSpace(_modelId))
                 {
-                    case MqttClientConnectResultCode.BadUserNameOrPassword:
-                    case MqttClientConnectResultCode.NotAuthorized:
-                    case MqttClientConnectResultCode.ClientIdentifierNotValid:
-                        throw new IotHubClientException(
-                            "Failed to open the MQTT connection due to incorrect or unauthorized credentials",
-                            IotHubClientErrorCode.Unauthorized,
-                            ex);
-                    case MqttClientConnectResultCode.UnsupportedProtocolVersion:
-                        // Should never happen since the protocol version (3.1.1) is hardcoded
-                        throw new IotHubClientException(
-                            "Failed to open the MQTT connection due to an unsupported MQTT version",
-                            innerException: ex);
-                    case MqttClientConnectResultCode.ServerUnavailable:
-                        throw new IotHubClientException(
-                            "MQTT connection rejected because the server was unavailable",
-                            IotHubClientErrorCode.ServerBusy,
-                            ex);
-                    default:
-                        if (ex.InnerException is MqttCommunicationTimedOutException)
-                        {
-                            if (cancellationToken.IsCancellationRequested)
+                    username += $"&model-id={Uri.EscapeDataString(_modelId)}";
+                }
+
+                if (!string.IsNullOrWhiteSpace(_mqttTransportSettings?.AuthenticationChain))
+                {
+                    username += $"&auth-chain={Uri.EscapeDataString(_mqttTransportSettings.AuthenticationChain)}";
+                }
+
+                if (_connectionCredentials.SasTokenRefresher != null)
+                {
+                    // Symmetric key authenticated connections need to set client Id, username, and password
+                    string password = await _connectionCredentials.SasTokenRefresher.GetTokenAsync(_connectionCredentials.IotHubHostName).ConfigureAwait(false);
+                    _mqttClientOptionsBuilder.WithCredentials(username, password);
+                }
+                else if (_connectionCredentials.SharedAccessSignature != null)
+                {
+                    // Symmetric key authenticated connections need to set client Id, username, and password
+                    string password = _connectionCredentials.SharedAccessSignature;
+                    _mqttClientOptionsBuilder.WithCredentials(username, password);
+                }
+                else
+                {
+                    // x509 authenticated connections only need to set client Id and username
+                    _mqttClientOptionsBuilder.WithCredentials(username);
+                }
+
+                _mqttClientOptions = _mqttClientOptionsBuilder.Build();
+
+                try
+                {
+                    await _mqttClient.ConnectAsync(_mqttClientOptions, cancellationToken).ConfigureAwait(false);
+                    _mqttClient.DisconnectedAsync += HandleDisconnectionAsync;
+                    _mqttClient.ApplicationMessageReceivedAsync += HandleReceivedMessageAsync;
+
+                    // The timer would invoke callback after every hour.
+                    _twinTimeoutTimer.Change(s_twinResponseTimeout, s_twinResponseTimeout);
+                }
+                catch (MqttConnectingFailedException ex)
+                {
+                    MqttClientConnectResultCode connectCode = ex.ResultCode;
+                    switch (connectCode)
+                    {
+                        case MqttClientConnectResultCode.BadUserNameOrPassword:
+                        case MqttClientConnectResultCode.NotAuthorized:
+                        case MqttClientConnectResultCode.ClientIdentifierNotValid:
+                            throw new IotHubClientException(
+                                "Failed to open the MQTT connection due to incorrect or unauthorized credentials",
+                                IotHubClientErrorCode.Unauthorized,
+                                ex);
+                        case MqttClientConnectResultCode.UnsupportedProtocolVersion:
+                            // Should never happen since the protocol version (3.1.1) is hardcoded
+                            throw new IotHubClientException(
+                                "Failed to open the MQTT connection due to an unsupported MQTT version",
+                                innerException: ex);
+                        case MqttClientConnectResultCode.ServerUnavailable:
+                            throw new IotHubClientException(
+                                "MQTT connection rejected because the server was unavailable",
+                                IotHubClientErrorCode.ServerBusy,
+                                ex);
+                        default:
+                            if (ex.InnerException is MqttCommunicationTimedOutException)
                             {
-                                // MQTTNet throws MqttCommunicationTimedOutException instead of OperationCanceledException
-                                // when the cancellation token requests cancellation.
-                                throw new OperationCanceledException(ConnectTimedOutErrorMessage, ex);
+                                if (cancellationToken.IsCancellationRequested)
+                                {
+                                    // MQTTNet throws MqttCommunicationTimedOutException instead of OperationCanceledException
+                                    // when the cancellation token requests cancellation.
+                                    throw new OperationCanceledException(ConnectTimedOutErrorMessage, ex);
+                                }
+
+                                // This execption may be thrown even if cancellation has not been requested yet.
+                                // This case is treated as a timeout error rather than an OperationCanceledException
+                                throw new IotHubClientException(
+                                    ConnectTimedOutErrorMessage,
+                                    IotHubClientErrorCode.Timeout,
+                                    ex);
                             }
 
-                            // This execption may be thrown even if cancellation has not been requested yet.
-                            // This case is treated as a timeout error rather than an OperationCanceledException
-                            throw new IotHubClientException(
-                                ConnectTimedOutErrorMessage,
-                                IotHubClientErrorCode.Timeout,
-                                ex);
-                        }
-
-                        // MQTT 3.1.1 only supports the above connect return codes, so this default case
-                        // should never happen. For more details, see the MQTT 3.1.1 specification section "3.2.2.3 Connect Return code"
-                        // https://docs.oasis-open.org/mqtt/mqtt/v3.1.1/os/mqtt-v3.1.1-os.html
-                        // MQTT 5 supports a larger set of connect codes. See the MQTT 5.0 specification section "3.2.2.2 Connect Reason Code"
-                        // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901074
-                        throw new IotHubClientException("Failed to open the MQTT connection", innerException: ex);
+                            // MQTT 3.1.1 only supports the above connect return codes, so this default case
+                            // should never happen. For more details, see the MQTT 3.1.1 specification section "3.2.2.3 Connect Return code"
+                            // https://docs.oasis-open.org/mqtt/mqtt/v3.1.1/os/mqtt-v3.1.1-os.html
+                            // MQTT 5 supports a larger set of connect codes. See the MQTT 5.0 specification section "3.2.2.2 Connect Reason Code"
+                            // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901074
+                            throw new IotHubClientException("Failed to open the MQTT connection", innerException: ex);
+                    }
+                }
+                catch (MqttCommunicationTimedOutException ex)
+                {
+                    throw new IotHubClientException(
+                        ConnectTimedOutErrorMessage,
+                        IotHubClientErrorCode.Timeout,
+                        ex);
                 }
             }
-            catch (MqttCommunicationTimedOutException ex)
+            finally
             {
-                throw new IotHubClientException(
-                    ConnectTimedOutErrorMessage,
-                    IotHubClientErrorCode.Timeout,
-                    ex);
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, cancellationToken, nameof(OpenAsync));
+
             }
         }
 
         public override async Task SendTelemetryAsync(TelemetryMessage message, CancellationToken cancellationToken)
         {
+            if (Logging.IsEnabled)
+                Logging.Enter(this, message, cancellationToken, nameof(SendTelemetryAsync));
+
             cancellationToken.ThrowIfCancellationRequested();
 
             try
@@ -430,6 +446,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     $"Failed to send message with message Id: [{message.MessageId}].",
                     IotHubClientErrorCode.NetworkErrors,
                     ex);
+            }
+            finally
+            {
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, message, cancellationToken, nameof(SendTelemetryAsync));
             }
         }
 
