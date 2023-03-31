@@ -15,25 +15,26 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
     public class StorageContainer : IDisposable
     {
         private bool _disposed;
+        private readonly bool _deleteOnDispose;
 
         public string ContainerName { get; }
         public Uri Uri { get; private set; }
         public Uri SasUri { get; private set; }
         public CloudBlobContainer CloudBlobContainer { get; private set; }
 
-        private StorageContainer(string containerName)
+        private StorageContainer(string containerName, bool deleteOnDispose)
         {
             if (string.IsNullOrWhiteSpace(containerName))
             {
                 containerName = Guid.NewGuid().ToString();
             }
-
+            _deleteOnDispose = deleteOnDispose;
             ContainerName = containerName;
         }
 
-        public static async Task<StorageContainer> GetInstanceAsync(string containerName = null)
+        public static async Task<StorageContainer> GetInstanceAsync(string containerName = null, bool deleteOnDispose = true)
         {
-            var sc = new StorageContainer(containerName);
+            var sc = new StorageContainer(containerName, deleteOnDispose);
             await sc.InitializeAsync().ConfigureAwait(false);
             return sc;
         }
@@ -125,7 +126,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                 return;
             }
 
-            if (disposing && CloudBlobContainer != null)
+            if (disposing
+                && CloudBlobContainer != null
+                && _deleteOnDispose)
             {
                 CloudBlobContainer.Delete();
                 CloudBlobContainer = null;
