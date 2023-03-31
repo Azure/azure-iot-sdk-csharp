@@ -22,6 +22,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
         private readonly string _storageConnectionString;
 
         private static readonly TimeSpan s_deviceCountMonitorInterval = TimeSpan.FromSeconds(30);
+        private static readonly TimeSpan s_receiveFileUploadInterval = TimeSpan.FromSeconds(30);
         private int _totalFileUploadNotificationsReceived;
 
         private static IotHubServiceClient s_serviceClient;
@@ -145,7 +146,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
             while (!ct.IsCancellationRequested)
             {
                 await s_serviceClient.FileUploadNotifications.OpenAsync(ct).ConfigureAwait(false);
-                _logger.Trace("Listening for file upload notifications from the service...");
+                _logger.Trace("Listening for file upload notifications from the service...", TraceSeverity.Verbose);
 
                 Task<AcknowledgementType> FileUploadNotificationCallback(FileUploadNotification fileUploadNotification)
                 {
@@ -158,7 +159,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                     sb.Append($"\tFileName: {fileUploadNotification.BlobName ?? "N/A"}.");
                     sb.Append($"\tEnqueueTimeUTC: {fileUploadNotification.EnqueuedOnUtc}.");
                     sb.Append($"\tBlobSizeInBytes: {fileUploadNotification.BlobSizeInBytes}.");
-                    _logger.Trace(sb.ToString());
+                    _logger.Trace(sb.ToString(), TraceSeverity.Information);
 
                     _blobContainerClient.DeleteBlobIfExists(fileUploadNotification.BlobName);
                     return Task.FromResult(ackType);
@@ -167,7 +168,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                 s_serviceClient.FileUploadNotifications.FileUploadNotificationProcessor = FileUploadNotificationCallback;
                 _logger.Metric("TotalFileUploadNotificiationsReceived", _totalFileUploadNotificationsReceived);
 
-                await Task.Delay(TimeSpan.FromSeconds(30));
+                await Task.Delay(s_receiveFileUploadInterval, ct).ConfigureAwait(false);
             }
         }
 

@@ -33,6 +33,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
 
         private static readonly TimeSpan s_messageLoopSleepTime = TimeSpan.FromSeconds(10);
         private static readonly TimeSpan s_deviceTwinUpdateInterval = TimeSpan.FromSeconds(3);
+        private static readonly TimeSpan s_fileUploadInterval = TimeSpan.FromSeconds(5);
         private readonly ConcurrentQueue<TelemetryMessage> _messagesToSend = new();
 
         private long _totalTelemetryMessagesSent = 0;
@@ -237,7 +238,6 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
             {
                 string fileName = $"TestPayload-{Guid.NewGuid()}.txt";
                 using var ms = new MemoryStream(Encoding.UTF8.GetBytes("TestPayload"));
-                _logger.Trace($"Uploading file {fileName}");
 
                 var fileUploadSasUriRequest = new FileUploadSasUriRequest(fileName);
                 FileUploadSasUriResponse sasUri = await _deviceClient
@@ -248,7 +248,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
 
                 try
                 {
-                    _logger.Trace($"Attempting to upload {fileName}...");
+                    _logger.Trace($"Attempting to upload {fileName}...", TraceSeverity.Information);
                     var blockBlobClient = new BlockBlobClient(uploadUri);
                     await blockBlobClient.UploadAsync(ms, new BlobUploadOptions(), ct).ConfigureAwait(false);
                 }
@@ -264,14 +264,14 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
                     return;
                 }
 
-                _logger.Trace("File upload to Azure Storage was a success");
+                _logger.Trace("File uploaded to Azure Storage was a success", TraceSeverity.Information);
                 var successfulFileUploadCompletionNotification = new FileUploadCompletionNotification(sasUri.CorrelationId, true)
                 {
                     StatusCode = 200,
                 };
 
                 await _deviceClient.CompleteFileUploadAsync(successfulFileUploadCompletionNotification, ct).ConfigureAwait(false);
-                await Task.Delay(TimeSpan.FromSeconds(5));
+                await Task.Delay(s_fileUploadInterval, ct).ConfigureAwait(false);
             }
         }
 
