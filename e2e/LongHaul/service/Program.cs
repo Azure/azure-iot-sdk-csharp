@@ -82,6 +82,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                 await Task
                     .WhenAll(
                         systemHealthMonitor.RunAsync(cancellationTokenSource.Token),
+                        iotHub.MonitorConnectedDevicesAsync(cancellationTokenSource.Token),
                         iotHub.InvokeDirectMethodAsync(cancellationTokenSource.Token),
                         iotHub.SetDesiredPropertiesAsync("guidValue", Guid.NewGuid().ToString(), cancellationTokenSource.Token),
                         iotHub.SendC2dMessagesAsync(cancellationTokenSource.Token),
