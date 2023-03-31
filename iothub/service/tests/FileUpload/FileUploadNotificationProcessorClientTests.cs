@@ -46,7 +46,7 @@ namespace Microsoft.Azure.Devices.Tests.FileUpload
         }
 
         [TestMethod]
-        public async Task FileUploadNotificationProcessorClient_OpenAsync_Cancelled_ThrowsOperationCanceledException()
+        public async Task FileUploadNotificationProcessorClient_OpenAsync_ThrowsWhenOperationCanceled()
         {
             // arrange
             using var serviceClient = new IotHubServiceClient(
@@ -66,7 +66,7 @@ namespace Microsoft.Azure.Devices.Tests.FileUpload
         }
 
         [TestMethod]
-        public async Task FileUploadNotificationProcessorClient_CloseAsync_Cancelled_ThrowsOperationCanceledException()
+        public async Task FileUploadNotificationProcessorClient_CloseAsync_ThrowsWhenOperationCanceled()
         {
             // arrange
             using var serviceClient = new IotHubServiceClient(

@@ -230,18 +230,6 @@ namespace Microsoft.Azure.Devices
                 if (Logging.IsEnabled)
                     Logging.Error(this, $"{nameof(OnNotificationMessageReceivedAsync)} threw an exception: {ex}", nameof(OnNotificationMessageReceivedAsync));
 
-                try
-                {
-                    await _amqpConnection.AbandonMessageAsync(amqpMessage.DeliveryTag).ConfigureAwait(false);
-                }
-                catch (Exception ex2)
-                {
-                    if (Logging.IsEnabled)
-                        Logging.Error(this, $"{nameof(OnNotificationMessageReceivedAsync)} threw an exception during message abandon: {ex2}", nameof(OnNotificationMessageReceivedAsync));
-
-                    // silently fail
-                }
-
                 if (ErrorProcessor != null)
                 {
                     try
@@ -262,6 +250,18 @@ namespace Microsoft.Azure.Devices
 
                         // silently fail
                     }
+                }
+
+                try
+                {
+                    await _amqpConnection.AbandonMessageAsync(amqpMessage.DeliveryTag).ConfigureAwait(false);
+                }
+                catch (Exception ex2)
+                {
+                    if (Logging.IsEnabled)
+                        Logging.Error(this, $"{nameof(OnNotificationMessageReceivedAsync)} threw an exception during message abandon: {ex2}", nameof(OnNotificationMessageReceivedAsync));
+
+                    // silently fail
                 }
             }
             finally
