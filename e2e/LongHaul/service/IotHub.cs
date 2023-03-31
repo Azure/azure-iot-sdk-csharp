@@ -117,7 +117,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                     {
                         s_deviceSet.Remove(device.DeviceId);
                     }
-                    else if(!s_deviceSet.Contains(device.DeviceId) && device.ConnectionState == ClientConnectionState.Connected)
+                    else if (!s_deviceSet.Contains(device.DeviceId) && device.ConnectionState == ClientConnectionState.Connected)
                     {
                         s_deviceSet.Add(device.DeviceId);
                     }
@@ -126,7 +126,6 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                 }
 
                 await Task.Delay(s_deviceCountMonitorInterval, ct).ConfigureAwait(false);
-
             }
         }
 
