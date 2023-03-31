@@ -16,7 +16,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
     [TestClass]
     [TestCategory("E2E")]
     [TestCategory("IoTHub-Client")]
-    public partial class TelemetryE2ETests : E2EMsTestBase
+    public partial class TelemetryMessageE2eTests : E2EMsTestBase
     {
         private const int MessageBatchCount = 5;
 
@@ -28,7 +28,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         // the message size is less than 1 MB.
         private const int OverlyExceedAllowedMessageSizeInBytes = 3000 * 1024;
 
-        private readonly string _idPrefix = $"{nameof(TelemetryE2ETests)}_";
+        private readonly string _idPrefix = $"{nameof(TelemetryMessageE2eTests)}_";
         private static readonly string s_proxyServerAddress = TestConfiguration.IotHub.ProxyServerAddress;
 
         [TestMethod]

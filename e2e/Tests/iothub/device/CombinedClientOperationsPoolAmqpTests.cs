@@ -95,7 +95,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                 // D2C Operation
                 VerboseTestLogger.WriteLine($"{nameof(CombinedClientOperationsPoolAmqpTests)}: Operation 1: Send D2C for device={testDevice.Id}");
-                TelemetryMessage message = TelemetryE2ETests.ComposeD2cTestMessage(out string _, out string _);
+                TelemetryMessage message = TelemetryMessageE2eTests.ComposeD2cTestMessage(out string _, out string _);
                 Task sendD2cMessage = testDevice.DeviceClient.SendTelemetryAsync(message);
                 clientOperations.Add(sendD2cMessage);
 
@@ -105,7 +105,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 OutgoingMessage msg = msgSent.Item1;
                 string payload = msgSent.Item2;
 
-                Task verifyDeviceClientReceivesMessage = MessageReceiveE2ETests.VerifyReceivedC2dMessageAsync(testDevice.DeviceClient, testDevice.Id, msg, payload);
+                Task verifyDeviceClientReceivesMessage = IncomingMessageCallbackE2eTests.VerifyReceivedC2dMessageAsync(testDevice.DeviceClient, testDevice.Id, msg, payload);
                 clientOperations.Add(verifyDeviceClientReceivesMessage);
 
                 // Invoke direct methods
