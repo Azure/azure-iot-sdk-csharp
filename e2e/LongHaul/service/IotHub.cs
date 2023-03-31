@@ -26,7 +26,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
         private static readonly TimeSpan s_c2dMessagesSentInterval = TimeSpan.FromSeconds(3);
         private int _totalFileUploadNotificationsReceived;
 
-        private IotHubServiceClient _serviceClient;
+        private static IotHubServiceClient s_serviceClient;
         private BlobContainerClient _blobContainerClient;
 
 
@@ -53,7 +53,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
             {
                 Protocol = _transportProtocol,
             };
-            _serviceClient = new IotHubServiceClient(_hubConnectionString, options);
+            s_serviceClient = new IotHubServiceClient(_hubConnectionString, options);
             _logger.Trace("Initialized a new service client instance.", TraceSeverity.Information);
 
             _totalFileUploadNotificationsReceived = 0;
@@ -62,7 +62,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
 
         public Task<string> GetEventHubCompatibleConnectionStringAsync(CancellationToken ct)
         {
-            return _serviceClient.GetEventHubCompatibleConnectionStringAsync(_hubConnectionString, ct);
+            return s_serviceClient.GetEventHubCompatibleConnectionStringAsync(_hubConnectionString, ct);
         }
 
         public async Task InvokeDirectMethodAsync(CancellationToken ct)
@@ -88,7 +88,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                 try
                 {
                     // Invoke the direct method asynchronously and get the response from the simulated device.
-                    DirectMethodClientResponse response = await _serviceClient.DirectMethods.InvokeAsync(_deviceId, methodInvocation, ct);
+                    DirectMethodClientResponse response = await s_serviceClient.DirectMethods.InvokeAsync(_deviceId, methodInvocation, ct);
 
                     if (response.TryGetPayload(out CustomDirectMethodPayload responsePayload))
                     {
@@ -119,7 +119,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                 _logger.Trace($"Updating the desired properties for device: {_deviceId}", TraceSeverity.Information);
                 _logger.Metric(TotalDesiredPropertiesUpdatesCount, _totalDesiredPropertiesUpdatesCount);
 
-                await _serviceClient.Twins.UpdateAsync(_deviceId, twin, false, ct).ConfigureAwait(false);
+                await s_serviceClient.Twins.UpdateAsync(_deviceId, twin, false, ct).ConfigureAwait(false);
 
                 await Task.Delay(s_desiredPropertiesSetInterval, ct).ConfigureAwait(false);
             }
@@ -129,7 +129,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
         {
             try
             {
-                await _serviceClient.Messages.OpenAsync(ct).ConfigureAwait(false);
+                await s_serviceClient.Messages.OpenAsync(ct).ConfigureAwait(false);
 
                 while (!ct.IsCancellationRequested)
                 {
@@ -149,14 +149,14 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                     _logger.Trace($"Sending message with Id {message.MessageId} to the device: {_deviceId}", TraceSeverity.Information);
                     _logger.Metric(TotalC2dMessagesSentCount, _totalC2dMessagesSentCount);
 
-                    await _serviceClient.Messages.SendAsync(_deviceId, message, ct).ConfigureAwait(false);
+                    await s_serviceClient.Messages.SendAsync(_deviceId, message, ct).ConfigureAwait(false);
 
                     await Task.Delay(s_c2dMessagesSentInterval, ct).ConfigureAwait(false);
                 }
             }
             finally
             {
-                await _serviceClient.Messages.CloseAsync().ConfigureAwait(false);
+                await s_serviceClient.Messages.CloseAsync().ConfigureAwait(false);
             }
         }
 
@@ -180,11 +180,11 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                 return AcknowledgementType.Complete;
             }
 
-            _serviceClient.MessageFeedback.MessageFeedbackProcessor = OnC2dMessageAck;
+            s_serviceClient.MessageFeedback.MessageFeedbackProcessor = OnC2dMessageAck;
 
             try
             {
-                await _serviceClient.MessageFeedback.OpenAsync(ct).ConfigureAwait(false);
+                await s_serviceClient.MessageFeedback.OpenAsync(ct).ConfigureAwait(false);
 
                 try
                 {
@@ -194,7 +194,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
             }
             finally
             {
-                await _serviceClient.MessageFeedback.CloseAsync().ConfigureAwait(false);
+                await s_serviceClient.MessageFeedback.CloseAsync().ConfigureAwait(false);
             }
         }
 
@@ -202,7 +202,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
         {
             while (!ct.IsCancellationRequested)
             {
-                await _serviceClient.FileUploadNotifications.OpenAsync(ct).ConfigureAwait(false);
+                await s_serviceClient.FileUploadNotifications.OpenAsync(ct).ConfigureAwait(false);
                 _logger.Trace("Listening for file upload notifications from the service...");
 
                 AcknowledgementType FileUploadNotificationCallback(FileUploadNotification fileUploadNotification)
@@ -222,7 +222,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                     return ackType;
                 }
 
-                _serviceClient.FileUploadNotifications.FileUploadNotificationProcessor = FileUploadNotificationCallback;
+                s_serviceClient.FileUploadNotifications.FileUploadNotificationProcessor = FileUploadNotificationCallback;
                 _logger.Metric("TotalFileUploadNotificiationsReceived", _totalFileUploadNotificationsReceived);
 
                 await Task.Delay(TimeSpan.FromSeconds(30));
@@ -233,7 +233,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
         {
             _logger.Trace("Disposing", TraceSeverity.Verbose);
 
-            _serviceClient?.Dispose();
+            s_serviceClient?.Dispose();
 
             _logger.Trace($"IoT Hub instance disposed", TraceSeverity.Verbose);
         }
