@@ -12,7 +12,6 @@ using Mash.Logging;
 using Newtonsoft.Json;
 using Azure.Storage.Blobs;
 using static Microsoft.Azure.Devices.LongHaul.Service.LoggingConstants;
-using System.Collections.Generic;
 
 namespace Microsoft.Azure.Devices.LongHaul.Service
 {
