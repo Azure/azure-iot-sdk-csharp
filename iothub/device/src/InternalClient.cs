@@ -115,7 +115,6 @@ namespace Microsoft.Azure.Devices.Client
         private readonly HttpTransportHandler _fileUploadHttpTransportHandler;
         private readonly ITransportSettings[] _transportSettings;
         private readonly ClientOptions _clientOptions;
-        private volatile bool _isDisposed;
 
         // Stores message input names supported by the client module and their associated delegate.
         private volatile Dictionary<string, Tuple<MessageHandler, object>> _receiveEventEndpoints;
@@ -200,6 +199,7 @@ namespace Microsoft.Azure.Devices.Client
             if (Logging.IsEnabled)
                 Logging.Exit(this, transportSettings, pipelineBuilder, nameof(InternalClient) + "_ctor");
         }
+        internal bool IsDisposed { get; private set; }
 
         /// <summary>
         /// Diagnostic sampling percentage value, [0-100];
@@ -1120,7 +1120,6 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns>The device twin object for the current device</returns>
         public Task<Twin> GetTwinAsync(CancellationToken cancellationToken)
         {
-            // `GetTwinAsync` shall call `SendTwinGetAsync` on the transport to get the twin state.
             try
             {
                 return InnerHandler.SendTwinGetAsync(cancellationToken);
@@ -1379,7 +1378,7 @@ namespace Microsoft.Azure.Devices.Client
             FileUploadSasUriRequest request,
             CancellationToken cancellationToken = default)
         {
-            if (_isDisposed)
+            if (IsDisposed)
             {
                 throw new ObjectDisposedException("IoT client", DefaultDelegatingHandler.ClientDisposedMessage);
             }
@@ -1391,7 +1390,7 @@ namespace Microsoft.Azure.Devices.Client
             FileUploadCompletionNotification notification,
             CancellationToken cancellationToken = default)
         {
-            if (_isDisposed)
+            if (IsDisposed)
             {
                 throw new ObjectDisposedException("IoT client", DefaultDelegatingHandler.ClientDisposedMessage);
             }
@@ -1429,7 +1428,7 @@ namespace Microsoft.Azure.Devices.Client
 
             try
             {
-                if (_isDisposed)
+                if (IsDisposed)
                 {
                     throw new ObjectDisposedException("IoT client", DefaultDelegatingHandler.ClientDisposedMessage);
                 }
@@ -1846,7 +1845,7 @@ namespace Microsoft.Azure.Devices.Client
 
         public void Dispose()
         {
-            _isDisposed = true;
+            IsDisposed = true;
             InnerHandler?.Dispose();
             _methodsSemaphore?.Dispose();
             _moduleReceiveMessageSemaphore?.Dispose();

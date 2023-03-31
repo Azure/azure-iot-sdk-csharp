@@ -49,7 +49,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="hostname">The fully-qualified DNS host name of IoT hub</param>
         /// <param name="authenticationMethod">The authentication method that is used</param>
         /// <param name="options">The options that allow configuration of the device client instance during initialization.</param>
-        /// <returns>A disposable DeviceClient instance</returns>
+        /// <returns>A disposable DeviceClient instance.</returns>
         public static DeviceClient Create(string hostname, IAuthenticationMethod authenticationMethod, ClientOptions options = default)
         {
             return Create(() => ClientFactory.Create(hostname, authenticationMethod, options));
@@ -62,7 +62,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="gatewayHostname">The fully-qualified DNS host name of Gateway</param>
         /// <param name="authenticationMethod">The authentication method that is used</param>
         /// <param name="options">The options that allow configuration of the device client instance during initialization.</param>
-        /// <returns>A disposable DeviceClient instance</returns>
+        /// <returns>A disposable DeviceClient instance.</returns>
         public static DeviceClient Create(
             string hostname,
             string gatewayHostname,
@@ -79,7 +79,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="authenticationMethod">The authentication method that is used</param>
         /// <param name="transportType">The transportType used (HTTP1, AMQP or MQTT), <see cref="TransportType"/></param>
         /// <param name="options">The options that allow configuration of the device client instance during initialization.</param>
-        /// <returns>A disposable DeviceClient instance</returns>
+        /// <returns>A disposable DeviceClient instance.</returns>
         public static DeviceClient Create(
             string hostname,
             IAuthenticationMethod authenticationMethod,
@@ -97,7 +97,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="authenticationMethod">The authentication method that is used</param>
         /// <param name="transportType">The transportType used (Http1, AMQP or MQTT), <see cref="TransportType"/></param>
         /// <param name="options">The options that allow configuration of the device client instance during initialization.</param>
-        /// <returns>A disposable DeviceClient instance</returns>
+        /// <returns>A disposable DeviceClient instance.</returns>
         public static DeviceClient Create(
             string hostname,
             string gatewayHostname,
@@ -115,7 +115,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="authenticationMethod">The authentication method that is used</param>
         /// <param name="transportSettings">Prioritized list of transportTypes and their settings</param>
         /// <param name="options">The options that allow configuration of the device client instance during initialization.</param>
-        /// <returns>A disposable DeviceClient instance</returns>
+        /// <returns>A disposable DeviceClient instance.</returns>
         public static DeviceClient Create(string hostname, IAuthenticationMethod authenticationMethod,
             ITransportSettings[] transportSettings, ClientOptions options = default)
         {
@@ -130,7 +130,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="authenticationMethod">The authentication method that is used</param>
         /// <param name="transportSettings">Prioritized list of transportTypes and their settings</param>
         /// <param name="options">The options that allow configuration of the device client instance during initialization.</param>
-        /// <returns>A disposable DeviceClient instance</returns>
+        /// <returns>A disposable DeviceClient instance.</returns>
         public static DeviceClient Create(string hostname, string gatewayHostname, IAuthenticationMethod authenticationMethod,
             ITransportSettings[] transportSettings, ClientOptions options = default)
         {
@@ -142,7 +142,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <param name="connectionString">Connection string for the IoT hub (including DeviceId)</param>
         /// <param name="options">The options that allow configuration of the device client instance during initialization.</param>
-        /// <returns>A disposable DeviceClient instance</returns>
+        /// <returns>A disposable DeviceClient instance.</returns>
         public static DeviceClient CreateFromConnectionString(string connectionString, ClientOptions options = default)
         {
             return Create(() => ClientFactory.CreateFromConnectionString(connectionString, options));
@@ -154,7 +154,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="connectionString">IoT hub-Scope Connection string for the IoT hub (without DeviceId)</param>
         /// <param name="deviceId">Id of the Device</param>
         /// <param name="options">The options that allow configuration of the device client instance during initialization.</param>
-        /// <returns>A disposable DeviceClient instance</returns>
+        /// <returns>A disposable DeviceClient instance.</returns>
         public static DeviceClient CreateFromConnectionString(string connectionString, string deviceId, ClientOptions options = default)
         {
             return Create(() => ClientFactory.CreateFromConnectionString(connectionString, deviceId, options));
@@ -166,7 +166,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="connectionString">Connection string for the IoT hub (including DeviceId)</param>
         /// <param name="transportType">Specifies whether Http1, AMQP or MQTT transport is used, <see cref="TransportType"/></param>
         /// <param name="options">The options that allow configuration of the device client instance during initialization.</param>
-        /// <returns>A disposable DeviceClient instance</returns>
+        /// <returns>A disposable DeviceClient instance.</returns>
         public static DeviceClient CreateFromConnectionString(
             string connectionString,
             TransportType transportType,
@@ -182,7 +182,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="deviceId">Id of the device</param>
         /// <param name="transportType">The transportType used (Http1, AMQP or MQTT), <see cref="TransportType"/></param>
         /// <param name="options">The options that allow configuration of the device client instance during initialization.</param>
-        /// <returns>A disposable DeviceClient instance</returns>
+        /// <returns>A disposable DeviceClient instance.</returns>
         public static DeviceClient CreateFromConnectionString(
             string connectionString,
             string deviceId,
@@ -198,7 +198,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="connectionString">Connection string for the IoT hub (with DeviceId)</param>
         /// <param name="transportSettings">Prioritized list of transports and their settings</param>
         /// <param name="options">The options that allow configuration of the device client instance during initialization.</param>
-        /// <returns>A disposable DeviceClient instance</returns>
+        /// <returns>A disposable DeviceClient instance.</returns>
         public static DeviceClient CreateFromConnectionString(
             string connectionString,
             ITransportSettings[] transportSettings,
@@ -214,7 +214,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="deviceId">Id of the device</param>
         /// <param name="transportSettings">Prioritized list of transportTypes and their settings</param>
         /// <param name="options">The options that allow configuration of the device client instance during initialization.</param>
-        /// <returns>A disposable DeviceClient instance</returns>
+        /// <returns>A disposable DeviceClient instance.</returns>
         public static DeviceClient CreateFromConnectionString(
             string connectionString,
             string deviceId,
@@ -283,9 +283,7 @@ namespace Microsoft.Azure.Devices.Client
         /// The change will take effect after any in-progress operations.
         /// </summary>
         /// <param name="retryPolicy">The retry policy. The default is
-        /// <c>new ExponentialBackoff(int.MaxValue, TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(10), TimeSpan.FromMilliseconds(100));</c></param>
-        // Codes_SRS_DEVICECLIENT_28_001: [This property shall be defaulted to the exponential retry strategy with back-off
-        // parameters for calculating delay in between retries.]
+        /// <code>new ExponentialBackoff(int.MaxValue, TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(10), TimeSpan.FromMilliseconds(100));</code></param>
         public void SetRetryPolicy(IRetryPolicy retryPolicy)
         {
             InternalClient.SetRetryPolicy(retryPolicy);
@@ -735,12 +733,10 @@ namespace Microsoft.Azure.Devices.Client
         /// Sets a new delegate for the connection status changed callback.
         /// </summary>
         /// <remarks>
-        /// If a delegate is already associated,
-        /// it will be replaced with the new delegate. Note that this callback will never be called if the client is configured to use
-        /// HTTP, as that protocol is stateless.
+        /// If a delegate is already associated, it will be replaced with the new delegate. Note that this callback will never be called
+        /// if the client is configured to use HTTP, as that protocol is stateless.
         /// </remarks>
         /// <param name="statusChangesHandler">The name of the method to associate with the delegate.</param>
-        /// <exception cref="ObjectDisposedException">When the client has been disposed.</exception>
         public void SetConnectionStatusChangesHandler(ConnectionStatusChangesHandler statusChangesHandler) =>
             InternalClient.SetConnectionStatusChangesHandler(statusChangesHandler);
 
@@ -766,11 +762,11 @@ namespace Microsoft.Azure.Devices.Client
         /// Includes a call to <see cref="CloseAsync()"/>.
         /// </remarks>
         /// <example>
-        /// <c>
+        /// <code language="csharp">
         /// await using var client = DeviceClient.CreateFromConnectionString(...);
-        /// </c>
+        /// </code>
         /// or
-        /// <c>
+        /// <code language="csharp">
         /// var client = DeviceClient.CreateFromConnectionString(...);
         /// try
         /// {
@@ -780,7 +776,7 @@ namespace Microsoft.Azure.Devices.Client
         /// {
         ///     await client.DisposeAsync();
         /// }
-        /// </c>
+        /// </code>
         /// </example>
         [SuppressMessage("Usage", "CA1816:Dispose methods should call SuppressFinalize", Justification = "SuppressFinalize is called by Dispose(), which this method calls.")]
         public async ValueTask DisposeAsync()
