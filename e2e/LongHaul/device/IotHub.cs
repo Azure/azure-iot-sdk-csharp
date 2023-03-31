@@ -240,14 +240,17 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
                 _logger.Trace($"Uploading file {fileName}");
 
                 var fileUploadSasUriRequest = new FileUploadSasUriRequest(fileName);
-                FileUploadSasUriResponse sasUri = await _deviceClient.GetFileUploadSasUriAsync(fileUploadSasUriRequest).ConfigureAwait(false);
+                FileUploadSasUriResponse sasUri = await _deviceClient
+                    .GetFileUploadSasUriAsync(fileUploadSasUriRequest, ct)
+                    .ConfigureAwait(false);
+
                 Uri uploadUri = sasUri.GetBlobUri();
 
                 try
                 {
                     _logger.Trace($"Attempting to upload {fileName}...");
                     var blockBlobClient = new BlockBlobClient(uploadUri);
-                    await blockBlobClient.UploadAsync(ms, new BlobUploadOptions()).ConfigureAwait(false);
+                    await blockBlobClient.UploadAsync(ms, new BlobUploadOptions(), ct).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
@@ -257,7 +260,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
                         StatusCode = 500,
                     };
 
-                    await _deviceClient.CompleteFileUploadAsync(failedFileUploadCompletionNotification);
+                    await _deviceClient.CompleteFileUploadAsync(failedFileUploadCompletionNotification, ct).ConfigureAwait(false);
                     return;
                 }
 
@@ -267,8 +270,8 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
                     StatusCode = 200,
                 };
 
-                await _deviceClient.CompleteFileUploadAsync(successfulFileUploadCompletionNotification, ct);
-                await Task.Delay(5 * 1000);
+                await _deviceClient.CompleteFileUploadAsync(successfulFileUploadCompletionNotification, ct).ConfigureAwait(false);
+                await Task.Delay(TimeSpan.FromSeconds(5));
             }
         }
 

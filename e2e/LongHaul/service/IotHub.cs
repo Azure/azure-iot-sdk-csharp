@@ -26,10 +26,6 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
         private static readonly TimeSpan s_c2dMessagesSentInterval = TimeSpan.FromSeconds(3);
         private int _totalFileUploadNotificationsReceived;
 
-        // TODO -- determine what to do with these
-        private int _totalFileUploadNotificationsCompleted;
-        private int _totalFileUploadNotificationsAbandoned;
-
         private IotHubServiceClient _serviceClient;
         private BlobContainerClient _blobContainerClient;
 
@@ -60,9 +56,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
             _serviceClient = new IotHubServiceClient(_hubConnectionString, options);
             _logger.Trace("Initialized a new service client instance.", TraceSeverity.Information);
 
-            _totalFileUploadNotificationsAbandoned = 0;
             _totalFileUploadNotificationsReceived = 0;
-            _totalFileUploadNotificationsCompleted = 0;
             _blobContainerClient = new BlobContainerClient(_storageConnectionString, "fileupload");
         }
 
@@ -231,7 +225,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                 _serviceClient.FileUploadNotifications.FileUploadNotificationProcessor = FileUploadNotificationCallback;
                 _logger.Metric("TotalFileUploadNotificiationsReceived", _totalFileUploadNotificationsReceived);
 
-                await Task.Delay(30 * 1000);
+                await Task.Delay(TimeSpan.FromSeconds(30));
             }
         }
 
