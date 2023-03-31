@@ -242,7 +242,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                 await s_serviceClient.FileUploadNotifications.OpenAsync(ct).ConfigureAwait(false);
                 _logger.Trace("Listening for file upload notifications from the service...");
 
-                AcknowledgementType FileUploadNotificationCallback(FileUploadNotification fileUploadNotification)
+                Task<AcknowledgementType> FileUploadNotificationCallback(FileUploadNotification fileUploadNotification)
                 {
                     AcknowledgementType ackType = AcknowledgementType.Complete;
                     _totalFileUploadNotificationsReceived++;
@@ -256,7 +256,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                     _logger.Trace(sb.ToString());
 
                     _blobContainerClient.DeleteBlobIfExists(fileUploadNotification.BlobName);
-                    return ackType;
+                    return Task.FromResult(ackType);
                 }
 
                 s_serviceClient.FileUploadNotifications.FileUploadNotificationProcessor = FileUploadNotificationCallback;
