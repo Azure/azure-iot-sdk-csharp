@@ -148,27 +148,32 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 return await asyncOperation().ConfigureAwait(false);
             }
-            catch (Exception ex) when (ex is not IotHubClientException && !Fx.IsFatal(ex))
+            catch (Exception ex) when (!Fx.IsFatal(ex))
             {
                 if (Logging.IsEnabled)
                     Logging.Error(this, $"Exception caught: {ex}");
+
+                if (ex is IotHubClientException hex)
+                {
+                    // No remapping needed.
+                    throw;
+                }
 
                 if (IsSecurityExceptionChain(ex))
                 {
                     Exception innerException = (ex is IotHubClientException) ? ex.InnerException : ex;
                     throw new IotHubClientException("TLS authentication error.", IotHubClientErrorCode.TlsAuthenticationError, innerException);
                 }
-                else if (IsNetworkExceptionChain(ex))
+
+                if (IsNetworkExceptionChain(ex))
                 {
                     throw new IotHubClientException("A transient network error occurred; please retry.", IotHubClientErrorCode.NetworkErrors, ex);
                 }
-                else
-                {
-                    if (Logging.IsEnabled)
-                        Logging.Error(this, $"Unmapped exception {ex.GetType()}");
 
-                    throw new IotHubClientException("An unexpected exception occurred. See the inner exception for more details.", IotHubClientErrorCode.Unknown, ex);
-                }
+                if (Logging.IsEnabled)
+                    Logging.Error(this, $"Unmapped exception {ex.GetType()}");
+
+                throw new IotHubClientException("An unexpected exception occurred. See the inner exception for more details.", IotHubClientErrorCode.Unknown, ex);
             }
             finally
             {

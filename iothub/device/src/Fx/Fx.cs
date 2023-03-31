@@ -14,7 +14,6 @@ namespace Microsoft.Azure.Devices.Client
         {
             typeof(OperationCanceledException),
             typeof(ObjectDisposedException),
-            typeof(ArgumentException),
             typeof(OutOfMemoryException),
             typeof(SEHException),
             typeof(NullReferenceException),
@@ -25,6 +24,11 @@ namespace Microsoft.Azure.Devices.Client
             if (s_fatalExceptionTypes.Any(fatalType => fatalType.IsAssignableFrom(ex.GetType())))
             {
                 return true;
+            }
+
+            if (ex is IotHubClientException hex)
+            {
+                return hex.IsTransient;
             }
 
             // These exceptions aren't themselves fatal, but since the CLR uses them to wrap other exceptions,
