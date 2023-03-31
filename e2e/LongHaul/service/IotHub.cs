@@ -10,6 +10,7 @@ using Mash.Logging;
 using Newtonsoft.Json;
 using Azure.Storage.Blobs;
 using static Microsoft.Azure.Devices.LongHaul.Service.LoggingConstants;
+using System.Collections.Generic;
 
 namespace Microsoft.Azure.Devices.LongHaul.Service
 {
@@ -27,8 +28,8 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
         private int _totalFileUploadNotificationsReceived;
 
         private static IotHubServiceClient s_serviceClient;
+        private static HashSet<string> s_activeDeviceSet;
         private BlobContainerClient _blobContainerClient;
-
 
         private long _totalMethodCallsCount = 0;
         private long _totalDesiredPropertiesUpdatesCount = 0;
