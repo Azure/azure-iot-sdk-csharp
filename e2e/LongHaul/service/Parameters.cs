@@ -16,6 +16,14 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
         public string IotHubConnectionString { get; set; } = Environment.GetEnvironmentVariable("IOTHUB_CONNECTION_STRING");
 
         [Option(
+             'c',
+             "StorageConnectionString",
+             Required = false,
+             HelpText = "The connection string of Azure storage account to connect to.")]
+        public string StorageConnectionString { get; set; } = Environment.GetEnvironmentVariable("STORAGE_ACCOUNT_CONNECTION_STRING");
+
+
+        [Option(
             'i',
             "InstrumentationKey",
             Required = false,

@@ -4,11 +4,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure;
 using Mash.Logging;
 using Newtonsoft.Json;
+using Azure.Storage.Blobs;
 using static Microsoft.Azure.Devices.LongHaul.Service.LoggingConstants;
 
 namespace Microsoft.Azure.Devices.LongHaul.Service
@@ -19,26 +21,30 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
         private readonly string _hubConnectionString;
         private readonly IotHubTransportProtocol _transportProtocol;
         private readonly string _deviceId;
+        private readonly string _storageConnectionString;
 
         private static readonly TimeSpan s_directMethodInvokeInterval = TimeSpan.FromSeconds(3);
         private static readonly TimeSpan s_desiredPropertiesSetInterval = TimeSpan.FromSeconds(3);
         private static readonly TimeSpan s_c2dMessagesSentInterval = TimeSpan.FromSeconds(3);
         private static readonly TimeSpan s_deviceCountMonitorInterval = TimeSpan.FromSeconds(30);
+        private int _totalFileUploadNotificationsReceived;
 
         private static IotHubServiceClient s_serviceClient;
         private static HashSet<string> s_activeDeviceSet;
+        private BlobContainerClient _blobContainerClient;
 
         private long _totalMethodCallsCount = 0;
         private long _totalDesiredPropertiesUpdatesCount = 0;
         private long _totalC2dMessagesSentCount = 0;
         private long _totalFeedbackMessagesReceivedCount = 0;
 
-        public IotHub(Logger logger, string hubConnectionString, string deviceId, IotHubTransportProtocol transportProtocol)
+        public IotHub(Logger logger, Parameters parameters)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _hubConnectionString = hubConnectionString;
-            _deviceId = deviceId;
-            _transportProtocol = transportProtocol;
+            _hubConnectionString = parameters.IotHubConnectionString;
+            _deviceId = parameters.DeviceId;
+            _transportProtocol = parameters.TransportProtocol;
+            _storageConnectionString = parameters.StorageConnectionString;
         }
 
         /// <summary>
@@ -53,6 +59,9 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
             s_serviceClient = new IotHubServiceClient(_hubConnectionString, options);
             s_activeDeviceSet = new HashSet<string>();
             _logger.Trace("Initialized a new service client instance.", TraceSeverity.Information);
+
+            _totalFileUploadNotificationsReceived = 0;
+            _blobContainerClient = new BlobContainerClient(_storageConnectionString, "fileupload");
         }
 
         public Task<string> GetEventHubCompatibleConnectionStringAsync(CancellationToken ct)
@@ -225,13 +234,44 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
             }
         }
 
+        public async Task ReceiveFileUploadAsync(CancellationToken ct)
+        {
+            while (!ct.IsCancellationRequested)
+            {
+                await s_serviceClient.FileUploadNotifications.OpenAsync(ct).ConfigureAwait(false);
+                _logger.Trace("Listening for file upload notifications from the service...");
+
+                Task<AcknowledgementType> FileUploadNotificationCallback(FileUploadNotification fileUploadNotification)
+                {
+                    AcknowledgementType ackType = AcknowledgementType.Complete;
+                    _totalFileUploadNotificationsReceived++;
+
+                    var sb = new StringBuilder();
+                    sb.Append($"Received file upload notification.");
+                    sb.Append($"\tDeviceId: {fileUploadNotification.DeviceId ?? "N/A"}.");
+                    sb.Append($"\tFileName: {fileUploadNotification.BlobName ?? "N/A"}.");
+                    sb.Append($"\tEnqueueTimeUTC: {fileUploadNotification.EnqueuedOnUtc}.");
+                    sb.Append($"\tBlobSizeInBytes: {fileUploadNotification.BlobSizeInBytes}.");
+                    _logger.Trace(sb.ToString());
+
+                    _blobContainerClient.DeleteBlobIfExists(fileUploadNotification.BlobName);
+                    return Task.FromResult(ackType);
+                }
+
+                s_serviceClient.FileUploadNotifications.FileUploadNotificationProcessor = FileUploadNotificationCallback;
+                _logger.Metric("TotalFileUploadNotificiationsReceived", _totalFileUploadNotificationsReceived);
+
+                await Task.Delay(TimeSpan.FromSeconds(30));
+            }
+        }
+
         public void Dispose()
         {
             _logger.Trace("Disposing", TraceSeverity.Verbose);
 
             s_serviceClient?.Dispose();
 
-            _logger.Trace($"IotHub instance disposed", TraceSeverity.Verbose);
+            _logger.Trace($"IoT Hub instance disposed", TraceSeverity.Verbose);
         }
     }
 }
