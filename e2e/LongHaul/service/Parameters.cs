@@ -31,13 +31,6 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
         public string InstrumentationKey { get; set; } = Environment.GetEnvironmentVariable("APPLICATION_INSIGHTS_INSTRUMENTATION_KEY");
 
         [Option(
-            'd',
-            "DeviceId",
-            Required = false,
-            HelpText = "The Id of the device to receive the direct method.")]
-        public string DeviceId { get; set; } = "LongHaulDevice1";
-
-        [Option(
             'p',
             "TransportProtocol",
             Required = false,

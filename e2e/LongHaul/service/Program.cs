@@ -51,9 +51,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
 
             s_logger.Event(StartingRun);
 
-            using var iotHub = new IotHub(
-                s_logger,
-                parameters);
+            using var iotHub = new IotHub(s_logger, parameters);
 
             // Log system health after initializing hub
             SystemHealthMonitor.BuildAndLogSystemHealth(s_logger);
@@ -81,9 +79,6 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                     .WhenAll(
                         systemHealthMonitor.RunAsync(cancellationTokenSource.Token),
                         iotHub.MonitorConnectedDevicesAsync(cancellationTokenSource.Token),
-                        iotHub.InvokeDirectMethodAsync(cancellationTokenSource.Token),
-                        iotHub.SetDesiredPropertiesAsync("guidValue", Guid.NewGuid().ToString(), cancellationTokenSource.Token),
-                        iotHub.SendC2dMessagesAsync(cancellationTokenSource.Token),
                         iotHub.ReceiveMessageFeedbacksAsync(cancellationTokenSource.Token),
                         iotHub.ReceiveFileUploadAsync(cancellationTokenSource.Token),
                         hubEvents.RunAsync(cancellationTokenSource.Token))

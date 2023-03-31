@@ -9,7 +9,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Azure;
 using Mash.Logging;
-using Newtonsoft.Json;
 using Azure.Storage.Blobs;
 using static Microsoft.Azure.Devices.LongHaul.Service.LoggingConstants;
 
@@ -20,29 +19,22 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
         private readonly Logger _logger;
         private readonly string _hubConnectionString;
         private readonly IotHubTransportProtocol _transportProtocol;
-        private readonly string _deviceId;
         private readonly string _storageConnectionString;
 
-        private static readonly TimeSpan s_directMethodInvokeInterval = TimeSpan.FromSeconds(3);
-        private static readonly TimeSpan s_desiredPropertiesSetInterval = TimeSpan.FromSeconds(3);
-        private static readonly TimeSpan s_c2dMessagesSentInterval = TimeSpan.FromSeconds(3);
         private static readonly TimeSpan s_deviceCountMonitorInterval = TimeSpan.FromSeconds(30);
         private int _totalFileUploadNotificationsReceived;
 
         private static IotHubServiceClient s_serviceClient;
-        private static HashSet<string> s_activeDeviceSet;
         private BlobContainerClient _blobContainerClient;
 
-        private long _totalMethodCallsCount = 0;
-        private long _totalDesiredPropertiesUpdatesCount = 0;
-        private long _totalC2dMessagesSentCount = 0;
+        private static volatile Dictionary<string, Action> s_onlineDeviceOperations;
+
         private long _totalFeedbackMessagesReceivedCount = 0;
 
         public IotHub(Logger logger, Parameters parameters)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _hubConnectionString = parameters.IotHubConnectionString;
-            _deviceId = parameters.DeviceId;
             _transportProtocol = parameters.TransportProtocol;
             _storageConnectionString = parameters.StorageConnectionString;
         }
@@ -57,7 +49,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                 Protocol = _transportProtocol,
             };
             s_serviceClient = new IotHubServiceClient(_hubConnectionString, options);
-            s_activeDeviceSet = new HashSet<string>();
+            s_onlineDeviceOperations = new Dictionary<string, Action>();
             _logger.Trace("Initialized a new service client instance.", TraceSeverity.Information);
 
             _totalFileUploadNotificationsReceived = 0;
@@ -67,51 +59,6 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
         public Task<string> GetEventHubCompatibleConnectionStringAsync(CancellationToken ct)
         {
             return s_serviceClient.GetEventHubCompatibleConnectionStringAsync(_hubConnectionString, ct);
-        }
-
-        public async Task InvokeDirectMethodAsync(CancellationToken ct)
-        {
-            while (!ct.IsCancellationRequested)
-            {
-                if (s_activeDeviceSet.Contains(_deviceId))
-                {
-                    var payload = new CustomDirectMethodPayload
-                    {
-                        RandomId = Guid.NewGuid(),
-                        CurrentTimeUtc = DateTimeOffset.UtcNow,
-                        MethodCallsCount = ++_totalMethodCallsCount,
-                    };
-
-                    var methodInvocation = new DirectMethodServiceRequest("EchoPayload")
-                    {
-                        Payload = payload,
-                        ResponseTimeout = TimeSpan.FromSeconds(30),
-                    };
-
-                    _logger.Trace($"Invoking direct method for device: {_deviceId}", TraceSeverity.Information);
-                    _logger.Metric(TotalDirectMethodCallsCount, _totalMethodCallsCount);
-
-                    try
-                    {
-                        // Invoke the direct method asynchronously and get the response from the simulated device.
-                        DirectMethodClientResponse response = await s_serviceClient.DirectMethods.InvokeAsync(_deviceId, methodInvocation, ct);
-
-                        if (response.TryGetPayload(out CustomDirectMethodPayload responsePayload))
-                        {
-                            _logger.Metric(
-                                D2cDirectMethodDelaySeconds,
-                                (DateTimeOffset.UtcNow - responsePayload.CurrentTimeUtc).TotalSeconds);
-                        }
-
-                        _logger.Trace($"Response status: {response.Status}, payload:\n\t{JsonConvert.SerializeObject(response.PayloadAsString)}", TraceSeverity.Information);
-                    }
-                    catch (IotHubServiceException ex) when (ex.ErrorCode == IotHubServiceErrorCode.DeviceNotOnline)
-                    {
-                        _logger.Trace($"Caught exception invoking direct method {ex}", TraceSeverity.Warning);
-                    }
-                }
-                await Task.Delay(s_directMethodInvokeInterval, ct).ConfigureAwait(false);
-            }
         }
 
         public async Task MonitorConnectedDevicesAsync(CancellationToken ct)
@@ -124,75 +71,34 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
 
                 await foreach (ClientTwin device in allDevices)
                 {
-                    if (s_activeDeviceSet.Contains(device.DeviceId) && device.ConnectionState == ClientConnectionState.Disconnected)
-                    {
-                        s_activeDeviceSet.Remove(device.DeviceId);
-                    }
-                    else if (!s_activeDeviceSet.Contains(device.DeviceId) && device.ConnectionState == ClientConnectionState.Connected)
-                    {
-                        s_activeDeviceSet.Add(device.DeviceId);
-                    }
+                    string deviceId = device.DeviceId;
 
-                    _logger.Trace($"Total number of connected devices: {s_activeDeviceSet.Count}", TraceSeverity.Information);
+                    if (s_onlineDeviceOperations.ContainsKey(deviceId) && device.ConnectionState is ClientConnectionState.Disconnected)
+                    {
+                        s_onlineDeviceOperations.Remove(deviceId);
+                    }
+                    else if (!s_onlineDeviceOperations.ContainsKey(deviceId) && device.ConnectionState is ClientConnectionState.Connected)
+                    {
+                        s_onlineDeviceOperations.Add(
+                            deviceId,
+                            async () =>
+                            {
+                                using var deviceOperations = new DeviceOperations(s_serviceClient, deviceId, _logger);
+                                _logger.Trace($"Creating {nameof(DeviceOperations)} on the device [{deviceId}]", TraceSeverity.Verbose);
+
+                                await Task
+                                    .WhenAll(
+                                        deviceOperations.InvokeDirectMethodAsync(ct),
+                                        deviceOperations.SetDesiredPropertiesAsync("guidValue", Guid.NewGuid().ToString(), ct),
+                                        deviceOperations.SendC2dMessagesAsync(ct))
+                                    .ConfigureAwait(false);
+                            });
+                    }
                 }
+                _logger.Trace($"Total number of connected devices: {s_onlineDeviceOperations.Count}", TraceSeverity.Information);
+                _logger.Metric(TotalOnlineDevicesCount, s_onlineDeviceOperations.Count);
 
                 await Task.Delay(s_deviceCountMonitorInterval, ct).ConfigureAwait(false);
-            }
-        }
-
-        public async Task SetDesiredPropertiesAsync(string keyName, string properties, CancellationToken ct)
-        {
-            while (!ct.IsCancellationRequested)
-            {
-                if (s_activeDeviceSet.Contains(_deviceId))
-                {
-                    var twin = new ClientTwin();
-                    twin.Properties.Desired[keyName] = properties;
-
-                    ++_totalDesiredPropertiesUpdatesCount;
-                    _logger.Trace($"Updating the desired properties for device: {_deviceId}", TraceSeverity.Information);
-                    _logger.Metric(TotalDesiredPropertiesUpdatesCount, _totalDesiredPropertiesUpdatesCount);
-
-                    await s_serviceClient.Twins.UpdateAsync(_deviceId, twin, false, ct).ConfigureAwait(false);
-                }
-                await Task.Delay(s_desiredPropertiesSetInterval, ct).ConfigureAwait(false);
-            }
-        }
-
-        public async Task SendC2dMessagesAsync(CancellationToken ct)
-        {
-            try
-            {
-                await s_serviceClient.Messages.OpenAsync(ct).ConfigureAwait(false);
-
-                while (!ct.IsCancellationRequested)
-                {
-                    if (s_activeDeviceSet.Contains(_deviceId))
-                    {
-                        var payload = new CustomC2dMessagePayload
-                        {
-                            RandomId = Guid.NewGuid(),
-                            CurrentTimeUtc = DateTime.UtcNow,
-                            MessagesSentCount = ++_totalC2dMessagesSentCount,
-                        };
-                        var message = new OutgoingMessage(payload)
-                        {
-                            // An acknowledgment is sent on delivery success or failure.
-                            Ack = DeliveryAcknowledgement.Full,
-                            MessageId = payload.RandomId.ToString(),
-                        };
-
-                        _logger.Trace($"Sending message with Id {message.MessageId} to the device: {_deviceId}", TraceSeverity.Information);
-                        _logger.Metric(TotalC2dMessagesSentCount, _totalC2dMessagesSentCount);
-
-                        await s_serviceClient.Messages.SendAsync(_deviceId, message, ct).ConfigureAwait(false);
-                    }
-                    await Task.Delay(s_c2dMessagesSentInterval, ct).ConfigureAwait(false);
-                }
-            }
-            finally
-            {
-                await s_serviceClient.Messages.CloseAsync().ConfigureAwait(false);
             }
         }
 
