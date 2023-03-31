@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Mash.Logging;
 using Newtonsoft.Json;
+using Azure.Storage.Blobs;
 using static Microsoft.Azure.Devices.LongHaul.Service.LoggingConstants;
 
 namespace Microsoft.Azure.Devices.LongHaul.Service
@@ -237,7 +238,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
 
             _serviceClient?.Dispose();
 
-            _logger.Trace($"IotHub instance disposed", TraceSeverity.Verbose);
+            _logger.Trace($"IoT Hub instance disposed", TraceSeverity.Verbose);
         }
     }
 }

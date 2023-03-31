@@ -81,7 +81,8 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
                     .WhenAll(
                         systemHealthMonitor.RunAsync(cancellationTokenSource.Token),
                         iotHub.SendTelemetryMessagesAsync(cancellationTokenSource.Token),
-                        iotHub.ReportReadOnlyPropertiesAsync(cancellationTokenSource.Token))
+                        iotHub.ReportReadOnlyPropertiesAsync(cancellationTokenSource.Token),
+                        iotHub.UploadFileAsync(cancellationTokenSource.Token))
                     .ConfigureAwait(false);
             }
             catch (TaskCanceledException) { } // user signalled an exit

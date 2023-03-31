@@ -280,7 +280,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
 
             await _deviceClient.DisposeAsync().ConfigureAwait(false);
 
-            _logger.Trace($"IoT hub client instance disposed", TraceSeverity.Verbose);
+            _logger.Trace($"IoT Hub client instance disposed", TraceSeverity.Verbose);
 
         }
 
