@@ -51,6 +51,5 @@ namespace Microsoft.Azure.Devices.Client
         Task EnableTwinPatchAsync(CancellationToken cancellationToken);
 
         Task DisableTwinPatchAsync(CancellationToken cancellationToken);
-
     }
 }

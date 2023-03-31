@@ -16,8 +16,6 @@ namespace Microsoft.Azure.Devices.Client
             typeof(OperationCanceledException),
             typeof(ObjectDisposedException),
             typeof(ArgumentException),
-            typeof(InvalidOperationException),
-            typeof(InvalidOperationException),
             typeof(OutOfMemoryException),
             typeof(SEHException),
             typeof(NullReferenceException),
