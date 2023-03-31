@@ -61,45 +61,54 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// The callback to be executed each time file upload notification is received from the service.
+        /// The async callback to be executed each time file upload notification is received from the service.
         /// </summary>
         /// <remarks>
-        /// Must not be null.
+        /// Must not be null. To stop notifications, call <see cref="CloseAsync(CancellationToken)"/>.
+        /// <para>
+        /// This call is awaited by the client and the return value is used to complete or abandon the notification.
+        /// Abandoned notifications will be redelivered to a subscribed client, including this one.
+        /// </para>
         /// </remarks>
         /// <example>
         /// <code language="csharp">
-        /// serviceClient.FileUploadNotificationProcessor.FileUploadNotificationProcessor = OnFileUploadNotificationReceived;
-        /// serviceClient.FileUploadNotificationProcessor.OpenAsync();
+        /// serviceClient.FileUploadNotificationProcessor.FileUploadNotificationProcessor = OnFileUploadNotificationReceivedAsync;
+        /// await serviceClient.FileUploadNotificationProcessor.OpenAsync();
         ///
         /// //...
         ///
-        /// public AcknowledgementType OnFileUploadNotificationReceived(FileUploadNotification fileUploadNotification)
+        /// public Task&lt;AcknowledgementType&gt; OnFileUploadNotificationReceivedAsync(FileUploadNotification fileUploadNotification)
         /// {
         ///    Console.WriteLine($"Received file upload notification from device {fileUploadNotification.DeviceId}")
-        ///    return AcknowledgementType.Complete;
+        /// 
+        ///    // Make necessary calls to inspect/manage uploaded blob.
+        /// 
+        ///    return Task.FromResult(AcknowledgementType.Complete);
         /// }
         /// </code>
         /// </example>
-        public Func<FileUploadNotification, AcknowledgementType> FileUploadNotificationProcessor { get; set; }
+        public Func<FileUploadNotification, Task<AcknowledgementType>> FileUploadNotificationProcessor { get; set; }
 
         /// <summary>
         /// The callback to be executed when the connection is lost.
         /// </summary>
         /// <example>
         /// <code language="csharp">
-        /// serviceClient.FileUploadNotificationProcessor.ErrorProcessor = OnConnectionLost;
-        /// serviceClient.FileUploadNotificationProcessor.OpenAsync();
+        /// serviceClient.FileUploadNotificationProcessor.ErrorProcessor = OnConnectionLostAsync;
+        /// await serviceClient.FileUploadNotificationProcessor.OpenAsync();
         ///
         /// //...
         ///
-        /// public void OnConnectionLost(ErrorContext errorContext)
+        /// public async Task OnConnectionLostAsync(ErrorContext errorContext)
         /// {
-        ///    // Add reconnection logic as needed
-        ///    Console.WriteLine("File upload notification processor connection lost")
+        ///    Console.WriteLine("File upload notification processor connection lost");
+        ///    
+        ///    // Add reconnection logic as needed, for example:
+        ///    await serviceClient.FileUploadNotificationProcessor.OpenAsync();
         /// }
         /// </code>
         /// </example>
-        public Action<ErrorContext> ErrorProcessor { get; set; }
+        public Func<ErrorContext, Task> ErrorProcessor { get; set; }
 
         /// <summary>
         /// Open the connection and start receiving file upload notifications.
@@ -204,7 +213,7 @@ namespace Microsoft.Azure.Devices
                         FileUploadNotification fileUploadNotification = await AmqpClientHelper
                             .GetObjectFromAmqpMessageAsync<FileUploadNotification>(amqpMessage)
                             .ConfigureAwait(false);
-                        AcknowledgementType ack = FileUploadNotificationProcessor.Invoke(fileUploadNotification);
+                        AcknowledgementType ack = await FileUploadNotificationProcessor.Invoke(fileUploadNotification).ConfigureAwait(false);
                         if (ack == AcknowledgementType.Complete)
                         {
                             await _amqpConnection.CompleteMessageAsync(amqpMessage.DeliveryTag).ConfigureAwait(false);
@@ -221,23 +230,38 @@ namespace Microsoft.Azure.Devices
                 if (Logging.IsEnabled)
                     Logging.Error(this, $"{nameof(OnNotificationMessageReceivedAsync)} threw an exception: {ex}", nameof(OnNotificationMessageReceivedAsync));
 
+                if (ErrorProcessor != null)
+                {
+                    try
+                    {
+                        if (ex is IotHubServiceException hubEx)
+                        {
+                            await ErrorProcessor.Invoke(new ErrorContext(hubEx)).ConfigureAwait(false);
+                        }
+                        else if (ex is IOException ioEx)
+                        {
+                            await ErrorProcessor.Invoke(new ErrorContext(ioEx)).ConfigureAwait(false);
+                        }
+                    }
+                    catch (Exception ex3)
+                    {
+                        if (Logging.IsEnabled)
+                            Logging.Error(this, $"{nameof(OnNotificationMessageReceivedAsync)} threw an exception during error process invoke: {ex3}", nameof(OnNotificationMessageReceivedAsync));
+
+                        // silently fail
+                    }
+                }
+
                 try
                 {
-                    if (ex is IotHubServiceException hubEx)
-                    {
-                        ErrorProcessor?.Invoke(new ErrorContext(hubEx));
-                    }
-                    else if (ex is IOException ioEx)
-                    {
-                        ErrorProcessor?.Invoke(new ErrorContext(ioEx));
-                    }
-
                     await _amqpConnection.AbandonMessageAsync(amqpMessage.DeliveryTag).ConfigureAwait(false);
                 }
                 catch (Exception ex2)
                 {
                     if (Logging.IsEnabled)
-                        Logging.Error(this, $"{nameof(OnNotificationMessageReceivedAsync)} threw an exception during cleanup: {ex2}", nameof(OnNotificationMessageReceivedAsync));
+                        Logging.Error(this, $"{nameof(OnNotificationMessageReceivedAsync)} threw an exception during message abandon: {ex2}", nameof(OnNotificationMessageReceivedAsync));
+
+                    // silently fail
                 }
             }
             finally
@@ -253,10 +277,12 @@ namespace Microsoft.Azure.Devices
             {
                 ErrorContext errorContext = AmqpClientHelper.GetErrorContextFromException(exception);
                 ErrorProcessor?.Invoke(errorContext);
-                Exception exceptionToLog = errorContext.IotHubServiceException;
 
                 if (Logging.IsEnabled)
+                {
+                    Exception exceptionToLog = errorContext.IotHubServiceException;
                     Logging.Error(this, $"{nameof(sender)}.{nameof(OnConnectionClosed)} threw an exception: {exceptionToLog}", nameof(OnConnectionClosed));
+                }
             }
             else
             {
