@@ -14,7 +14,7 @@ namespace Microsoft.Azure.Devices
     {
         internal static async Task<T> WaitAsync<T>(this TaskCompletionSource<T> taskCompletionSource, CancellationToken ct)
         {
-#if NET5_0_OR_GREATER
+#if NET6_0_OR_GREATER
             return await taskCompletionSource.Task.WaitAsync(ct).ConfigureAwait(false);
 #else
             await Task
