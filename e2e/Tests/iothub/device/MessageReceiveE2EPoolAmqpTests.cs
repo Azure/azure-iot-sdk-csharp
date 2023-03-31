@@ -123,7 +123,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
             async Task InitOperationAsync(TestDevice testDevice, TestDeviceCallbackHandler _)
             {
-                OutgoingMessage msg = MessageReceiveE2ETests.ComposeC2dTestMessage(out string payload, out string _);
+                OutgoingMessage msg = OutgoingMessageHelper.ComposeOutgoingTestMessage(out string payload, out string _);
                 messagesSent.Add(testDevice.Id, Tuple.Create(msg, payload));
 
                 await TestDevice.ServiceClient.Messages.OpenAsync().ConfigureAwait(false);
@@ -148,8 +148,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                     InitOperationAsync,
                     TestOperationAsync,
                     null,
-                    authScope,
-                    true)
+                    authScope)
                 .ConfigureAwait(false);
         }
 
@@ -166,11 +165,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             {
                 await serviceClient.Messages.OpenAsync().ConfigureAwait(false);
 
-                OutgoingMessage msg = MessageReceiveE2ETests.ComposeC2dTestMessage(out string _, out string _);
+                OutgoingMessage msg = OutgoingMessageHelper.ComposeOutgoingTestMessage(out string _, out string _);
 
                 await testDevice.OpenWithRetryAsync().ConfigureAwait(false);
-                await testDeviceCallbackHandler.SetMessageReceiveCallbackHandlerAsync<string>().ConfigureAwait(false);
-                testDeviceCallbackHandler.ExpectedMessageSentByService = msg;
+                await testDeviceCallbackHandler.SetMessageReceiveCallbackHandlerAndCompleteMessageAsync<string>().ConfigureAwait(false);
+                testDeviceCallbackHandler.ExpectedOutgoingMessage = msg;
 
                 await serviceClient.Messages.SendAsync(testDevice.Id, msg).ConfigureAwait(false);
             }
@@ -198,8 +197,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                     InitOperationAsync,
                     TestOperationAsync,
                     CleanupOperationAsync,
-                    authScope,
-                    true)
+                    authScope)
                 .ConfigureAwait(false);
         }
     }
