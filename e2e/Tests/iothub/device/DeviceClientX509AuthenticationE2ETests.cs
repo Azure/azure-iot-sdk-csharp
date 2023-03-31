@@ -27,6 +27,8 @@ namespace Microsoft.Azure.Devices.E2ETests
         private static X509Certificate2 s_chainCertificateWithPrivateKey = TestConfiguration.IotHub.GetChainDeviceCertificateWithPrivateKey();
         private readonly string _hostName = GetHostName(TestConfiguration.IotHub.ConnectionString);
 
+        private static readonly TimeSpan s_defaultOperationTimeout = TimeSpan.FromSeconds(30);
+
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task X509_InvalidDeviceId_Throw_UnauthorizedException_AmqpTcp()
@@ -173,7 +175,8 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         private static async Task SendMessageTestAsync(IotHubClientTransportSettings transportSetting)
         {
-            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(s_devicePrefix, TestDeviceType.X509).ConfigureAwait(false);
+            using var createTestDeviceCts = new CancellationTokenSource(s_defaultOperationTimeout);
+            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(s_devicePrefix, TestDeviceType.X509, createTestDeviceCts.Token).ConfigureAwait(false);
             IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(transportSetting));
             await testDevice.OpenWithRetryAsync().ConfigureAwait(false);
             TelemetryMessage message = TelemetryMessageE2eTests.ComposeD2cTestMessage(out string _, out string _);

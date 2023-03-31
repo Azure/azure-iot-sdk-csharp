@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client;
 
@@ -11,10 +12,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
 {
     internal static class PoolingOverAmqp
     {
-        public const int SingleConnection_DevicesCount = 2;
-        public const int SingleConnection_PoolSize = 1;
-        public const int MultipleConnections_DevicesCount = 4;
-        public const int MultipleConnections_PoolSize = 2;
+        internal const int SingleConnection_DevicesCount = 2;
+        internal const int SingleConnection_PoolSize = 1;
+        internal const int MultipleConnections_DevicesCount = 4;
+        internal const int MultipleConnections_PoolSize = 2;
+        private static readonly TimeSpan s_defaultOperationTimeout = TimeSpan.FromSeconds(30);
 
         internal static async Task TestPoolAmqpAsync(
             string devicePrefix,
@@ -46,7 +48,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                 for (int deviceCreateIndex = 0; deviceCreateIndex < devicesCount; deviceCreateIndex++)
                 {
                     // Initialize the test device client instances
-                    TestDevice testDevice = await TestDevice.GetTestDeviceAsync($"{devicePrefix}_{deviceCreateIndex}_").ConfigureAwait(false);
+                    using var createTestDeviceCts = new CancellationTokenSource(s_defaultOperationTimeout);
+                    TestDevice testDevice = await TestDevice.GetTestDeviceAsync($"{devicePrefix}_{deviceCreateIndex}_", ct: createTestDeviceCts.Token).ConfigureAwait(false);
                     IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(transportSettings), authScope: authScope);
 
                     // Set the device client connection status change handler

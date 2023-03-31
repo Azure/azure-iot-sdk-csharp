@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.E2ETests.Helpers
@@ -37,18 +38,18 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
         /// <summary>
         /// Factory method.
         /// </summary>
-        internal static async Task<TestModule> GetTestModuleAsync(string deviceNamePrefix, string moduleNamePrefix)
+        internal static async Task<TestModule> GetTestModuleAsync(string deviceNamePrefix, string moduleNamePrefix, CancellationToken cancellationToken)
         {
             var testModule = new TestModule
             {
-                TestDevice = await TestDevice.GetTestDeviceAsync(deviceNamePrefix).ConfigureAwait(false)
+                TestDevice = await TestDevice.GetTestDeviceAsync(deviceNamePrefix, ct: cancellationToken).ConfigureAwait(false)
             };
 
             string deviceName = testModule.TestDevice.Id;
             string moduleName = $"E2E_{moduleNamePrefix}_{Guid.NewGuid()}";
 
             IotHubServiceClient sc = TestDevice.ServiceClient;
-            testModule.Module = await sc.Modules.CreateAsync(new Module(deviceName, moduleName)).ConfigureAwait(false);
+            testModule.Module = await sc.Modules.CreateAsync(new Module(deviceName, moduleName), cancellationToken).ConfigureAwait(false);
             VerboseTestLogger.WriteLine($"{nameof(GetTestModuleAsync)}: Using device {testModule.DeviceId} with module {testModule.Id}.");
 
             return testModule;

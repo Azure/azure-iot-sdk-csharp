@@ -22,13 +22,15 @@ namespace Microsoft.Azure.Devices.E2ETests
     {
         private readonly string DevicePrefix = $"{nameof(DeviceTokenRefreshE2ETests)}_";
 
-        private const int IoTHubServerTimeAllowanceSeconds = 5 * 60;
+        private static readonly TimeSpan s_iotHubServerTimeAllowance = TimeSpan.FromMinutes(5);
+        private static readonly TimeSpan s_defaultOperationTimeout = TimeSpan.FromSeconds(30);
 
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task IotHubDeviceClient_Not_Exist_AMQP()
         {
-            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
+            using var createTestDeviceCts = new CancellationTokenSource(s_defaultOperationTimeout);
+            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix, ct: createTestDeviceCts.Token).ConfigureAwait(false);
 
             var config = new TestConfiguration.IotHub.ConnectionStringParser(testDevice.ConnectionString);
             var options = new IotHubClientOptions(new IotHubClientAmqpSettings());
@@ -52,7 +54,8 @@ namespace Microsoft.Azure.Devices.E2ETests
         [Timeout(TestTimeoutMilliseconds)]
         public async Task IotHubDeviceClient_Bad_Credentials_AMQP()
         {
-            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
+            using var createTestDeviceCts = new CancellationTokenSource(s_defaultOperationTimeout);
+            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix, ct: createTestDeviceCts.Token).ConfigureAwait(false);
 
             var config = new TestConfiguration.IotHub.ConnectionStringParser(testDevice.ConnectionString);
             string invalidKey = Convert.ToBase64String(Encoding.UTF8.GetBytes("invalid_key"));
@@ -89,14 +92,15 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             // The IoT hub service allows tokens expired < 5 minutes ago to be used during CONNECT.
             // After connecting with such an expired token, the service has an allowance of 5 more minutes before dropping the TCP connection.
-            await IotHubDeviceClient_TokenIsRefreshed_Internal(new IotHubClientMqttSettings(), TimeSpan.FromSeconds(IoTHubServerTimeAllowanceSeconds + 60)).ConfigureAwait(false);
+            await IotHubDeviceClient_TokenIsRefreshed_Internal(new IotHubClientMqttSettings(), s_iotHubServerTimeAllowance.Add(TimeSpan.FromMinutes(1))).ConfigureAwait(false);
         }
 
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task IotHubDeviceClient_TokenConnectionDoubleRelease_Ok()
         {
-            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
+            using var createTestDeviceCts = new CancellationTokenSource(s_defaultOperationTimeout);
+            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix, ct: createTestDeviceCts.Token).ConfigureAwait(false);
 
             string deviceConnectionString = testDevice.ConnectionString;
 
@@ -136,7 +140,8 @@ namespace Microsoft.Azure.Devices.E2ETests
             int sasTokenRenewalBuffer = 50;
             using var deviceDisconnected = new SemaphoreSlim(0);
 
-            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
+            using var createTestDeviceCts = new CancellationTokenSource(s_defaultOperationTimeout);
+            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix, ct: createTestDeviceCts.Token).ConfigureAwait(false);
             var auth = new ClientAuthenticationWithSharedAccessKeyRefresh(testDevice.ConnectionString, sasTokenTimeToLive, sasTokenRenewalBuffer);
 
             var options = new IotHubClientOptions(new IotHubClientMqttSettings());
@@ -181,7 +186,8 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         private async Task IotHubDeviceClient_TokenIsRefreshed_Internal(IotHubClientTransportSettings transportSettings, TimeSpan ttl)
         {
-            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
+            using var createTestDeviceCts = new CancellationTokenSource(s_defaultOperationTimeout);
+            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix, ct: createTestDeviceCts.Token).ConfigureAwait(false);
 
             int buffer = 50;
             Device device = testDevice.Device;
@@ -309,7 +315,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 if (_transportSettings is IotHubClientMqttSettings
                     && _transportSettings.Protocol == IotHubClientTransportProtocol.Tcp)
                 {
-                    suggestedTimeToLive = TimeSpan.FromSeconds(-IoTHubServerTimeAllowanceSeconds + 30); // Create an expired token.
+                    suggestedTimeToLive = TimeSpan.FromSeconds(30).Subtract(s_iotHubServerTimeAllowance); // Create an expired token.
                 }
 
                 var builder = new SharedAccessSignatureBuilder

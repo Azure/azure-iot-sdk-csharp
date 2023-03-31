@@ -524,8 +524,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                     devicesCount,
                     faultType,
                     reason,
-                    FaultInjection.DefaultFaultDelay,
-                    FaultInjection.DefaultFaultDuration,
+                    FaultInjection.s_defaultFaultDelay,
+                    FaultInjection.s_defaultFaultDuration,
                     (d ,t, c) => Task.FromResult(false),
                     TestOperationAsync,
                     (d, c) => Task.FromResult(false),
@@ -557,7 +557,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             async Task TestOperationAsync(IotHubDeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler testDeviceCallbackHandler)
             {
-                using var cts = new CancellationTokenSource(FaultInjection.RecoveryTime);
+                using var cts = new CancellationTokenSource(FaultInjection.s_recoveryTime);
 
                 List<string> twinProperties = twinPropertyMap[testDevice.Id];
                 string propName = twinProperties[0];
@@ -581,8 +581,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                     devicesCount,
                     faultType,
                     reason,
-                    FaultInjection.DefaultFaultDelay,
-                    FaultInjection.DefaultFaultDuration,
+                    FaultInjection.s_defaultFaultDelay,
+                    FaultInjection.s_defaultFaultDuration,
                     InitAsync,
                     TestOperationAsync,
                     (d, c) => Task.FromResult(false),

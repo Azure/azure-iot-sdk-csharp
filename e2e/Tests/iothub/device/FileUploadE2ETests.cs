@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Net;
 using System.Security.Cryptography.X509Certificates;
+using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Azure.Devices.Client;
@@ -23,6 +24,8 @@ namespace Microsoft.Azure.Devices.E2ETests
         private const int FileSizeBig = 5120 * 1024;
         private readonly string _devicePrefix = $"{nameof(FileUploadE2ETests)}_";
         private static readonly X509Certificate2 s_selfSignedCertificate = TestConfiguration.IotHub.GetCertificateWithPrivateKey();
+
+        private static readonly TimeSpan s_defaultOperationTimeout = TimeSpan.FromSeconds(30);
 
         [TestMethod]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
@@ -95,10 +98,12 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         private async Task UploadFileGranularAsync(Stream source, string filename, IotHubClientHttpSettings fileUploadTransportSettings, bool isCorrelationIdValid, bool useX509auth = false)
         {
+            using var createTestDeviceCts = new CancellationTokenSource(s_defaultOperationTimeout);
             await using TestDevice testDevice = await TestDevice
                 .GetTestDeviceAsync(
                     _devicePrefix,
-                    useX509auth ? TestDeviceType.X509 : TestDeviceType.Sasl)
+                    useX509auth ? TestDeviceType.X509 : TestDeviceType.Sasl,
+                    createTestDeviceCts.Token)
                 .ConfigureAwait(false);
 
             IotHubDeviceClient deviceClient;
@@ -168,12 +173,14 @@ namespace Microsoft.Azure.Devices.E2ETests
             string blobName,
             bool useX509auth = false)
         {
+            using var createTestDeviceCts = new CancellationTokenSource(s_defaultOperationTimeout);
             await using TestDevice testDevice = await TestDevice
                 .GetTestDeviceAsync(
                     _devicePrefix,
                     useX509auth
                         ? TestDeviceType.X509
-                        : TestDeviceType.Sasl)
+                        : TestDeviceType.Sasl,
+                    createTestDeviceCts.Token)
                 .ConfigureAwait(false);
 
             var options = new IotHubClientOptions(clientMainTransport)

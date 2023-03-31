@@ -16,15 +16,16 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
 {
     internal static class FaultInjection
     {
-        public static readonly TimeSpan DefaultFaultDelay = TimeSpan.FromSeconds(1); // Time in seconds after service initiates the fault.
-        public static readonly TimeSpan DefaultFaultDuration = TimeSpan.FromSeconds(5); // Duration in seconds
-        public static readonly TimeSpan LatencyTimeBuffer = TimeSpan.FromSeconds(10); // Buffer time waiting fault occurs or connection recover
+        internal static readonly TimeSpan s_defaultFaultDelay = TimeSpan.FromSeconds(1); // Time in seconds after service initiates the fault.
+        internal static readonly TimeSpan s_defaultFaultDuration = TimeSpan.FromSeconds(5); // Duration in seconds
+        internal static readonly TimeSpan s_latencyTimeBuffer = TimeSpan.FromSeconds(10); // Buffer time waiting fault occurs or connection recover
 
-        public static readonly TimeSpan WaitForDisconnectDuration = TimeSpan.FromTicks(DefaultFaultDelay.Ticks * 3);
-        public static readonly TimeSpan WaitForReconnectDuration = TimeSpan.FromTicks(DefaultFaultDuration.Ticks * 2);
-        public static readonly TimeSpan ShortRetryDuration = TimeSpan.FromTicks(DefaultFaultDuration.Ticks / 2);
+        internal static readonly TimeSpan s_waitForDisconnectDuration = TimeSpan.FromTicks(s_defaultFaultDelay.Ticks * 3);
+        internal static readonly TimeSpan s_waitForReconnectDuration = TimeSpan.FromTicks(s_defaultFaultDuration.Ticks * 2);
+        internal static readonly TimeSpan s_shortRetryDuration = TimeSpan.FromTicks(s_defaultFaultDuration.Ticks / 2);
 
-        public static readonly TimeSpan RecoveryTime = TimeSpan.FromMinutes(5);
+        internal static readonly TimeSpan s_recoveryTime = TimeSpan.FromMinutes(5);
+        private static readonly TimeSpan s_defaultOperationTimeout = TimeSpan.FromSeconds(30);
 
         public static TelemetryMessage ComposeErrorInjectionProperties(
             string faultType,
@@ -63,11 +64,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
             TimeSpan faultDuration,
             IotHubDeviceClient deviceClient)
         {
-            VerboseTestLogger.WriteLine($"{nameof(ActivateFaultInjectionAsync)}: Requesting fault injection type={faultType} reason={reason}, delay={faultDelay}, duration={DefaultFaultDuration}");
+            VerboseTestLogger.WriteLine($"{nameof(ActivateFaultInjectionAsync)}: Requesting fault injection type={faultType} reason={reason}, delay={faultDelay}, duration={s_defaultFaultDuration}");
 
             try
             {
-                using var cts = new CancellationTokenSource(LatencyTimeBuffer);
+                using var cts = new CancellationTokenSource(s_latencyTimeBuffer);
                 TelemetryMessage faultInjectionMessage = ComposeErrorInjectionProperties(
                     faultType,
                     reason,
@@ -113,7 +114,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
             Func<IotHubDeviceClient, TestDevice, Task> testOperation,
             Func<Task> cleanupOperation)
         {
-            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(devicePrefix, type).ConfigureAwait(false);
+            using var createTestDeviceCts = new CancellationTokenSource(s_defaultOperationTimeout);
+            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(devicePrefix, type, createTestDeviceCts.Token).ConfigureAwait(false);
 
             await using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(transportSettings));
 
@@ -150,7 +152,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                     bool isFaulted = false;
 
                     var connectionChangeWaitDuration = Stopwatch.StartNew();
-                    while (connectionChangeWaitDuration.Elapsed < LatencyTimeBuffer)
+                    while (connectionChangeWaitDuration.Elapsed < s_latencyTimeBuffer)
                     {
                         if (connectionStatusChangeCount > countBeforeFaultInjection)
                         {
@@ -170,7 +172,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
 
                     connectionChangeWaitDuration.Start();
                     while (deviceClient.ConnectionStatusInfo.Status != ConnectionStatus.Connected
-                        && faultInjectionDuration.Elapsed < faultDuration.Add(LatencyTimeBuffer))
+                        && faultInjectionDuration.Elapsed < faultDuration.Add(s_latencyTimeBuffer))
                     {
                         await Task.Delay(TimeSpan.FromSeconds(1)).ConfigureAwait(false);
                     }
@@ -190,7 +192,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                     // Perform the test operation for the faulted device multi times.
                     int counter = 0;
                     var sw = Stopwatch.StartNew();
-                    while (sw.Elapsed < LatencyTimeBuffer)
+                    while (sw.Elapsed < s_latencyTimeBuffer)
                     {
                         VerboseTestLogger.WriteLine($"{nameof(FaultInjection)}: Performing test operation for device - Run {counter++}.");
                         await testOperation(deviceClient, testDevice).ConfigureAwait(false);

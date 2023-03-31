@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Azure.Devices.Client;
@@ -15,18 +16,24 @@ namespace Microsoft.Azure.Devices.E2ETests
     [TestCategory("IoTHub-Client")]
     public class IotHubDeviceClientTests
     {
+        private static readonly TimeSpan s_defaultOperationTimeout = TimeSpan.FromSeconds(30);
+
         [TestMethod]
         public async Task IotHubDeviceClient_SendTelemetryAsync_AfterExplicitOpenAsync_DoesNotThrow()
         {
             // arrange
-            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(nameof(IotHubDeviceClientTests));
+            using var createTestDeviceCts = new CancellationTokenSource(s_defaultOperationTimeout);
+            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(nameof(IotHubDeviceClientTests), ct: createTestDeviceCts.Token);
             IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient();
-            await testDevice.OpenWithRetryAsync().ConfigureAwait(false);
+
+            using var openCts = new CancellationTokenSource(s_defaultOperationTimeout);
+            await testDevice.OpenWithRetryAsync(openCts.Token).ConfigureAwait(false);
 
             // act
             Func<Task> act = async () =>
             {
-                await deviceClient.SendTelemetryAsync(new TelemetryMessage()).ConfigureAwait(false);
+                using var sendTelemetryCts = new CancellationTokenSource(s_defaultOperationTimeout);
+                await deviceClient.SendTelemetryAsync(new TelemetryMessage(), sendTelemetryCts.Token).ConfigureAwait(false);
             };
 
             // assert

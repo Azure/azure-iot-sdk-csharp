@@ -309,7 +309,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             string proxyAddress = null)
         {
             TimeSpan operationTimeout = retryDuration == TimeSpan.Zero
-                ? FaultInjection.RecoveryTime
+                ? FaultInjection.s_recoveryTime
                 : retryDuration;
 
             async Task InitAsync(IotHubDeviceClient deviceClient, TestDevice testDevice)
@@ -333,8 +333,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                     proxyAddress,
                     faultType,
                     reason,
-                    FaultInjection.DefaultFaultDelay,
-                    FaultInjection.DefaultFaultDuration,
+                    FaultInjection.s_defaultFaultDelay,
+                    FaultInjection.s_defaultFaultDuration,
                     InitAsync,
                     TestOperationAsync,
                     () => Task.FromResult(false))

@@ -30,7 +30,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         private readonly string _devicePrefix = $"{nameof(MethodE2ETests)}_dev_";
         private const string MethodName = "MethodE2ETest";
 
-        private static readonly TimeSpan s_defaultMethodResponseTimeout = TimeSpan.FromMinutes(1);
+        private static readonly TimeSpan s_defaultOperationTimeout = TimeSpan.FromSeconds(30);
 
         // The deserialization code is the same irrespective of if the client was initialized over TCP or WS.
         [TestMethod]
@@ -109,24 +109,27 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             T directMethodRequestFromService,
             H directMethodResponseFromClient)
         {
-            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix).ConfigureAwait(false);
+            using var createTestDeviceCts = new CancellationTokenSource(s_defaultOperationTimeout);
+            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix, ct: createTestDeviceCts.Token).ConfigureAwait(false);
             var options = new IotHubClientOptions(transportSettings);
             IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(options);
-            await testDevice.OpenWithRetryAsync().ConfigureAwait(false);
+
+            using var openCts = new CancellationTokenSource(s_defaultOperationTimeout);
+            await testDevice.OpenWithRetryAsync(openCts.Token).ConfigureAwait(false);
 
             using var testDeviceCallbackHandler = new TestDeviceCallbackHandler(deviceClient, testDevice.Id);
             await testDeviceCallbackHandler.SetDeviceReceiveMethodAndRespondAsync<T>(directMethodResponseFromClient);
 
             var directMethodRequest = new DirectMethodServiceRequest(MethodName)
             {
-                ResponseTimeout = s_defaultMethodResponseTimeout,
+                ResponseTimeout = s_defaultOperationTimeout,
                 Payload = directMethodRequestFromService,
             };
             testDeviceCallbackHandler.ExpectedDirectMethodRequest = directMethodRequest;
 
             Task serviceSendTask = ServiceSendMethodAndVerifyResponseAsync(testDevice.Id, directMethodRequest, directMethodResponseFromClient);
 
-            using var cts = new CancellationTokenSource(s_defaultMethodResponseTimeout);
+            using var cts = new CancellationTokenSource(s_defaultOperationTimeout);
             Task methodReceivedTask = testDeviceCallbackHandler.WaitForMethodCallbackAsync(cts.Token);
             await Task.WhenAll(serviceSendTask, methodReceivedTask).ConfigureAwait(false);
         }

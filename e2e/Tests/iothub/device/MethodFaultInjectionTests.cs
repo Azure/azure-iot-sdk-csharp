@@ -222,7 +222,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             ExceptionDispatchInfo exceptionDispatchInfo = null;
             int attempt = 0;
 
-            while (!done && sw.Elapsed < FaultInjection.RecoveryTime)
+            while (!done && sw.Elapsed < FaultInjection.s_recoveryTime)
             {
                 attempt++;
                 try
@@ -286,7 +286,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
 
                 Task serviceSendTask = ServiceSendMethodAndVerifyResponseAsync(testDevice.Id, directMethodRequest, s_deviceResponsePayload);
 
-                using var cts = new CancellationTokenSource(FaultInjection.RecoveryTime);
+                using var cts = new CancellationTokenSource(FaultInjection.s_recoveryTime);
                 Task methodReceivedTask = testDeviceCallbackHandler.WaitForMethodCallbackAsync(cts.Token);
 
                 await Task.WhenAll(serviceSendTask, methodReceivedTask).ConfigureAwait(false);
@@ -307,8 +307,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                     proxyAddress,
                     faultType,
                     reason,
-                    FaultInjection.DefaultFaultDelay,
-                    FaultInjection.DefaultFaultDelay, // we want a quick one because we need time to recover
+                    FaultInjection.s_defaultFaultDelay,
+                    FaultInjection.s_defaultFaultDelay, // we want a quick one because we need time to recover
                     InitOperationAsync,
                     TestOperationAsync,
                     CleanupAsync)
