@@ -269,6 +269,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 TelemetryMessage testMessage = TelemetryMessageE2eTests.ComposeD2cTestMessage(out string payload, out string p1Value);
 
                 VerboseTestLogger.WriteLine($"{nameof(FaultInjectionPoolAmqpTests)}.{testDevice.Id}: payload='{payload}' p1Value='{p1Value}'");
+
                 using var telemetrySendCts = new CancellationTokenSource(s_defaultOperationTimeout);
                 await deviceClient.SendTelemetryAsync(testMessage, telemetrySendCts.Token).ConfigureAwait(false);
             }

@@ -41,6 +41,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         // See https://github.com/JamesNK/Newtonsoft.Json/issues/1511 for more details about the known issue.
         private const string DateTimeValue = "2023-01-31T10:37:08.4599400";
 
+        private static readonly TimeSpan s_defaultOperationTimeout = TimeSpan.FromSeconds(30);
         private static readonly TimeSpan s_defaultTwinResponseTimeout = TimeSpan.FromMinutes(1);
 
         [TestMethod]
@@ -458,18 +459,25 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             {
                 [propName] = propValue
             };
-            await deviceClient.OpenAsync().ConfigureAwait(false);
-            long newTwinVersion = await deviceClient.UpdateReportedPropertiesAsync(props).ConfigureAwait(false);
+
+            using var openCts = new CancellationTokenSource(s_defaultOperationTimeout);
+            await deviceClient.OpenAsync(openCts.Token).ConfigureAwait(false);
+
+            using var updateReportedCts = new CancellationTokenSource(s_defaultOperationTimeout);
+            long newTwinVersion = await deviceClient.UpdateReportedPropertiesAsync(props, updateReportedCts.Token).ConfigureAwait(false);
 
             // Validate the updated twin from the device-client
-            TwinProperties deviceTwin = await deviceClient.GetTwinPropertiesAsync().ConfigureAwait(false);
+            using var getDeviceTwinCts = new CancellationTokenSource(s_defaultOperationTimeout);
+            TwinProperties deviceTwin = await deviceClient.GetTwinPropertiesAsync(getDeviceTwinCts.Token).ConfigureAwait(false);
+
             bool propertyFound = deviceTwin.Reported.TryGetValue(propName, out T actual);
             propertyFound.Should().BeTrue();
             // We don't support nested deserialization yet, so we'll need to serialize the response and compare them.
             JsonConvert.SerializeObject(actual).Should().Be(JsonConvert.SerializeObject(propValue));
 
             // Validate the updated twin from the service-client
-            ClientTwin completeTwin = await s_serviceClient.Twins.GetAsync(deviceId).ConfigureAwait(false);
+            using var getServiceTwinCts = new CancellationTokenSource(s_defaultOperationTimeout);
+            ClientTwin completeTwin = await s_serviceClient.Twins.GetAsync(deviceId, getServiceTwinCts.Token).ConfigureAwait(false);
             object actualProp = completeTwin.Properties.Reported[propName];
             JsonConvert.SerializeObject(actualProp).Should().Be(JsonConvert.SerializeObject(propValue));
             completeTwin.Properties.Reported.Version.Should().Be(newTwinVersion);
@@ -511,9 +519,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             {
                 [propName] = propValue
             };
-            await deviceClient.OpenAsync().ConfigureAwait(false);
 
-            Func<Task> actionAsync = async () => await deviceClient.UpdateReportedPropertiesAsync(props).ConfigureAwait(false);
+            using var openCts = new CancellationTokenSource(s_defaultOperationTimeout);
+            await deviceClient.OpenAsync(openCts.Token).ConfigureAwait(false);
+
+            using var updateTwinCts = new CancellationTokenSource(s_defaultOperationTimeout);
+            Func<Task> actionAsync = async () => await deviceClient.UpdateReportedPropertiesAsync(props, updateTwinCts.Token).ConfigureAwait(false);
             await actionAsync
                 .Should()
                 .ThrowAsync<IotHubClientException>()
@@ -527,9 +538,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             await using var deviceClient = new IotHubDeviceClient(testDevice.ConnectionString, options);
 
             // Close and re-open the client under test.
-            await deviceClient.OpenAsync().ConfigureAwait(false);
-            await deviceClient.CloseAsync().ConfigureAwait(false);
-            await deviceClient.OpenAsync().ConfigureAwait(false);
+            using var cts = new CancellationTokenSource(s_defaultOperationTimeout);
+            await deviceClient.OpenAsync(cts.Token).ConfigureAwait(false);
+            await deviceClient.CloseAsync(cts.Token).ConfigureAwait(false);
+            await deviceClient.OpenAsync(cts.Token).ConfigureAwait(false);
 
             // The client should still be able to send reported properties even though it was re-opened.
             await Twin_DeviceSetsReportedPropertyAndGetsItBackAsync(deviceClient, testDevice.Id, Guid.NewGuid().ToString()).ConfigureAwait(false);
@@ -548,12 +560,14 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             await using var deviceClient = new IotHubDeviceClient(testDevice.ConnectionString, options);
 
             // Close and re-open the client under test.
-            await deviceClient.OpenAsync().ConfigureAwait(false);
-            await deviceClient.CloseAsync().ConfigureAwait(false);
-            await deviceClient.OpenAsync().ConfigureAwait(false);
+            using var cts = new CancellationTokenSource(s_defaultOperationTimeout);
+            await deviceClient.OpenAsync(cts.Token).ConfigureAwait(false);
+            await deviceClient.CloseAsync(cts.Token).ConfigureAwait(false);
+            await deviceClient.OpenAsync(cts.Token).ConfigureAwait(false);
 
             using var testDeviceCallbackHandler = new TestDeviceCallbackHandler(deviceClient, testDevice.Id);
-            await testDeviceCallbackHandler.SetTwinPropertyUpdateCallbackHandlerAndProcessAsync<T>().ConfigureAwait(false);
+            using var subscribeCallbackCts = new CancellationTokenSource(s_defaultOperationTimeout);
+            await testDeviceCallbackHandler.SetTwinPropertyUpdateCallbackHandlerAndProcessAsync<T>(subscribeCallbackCts.Token).ConfigureAwait(false);
 
             testDeviceCallbackHandler.ExpectedTwinPatchKeyValuePair = new Tuple<string, object>(propName, propValue);
             using var twinResponseCts = new CancellationTokenSource(s_defaultTwinResponseTimeout);
@@ -567,15 +581,16 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 .ConfigureAwait(false);
 
             // Validate the updated twin from the device-client
-            // Validate the updated twin from the device-client
-            TwinProperties deviceTwin = await deviceClient.GetTwinPropertiesAsync().ConfigureAwait(false);
+            using var getDeviceTwinCts = new CancellationTokenSource(s_defaultOperationTimeout);
+            TwinProperties deviceTwin = await deviceClient.GetTwinPropertiesAsync(getDeviceTwinCts.Token).ConfigureAwait(false);
             bool propertyFound = deviceTwin.Desired.TryGetValue(propName, out T actual);
             propertyFound.Should().BeTrue();
             // We don't support nested deserialization yet, so we'll need to serialize the response and compare them.
             JsonConvert.SerializeObject(actual).Should().Be(JsonConvert.SerializeObject(propValue));
 
             // Validate the updated twin from the service-client
-            ClientTwin completeTwin = await s_serviceClient.Twins.GetAsync(testDevice.Id).ConfigureAwait(false);
+            using var getServiceTwinCts = new CancellationTokenSource(s_defaultOperationTimeout);
+            ClientTwin completeTwin = await s_serviceClient.Twins.GetAsync(testDevice.Id, getServiceTwinCts.Token).ConfigureAwait(false);
             dynamic actualProp = completeTwin.Properties.Desired[propName];
             Assert.AreEqual(JsonConvert.SerializeObject(actualProp), JsonConvert.SerializeObject(propValue));
         }
@@ -585,7 +600,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             var twinPatch = new ClientTwin();
             twinPatch.Properties.Desired[propName] = propValue;
 
-            await s_serviceClient.Twins.UpdateAsync(deviceId, twinPatch).ConfigureAwait(false);
+            using var updateTwinCts = new CancellationTokenSource(s_defaultOperationTimeout);
+            await s_serviceClient.Twins.UpdateAsync(deviceId, twinPatch, cancellationToken: updateTwinCts.Token).ConfigureAwait(false);
         }
 
         private async Task Twin_ServiceSetsDesiredPropertyAndDeviceUnsubscribes(IotHubClientTransportSettings transportSettings, object propValue)
@@ -597,7 +613,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix).ConfigureAwait(false);
             var options = new IotHubClientOptions(transportSettings);
             await using var deviceClient = new IotHubDeviceClient(testDevice.ConnectionString, options);
-            await TestDevice.OpenWithRetryAsync(deviceClient).ConfigureAwait(false);
+
+            using var openCts = new CancellationTokenSource(s_defaultOperationTimeout);
+            await TestDevice.OpenWithRetryAsync(deviceClient, openCts.Token).ConfigureAwait(false);
 
             // Set a callback
             await deviceClient.
@@ -633,10 +651,14 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix).ConfigureAwait(false);
             var options = new IotHubClientOptions(transportSettings);
             await using var deviceClient = new IotHubDeviceClient(testDevice.ConnectionString, options);
-            await deviceClient.OpenAsync().ConfigureAwait(false);
+
+            using var openCts = new CancellationTokenSource(s_defaultOperationTimeout);
+            await deviceClient.OpenAsync(openCts.Token).ConfigureAwait(false);
 
             using var testDeviceCallbackHandler = new TestDeviceCallbackHandler(deviceClient, testDevice.Id);
-            await testDeviceCallbackHandler.SetTwinPropertyUpdateCallbackHandlerAndProcessAsync<T>().ConfigureAwait(false);
+
+            using var subscribeCallbackCts = new CancellationTokenSource(s_defaultOperationTimeout);
+            await testDeviceCallbackHandler.SetTwinPropertyUpdateCallbackHandlerAndProcessAsync<T>(subscribeCallbackCts.Token).ConfigureAwait(false);
 
             testDeviceCallbackHandler.ExpectedTwinPatchKeyValuePair = new Tuple<string, object>(propName, propValue);
             using var twinResponseCts = new CancellationTokenSource(s_defaultTwinResponseTimeout);
@@ -647,14 +669,16 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 updateReceivedTask).ConfigureAwait(false);
 
             // Validate the updated twin from the device-client
-            TwinProperties deviceTwin = await deviceClient.GetTwinPropertiesAsync().ConfigureAwait(false);
+            using var getDeviceTwinCts = new CancellationTokenSource(s_defaultOperationTimeout);
+            TwinProperties deviceTwin = await deviceClient.GetTwinPropertiesAsync(getDeviceTwinCts.Token).ConfigureAwait(false);
             bool propertyFound = deviceTwin.Desired.TryGetValue(propName, out T actual);
             propertyFound.Should().BeTrue();
             // We don't support nested deserialization yet, so we'll need to serialize the response and compare them.
             JsonConvert.SerializeObject(actual).Should().Be(JsonConvert.SerializeObject(propValue));
 
             // Validate the updated twin from the service-client
-            ClientTwin completeTwin = await s_serviceClient.Twins.GetAsync(testDevice.Id).ConfigureAwait(false);
+            using var getServiceTwinCts = new CancellationTokenSource(s_defaultOperationTimeout);
+            ClientTwin completeTwin = await s_serviceClient.Twins.GetAsync(testDevice.Id, getServiceTwinCts.Token).ConfigureAwait(false);
             object actualProp = completeTwin.Properties.Desired[propName];
             JsonConvert.SerializeObject(actualProp).Should().Be(JsonConvert.SerializeObject(propValue));
         }
@@ -670,10 +694,14 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
 
             var twinPatch = new ClientTwin();
             twinPatch.Properties.Desired[propName] = propValue;
+
             await s_serviceClient.Twins.UpdateAsync(testDevice.Id, twinPatch).ConfigureAwait(false);
 
-            await deviceClient.OpenAsync().ConfigureAwait(false);
-            TwinProperties deviceTwin = await deviceClient.GetTwinPropertiesAsync().ConfigureAwait(false);
+            using var openCts = new CancellationTokenSource(s_defaultOperationTimeout);
+            await deviceClient.OpenAsync(openCts.Token).ConfigureAwait(false);
+
+            using var getDeviceTwinCts = new CancellationTokenSource(s_defaultOperationTimeout);
+            TwinProperties deviceTwin = await deviceClient.GetTwinPropertiesAsync(getDeviceTwinCts.Token).ConfigureAwait(false);
             bool propertyFound = deviceTwin.Desired.TryGetValue(propName, out string actual);
             propertyFound.Should().BeTrue();
             actual.Should().Be(propValue);
@@ -688,10 +716,14 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
 
             var twinPatch = new ClientTwin();
             twinPatch.Properties.Desired[propName] = DateTimeValue;
-            await s_serviceClient.Twins.UpdateAsync(testDevice.Id, twinPatch).ConfigureAwait(false);
+            using var updateTwinCts = new CancellationTokenSource(s_defaultOperationTimeout);
+            await s_serviceClient.Twins.UpdateAsync(testDevice.Id, twinPatch, cancellationToken: updateTwinCts.Token).ConfigureAwait(false);
 
-            await TestDevice.OpenWithRetryAsync(deviceClient).ConfigureAwait(false);
-            TwinProperties deviceTwin = await deviceClient.GetTwinPropertiesAsync().ConfigureAwait(false);
+            using var openCts = new CancellationTokenSource(s_defaultOperationTimeout);
+            await TestDevice.OpenWithRetryAsync(deviceClient, openCts.Token).ConfigureAwait(false);
+
+            using var getTwinCts = new CancellationTokenSource(s_defaultOperationTimeout);
+            TwinProperties deviceTwin = await deviceClient.GetTwinPropertiesAsync(getTwinCts.Token).ConfigureAwait(false);
             bool propertyFound = deviceTwin.Desired.TryGetValue(propName, out string actual);
             propertyFound.Should().BeTrue();
             actual.Should().Be(DateTimeValue);
@@ -705,16 +737,23 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix).ConfigureAwait(false);
             var options = new IotHubClientOptions(transportSettings);
             await using var deviceClient = new IotHubDeviceClient(testDevice.ConnectionString, options);
-            await deviceClient.OpenAsync().ConfigureAwait(false);
+
+            using var openCts = new CancellationTokenSource(s_defaultOperationTimeout);
+            await deviceClient.OpenAsync(openCts.Token).ConfigureAwait(false);
 
             var patch = new ReportedProperties
             {
                 [propName] = propValue
             };
-            await deviceClient.UpdateReportedPropertiesAsync(patch).ConfigureAwait(false);
-            await deviceClient.CloseAsync().ConfigureAwait(false);
 
-            ClientTwin serviceTwin = await s_serviceClient.Twins.GetAsync(testDevice.Id).ConfigureAwait(false);
+            using var updateTwinCts = new CancellationTokenSource(s_defaultOperationTimeout);
+            await deviceClient.UpdateReportedPropertiesAsync(patch, updateTwinCts.Token).ConfigureAwait(false);
+
+            using var closeCts = new CancellationTokenSource(s_defaultOperationTimeout);
+            await deviceClient.CloseAsync(closeCts.Token).ConfigureAwait(false);
+
+            using var getTwinCts = new CancellationTokenSource(s_defaultOperationTimeout);
+            ClientTwin serviceTwin = await s_serviceClient.Twins.GetAsync(testDevice.Id, getTwinCts.Token).ConfigureAwait(false);
             Assert.AreEqual<string>(serviceTwin.Properties.Reported[propName].ToString(), propValue);
 
             VerboseTestLogger.WriteLine($"Verified {serviceTwin.Properties.Reported[propName]}={propValue}");
@@ -729,7 +768,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
 
             var options = new IotHubClientOptions(transportSettings);
             await using var deviceClient = new IotHubDeviceClient(testDevice.ConnectionString, options);
-            await deviceClient.OpenAsync().ConfigureAwait(false);
+
+            using var openCts = new CancellationTokenSource(s_defaultOperationTimeout);
+            await deviceClient.OpenAsync(openCts.Token).ConfigureAwait(false);
 
             await deviceClient
                 .UpdateReportedPropertiesAsync(
@@ -738,8 +779,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                         [propName1] = null
                     })
                 .ConfigureAwait(false);
-            ClientTwin serviceTwin = await s_serviceClient.Twins.GetAsync(testDevice.Id).ConfigureAwait(false);
-            Assert.IsFalse(serviceTwin.Properties.Reported.Contains(propName1));
+
+            using var getTwinCts = new CancellationTokenSource(s_defaultOperationTimeout);
+            ClientTwin serviceTwin = await s_serviceClient.Twins.GetAsync(testDevice.Id, getTwinCts.Token).ConfigureAwait(false);
+            serviceTwin.Properties.Reported.Contains(propName1).Should().BeFalse();
 
             await deviceClient
                 .UpdateReportedPropertiesAsync(
@@ -751,7 +794,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                         }
                     })
                 .ConfigureAwait(false);
-            serviceTwin = await s_serviceClient.Twins.GetAsync(testDevice.Id).ConfigureAwait(false);
+
+            using var getTwinCts2 = new CancellationTokenSource(s_defaultOperationTimeout);
+            serviceTwin = await s_serviceClient.Twins.GetAsync(testDevice.Id, getTwinCts2.Token).ConfigureAwait(false);
             serviceTwin.Properties.Reported.Contains(propName1).Should().BeTrue();
             serviceTwin.Properties.Reported.TryGetValue(propName1, out Dictionary<string, object> value1).Should().BeTrue();
             value1.Count.Should().Be(0);
@@ -777,28 +822,32 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
 
             twin.Properties.Desired[propName] = propValue;
 
-            twin = await s_serviceClient.Twins.UpdateAsync(testDevice.Id, twin, true).ConfigureAwait(false);
+            using var updateTwinCts = new CancellationTokenSource(s_defaultOperationTimeout);
+            twin = await s_serviceClient.Twins.UpdateAsync(testDevice.Id, twin, true, updateTwinCts.Token).ConfigureAwait(false);
 
             twin.ETag = oldEtag;
 
             // set the 'onlyIfUnchanged' flag to true to check that, with an out of date ETag, the request throws a PreconditionFailedException.
-            Func<Task> act = async () => { twin = await s_serviceClient.Twins.UpdateAsync(testDevice.Id, twin, true).ConfigureAwait(false); };
+            using var updateTwinCts2 = new CancellationTokenSource(s_defaultOperationTimeout);
+            Func<Task> act = async () => { twin = await s_serviceClient.Twins.UpdateAsync(testDevice.Id, twin, true, updateTwinCts2.Token).ConfigureAwait(false); };
             var error = await act.Should().ThrowAsync<IotHubServiceException>("Expected test to throw a precondition failed exception since it updated a twin with an out of date ETag");
             error.And.StatusCode.Should().Be(HttpStatusCode.PreconditionFailed);
             error.And.ErrorCode.Should().Be(IotHubServiceErrorCode.PreconditionFailed);
             error.And.IsTransient.Should().BeFalse();
 
             // set the 'onlyIfUnchanged' flag to false to check that, even with an out of date ETag, the request performs without exception.
+            using var updateTwinCts3 = new CancellationTokenSource(s_defaultOperationTimeout);
             await FluentActions
-                .Invoking(async () => { twin = await s_serviceClient.Twins.UpdateAsync(testDevice.Id, twin, false).ConfigureAwait(false); })
+                .Invoking(async () => { twin = await s_serviceClient.Twins.UpdateAsync(testDevice.Id, twin, false, updateTwinCts3.Token).ConfigureAwait(false); })
                 .Should()
                 .NotThrowAsync<IotHubServiceException>("Did not expect test to throw a precondition failed exception since 'onlyIfUnchanged' was set to false");
 
             // set the 'onlyIfUnchanged' flag to true to check that, with an up-to-date ETag, the request performs without exception.
             twin.Properties.Desired[propName] = propValue + "1";
             twin.ETag = ETag.All;
+            using var updateTwinCts4 = new CancellationTokenSource(s_defaultOperationTimeout);
             await FluentActions
-                .Invoking(async () => { twin = await s_serviceClient.Twins.UpdateAsync(testDevice.Id, twin, true).ConfigureAwait(false); })
+                .Invoking(async () => { twin = await s_serviceClient.Twins.UpdateAsync(testDevice.Id, twin, true, updateTwinCts4.Token).ConfigureAwait(false); })
                 .Should()
                 .NotThrowAsync<IotHubServiceException>("Did not expect test to throw a precondition failed exception since 'onlyIfUnchanged' was set to true");
         }

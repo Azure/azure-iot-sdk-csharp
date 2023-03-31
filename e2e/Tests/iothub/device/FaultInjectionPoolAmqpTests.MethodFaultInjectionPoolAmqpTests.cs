@@ -203,7 +203,6 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             async Task TestOperationAsync(IotHubDeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler testDeviceCallbackHandler)
             {
-                using var cts = new CancellationTokenSource(FaultInjection.RecoveryTime);
 
                 VerboseTestLogger.WriteLine($"{nameof(MethodE2EPoolAmqpTests)}: Preparing to receive method for device {testDevice.Id}");
 
@@ -214,8 +213,12 @@ namespace Microsoft.Azure.Devices.E2ETests
                 };
                 testDeviceCallbackHandler.ExpectedDirectMethodRequest = directMethodRequest;
 
-                Task serviceSendTask = ServiceSendMethodAndVerifyResponseAsync(testDevice.Id, directMethodRequest, s_deviceResponsePayload);
-                Task methodReceivedTask = testDeviceCallbackHandler.WaitForMethodCallbackAsync(cts.Token);
+                using var invokeMethodCts = new CancellationTokenSource(s_defaultOperationTimeout);
+                Task serviceSendTask = ServiceSendMethodAndVerifyResponseAsync(testDevice.Id, directMethodRequest, s_deviceResponsePayload, invokeMethodCts.Token);
+
+                using var receiveMethodCts = new CancellationTokenSource(s_defaultOperationTimeout);
+                Task methodReceivedTask = testDeviceCallbackHandler.WaitForMethodCallbackAsync(receiveMethodCts.Token);
+
                 await Task.WhenAll(serviceSendTask, methodReceivedTask).ConfigureAwait(false);
             }
 
@@ -240,13 +243,14 @@ namespace Microsoft.Azure.Devices.E2ETests
         public static async Task ServiceSendMethodAndVerifyResponseAsync<T>(
             string deviceId,
             DirectMethodServiceRequest directMethodRequest,
-            T expectedClientResponsePayload)
+            T expectedClientResponsePayload,
+            CancellationToken ct)
         {
             IotHubServiceClient serviceClient = TestDevice.ServiceClient;
             VerboseTestLogger.WriteLine($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Invoke method {directMethodRequest.MethodName} for device {deviceId}.");
 
             DirectMethodClientResponse methodResponse = await serviceClient.DirectMethods
-                .InvokeAsync(deviceId, directMethodRequest)
+                .InvokeAsync(deviceId, directMethodRequest, ct)
                 .ConfigureAwait(false);
 
             VerboseTestLogger.WriteLine($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Method response status: {methodResponse.Status} for device {deviceId}.");

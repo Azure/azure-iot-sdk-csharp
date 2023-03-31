@@ -505,11 +505,6 @@ namespace Microsoft.Azure.Devices.E2ETests
             string reason,
             string proxyAddress = null)
         {
-            async Task InitAsync(IotHubDeviceClient deviceClient, TestDevice t, TestDeviceCallbackHandler c)
-            {
-                await deviceClient.OpenAsync().ConfigureAwait(false);
-            }
-
             async Task TestOperationAsync(IotHubDeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler _)
             {
                 VerboseTestLogger.WriteLine($"{nameof(TwinE2EPoolAmqpTests)}: Setting reported propery and verifying twin for device {testDevice.Id}");
@@ -531,7 +526,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     reason,
                     FaultInjection.DefaultFaultDelay,
                     FaultInjection.DefaultFaultDuration,
-                    InitAsync,
+                    (d ,t, c) => Task.FromResult(false),
                     TestOperationAsync,
                     (d, c) => Task.FromResult(false),
                     ConnectionStringAuthScope.Device)
