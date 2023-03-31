@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -11,7 +10,7 @@ namespace Microsoft.Azure.Devices.Client
 {
     internal static class Fx
     {
-        private static readonly HashSet<Type> s_fatalExceptionTypes = new()
+        private static readonly Type[] s_fatalExceptionTypes = new[]
         {
             typeof(OperationCanceledException),
             typeof(ObjectDisposedException),

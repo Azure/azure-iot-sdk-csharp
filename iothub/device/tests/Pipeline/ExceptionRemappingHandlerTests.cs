@@ -72,7 +72,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public async Task ExceptionRemappingHandlerNoErrors_Success()
+        public async Task ExceptionRemappingHandler_NoErrors_Success()
         {
             var contextMock = new PipelineContext();
             var innerHandler = new Mock<IDelegatingHandler>();
