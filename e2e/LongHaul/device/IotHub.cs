@@ -268,6 +268,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
                 };
 
                 await _deviceClient.CompleteFileUploadAsync(successfulFileUploadCompletionNotification, ct);
+                await Task.Delay(5 * 1000);
             }
         }
 
