@@ -94,6 +94,8 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                                         deviceOperations.SendC2dMessagesAsync(ct))
                                     .ConfigureAwait(false);
                             });
+
+                        s_onlineDeviceOperations[deviceId]?.Invoke();
                     }
                 }
                 _logger.Trace($"Total number of connected devices: {s_onlineDeviceOperations.Count}", TraceSeverity.Information);
