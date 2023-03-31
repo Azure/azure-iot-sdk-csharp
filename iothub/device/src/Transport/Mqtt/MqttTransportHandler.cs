@@ -1044,8 +1044,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             // This message is always QoS 0, so no ack will be sent.
             receivedEventArgs.AutoAcknowledge = true;
 
-            string patch = _payloadConvention.PayloadEncoder.ContentEncoding.GetString(receivedEventArgs.ApplicationMessage.Payload);
-            Dictionary<string, object> desiredPropertyPatchDictionary = _payloadConvention.PayloadSerializer.DeserializeToType<Dictionary<string, object>>(patch);
+            Dictionary<string, object> desiredPropertyPatchDictionary = _payloadConvention.GetObject<Dictionary<string, object>>(receivedEventArgs.ApplicationMessage.Payload);
             var desiredPropertyPatch = new DesiredProperties(desiredPropertyPatchDictionary)
             {
                 PayloadConvention = _payloadConvention,
@@ -1078,7 +1077,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                             string errorResponseString = Encoding.UTF8.GetString(payloadBytes);
                             try
                             {
-                                errorResponse = JsonConvert.DeserializeObject<IotHubClientErrorResponseMessage>(errorResponseString);
+                                errorResponse = DefaultPayloadConvention.Instance.GetObject<IotHubClientErrorResponseMessage>(errorResponseString);
                             }
                             catch (JsonException ex)
                             {
@@ -1105,15 +1104,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     {
                         try
                         {
-                            // Use the encoder that has been agreed to between the client and service to decode the byte[] reasponse
+                            // Use the encoder that has been agreed to between the client and service to decode the byte[] response
                             // The response is deserialized into an SDK-defined type based on service-defined NewtonSoft.Json-based json property name.
                             // For this reason, we use NewtonSoft Json serializer for this deserialization.
-                            TwinDocument clientTwinProperties = JsonConvert
-                                .DeserializeObject<TwinDocument>(
-                                    _payloadConvention
-                                    .PayloadEncoder
-                                    .ContentEncoding
-                                    .GetString(payloadBytes));
+                            TwinDocument clientTwinProperties = DefaultPayloadConvention.Instance.GetObject<TwinDocument>(payloadBytes);
 
                             var twinDesiredProperties = new DesiredProperties(clientTwinProperties.Desired)
                             {
@@ -1155,7 +1149,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                         string errorResponseString = Encoding.UTF8.GetString(payloadBytes);
                         try
                         {
-                            errorResponse = JsonConvert.DeserializeObject<IotHubClientErrorResponseMessage>(errorResponseString);
+                            errorResponse = DefaultPayloadConvention.Instance.GetObject<IotHubClientErrorResponseMessage>(errorResponseString);
                         }
                         catch (JsonException ex)
                         {

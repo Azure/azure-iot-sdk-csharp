@@ -73,6 +73,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
             };
 
             var systemHealthMonitor = new SystemHealthMonitor(s_logger.Clone());
+            var hubEvents = new HubEvents(iotHub, s_logger.Clone());
 
             try
             {
@@ -82,7 +83,9 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                         iotHub.InvokeDirectMethodAsync(cancellationTokenSource.Token),
                         iotHub.ReceiveFileUploadAsync(cancellationTokenSource.Token),
                         iotHub.SetDesiredPropertiesAsync("guidValue", Guid.NewGuid().ToString(), cancellationTokenSource.Token),
-                        new HubEvents(iotHub, s_logger.Clone()).RunAsync(cancellationTokenSource.Token))
+                        iotHub.SendC2dMessagesAsync(cancellationTokenSource.Token),
+                        iotHub.ReceiveMessageFeedbacksAsync(cancellationTokenSource.Token),
+                        hubEvents.RunAsync(cancellationTokenSource.Token))
                     .ConfigureAwait(false);
             }
             catch (OperationCanceledException) { } // user signaled an exit

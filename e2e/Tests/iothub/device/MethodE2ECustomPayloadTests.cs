@@ -169,7 +169,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                         try
                         {
                             methodName.Should().Be(request.MethodName, $"The expected method name should be {methodName} but was {request.MethodName}");
-                            request.GetPayloadAsJsonString().Should().Be(JsonConvert.SerializeObject(_booleanRequest), $"The expected respose payload should be {JsonConvert.SerializeObject(_booleanRequest)} but was {request.GetPayloadAsJsonString()}");
+                            request.GetPayloadAsJsonString().Should().Be(JsonConvert.SerializeObject(_booleanRequest));
                             _booleanRequest.Should().BeTrue();
 
                             methodCallReceived.TrySetResult(true);

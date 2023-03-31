@@ -65,15 +65,13 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
 
         public async Task InvokeDirectMethodAsync(CancellationToken ct)
         {
-            int methodCallsCount = 0;
-
             while (!ct.IsCancellationRequested)
             {
                 var payload = new CustomDirectMethodPayload
                 {
                     RandomId = Guid.NewGuid(),
                     CurrentTimeUtc = DateTimeOffset.UtcNow,
-                    MethodCallsCount = ++methodCallsCount,
+                    MethodCallsCount = ++_totalMethodCallsCount,
                 };
 
                 var methodInvocation = new DirectMethodServiceRequest("EchoPayload")
@@ -83,18 +81,24 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                 };
 
                 _logger.Trace($"Invoking direct method for device: {_deviceId}", TraceSeverity.Information);
+                _logger.Metric(TotalDirectMethodCallsCount, _totalMethodCallsCount);
 
                 // Invoke the direct method asynchronously and get the response from the simulated device.
                 DirectMethodClientResponse response = await _serviceClient.DirectMethods.InvokeAsync(_deviceId, methodInvocation, ct);
 
-                if (response.TryGetPayload(out CustomDirectMethodPayload responsePayload))
-                {
-                    _logger.Metric(
-                        D2cDirectMethodDelaySeconds,
-                        (DateTimeOffset.UtcNow - responsePayload.CurrentTimeUtc).TotalSeconds);
-                }
+                    if (response.TryGetPayload(out CustomDirectMethodPayload responsePayload))
+                    {
+                        _logger.Metric(
+                            D2cDirectMethodDelaySeconds,
+                            (DateTimeOffset.UtcNow - responsePayload.CurrentTimeUtc).TotalSeconds);
+                    }
 
-                _logger.Trace($"Response status: {response.Status}, payload:\n\t{JsonConvert.SerializeObject(response.PayloadAsString)}", TraceSeverity.Information);
+                    _logger.Trace($"Response status: {response.Status}, payload:\n\t{JsonConvert.SerializeObject(response.PayloadAsString)}", TraceSeverity.Information);
+                }
+                catch (IotHubServiceException ex) when (ex.ErrorCode == IotHubServiceErrorCode.DeviceNotOnline)
+                {
+                    _logger.Trace($"Caught exception invoking direct method {ex}", TraceSeverity.Warning);
+                }
 
                 await Task.Delay(s_directMethodInvokeInterval, ct).ConfigureAwait(false);
             }
