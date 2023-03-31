@@ -206,30 +206,33 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
 
         public async Task ReceiveFileUploadAsync(CancellationToken ct)
         {
-            await _serviceClient.FileUploadNotifications.OpenAsync(ct).ConfigureAwait(false);
-            _logger.Trace("Listening for file upload notifications from the service...");
-
-            AcknowledgementType FileUploadNotificationCallback(FileUploadNotification fileUploadNotification)
+            while (!ct.IsCancellationRequested)
             {
-                AcknowledgementType ackType = AcknowledgementType.Complete;
-                _totalFileUploadNotificationsReceived++;
+                await _serviceClient.FileUploadNotifications.OpenAsync(ct).ConfigureAwait(false);
+                _logger.Trace("Listening for file upload notifications from the service...");
 
-                var sb = new StringBuilder();
-                sb.Append($"Received file upload notification.");
-                sb.Append($"\tDeviceId: {fileUploadNotification.DeviceId ?? "N/A"}.");
-                sb.Append($"\tFileName: {fileUploadNotification.BlobName ?? "N/A"}.");
-                sb.Append($"\tEnqueueTimeUTC: {fileUploadNotification.EnqueuedOnUtc}.");
-                sb.Append($"\tBlobSizeInBytes: {fileUploadNotification.BlobSizeInBytes}.");
-                _logger.Trace(sb.ToString());
+                AcknowledgementType FileUploadNotificationCallback(FileUploadNotification fileUploadNotification)
+                {
+                    AcknowledgementType ackType = AcknowledgementType.Complete;
+                    _totalFileUploadNotificationsReceived++;
 
-                _blobContainerClient.DeleteBlobIfExists(fileUploadNotification.BlobName);
-                return ackType;
+                    var sb = new StringBuilder();
+                    sb.Append($"Received file upload notification.");
+                    sb.Append($"\tDeviceId: {fileUploadNotification.DeviceId ?? "N/A"}.");
+                    sb.Append($"\tFileName: {fileUploadNotification.BlobName ?? "N/A"}.");
+                    sb.Append($"\tEnqueueTimeUTC: {fileUploadNotification.EnqueuedOnUtc}.");
+                    sb.Append($"\tBlobSizeInBytes: {fileUploadNotification.BlobSizeInBytes}.");
+                    _logger.Trace(sb.ToString());
+
+                    _blobContainerClient.DeleteBlobIfExists(fileUploadNotification.BlobName);
+                    return ackType;
+                }
+
+                _serviceClient.FileUploadNotifications.FileUploadNotificationProcessor = FileUploadNotificationCallback;
+                _logger.Trace($"Total File Notifications Received: {_totalFileUploadNotificationsReceived}.");
+
+                await Task.Delay(30 * 1000);
             }
-
-            _serviceClient.FileUploadNotifications.FileUploadNotificationProcessor = FileUploadNotificationCallback;
-            _logger.Trace($"Total File Notifications Received: {_totalFileUploadNotificationsReceived}.");
-
-            await Task.Delay(30 * 1000);
         }
 
         public void Dispose()

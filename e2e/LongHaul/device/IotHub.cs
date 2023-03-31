@@ -233,39 +233,42 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
 
         public async Task UploadFileAsync(CancellationToken ct)
         {
-            string fileName = $"TestPayload-{Guid.NewGuid()}.txt";
-            using var ms = new MemoryStream(Encoding.UTF8.GetBytes("TestPayload"));
-            _logger.Trace($"Uploading file {fileName}");
-
-            var fileUploadSasUriRequest = new FileUploadSasUriRequest(fileName);
-            FileUploadSasUriResponse sasUri = await _deviceClient.GetFileUploadSasUriAsync(fileUploadSasUriRequest).ConfigureAwait(false);
-            Uri uploadUri = sasUri.GetBlobUri();
-
-            try
+            while (!ct.IsCancellationRequested)
             {
-                _logger.Trace($"Attempting to upload {fileName}...");
-                var blockBlobClient = new BlockBlobClient(uploadUri);
-                await blockBlobClient.UploadAsync(ms, new BlobUploadOptions());
-            }
-            catch (Exception ex)
-            {
-                _logger.Trace($"WARNING: Exception occured while using Azure Storage SDK to upload file: {ex.Message}");
-                var failedFileUploadCompletionNotification = new FileUploadCompletionNotification(sasUri.CorrelationId, false)
+                string fileName = $"TestPayload-{Guid.NewGuid()}.txt";
+                using var ms = new MemoryStream(Encoding.UTF8.GetBytes("TestPayload"));
+                _logger.Trace($"Uploading file {fileName}");
+
+                var fileUploadSasUriRequest = new FileUploadSasUriRequest(fileName);
+                FileUploadSasUriResponse sasUri = await _deviceClient.GetFileUploadSasUriAsync(fileUploadSasUriRequest).ConfigureAwait(false);
+                Uri uploadUri = sasUri.GetBlobUri();
+
+                try
                 {
-                    StatusCode = 500,
+                    _logger.Trace($"Attempting to upload {fileName}...");
+                    var blockBlobClient = new BlockBlobClient(uploadUri);
+                    await blockBlobClient.UploadAsync(ms, new BlobUploadOptions());
+                }
+                catch (Exception ex)
+                {
+                    _logger.Trace($"WARNING: Exception occured while using Azure Storage SDK to upload file: {ex.Message}");
+                    var failedFileUploadCompletionNotification = new FileUploadCompletionNotification(sasUri.CorrelationId, false)
+                    {
+                        StatusCode = 500,
+                    };
+
+                    await _deviceClient.CompleteFileUploadAsync(failedFileUploadCompletionNotification);
+                    return;
+                }
+
+                _logger.Trace("File upload to Azure Storage was a success");
+                var successfulFileUploadCompletionNotification = new FileUploadCompletionNotification(sasUri.CorrelationId, true)
+                {
+                    StatusCode = 200,
                 };
 
-                await _deviceClient.CompleteFileUploadAsync(failedFileUploadCompletionNotification);
-                return;
+                await _deviceClient.CompleteFileUploadAsync(successfulFileUploadCompletionNotification, ct);
             }
-
-            _logger.Trace("File upload to Azure Storage was a success");
-            var successfulFileUploadCompletionNotification = new FileUploadCompletionNotification(sasUri.CorrelationId, true)
-            {
-                StatusCode = 200,
-            };
-
-            await _deviceClient.CompleteFileUploadAsync(successfulFileUploadCompletionNotification, ct);
         }
 
         public async ValueTask DisposeAsync()
