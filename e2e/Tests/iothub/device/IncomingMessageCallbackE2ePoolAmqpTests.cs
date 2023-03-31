@@ -15,9 +15,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
     [TestClass]
     [TestCategory("E2E")]
     [TestCategory("IoTHub-Client")]
-    public class MessageReceiveE2EPoolAmqpTests : E2EMsTestBase
+    public class IncomingMessageCallbackE2ePoolAmqpTests : E2EMsTestBase
     {
-        private readonly string DevicePrefix = $"{nameof(MessageReceiveE2EPoolAmqpTests)}_";
+        private readonly string DevicePrefix = $"{nameof(IncomingMessageCallbackE2ePoolAmqpTests)}_";
 
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
@@ -123,7 +123,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
             async Task InitOperationAsync(TestDevice testDevice, TestDeviceCallbackHandler _)
             {
-                OutgoingMessage msg = MessageReceiveE2ETests.ComposeC2dTestMessage(out string payload, out string _);
+                OutgoingMessage msg = OutgoingMessageHelper.ComposeOutgoingTestMessage(out string payload, out string _);
                 messagesSent.Add(testDevice.Id, Tuple.Create(msg, payload));
 
                 await TestDevice.ServiceClient.Messages.OpenAsync().ConfigureAwait(false);
@@ -132,11 +132,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
             async Task TestOperationAsync(TestDevice testDevice, TestDeviceCallbackHandler _)
             {
-                VerboseTestLogger.WriteLine($"{nameof(MessageReceiveE2EPoolAmqpTests)}: Preparing to receive message for device {testDevice.Id}");
+                VerboseTestLogger.WriteLine($"{nameof(IncomingMessageCallbackE2ePoolAmqpTests)}: Preparing to receive message for device {testDevice.Id}");
                 await testDevice.OpenWithRetryAsync().ConfigureAwait(false);
 
                 Tuple<OutgoingMessage, string> msgSent = messagesSent[testDevice.Id];
-                await MessageReceiveE2ETests.VerifyReceivedC2dMessageAsync(testDevice.DeviceClient, testDevice.Id, msgSent.Item1, msgSent.Item2).ConfigureAwait(false);
+                await IncomingMessageCallbackE2eTests.VerifyReceivedC2dMessageAsync(testDevice.DeviceClient, testDevice.Id, msgSent.Item1, msgSent.Item2).ConfigureAwait(false);
             }
 
             await PoolingOverAmqp
@@ -148,8 +148,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                     InitOperationAsync,
                     TestOperationAsync,
                     null,
-                    authScope,
-                    true)
+                    authScope)
                 .ConfigureAwait(false);
         }
 
@@ -166,18 +165,18 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             {
                 await serviceClient.Messages.OpenAsync().ConfigureAwait(false);
 
-                OutgoingMessage msg = MessageReceiveE2ETests.ComposeC2dTestMessage(out string _, out string _);
+                OutgoingMessage msg = OutgoingMessageHelper.ComposeOutgoingTestMessage(out string _, out string _);
 
                 await testDevice.OpenWithRetryAsync().ConfigureAwait(false);
-                await testDeviceCallbackHandler.SetMessageReceiveCallbackHandlerAsync<string>().ConfigureAwait(false);
-                testDeviceCallbackHandler.ExpectedMessageSentByService = msg;
+                await testDeviceCallbackHandler.SetMessageReceiveCallbackHandlerAndCompleteMessageAsync<string>().ConfigureAwait(false);
+                testDeviceCallbackHandler.ExpectedOutgoingMessage = msg;
 
                 await serviceClient.Messages.SendAsync(testDevice.Id, msg).ConfigureAwait(false);
             }
 
             async Task TestOperationAsync(TestDevice testDevice, TestDeviceCallbackHandler testDeviceCallbackHandler)
             {
-                VerboseTestLogger.WriteLine($"{nameof(MessageReceiveE2EPoolAmqpTests)}: Preparing to receive message for device {testDevice.Id}");
+                VerboseTestLogger.WriteLine($"{nameof(IncomingMessageCallbackE2ePoolAmqpTests)}: Preparing to receive message for device {testDevice.Id}");
 
                 using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(20));
                 await testDeviceCallbackHandler.WaitForReceiveMessageCallbackAsync(cts.Token).ConfigureAwait(false);
@@ -198,8 +197,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                     InitOperationAsync,
                     TestOperationAsync,
                     CleanupOperationAsync,
-                    authScope,
-                    true)
+                    authScope)
                 .ConfigureAwait(false);
         }
     }

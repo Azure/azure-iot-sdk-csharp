@@ -333,22 +333,20 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             using var cts = new CancellationTokenSource(FaultInjection.RecoveryTime);
 
             string propName = Guid.NewGuid().ToString();
+            string propValue = Guid.NewGuid().ToString();
             var props = new ClientTwinProperties();
 
             // Configure the callback and start accepting twin changes.
             async Task InitOperationAsync(IotHubDeviceClient deviceClient, TestDevice testDevice)
             {
                 await deviceClient.OpenAsync().ConfigureAwait(false);
-                testDeviceCallbackHandler = new TestDeviceCallbackHandler(deviceClient, testDevice);
-                await testDeviceCallbackHandler.SetTwinPropertyUpdateCallbackHandlerAsync(propName).ConfigureAwait(false);
+                testDeviceCallbackHandler = new TestDeviceCallbackHandler(deviceClient, testDevice.Id);
+                await testDeviceCallbackHandler.SetTwinPropertyUpdateCallbackHandlerAndProcessAsync(propName, propValue).ConfigureAwait(false);
             }
 
             // Change the twin from the service side and verify the device received it.
             async Task TestOperationAsync(IotHubDeviceClient deviceClient, TestDevice testDevice)
             {
-                string propValue = Guid.NewGuid().ToString();
-                testDeviceCallbackHandler.ExpectedTwinPropertyValue = propValue;
-
                 VerboseTestLogger.WriteLine($"{nameof(Twin_DeviceDesiredPropertyUpdateRecoveryAsync)}: name={propName}, value={propValue}");
 
                 Task serviceSendTask = TwinFaultInjectionTests.RegistryManagerUpdateDesiredPropertyAsync(testDevice.Id, propName, propValue);

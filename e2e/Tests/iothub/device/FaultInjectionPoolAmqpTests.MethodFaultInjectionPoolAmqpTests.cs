@@ -4,11 +4,13 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using FluentAssertions;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.Azure.Devices.E2ETests.Helpers.Templates;
 using Microsoft.Azure.Devices.E2ETests.Methods;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.E2ETests
 {
@@ -17,6 +19,11 @@ namespace Microsoft.Azure.Devices.E2ETests
         private const string MethodDevicePrefix = "MethodFaultInjectionPoolAmqpTests";
         private const string MethodName = "MethodE2EFaultInjectionPoolAmqpTests";
 
+        private static readonly DirectMethodResponsePayload s_deviceResponsePayload = new() { CurrentState = "on" };
+        private static readonly DirectMethodRequestPayload s_serviceRequestPayload = new() { DesiredState = "off" };
+
+        private static readonly TimeSpan s_defaultMethodResponseTimeout = TimeSpan.FromMinutes(1);
+
         [TestMethod]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Method_DeviceSak_DeviceMethodTcpConnRecovery_MultipleConnections_Amqp()
@@ -24,8 +31,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await SendMethodAndRespondRecoveryPoolOverAmqpAsync(
                     new IotHubClientAmqpSettings(),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
-                    PoolingOverAmqp.MultipleConnections_DevicesCount,
-                    MethodE2ETests.SetDeviceReceiveMethodAsync,
+                    PoolingOverAmqp.MultipleConnections_DevicesCount    ,
                     FaultInjectionConstants.FaultType_Tcp,
                     FaultInjectionConstants.FaultCloseReason_Boom)
                 .ConfigureAwait(false);
@@ -39,7 +45,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                     new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
-                    MethodE2ETests.SetDeviceReceiveMethodAsync,
                     FaultInjectionConstants.FaultType_Tcp,
                     FaultInjectionConstants.FaultCloseReason_Boom)
                 .ConfigureAwait(false);
@@ -53,7 +58,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                     new IotHubClientAmqpSettings(),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
-                    MethodE2ETests.SetDeviceReceiveMethodAsync,
                     FaultInjectionConstants.FaultType_AmqpConn,
                     FaultInjectionConstants.FaultCloseReason_Boom)
                 .ConfigureAwait(false);
@@ -67,7 +71,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                     new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
-                    MethodE2ETests.SetDeviceReceiveMethodAsync,
                     FaultInjectionConstants.FaultType_AmqpConn,
                     FaultInjectionConstants.FaultCloseReason_Boom)
                 .ConfigureAwait(false);
@@ -82,7 +85,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                     new IotHubClientAmqpSettings(),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
-                    MethodE2ETests.SetDeviceReceiveMethodAsync,
                     FaultInjectionConstants.FaultType_AmqpSess,
                     FaultInjectionConstants.FaultCloseReason_Boom)
                 .ConfigureAwait(false);
@@ -97,7 +99,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                     new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
-                    MethodE2ETests.SetDeviceReceiveMethodAsync,
                     FaultInjectionConstants.FaultType_AmqpSess,
                     FaultInjectionConstants.FaultCloseReason_Boom)
                 .ConfigureAwait(false);
@@ -112,7 +113,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                     new IotHubClientAmqpSettings(),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
-                    MethodE2ETests.SetDeviceReceiveMethodAsync,
                     FaultInjectionConstants.FaultType_AmqpMethodReq,
                     FaultInjectionConstants.FaultCloseReason_Boom)
                 .ConfigureAwait(false);
@@ -127,7 +127,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                     new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
-                    MethodE2ETests.SetDeviceReceiveMethodAsync,
                     FaultInjectionConstants.FaultType_AmqpMethodReq,
                     FaultInjectionConstants.FaultCloseReason_Boom)
                 .ConfigureAwait(false);
@@ -142,7 +141,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                     new IotHubClientAmqpSettings(),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
-                    MethodE2ETests.SetDeviceReceiveMethodAsync,
                     FaultInjectionConstants.FaultType_AmqpMethodResp,
                     FaultInjectionConstants.FaultCloseReason_Boom)
                 .ConfigureAwait(false);
@@ -157,7 +155,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                     new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
-                    MethodE2ETests.SetDeviceReceiveMethodAsync,
                     FaultInjectionConstants.FaultType_AmqpMethodResp,
                     FaultInjectionConstants.FaultCloseReason_Boom)
                 .ConfigureAwait(false);
@@ -171,7 +168,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                     new IotHubClientAmqpSettings(),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
-                    MethodE2ETests.SetDeviceReceiveMethodAsync,
                     FaultInjectionConstants.FaultType_GracefulShutdownAmqp,
                     FaultInjectionConstants.FaultCloseReason_Bye)
                 .ConfigureAwait(false);
@@ -185,7 +181,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                     new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
-                    MethodE2ETests.SetDeviceReceiveMethodAsync,
                     FaultInjectionConstants.FaultType_GracefulShutdownAmqp,
                     FaultInjectionConstants.FaultCloseReason_Bye)
                 .ConfigureAwait(false);
@@ -195,7 +190,6 @@ namespace Microsoft.Azure.Devices.E2ETests
             IotHubClientTransportSettings transportSettings,
             int poolSize,
             int devicesCount,
-            Func<IotHubDeviceClient, string, Task<Task>> setDeviceReceiveMethod,
             string faultType,
             string reason)
         {
@@ -203,7 +197,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             {
                 await deviceClient.OpenAsync().ConfigureAwait(false);
                 await testDeviceCallbackHandler
-                    .SetDeviceReceiveMethodAsync(MethodName, MethodE2ETests.s_deviceResponsePayload, MethodE2ETests.s_serviceRequestPayload)
+                    .SetDeviceReceiveMethodAndRespondAsync<DirectMethodRequestPayload, DirectMethodResponsePayload>(s_deviceResponsePayload)
                     .ConfigureAwait(false);
             }
 
@@ -212,14 +206,16 @@ namespace Microsoft.Azure.Devices.E2ETests
                 using var cts = new CancellationTokenSource(FaultInjection.RecoveryTime);
 
                 VerboseTestLogger.WriteLine($"{nameof(MethodE2EPoolAmqpTests)}: Preparing to receive method for device {testDevice.Id}");
-                Task serviceSendTask = MethodE2ETests
-                    .ServiceSendMethodAndVerifyResponseAsync(
-                        testDevice.Id,
-                        MethodName,
-                        MethodE2ETests.s_deviceResponsePayload,
-                        MethodE2ETests.s_serviceRequestPayload);
-                Task methodReceivedTask = testDeviceCallbackHandler.WaitForMethodCallbackAsync(cts.Token);
 
+                var directMethodRequest = new DirectMethodServiceRequest(MethodName)
+                {
+                    Payload = s_serviceRequestPayload,
+                    ResponseTimeout = s_defaultMethodResponseTimeout,
+                };
+                testDeviceCallbackHandler.ExpectedDirectMethodRequest = directMethodRequest;
+
+                Task serviceSendTask = ServiceSendMethodAndVerifyResponseAsync(testDevice.Id, directMethodRequest, s_deviceResponsePayload);
+                Task methodReceivedTask = testDeviceCallbackHandler.WaitForMethodCallbackAsync(cts.Token);
                 await Task.WhenAll(serviceSendTask, methodReceivedTask).ConfigureAwait(false);
             }
 
@@ -239,6 +235,24 @@ namespace Microsoft.Azure.Devices.E2ETests
                     (d, c) => Task.FromResult(false),
                     ConnectionStringAuthScope.Device)
                 .ConfigureAwait(false);
+        }
+
+        public static async Task ServiceSendMethodAndVerifyResponseAsync<T>(
+            string deviceId,
+            DirectMethodServiceRequest directMethodRequest,
+            T expectedClientResponsePayload)
+        {
+            IotHubServiceClient serviceClient = TestDevice.ServiceClient;
+            VerboseTestLogger.WriteLine($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Invoke method {directMethodRequest.MethodName} for device {deviceId}.");
+
+            DirectMethodClientResponse methodResponse = await serviceClient.DirectMethods
+                .InvokeAsync(deviceId, directMethodRequest)
+                .ConfigureAwait(false);
+
+            VerboseTestLogger.WriteLine($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Method response status: {methodResponse.Status} for device {deviceId}.");
+            methodResponse.Status.Should().Be(200);
+            methodResponse.TryGetPayload(out T actualClientResponsePayload).Should().BeTrue();
+            JsonConvert.SerializeObject(actualClientResponsePayload).Should().BeEquivalentTo(JsonConvert.SerializeObject(expectedClientResponsePayload));
         }
     }
 }
