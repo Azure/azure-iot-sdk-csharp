@@ -14,6 +14,5 @@ namespace Microsoft.Azure.Devices.E2ETests
     public partial class FaultInjectionPoolAmqpTests : E2EMsTestBase
     {
         private static readonly string s_proxyServerAddress = TestConfiguration.IotHub.ProxyServerAddress;
-        private static readonly TimeSpan s_defaultOperationTimeout = TimeSpan.FromSeconds(30);
     }
 }

@@ -24,51 +24,26 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         private static readonly DirectMethodResponsePayload s_deviceResponsePayload = new() { CurrentState = "on" };
         private static readonly DirectMethodRequestPayload s_serviceRequestPayload = new() { DesiredState = "off" };
 
-        private static readonly TimeSpan s_defaultMethodResponseTimeout = TimeSpan.FromMinutes(1);
+        private static readonly TimeSpan s_defaultMethodResponseTimeout = TimeSpan.FromSeconds(30);
 
         [TestMethod]
-        [Timeout(LongRunningTestTimeoutMilliseconds)]
-        public async Task Method_DeviceSak_DeviceReceivesMethodAndResponse_MultipleConnections_Amqp()
+        [TestCategory("LongRunning")]
+        [DataRow(IotHubClientTransportProtocol.Tcp, ConnectionStringAuthScope.Device)]
+        [DataRow(IotHubClientTransportProtocol.WebSocket, ConnectionStringAuthScope.Device)]
+        [DataRow(IotHubClientTransportProtocol.Tcp, ConnectionStringAuthScope.IotHub)]
+        [DataRow(IotHubClientTransportProtocol.WebSocket, ConnectionStringAuthScope.IotHub)]
+        public async Task Method_DeviceReceivesMethodAndResponse_MultipleConnections_Amqp(IotHubClientTransportProtocol protocol, ConnectionStringAuthScope authScope)
         {
-            await SendMethodAndRespondPoolOverAmqp(
-                    new IotHubClientAmqpSettings(),
-                    PoolingOverAmqp.MultipleConnections_PoolSize,
-                    PoolingOverAmqp.MultipleConnections_DevicesCount)
-                .ConfigureAwait(false);
-        }
+            // Setting up one cancellation token for the complete test flow
+            using var cts = new CancellationTokenSource(s_longRunningTestTimeout);
+            CancellationToken ct = cts.Token;
 
-        [TestMethod]
-        [Timeout(LongRunningTestTimeoutMilliseconds)]
-        public async Task Method_DeviceSak_DeviceReceivesMethodAndResponse_MultipleConnections_AmqpWs()
-        {
             await SendMethodAndRespondPoolOverAmqp(
-                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
-                    PoolingOverAmqp.MultipleConnections_PoolSize,
-                    PoolingOverAmqp.MultipleConnections_DevicesCount)
-                .ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        [Timeout(LongRunningTestTimeoutMilliseconds)]
-        public async Task Method_IoTHubSak_DeviceReceivesMethodAndResponse_MultipleConnections_Amqp()
-        {
-            await SendMethodAndRespondPoolOverAmqp(
-                    new IotHubClientAmqpSettings(),
+                    new IotHubClientAmqpSettings(protocol),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
-                    authScope: ConnectionStringAuthScope.IotHub)
-                .ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        [Timeout(LongRunningTestTimeoutMilliseconds)]
-        public async Task Method_IoTHubSak_DeviceReceivesMethodAndResponse_MultipleConnections_AmqpWs()
-        {
-            await SendMethodAndRespondPoolOverAmqp(
-                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
-                    PoolingOverAmqp.MultipleConnections_PoolSize,
-                    PoolingOverAmqp.MultipleConnections_DevicesCount,
-                    authScope: ConnectionStringAuthScope.IotHub)
+                    authScope,
+                    ct)
                 .ConfigureAwait(false);
         }
 
@@ -76,15 +51,16 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             IotHubClientAmqpSettings transportSettings,
             int poolSize,
             int devicesCount,
-            ConnectionStringAuthScope authScope = ConnectionStringAuthScope.Device)
+            ConnectionStringAuthScope authScope,
+            CancellationToken ct)
         {
-            async Task InitOperationAsync(TestDevice testDevice, TestDeviceCallbackHandler testDeviceCallbackHandler)
+            async Task InitOperationAsync(TestDevice testDevice, TestDeviceCallbackHandler testDeviceCallbackHandler, CancellationToken ct)
             {
                 VerboseTestLogger.WriteLine($"{nameof(MethodE2EPoolAmqpTests)}: Setting method for device {testDevice.Id}");
-                await testDeviceCallbackHandler.SetDeviceReceiveMethodAndRespondAsync<DirectMethodRequestPayload>(s_deviceResponsePayload).ConfigureAwait(false);
+                await testDeviceCallbackHandler.SetDeviceReceiveMethodAndRespondAsync<DirectMethodRequestPayload>(s_deviceResponsePayload, ct).ConfigureAwait(false);
             }
 
-            async Task TestOperationAsync(TestDevice testDevice, TestDeviceCallbackHandler testDeviceCallbackHandler)
+            async Task TestOperationAsync(TestDevice testDevice, TestDeviceCallbackHandler testDeviceCallbackHandler, CancellationToken ct)
             {
                 VerboseTestLogger.WriteLine($"{nameof(MethodE2EPoolAmqpTests)}: Preparing to receive method for device {testDevice.Id}");
                 var directMethodRequest = new DirectMethodServiceRequest(MethodName)
@@ -99,7 +75,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 Task serviceSendTask = ServiceSendMethodAndVerifyResponseAsync(
                     testDevice.Id,
                     directMethodRequest,
-                    s_deviceResponsePayload);
+                    s_deviceResponsePayload,
+                    ct);
 
                 await Task.WhenAll(serviceSendTask, methodReceivedTask).ConfigureAwait(false);
             }
@@ -113,20 +90,22 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                     InitOperationAsync,
                     TestOperationAsync,
                     null,
-                    authScope)
+                    authScope,
+                    ct)
                 .ConfigureAwait(false);
         }
 
         public static async Task ServiceSendMethodAndVerifyResponseAsync<T>(
             string deviceId,
             DirectMethodServiceRequest directMethodRequest,
-            T respJson)
+            T respJson,
+            CancellationToken ct)
         {
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
             VerboseTestLogger.WriteLine($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Invoke method {directMethodRequest.MethodName}.");
 
             DirectMethodClientResponse response = await serviceClient.DirectMethods
-                .InvokeAsync(deviceId, directMethodRequest)
+                .InvokeAsync(deviceId, directMethodRequest, ct)
                 .ConfigureAwait(false);
 
             VerboseTestLogger.WriteLine($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Method status: {response.Status}.");

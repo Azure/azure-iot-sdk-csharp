@@ -20,208 +20,211 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         private readonly string _devicePrefix = $"{nameof(TelemetryFaultInjectionTests)}_";
         private static readonly string s_proxyServerAddress = TestConfiguration.IotHub.ProxyServerAddress;
 
-        [TestMethod]
-        [Timeout(TestTimeoutMilliseconds)]
         // Ungraceful disconnection recovery test is marked as a build verification test
         // to test client reconnection logic in PR runs.
+        [TestMethod]
         [TestCategory("FaultInjectionBVT")]
-        public async Task Message_TcpConnectionLossSendRecovery_Amqp()
+        [DataRow(IotHubClientTransportProtocol.Tcp)]
+        [DataRow(IotHubClientTransportProtocol.WebSocket)]
+        public async Task Telemetry_ConnectionLossRecovery_Mqtt(IotHubClientTransportProtocol protocol)
         {
+            // Setting up one cancellation token for the complete test flow
+            using var cts = new CancellationTokenSource(s_testTimeout);
+            CancellationToken ct = cts.Token;
+
             await SendMessageRecoveryAsync(
-                    new IotHubClientAmqpSettings(),
+                    new IotHubClientMqttSettings(protocol),
                     FaultInjectionConstants.FaultType_Tcp,
-                    FaultInjectionConstants.FaultCloseReason_Boom)
+                    FaultInjectionConstants.FaultCloseReason_Boom,
+                    ct)
                 .ConfigureAwait(false);
         }
 
+        // Graceful disconnection recovery test is marked as a build verification test
+        // to test client reconnection logic in PR runs.
         [TestMethod]
-        [Timeout(TestTimeoutMilliseconds)]
-        public async Task Message_TcpConnectionLossSendRecovery_AmqpWs()
+        [TestCategory("FaultInjectionBVT")]
+        [DataRow(IotHubClientTransportProtocol.Tcp)]
+        [DataRow(IotHubClientTransportProtocol.WebSocket)]
+        public async Task Telemetry_GracefulShutdownRecovery_Mqtt(IotHubClientTransportProtocol protocol)
         {
+            // Setting up one cancellation token for the complete test flow
+            using var cts = new CancellationTokenSource(s_testTimeout);
+            CancellationToken ct = cts.Token;
+
             await SendMessageRecoveryAsync(
-                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
+                    new IotHubClientMqttSettings(protocol),
+                    FaultInjectionConstants.FaultType_GracefulShutdownMqtt,
+                    FaultInjectionConstants.FaultCloseReason_Bye,
+                    ct)
+                .ConfigureAwait(false);
+        }
+
+        // Ungraceful disconnection recovery test is marked as a build verification test
+        // to test client reconnection logic in PR runs.
+        [TestMethod]
+        [TestCategory("FaultInjectionBVT")]
+        [DataRow(IotHubClientTransportProtocol.Tcp)]
+        [DataRow(IotHubClientTransportProtocol.WebSocket)]
+        public async Task Telemetry_ConnectionLossRecovery_Amqp(IotHubClientTransportProtocol protocol)
+        {
+            // Setting up one cancellation token for the complete test flow
+            using var cts = new CancellationTokenSource(s_testTimeout);
+            CancellationToken ct = cts.Token;
+
+            await SendMessageRecoveryAsync(
+                    new IotHubClientAmqpSettings(protocol),
                     FaultInjectionConstants.FaultType_Tcp,
-                    FaultInjectionConstants.FaultCloseReason_Boom)
+                    FaultInjectionConstants.FaultCloseReason_Boom,
+                    ct)
+                .ConfigureAwait(false);
+        }
+
+        // Graceful disconnection recovery test is marked as a build verification test
+        // to test client reconnection logic in PR runs.
+        [TestMethod]
+        [TestCategory("FaultInjectionBVT")]
+        [DataRow(IotHubClientTransportProtocol.Tcp)]
+        [DataRow(IotHubClientTransportProtocol.WebSocket)]
+        public async Task Telemetry_GracefulShutdownRecovery_Amqp(IotHubClientTransportProtocol protocol)
+        {
+            // Setting up one cancellation token for the complete test flow
+            using var cts = new CancellationTokenSource(s_testTimeout);
+            CancellationToken ct = cts.Token;
+
+            await SendMessageRecoveryAsync(
+                    new IotHubClientAmqpSettings(protocol),
+                    FaultInjectionConstants.FaultType_GracefulShutdownMqtt,
+                    FaultInjectionConstants.FaultCloseReason_Bye,
+                    ct)
                 .ConfigureAwait(false);
         }
 
         // Test device client recovery when proxy settings are enabled
+        [TestMethod]
         [TestCategory("Proxy")]
-        [TestMethod]
-        [Timeout(TestTimeoutMilliseconds)]
-        public async Task Message_TcpConnectionLossSendRecovery_AmqpWs_WithProxy()
+        public async Task Telemetry_ConnectionLossSendRecovery_MqttWs_WithProxy()
         {
-            await SendMessageRecoveryAsync(
-                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
-                    FaultInjectionConstants.FaultType_Tcp,
-                    FaultInjectionConstants.FaultCloseReason_Boom,
-                    proxyAddress: s_proxyServerAddress)
-                .ConfigureAwait(false);
-        }
+            // Setting up one cancellation token for the complete test flow
+            using var cts = new CancellationTokenSource(s_testTimeout);
+            CancellationToken ct = cts.Token;
 
-        [TestMethod]
-        [Timeout(TestTimeoutMilliseconds)]
-        // Ungraceful disconnection recovery test is marked as a build verification test
-        // to test client reconnection logic in PR runs.
-        [TestCategory("FaultInjectionBVT")]
-        public async Task Message_TcpConnectionLossSendRecovery_Mqtt()
-        {
-            await SendMessageRecoveryAsync(
-                    new IotHubClientMqttSettings(),
-                    FaultInjectionConstants.FaultType_Tcp,
-                    FaultInjectionConstants.FaultCloseReason_Boom)
-                .ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        [Timeout(TestTimeoutMilliseconds)]
-        public async Task Message_TcpConnectionLossSendRecovery_MqttWs()
-        {
             await SendMessageRecoveryAsync(
                     new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket),
                     FaultInjectionConstants.FaultType_Tcp,
-                    FaultInjectionConstants.FaultCloseReason_Boom)
+                    FaultInjectionConstants.FaultCloseReason_Boom,
+                    s_proxyServerAddress,
+                    ct)
                 .ConfigureAwait(false);
         }
 
         // Test device client recovery when proxy settings are enabled
-        [TestCategory("Proxy")]
         [TestMethod]
-        [Timeout(TestTimeoutMilliseconds)]
-        public async Task Message_TcpConnectionLossSendRecovery_MqttWs_WithProxy()
+        [TestCategory("Proxy")]
+        public async Task Telemetry_ConnectionLossSendRecovery_AmqpWs_WithProxy()
         {
+            // Setting up one cancellation token for the complete test flow
+            using var cts = new CancellationTokenSource(s_testTimeout);
+            CancellationToken ct = cts.Token;
+
             await SendMessageRecoveryAsync(
-                    new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket),
+                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
                     FaultInjectionConstants.FaultType_Tcp,
                     FaultInjectionConstants.FaultCloseReason_Boom,
-                    proxyAddress: s_proxyServerAddress)
+                    s_proxyServerAddress,
+                    ct)
                 .ConfigureAwait(false);
         }
 
         [TestMethod]
-        [Timeout(TestTimeoutMilliseconds)]
-        public async Task Message_AmqpConnectionLossSendRecovery_Amqp()
+        [DataRow(IotHubClientTransportProtocol.Tcp)]
+        [DataRow(IotHubClientTransportProtocol.WebSocket)]
+        public async Task Telemetry_AmqpConnectionLossSendRecovery_Amqp(IotHubClientTransportProtocol protocol)
         {
+            // Setting up one cancellation token for the complete test flow
+            using var cts = new CancellationTokenSource(s_testTimeout);
+            CancellationToken ct = cts.Token;
+
             await SendMessageRecoveryAsync(
-                    new IotHubClientAmqpSettings(),
+                    new IotHubClientAmqpSettings(protocol),
                     FaultInjectionConstants.FaultType_AmqpConn,
-                    "")
+                    "",
+                    ct)
                 .ConfigureAwait(false);
         }
 
         [TestMethod]
-        [Timeout(TestTimeoutMilliseconds)]
-        public async Task Message_AmqpConnectionLossSendRecovery_AmqpWs()
+        [DataRow(IotHubClientTransportProtocol.Tcp)]
+        [DataRow(IotHubClientTransportProtocol.WebSocket)]
+        public async Task Telemetry_AmqpSessionLossSendRecovery_Amqp(IotHubClientTransportProtocol protocol)
         {
-            await SendMessageRecoveryAsync(
-                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
-                    FaultInjectionConstants.FaultType_AmqpConn,
-                    "")
-                .ConfigureAwait(false);
-        }
+            // Setting up one cancellation token for the complete test flow
+            using var cts = new CancellationTokenSource(s_testTimeout);
+            CancellationToken ct = cts.Token;
 
-        [TestMethod]
-        [Timeout(TestTimeoutMilliseconds)]
-        public async Task Message_AmqpSessionLossSendRecovery_Amqp()
-        {
             await SendMessageRecoveryAsync(
-                    new IotHubClientAmqpSettings(),
+                    new IotHubClientAmqpSettings(protocol),
                     FaultInjectionConstants.FaultType_AmqpSess,
-                    "")
+                    "",
+                    ct)
                 .ConfigureAwait(false);
         }
 
         [TestMethod]
-        [Timeout(TestTimeoutMilliseconds)]
-        public async Task Message_AmqpSessionLossSendRecovery_AmqpWs()
+        [DataRow(IotHubClientTransportProtocol.Tcp)]
+        [DataRow(IotHubClientTransportProtocol.WebSocket)]
+        public async Task Telemetry_AmqpD2cLinkDropSendRecovery_Amqp(IotHubClientTransportProtocol protocol)
         {
-            await SendMessageRecoveryAsync(
-                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
-                    FaultInjectionConstants.FaultType_AmqpSess,
-                    "")
-                .ConfigureAwait(false);
-        }
+            // Setting up one cancellation token for the complete test flow
+            using var cts = new CancellationTokenSource(s_testTimeout);
+            CancellationToken ct = cts.Token;
 
-        [TestMethod]
-        [Timeout(TestTimeoutMilliseconds)]
-        public async Task Message_AmqpD2cLinkDropSendRecovery_Amqp()
-        {
             await SendMessageRecoveryAsync(
-                    new IotHubClientAmqpSettings(),
+                    new IotHubClientAmqpSettings(protocol),
                     FaultInjectionConstants.FaultType_AmqpD2C,
-                    FaultInjectionConstants.FaultCloseReason_Boom)
+                    FaultInjectionConstants.FaultCloseReason_Boom,
+                    ct)
                 .ConfigureAwait(false);
         }
 
         [TestMethod]
-        [Timeout(TestTimeoutMilliseconds)]
-        public async Task Message_AmqpD2cLinkDropSendRecovery_AmqpWs()
-        {
-            await SendMessageRecoveryAsync(
-                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
-                    FaultInjectionConstants.FaultType_AmqpD2C,
-                    FaultInjectionConstants.FaultCloseReason_Boom)
-                .ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        [Timeout(TestTimeoutMilliseconds)]
-        public async Task Message_ThrottledConnectionRecovery_Amqp()
-        {
-            await SendMessageRecoveryAsync(
-                    new IotHubClientAmqpSettings(),
-                    FaultInjectionConstants.FaultType_Throttle,
-                    FaultInjectionConstants.FaultCloseReason_Boom)
-                .ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        [Timeout(TestTimeoutMilliseconds)]
-        [TestCategory("Flaky")]
-        public async Task Message_ThrottledConnectionRecovery_AmqpWs()
-        {
-            await SendMessageRecoveryAsync(
-                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
-                    FaultInjectionConstants.FaultType_Throttle,
-                    FaultInjectionConstants.FaultCloseReason_Boom)
-                .ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        [Timeout(TestTimeoutMilliseconds)]
         [DoNotParallelize]
-        public async Task Message_QuotaExceededRecovery_Amqp()
+        [DataRow(IotHubClientTransportProtocol.Tcp, FaultInjectionConstants.FaultType_Throttle, FaultInjectionConstants.FaultCloseReason_Boom)]
+        [DataRow(IotHubClientTransportProtocol.WebSocket, FaultInjectionConstants.FaultType_Throttle, FaultInjectionConstants.FaultCloseReason_Boom)]
+        [DataRow(IotHubClientTransportProtocol.Tcp, FaultInjectionConstants.FaultType_QuotaExceeded, FaultInjectionConstants.FaultCloseReason_Boom)]
+        [DataRow(IotHubClientTransportProtocol.WebSocket, FaultInjectionConstants.FaultType_QuotaExceeded, FaultInjectionConstants.FaultCloseReason_Boom)]
+        public async Task Telemetry_ServicLevelRecoverableFault_Amqp(IotHubClientTransportProtocol protocol, string faultType, string faultReason)
         {
+            // Setting up one cancellation token for the complete test flow
+            using var cts = new CancellationTokenSource(s_testTimeout);
+            CancellationToken ct = cts.Token;
+
             await SendMessageRecoveryAsync(
-                    new IotHubClientAmqpSettings(),
-                    FaultInjectionConstants.FaultType_QuotaExceeded,
-                    FaultInjectionConstants.FaultCloseReason_Boom)
+                    new IotHubClientAmqpSettings(protocol),
+                    faultType,
+                    faultReason,
+                    ct)
                 .ConfigureAwait(false);
         }
 
         [TestMethod]
-        [Timeout(LongRunningTestTimeoutMilliseconds)]
-        [DoNotParallelize]
-        public async Task Message_QuotaExceededRecovery_AmqpWs()
+        [DataRow(IotHubClientTransportProtocol.Tcp)]
+        [DataRow(IotHubClientTransportProtocol.WebSocket)]
+        public async Task Telemetry_AuthenticationErrorNoRecovery_Amqp(IotHubClientTransportProtocol protocol)
         {
-            await SendMessageRecoveryAsync(
-                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
-                    FaultInjectionConstants.FaultType_QuotaExceeded,
-                    FaultInjectionConstants.FaultCloseReason_Boom)
-                .ConfigureAwait(false);
-        }
+            // arrange
+            // Setting up one cancellation token for the complete test flow
+            using var cts = new CancellationTokenSource(s_testTimeout);
+            CancellationToken ct = cts.Token;
 
-        [TestMethod]
-        [Timeout(TestTimeoutMilliseconds)]
-        public async Task Message_AuthenticationNoRecovery_Amqp()
-        {
             // act
             Func<Task> act = async () =>
             {
                 await SendMessageRecoveryAsync(
-                        new IotHubClientAmqpSettings(),
+                        new IotHubClientAmqpSettings(protocol),
                         FaultInjectionConstants.FaultType_Auth,
-                        FaultInjectionConstants.FaultCloseReason_Boom)
+                        FaultInjectionConstants.FaultCloseReason_Boom,
+                        ct)
                 .ConfigureAwait(false);
             };
 
@@ -229,100 +232,28 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             var error = await act.Should().ThrowAsync<IotHubClientException>();
             error.And.ErrorCode.Should().Be(IotHubClientErrorCode.Unauthorized);
             error.And.IsTransient.Should().BeFalse();
-        }
-
-        [TestMethod]
-        [Timeout(TestTimeoutMilliseconds)]
-        public async Task Message_AuthenticationNoRecovery_AmqpWs()
-        {
-            // act
-            Func<Task> act = async () =>
-            {
-                await SendMessageRecoveryAsync(
-                        new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
-                        FaultInjectionConstants.FaultType_Auth,
-                        FaultInjectionConstants.FaultCloseReason_Boom)
-                .ConfigureAwait(false);
-            };
-
-            // assert
-            var error = await act.Should().ThrowAsync<IotHubClientException>();
-            error.And.ErrorCode.Should().Be(IotHubClientErrorCode.Unauthorized);
-            error.And.IsTransient.Should().BeFalse();
-        }
-
-        // Graceful disconnection recovery test is marked as a build verification test
-        // to test client reconnection logic in PR runs.
-        [TestCategory("FaultInjectionBVT")]
-        [TestMethod]
-        [Timeout(TestTimeoutMilliseconds)]
-        public async Task Message_GracefulShutdownSendRecovery_Amqp()
-        {
-            await SendMessageRecoveryAsync(
-                    new IotHubClientAmqpSettings(),
-                    FaultInjectionConstants.FaultType_GracefulShutdownAmqp,
-                    FaultInjectionConstants.FaultCloseReason_Bye)
-                .ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        [Timeout(TestTimeoutMilliseconds)]
-        public async Task Message_GracefulShutdownSendRecovery_AmqpWs()
-        {
-            await SendMessageRecoveryAsync(
-                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
-                    FaultInjectionConstants.FaultType_GracefulShutdownAmqp,
-                    FaultInjectionConstants.FaultCloseReason_Bye)
-                .ConfigureAwait(false);
-        }
-
-        // Graceful disconnection recovery test is marked as a build verification test
-        // to test client reconnection logic in PR runs.
-        [TestMethod]
-        [Timeout(TestTimeoutMilliseconds)]
-        [TestCategory("FaultInjectionBVT")]
-        public async Task Message_GracefulShutdownSendRecovery_Mqtt()
-        {
-            await SendMessageRecoveryAsync(
-                    new IotHubClientMqttSettings(),
-                    FaultInjectionConstants.FaultType_GracefulShutdownMqtt,
-                    FaultInjectionConstants.FaultCloseReason_Bye)
-                .ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        [Timeout(TestTimeoutMilliseconds)]
-        public async Task Message_GracefulShutdownSendRecovery_MqttWs()
-        {
-            await SendMessageRecoveryAsync(
-                    new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket),
-                    FaultInjectionConstants.FaultType_GracefulShutdownMqtt,
-                    FaultInjectionConstants.FaultCloseReason_Bye)
-                .ConfigureAwait(false);
         }
 
         internal async Task SendMessageRecoveryAsync(
             IotHubClientTransportSettings transportSettings,
             string faultType,
             string reason,
-            TimeSpan retryDuration = default,
-            string proxyAddress = null)
+            CancellationToken ct)
         {
-            TimeSpan operationTimeout = retryDuration == TimeSpan.Zero
-                ? FaultInjection.RecoveryTime
-                : retryDuration;
+            await SendMessageRecoveryAsync(transportSettings, faultType, reason, null, ct).ConfigureAwait(false);
+        }
 
-            async Task InitAsync(IotHubDeviceClient deviceClient, TestDevice testDevice)
+        internal async Task SendMessageRecoveryAsync(
+            IotHubClientTransportSettings transportSettings,
+            string faultType,
+            string reason,
+            string proxyAddress,
+            CancellationToken ct)
+        {
+            async Task TestOperationAsync(TestDevice testDevice, TestDeviceCallbackHandler _, CancellationToken ct)
             {
-                using var cts = new CancellationTokenSource(operationTimeout);
-                await deviceClient.OpenAsync(cts.Token).ConfigureAwait(false);
-            }
-
-            async Task TestOperationAsync(IotHubDeviceClient deviceClient, TestDevice testDevice)
-            {
-                TelemetryMessage testMessage = TelemetryMessageE2eTests.ComposeD2cTestMessage(out string _, out string _);
-                using var cts = new CancellationTokenSource(operationTimeout);
-                await deviceClient.SendTelemetryAsync(testMessage, cts.Token).ConfigureAwait(false);
+                TelemetryMessage testMessage = TelemetryMessageHelper.ComposeTestMessage(out string _, out string _);
+                await testDevice.DeviceClient.SendTelemetryAsync(testMessage, ct).ConfigureAwait(false);
             };
 
             await FaultInjection
@@ -335,9 +266,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                     reason,
                     FaultInjection.DefaultFaultDelay,
                     FaultInjection.DefaultFaultDuration,
-                    InitAsync,
+                    (d, c, ct) => Task.FromResult(false),
                     TestOperationAsync,
-                    () => Task.FromResult(false))
+                    (ct) => Task.FromResult(false),
+                    ct)
                 .ConfigureAwait(false);
         }
     }

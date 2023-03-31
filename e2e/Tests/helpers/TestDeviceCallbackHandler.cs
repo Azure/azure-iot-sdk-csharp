@@ -2,11 +2,15 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
+using Microsoft.Azure.Amqp.Framing;
 using Microsoft.Azure.Devices.Client;
+using Microsoft.VisualStudio.TestPlatform.CommunicationUtilities;
 using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.E2ETests.Helpers
@@ -151,21 +155,30 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
 
         internal async Task SetIncomingMessageCallbackHandlerAndCompleteMessageAsync<T>(CancellationToken ct = default)
         {
-            await _deviceClient.SetIncomingMessageCallbackAsync((IncomingMessage message) =>
+            string receivedMessageDestination = $"/devices/{_testDeviceId}/messages/deviceBound";
+
+            await _deviceClient.SetIncomingMessageCallbackAsync((IncomingMessage receivedMessage) =>
             {
-                VerboseTestLogger.WriteLine($"{nameof(SetIncomingMessageCallbackHandlerAndCompleteMessageAsync)}: DeviceClient {_testDeviceId} received message with Id: {message.MessageId}.");
+                VerboseTestLogger.WriteLine($"{nameof(SetIncomingMessageCallbackHandlerAndCompleteMessageAsync)}: DeviceClient {_testDeviceId} received message with Id: {receivedMessage.MessageId}.");
 
                 try
                 {
-                    message.MessageId.Should().Be(ExpectedOutgoingMessage.MessageId, "Received message Id should match what was sent by service");
-                    message.UserId.Should().Be(ExpectedOutgoingMessage.UserId, "Received user Id should match what was sent by service");
-                    message.TryGetPayload(out T payload).Should().BeTrue();
+                    receivedMessage.MessageId.Should().Be(ExpectedOutgoingMessage.MessageId, "Received message Id should match what was sent by service");
+                    receivedMessage.UserId.Should().Be(ExpectedOutgoingMessage.UserId, "Received user Id should match what was sent by service");
+                    receivedMessage.To.Should().Be(receivedMessageDestination, "Received message destination is not what was sent by service");
 
+                    receivedMessage.TryGetPayload(out T actualPayload).Should().BeTrue();
                     ExpectedOutgoingMessage.Payload.Should().BeOfType<T>();
                     var expectedPayload = (T)ExpectedOutgoingMessage.Payload;
-                    payload.Should().Be(expectedPayload);
+                    actualPayload.Should().Be(expectedPayload);
 
-                    VerboseTestLogger.WriteLine($"{nameof(SetIncomingMessageCallbackHandlerAndCompleteMessageAsync)}: DeviceClient completed message with Id: {message.MessageId}.");
+                    receivedMessage.Properties.Count.Should().Be(ExpectedOutgoingMessage.Properties.Count, $"The count of received properties did not match for device {_testDeviceId}");
+                    KeyValuePair<string, string> expectedMessageProperties = ExpectedOutgoingMessage.Properties.Single();
+                    KeyValuePair<string, string> receivedMessageProperties = receivedMessage.Properties.Single();
+                    receivedMessageProperties.Key.Should().Be(expectedMessageProperties.Key, $"The key \"property1\" did not match for device {_testDeviceId}");
+                    receivedMessageProperties.Value.Should().Be(expectedMessageProperties.Value, $"The value of \"property1\" did not match for device {_testDeviceId}");
+
+                    VerboseTestLogger.WriteLine($"{nameof(SetIncomingMessageCallbackHandlerAndCompleteMessageAsync)}: DeviceClient completed message with Id: {receivedMessage.MessageId}.");
                     return Task.FromResult(MessageAcknowledgement.Complete);
                 }
                 catch (Exception ex)

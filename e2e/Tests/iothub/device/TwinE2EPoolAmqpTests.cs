@@ -18,105 +18,46 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
     public class TwinE2EPoolAmqpTests : E2EMsTestBase
     {
         private readonly string _devicePrefix = $"{nameof(TwinE2EPoolAmqpTests)}_";
-        private static readonly TimeSpan s_defaultTwinResponseTimeout = TimeSpan.FromMinutes(1);
 
         [TestMethod]
-        [Timeout(TestTimeoutMilliseconds)]
-        public async Task Twin_DeviceSak_DeviceSetsReportedPropertyAndGetsItBack_MultipleConnections_Amqp()
+        [DataRow(IotHubClientTransportProtocol.Tcp, ConnectionStringAuthScope.Device)]
+        [DataRow(IotHubClientTransportProtocol.WebSocket, ConnectionStringAuthScope.Device)]
+        [DataRow(IotHubClientTransportProtocol.Tcp, ConnectionStringAuthScope.IotHub)]
+        [DataRow(IotHubClientTransportProtocol.WebSocket, ConnectionStringAuthScope.IotHub)]
+        public async Task Twin_DeviceSak_DeviceSetsReportedPropertyAndGetsItBack_MultipleConnections_Amqp(IotHubClientTransportProtocol protocol, ConnectionStringAuthScope authScope)
         {
+            // Setting up one cancellation token for the complete test flow
+            using var cts = new CancellationTokenSource(s_testTimeout);
+            CancellationToken ct = cts.Token;
+
             await Twin_DeviceSetsReportedPropertyAndGetsItBackPoolOverAmqp(
                     TestDeviceType.Sasl,
-                    new IotHubClientAmqpSettings(),
-                    PoolingOverAmqp.MultipleConnections_PoolSize,
-                    PoolingOverAmqp.MultipleConnections_DevicesCount)
-                .ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        [Timeout(TestTimeoutMilliseconds)]
-        public async Task Twin_DeviceSak_DeviceSetsReportedPropertyAndGetsItBack_MultipleConnections_AmqpWs()
-        {
-            await Twin_DeviceSetsReportedPropertyAndGetsItBackPoolOverAmqp(
-                    TestDeviceType.Sasl,
-                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
-                    PoolingOverAmqp.MultipleConnections_PoolSize,
-                    PoolingOverAmqp.MultipleConnections_DevicesCount)
-                .ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        [Timeout(TestTimeoutMilliseconds)]
-        public async Task Twin_IoTHubSak_DeviceSetsReportedPropertyAndGetsItBack_MultipleConnections_Amqp()
-        {
-            await Twin_DeviceSetsReportedPropertyAndGetsItBackPoolOverAmqp(
-                    TestDeviceType.Sasl,
-                    new IotHubClientAmqpSettings(),
+                    new IotHubClientAmqpSettings(protocol),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
-                    authScope: ConnectionStringAuthScope.IotHub)
+                    authScope,
+                    ct)
                 .ConfigureAwait(false);
         }
 
         [TestMethod]
-        [Timeout(TestTimeoutMilliseconds)]
-        public async Task Twin_IotHubSak_DeviceSetsReportedPropertyAndGetsItBack_MultipleConnections_AmqpWs()
+        [DataRow(IotHubClientTransportProtocol.Tcp, ConnectionStringAuthScope.Device)]
+        [DataRow(IotHubClientTransportProtocol.WebSocket, ConnectionStringAuthScope.Device)]
+        [DataRow(IotHubClientTransportProtocol.Tcp, ConnectionStringAuthScope.IotHub)]
+        [DataRow(IotHubClientTransportProtocol.WebSocket, ConnectionStringAuthScope.IotHub)]
+        public async Task Twin_DeviceSak_ServiceSetsDesiredPropertyAndDeviceReceivesEvent_MultipleConnections_Amqp(IotHubClientTransportProtocol protocol, ConnectionStringAuthScope authScope)
         {
-            await Twin_DeviceSetsReportedPropertyAndGetsItBackPoolOverAmqp(
+            // Setting up one cancellation token for the complete test flow
+            using var cts = new CancellationTokenSource(s_testTimeout);
+            CancellationToken ct = cts.Token;
+
+            await ServiceSetsDesiredPropertyAndDeviceReceivesEventPoolOverAmqp(
                     TestDeviceType.Sasl,
-                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
+                    new IotHubClientAmqpSettings(protocol),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
-                    authScope: ConnectionStringAuthScope.IotHub)
-                .ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        [Timeout(TestTimeoutMilliseconds)]
-        public async Task Twin_DeviceSak_ServiceSetsDesiredPropertyAndDeviceReceivesEvent_MultipleConnections_Amqp()
-        {
-            await ServiceSetsDesiredPropertyAndDeviceReceivesEventPoolOverAmqp(
-                    TestDeviceType.Sasl,
-                    new IotHubClientAmqpSettings(),
-                    PoolingOverAmqp.MultipleConnections_PoolSize,
-                    PoolingOverAmqp.MultipleConnections_DevicesCount)
-                .ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        [Timeout(TestTimeoutMilliseconds)]
-        public async Task Twin_DeviceSak_ServiceSetsDesiredPropertyAndDeviceReceivesEvent_MultipleConnections_AmqpWs()
-        {
-            await ServiceSetsDesiredPropertyAndDeviceReceivesEventPoolOverAmqp(
-                    TestDeviceType.Sasl,
-                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
-                    PoolingOverAmqp.MultipleConnections_PoolSize,
-                    PoolingOverAmqp.MultipleConnections_DevicesCount)
-                .ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        [Timeout(TestTimeoutMilliseconds)]
-        public async Task Twin_IoTHubSak_ServiceSetsDesiredPropertyAndDeviceReceivesEvent_MultipleConnections_Amqp()
-        {
-            await ServiceSetsDesiredPropertyAndDeviceReceivesEventPoolOverAmqp(
-                    TestDeviceType.Sasl,
-                    new IotHubClientAmqpSettings(),
-                    PoolingOverAmqp.MultipleConnections_PoolSize,
-                    PoolingOverAmqp.MultipleConnections_DevicesCount,
-                    authScope: ConnectionStringAuthScope.IotHub)
-                .ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        [Timeout(TestTimeoutMilliseconds)]
-        public async Task Twin_IoTHubSak_ServiceSetsDesiredPropertyAndDeviceReceivesEvent_MultipleConnections_AmqpWs()
-        {
-            await ServiceSetsDesiredPropertyAndDeviceReceivesEventPoolOverAmqp(
-                    TestDeviceType.Sasl,
-                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
-                    PoolingOverAmqp.MultipleConnections_PoolSize,
-                    PoolingOverAmqp.MultipleConnections_DevicesCount,
-                    authScope: ConnectionStringAuthScope.IotHub)
+                    authScope,
+                    ct)
                 .ConfigureAwait(false);
         }
 
@@ -125,12 +66,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             IotHubClientAmqpSettings transportSettings,
             int poolSize,
             int devicesCount,
-            ConnectionStringAuthScope authScope = ConnectionStringAuthScope.Device)
+            ConnectionStringAuthScope authScope,
+            CancellationToken ct)
         {
-            async Task TestOperationAsync(TestDevice testDevice, TestDeviceCallbackHandler _)
+            async Task TestOperationAsync(TestDevice testDevice, TestDeviceCallbackHandler _, CancellationToken ct)
             {
                 VerboseTestLogger.WriteLine($"{nameof(TwinE2EPoolAmqpTests)}: Setting reported propery and verifying twin for device {testDevice.Id}");
-                await TwinE2ETests.Twin_DeviceSetsReportedPropertyAndGetsItBackAsync(testDevice.DeviceClient, testDevice.Id, Guid.NewGuid().ToString()).ConfigureAwait(false);
+                await TwinE2ETests.Twin_DeviceSetsReportedPropertyAndGetsItBackAsync(testDevice.DeviceClient, testDevice.Id, Guid.NewGuid().ToString(), ct).ConfigureAwait(false);
             }
 
             await PoolingOverAmqp
@@ -142,7 +84,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                     null,
                     TestOperationAsync,
                     null,
-                    authScope)
+                    authScope,
+                    ct)
                 .ConfigureAwait(false);
         }
 
@@ -151,42 +94,29 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             IotHubClientAmqpSettings transportSettings,
             int poolSize,
             int devicesCount,
-            ConnectionStringAuthScope authScope = ConnectionStringAuthScope.Device)
+            ConnectionStringAuthScope authScope,
+            CancellationToken ct)
         {
-            var twinPropertyMap = new Dictionary<string, List<string>>();
-
-            async Task InitOperationAsync(TestDevice testDevice, TestDeviceCallbackHandler testDeviceCallbackHandler)
+            async Task InitOperationAsync(TestDevice testDevice, TestDeviceCallbackHandler testDeviceCallbackHandler, CancellationToken ct)
             {
-                string propName = Guid.NewGuid().ToString();
-                string propValue = Guid.NewGuid().ToString();
-                twinPropertyMap.Add(testDevice.Id, new List<string> { propName, propValue });
-
                 VerboseTestLogger.WriteLine($"{nameof(TwinE2EPoolAmqpTests)}: Setting desired propery callback for device {testDevice.Id}");
-                VerboseTestLogger.WriteLine($"{nameof(ServiceSetsDesiredPropertyAndDeviceReceivesEventPoolOverAmqp)}: name={propName}, value={propValue}");
-                await testDeviceCallbackHandler.SetTwinPropertyUpdateCallbackHandlerAndProcessAsync<string>().ConfigureAwait(false);
+                await testDeviceCallbackHandler.SetTwinPropertyUpdateCallbackHandlerAndProcessAsync<string>(ct).ConfigureAwait(false);
             }
 
-            async Task TestOperationAsync(TestDevice testDevice, TestDeviceCallbackHandler testDeviceCallbackHandler)
+            async Task TestOperationAsync(TestDevice testDevice, TestDeviceCallbackHandler testDeviceCallbackHandler, CancellationToken ct)
             {
                 VerboseTestLogger.WriteLine($"{nameof(TwinE2EPoolAmqpTests)}: Updating the desired properties for device {testDevice.Id}");
-                List<string> twinProperties = twinPropertyMap[testDevice.Id];
-                string propName = twinProperties[0];
-                string propValue = twinProperties[1];
+                string propName = Guid.NewGuid().ToString();
+                string propValue = Guid.NewGuid().ToString();
+                VerboseTestLogger.WriteLine($"{nameof(ServiceSetsDesiredPropertyAndDeviceReceivesEventPoolOverAmqp)}: name={propName}, value={propValue}");
 
                 testDeviceCallbackHandler.ExpectedTwinPatchKeyValuePair = new Tuple<string, object>(propName, propValue);
 
-                using var twinResponseCts = new CancellationTokenSource(s_defaultTwinResponseTimeout);
-                Task updateReceivedTask = testDeviceCallbackHandler.WaitForTwinCallbackAsync(twinResponseCts.Token);
+                Task updateReceivedTask = testDeviceCallbackHandler.WaitForTwinCallbackAsync(ct);
 
                 await Task.WhenAll(
-                    TwinE2ETests.RegistryManagerUpdateDesiredPropertyAsync(testDevice.Id, propName, propValue),
+                    TwinE2ETests.RegistryManagerUpdateDesiredPropertyAsync(testDevice.Id, propName, propValue, ct),
                     updateReceivedTask).ConfigureAwait(false);
-            }
-
-            Task CleanupOperationAsync()
-            {
-                twinPropertyMap.Clear();
-                return Task.FromResult(0);
             }
 
             await PoolingOverAmqp
@@ -197,8 +127,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                     devicesCount,
                     InitOperationAsync,
                     TestOperationAsync,
-                    CleanupOperationAsync,
-                    authScope)
+                    (ct) => Task.FromResult(false),
+                    authScope,
+                    ct)
                 .ConfigureAwait(false);
         }
     }

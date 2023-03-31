@@ -57,9 +57,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
         /// </summary>
         /// <param name="namePrefix">The prefix to apply to your device name</param>
         /// <param name="type">The way the device will authenticate</param>
-        internal static async Task<TestDevice> GetTestDeviceAsync(string namePrefix, TestDeviceType type = TestDeviceType.Sasl)
+        internal static async Task<TestDevice> GetTestDeviceAsync(string namePrefix, TestDeviceType type = TestDeviceType.Sasl, CancellationToken ct = default)
         {
-            TestDevice ret = await CreateDeviceAsync(type, $"{namePrefix}{type}_").ConfigureAwait(false);
+            TestDevice ret = await CreateDeviceAsync(type, $"{namePrefix}{type}_", ct).ConfigureAwait(false);
             VerboseTestLogger.WriteLine($"{nameof(GetTestDeviceAsync)}: Using device {ret.Id}.");
             return ret;
         }
@@ -122,7 +122,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
         /// Sometimes the just newly created device can fail to connect if there is lag in the hub for the identity existing.
         /// Retry a few times to prevent test failures.
         /// </summary>
-        internal async Task OpenWithRetryAsync(CancellationToken ct = default)
+        internal async Task OpenWithRetryAsync(CancellationToken ct)
         {
             if (DeviceClient == null)
             {
@@ -132,7 +132,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
         }
 
         /// <summary>
-        internal static async Task OpenWithRetryAsync(IotHubDeviceClient client, CancellationToken ct = default)
+        internal static async Task OpenWithRetryAsync(IotHubDeviceClient client, CancellationToken ct)
         {
             int attempt = 1;
             while (true)
@@ -152,7 +152,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
             }
         }
 
-        internal async Task RemoveDeviceAsync()
+        internal async Task RemoveDeviceAsync(CancellationToken ct)
         {
             await RetryOperationHelper
                 .RunWithHubServiceRetryAsync(
@@ -161,7 +161,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                         await ServiceClient.Devices.DeleteAsync(Id).ConfigureAwait(false);
                     },
                     s_getRetryPolicy,
-                    CancellationToken.None)
+                    ct)
                 .ConfigureAwait(false);
         }
 
@@ -182,10 +182,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
             _authCertificate = null;
             AuthenticationMethod = null;
 
-            await RemoveDeviceAsync().ConfigureAwait(false);
+            await RemoveDeviceAsync(CancellationToken.None).ConfigureAwait(false);
         }
 
-        private static async Task<TestDevice> CreateDeviceAsync(TestDeviceType type, string prefix)
+        private static async Task<TestDevice> CreateDeviceAsync(TestDeviceType type, string prefix, CancellationToken ct)
         {
             string deviceName = $"E2E_{prefix}{Guid.NewGuid()}";
 
@@ -222,7 +222,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                         device = await ServiceClient.Devices.CreateAsync(requestDevice).ConfigureAwait(false);
                     },
                     s_createRetryPolicy,
-                    CancellationToken.None)
+                    ct)
                 .ConfigureAwait(false);
 
             // Confirm the device exists in the registry before calling it good to avoid downstream test failures.
@@ -233,7 +233,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                         await ServiceClient.Devices.GetAsync(requestDevice.Id).ConfigureAwait(false);
                     },
                     s_getRetryPolicy,
-                    CancellationToken.None)
+                    ct)
                 .ConfigureAwait(false);
 
             return device == null

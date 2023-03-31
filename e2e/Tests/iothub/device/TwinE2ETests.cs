@@ -41,9 +41,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         // See https://github.com/JamesNK/Newtonsoft.Json/issues/1511 for more details about the known issue.
         private const string DateTimeValue = "2023-01-31T10:37:08.4599400";
 
-        private static readonly TimeSpan s_defaultOperationTimeout = TimeSpan.FromSeconds(30);
-        private static readonly TimeSpan s_defaultTwinResponseTimeout = TimeSpan.FromMinutes(1);
-
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Twin_DeviceSetsReportedPropertyAndGetsItBack_Mqtt()
@@ -449,7 +446,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             Assert.AreEqual(0, connectionStatusChangeCount, "AMQP should not be disconnected.");
         }
 
-        public static async Task Twin_DeviceSetsReportedPropertyAndGetsItBackAsync<T>(IotHubDeviceClient deviceClient, string deviceId, T propValue)
+        public static async Task Twin_DeviceSetsReportedPropertyAndGetsItBackAsync<T>(IotHubDeviceClient deviceClient, string deviceId, T propValue, CancellationToken ct)
         {
             string propName = Guid.NewGuid().ToString();
 
@@ -460,24 +457,18 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 [propName] = propValue
             };
 
-            using var openCts = new CancellationTokenSource(s_defaultOperationTimeout);
-            await deviceClient.OpenAsync(openCts.Token).ConfigureAwait(false);
-
-            using var updateReportedCts = new CancellationTokenSource(s_defaultOperationTimeout);
-            long newTwinVersion = await deviceClient.UpdateReportedPropertiesAsync(props, updateReportedCts.Token).ConfigureAwait(false);
+            await deviceClient.OpenAsync(ct).ConfigureAwait(false);
+            long newTwinVersion = await deviceClient.UpdateReportedPropertiesAsync(props, ct).ConfigureAwait(false);
 
             // Validate the updated twin from the device-client
-            using var getDeviceTwinCts = new CancellationTokenSource(s_defaultOperationTimeout);
-            TwinProperties deviceTwin = await deviceClient.GetTwinPropertiesAsync(getDeviceTwinCts.Token).ConfigureAwait(false);
-
+            TwinProperties deviceTwin = await deviceClient.GetTwinPropertiesAsync(ct).ConfigureAwait(false);
             bool propertyFound = deviceTwin.Reported.TryGetValue(propName, out T actual);
             propertyFound.Should().BeTrue();
             // We don't support nested deserialization yet, so we'll need to serialize the response and compare them.
             JsonConvert.SerializeObject(actual).Should().Be(JsonConvert.SerializeObject(propValue));
 
             // Validate the updated twin from the service-client
-            using var getServiceTwinCts = new CancellationTokenSource(s_defaultOperationTimeout);
-            ClientTwin completeTwin = await s_serviceClient.Twins.GetAsync(deviceId, getServiceTwinCts.Token).ConfigureAwait(false);
+            ClientTwin completeTwin = await s_serviceClient.Twins.GetAsync(deviceId, ct).ConfigureAwait(false);
             object actualProp = completeTwin.Properties.Reported[propName];
             JsonConvert.SerializeObject(actualProp).Should().Be(JsonConvert.SerializeObject(propValue));
             completeTwin.Properties.Reported.Version.Should().Be(newTwinVersion);
@@ -595,27 +586,25 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             Assert.AreEqual(JsonConvert.SerializeObject(actualProp), JsonConvert.SerializeObject(propValue));
         }
 
-        public static async Task RegistryManagerUpdateDesiredPropertyAsync(string deviceId, string propName, object propValue)
+        public static async Task RegistryManagerUpdateDesiredPropertyAsync(string deviceId, string propName, object propValue, CancellationToken ct)
         {
             var twinPatch = new ClientTwin();
             twinPatch.Properties.Desired[propName] = propValue;
 
-            using var updateTwinCts = new CancellationTokenSource(s_defaultOperationTimeout);
-            await s_serviceClient.Twins.UpdateAsync(deviceId, twinPatch, cancellationToken: updateTwinCts.Token).ConfigureAwait(false);
+            await s_serviceClient.Twins.UpdateAsync(deviceId, twinPatch, cancellationToken: ct).ConfigureAwait(false);
         }
 
-        private async Task Twin_ServiceSetsDesiredPropertyAndDeviceUnsubscribes(IotHubClientTransportSettings transportSettings, object propValue)
+        private async Task Twin_ServiceSetsDesiredPropertyAndDeviceUnsubscribes(IotHubClientTransportSettings transportSettings, object propValue, CancellationToken ct)
         {
             string propName = Guid.NewGuid().ToString();
 
             VerboseTestLogger.WriteLine($"{nameof(Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEventAsync)}: name={propName}, value={propValue}");
 
-            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix).ConfigureAwait(false);
+            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix, ct: ct).ConfigureAwait(false);
             var options = new IotHubClientOptions(transportSettings);
             await using var deviceClient = new IotHubDeviceClient(testDevice.ConnectionString, options);
 
-            using var openCts = new CancellationTokenSource(s_defaultOperationTimeout);
-            await TestDevice.OpenWithRetryAsync(deviceClient, openCts.Token).ConfigureAwait(false);
+            await TestDevice.OpenWithRetryAsync(deviceClient, ct).ConfigureAwait(false);
 
             // Set a callback
             await deviceClient.
@@ -628,15 +617,16 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                         Assert.IsNull(patch);
 
                         return Task.FromResult(true);
-                    })
+                    },
+                    ct)
                 .ConfigureAwait(false);
 
             // Unsubscribe
             await deviceClient
-                .SetDesiredPropertyUpdateCallbackAsync(null)
+                .SetDesiredPropertyUpdateCallbackAsync(null, ct)
                 .ConfigureAwait(false);
 
-            await RegistryManagerUpdateDesiredPropertyAsync(testDevice.Id, propName, propValue)
+            await RegistryManagerUpdateDesiredPropertyAsync(testDevice.Id, propName, propValue, ct)
                 .ConfigureAwait(false);
         }
 

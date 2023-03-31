@@ -16,161 +16,67 @@ namespace Microsoft.Azure.Devices.E2ETests
         private readonly string MessageReceive_DevicePrefix = $"{nameof(FaultInjectionPoolAmqpTests)}.MessagaeReceive";
 
         [TestMethod]
-        [Timeout(LongRunningTestTimeoutMilliseconds)]
-        public async Task IncomingMessage_TcpConnectionLossRecovery_MultipleConnections_Amqp()
-        {
-            await ReceiveIncomingMessageRecoveryPoolOverAmqpAsync(
-                    new IotHubClientAmqpSettings(),
-                    PoolingOverAmqp.MultipleConnections_PoolSize,
-                    PoolingOverAmqp.MultipleConnections_DevicesCount,
-                    FaultInjectionConstants.FaultType_Tcp,
-                    FaultInjectionConstants.FaultCloseReason_Boom)
-                .ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        [Timeout(LongRunningTestTimeoutMilliseconds)]
-        public async Task IncomingMessage_TcpConnectionLossRecovery_MultipleConnections_AmqpWs()
-        {
-            await ReceiveIncomingMessageRecoveryPoolOverAmqpAsync(
-                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
-                    PoolingOverAmqp.MultipleConnections_PoolSize,
-                    PoolingOverAmqp.MultipleConnections_DevicesCount,
-                    FaultInjectionConstants.FaultType_Tcp,
-                    FaultInjectionConstants.FaultCloseReason_Boom)
-                .ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        [Timeout(LongRunningTestTimeoutMilliseconds)]
-        public async Task IncomingMessage_AmqpConnectionLossRecovery_MultipleConnections_Amqp()
-        {
-            await ReceiveIncomingMessageRecoveryPoolOverAmqpAsync(
-                    new IotHubClientAmqpSettings(),
-                    PoolingOverAmqp.MultipleConnections_PoolSize,
-                    PoolingOverAmqp.MultipleConnections_DevicesCount,
-                    FaultInjectionConstants.FaultType_AmqpConn,
-                    "")
-                .ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        [Timeout(LongRunningTestTimeoutMilliseconds)]
-        public async Task IncomingMessage_AmqpConnectionLossRecovery_MultipleConnections_AmqpWs()
-        {
-            await ReceiveIncomingMessageRecoveryPoolOverAmqpAsync(
-                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
-                    PoolingOverAmqp.MultipleConnections_PoolSize,
-                    PoolingOverAmqp.MultipleConnections_DevicesCount,
-                    FaultInjectionConstants.FaultType_AmqpConn,
-                    "")
-                .ConfigureAwait(false);
-        }
-
-        // TODO: #950 - Link/session faults for message send/ method/ twin operations closes the connection.
-        [TestMethod]
-        [Timeout(LongRunningTestTimeoutMilliseconds)]
-        public async Task IncomingMessage_AmqpSessionLossRecovery_MultipleConnections_Amqp()
-        {
-            await ReceiveIncomingMessageRecoveryPoolOverAmqpAsync(
-                    new IotHubClientAmqpSettings(),
-                    PoolingOverAmqp.MultipleConnections_PoolSize,
-                    PoolingOverAmqp.MultipleConnections_DevicesCount,
-                    FaultInjectionConstants.FaultType_AmqpSess,
-                    "")
-                .ConfigureAwait(false);
-        }
-
-        // TODO: #950 - Link/session faults for message send/ method/ twin operations closes the connection.
-        [TestMethod]
-        [Timeout(LongRunningTestTimeoutMilliseconds)]
-        public async Task IncomingMessage_AmqpSessionLossRecovery_MultipleConnections_AmqpWs()
-        {
-            await ReceiveIncomingMessageRecoveryPoolOverAmqpAsync(
-                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
-                    PoolingOverAmqp.MultipleConnections_PoolSize,
-                    PoolingOverAmqp.MultipleConnections_DevicesCount,
-                    FaultInjectionConstants.FaultType_AmqpSess,
-                    "")
-                .ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        [Timeout(LongRunningTestTimeoutMilliseconds)]
         [TestCategory("LongRunning")]
-        public async Task IncomingMessage_AmqpC2dLinkDropRecovery_MultipleConnections_Amqp()
+        [DataRow(IotHubClientTransportProtocol.Tcp, FaultInjectionConstants.FaultType_Tcp, FaultInjectionConstants.FaultCloseReason_Boom)]
+        [DataRow(IotHubClientTransportProtocol.WebSocket, FaultInjectionConstants.FaultType_Tcp, FaultInjectionConstants.FaultCloseReason_Boom)]
+        [DataRow(IotHubClientTransportProtocol.Tcp, FaultInjectionConstants.FaultType_GracefulShutdownAmqp, FaultInjectionConstants.FaultCloseReason_Bye)]
+        [DataRow(IotHubClientTransportProtocol.WebSocket, FaultInjectionConstants.FaultType_GracefulShutdownAmqp, FaultInjectionConstants.FaultCloseReason_Bye)]
+        [DataRow(IotHubClientTransportProtocol.Tcp, FaultInjectionConstants.FaultType_AmqpConn, "")]
+        [DataRow(IotHubClientTransportProtocol.WebSocket, FaultInjectionConstants.FaultType_AmqpConn, "")]
+        public async Task IncomingMessage_ConnectionLossRecovery_MultipleConnections_Amqp(IotHubClientTransportProtocol protocol, string faultType, string faultReason)
         {
+            // Setting up one cancellation token for the complete test flow
+            using var cts = new CancellationTokenSource(s_longRunningTestTimeout);
+            CancellationToken ct = cts.Token;
+
             await ReceiveIncomingMessageRecoveryPoolOverAmqpAsync(
-                    new IotHubClientAmqpSettings(),
+                    new IotHubClientAmqpSettings(protocol),
+                    PoolingOverAmqp.MultipleConnections_PoolSize,
+                    PoolingOverAmqp.MultipleConnections_DevicesCount,
+                    faultType,
+                    faultReason,
+                    ct)
+                .ConfigureAwait(false);
+        }
+
+        // TODO: #950 - Link/session faults for message send/ method/ twin operations closes the connection.
+        [TestMethod]
+        [TestCategory("LongRunning")]
+        [DataRow(IotHubClientTransportProtocol.Tcp)]
+        [DataRow(IotHubClientTransportProtocol.WebSocket)]
+        public async Task IncomingMessage_AmqpSessionLossRecovery_MultipleConnections_Amqp(IotHubClientTransportProtocol protocol)
+        {
+            // Setting up one cancellation token for the complete test flow
+            using var cts = new CancellationTokenSource(s_longRunningTestTimeout);
+            CancellationToken ct = cts.Token;
+
+            await ReceiveIncomingMessageRecoveryPoolOverAmqpAsync(
+                    new IotHubClientAmqpSettings(protocol),
+                    PoolingOverAmqp.MultipleConnections_PoolSize,
+                    PoolingOverAmqp.MultipleConnections_DevicesCount,
+                    FaultInjectionConstants.FaultType_AmqpSess,
+                    "",
+                    ct)
+                .ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        [TestCategory("LongRunning")]
+        [DataRow(IotHubClientTransportProtocol.Tcp)]
+        [DataRow(IotHubClientTransportProtocol.WebSocket)]
+        public async Task IncomingMessage_AmqpC2dLinkDropRecovery_MultipleConnections_Amqp(IotHubClientTransportProtocol protocol)
+        {
+            // Setting up one cancellation token for the complete test flow
+            using var cts = new CancellationTokenSource(s_longRunningTestTimeout);
+            CancellationToken ct = cts.Token;
+
+            await ReceiveIncomingMessageRecoveryPoolOverAmqpAsync(
+                    new IotHubClientAmqpSettings(protocol),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     FaultInjectionConstants.FaultType_AmqpC2D,
-                    FaultInjectionConstants.FaultCloseReason_Boom)
-                .ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        [Timeout(LongRunningTestTimeoutMilliseconds)]
-        public async Task IncomingMessage_AmqpC2dLinkDropRecovery_MultipleConnections_AmqpWs()
-        {
-            await ReceiveIncomingMessageRecoveryPoolOverAmqpAsync(
-                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
-                    PoolingOverAmqp.MultipleConnections_PoolSize,
-                    PoolingOverAmqp.MultipleConnections_DevicesCount,
-                    FaultInjectionConstants.FaultType_AmqpC2D,
-                    FaultInjectionConstants.FaultCloseReason_Boom)
-                .ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        [Timeout(LongRunningTestTimeoutMilliseconds)]
-        public async Task IncomingMessage_GracefulShutdownRecovery_MultipleConnections_Amqp()
-        {
-            await ReceiveIncomingMessageRecoveryPoolOverAmqpAsync(
-                    new IotHubClientAmqpSettings(),
-                    PoolingOverAmqp.MultipleConnections_PoolSize,
-                    PoolingOverAmqp.MultipleConnections_DevicesCount,
-                    FaultInjectionConstants.FaultType_GracefulShutdownAmqp,
-                    FaultInjectionConstants.FaultCloseReason_Bye)
-                .ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        [Timeout(LongRunningTestTimeoutMilliseconds)]
-        public async Task IncomingMessage_GracefulShutdownRecovery_MultipleConnections_AmqpWs()
-        {
-            await ReceiveIncomingMessageRecoveryPoolOverAmqpAsync(
-                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
-                    PoolingOverAmqp.MultipleConnections_PoolSize,
-                    PoolingOverAmqp.MultipleConnections_DevicesCount,
-                    FaultInjectionConstants.FaultType_GracefulShutdownAmqp,
-                    FaultInjectionConstants.FaultCloseReason_Bye)
-                .ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        [Timeout(LongRunningTestTimeoutMilliseconds)]
-        public async Task IncomingMessage_DeviceSak_GracefulShutdownRecovery_MultipleConnections_Amqp()
-        {
-            await ReceiveIncomingMessageRecoveryPoolOverAmqpAsync(
-                    new IotHubClientAmqpSettings(),
-                    PoolingOverAmqp.MultipleConnections_PoolSize,
-                    PoolingOverAmqp.MultipleConnections_DevicesCount,
-                    FaultInjectionConstants.FaultType_GracefulShutdownAmqp,
-                    FaultInjectionConstants.FaultCloseReason_Bye)
-                .ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        [Timeout(LongRunningTestTimeoutMilliseconds)]
-        public async Task IncomingMessage_DeviceSak_GracefulShutdownRecovery_MultipleConnections_AmqpWs()
-        {
-            await ReceiveIncomingMessageRecoveryPoolOverAmqpAsync(
-                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
-                    PoolingOverAmqp.MultipleConnections_PoolSize,
-                    PoolingOverAmqp.MultipleConnections_DevicesCount,
-                    FaultInjectionConstants.FaultType_GracefulShutdownAmqp,
-                    FaultInjectionConstants.FaultCloseReason_Bye)
+                    FaultInjectionConstants.FaultCloseReason_Boom,
+                    ct)
                 .ConfigureAwait(false);
         }
 
@@ -179,33 +85,29 @@ namespace Microsoft.Azure.Devices.E2ETests
             int poolSize,
             int devicesCount,
             string faultType,
-            string reason)
+            string reason,
+            CancellationToken ct)
         {
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
-            await serviceClient.Messages.OpenAsync().ConfigureAwait(false);
+            await serviceClient.Messages.OpenAsync(ct).ConfigureAwait(false);
 
-            async Task InitOperationAsync(IotHubDeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler testDeviceCallbackHandler)
+            async Task InitOperationAsync(TestDevice _, TestDeviceCallbackHandler testDeviceCallbackHandler, CancellationToken ct)
             {
-                using var subscribeCallbackCts = new CancellationTokenSource(s_defaultOperationTimeout);
-                await testDeviceCallbackHandler.SetIncomingMessageCallbackHandlerAndCompleteMessageAsync<string>(subscribeCallbackCts.Token).ConfigureAwait(false);
+                await testDeviceCallbackHandler.SetIncomingMessageCallbackHandlerAndCompleteMessageAsync<string>(ct).ConfigureAwait(false);
             }
 
-            async Task TestOperationAsync(IotHubDeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler testDeviceCallbackHandler)
+            async Task TestOperationAsync(TestDevice testDevice, TestDeviceCallbackHandler testDeviceCallbackHandler, CancellationToken ct)
             {
                 OutgoingMessage msg = OutgoingMessageHelper.ComposeTestMessage(out string payload, out string p1Value);
                 testDeviceCallbackHandler.ExpectedOutgoingMessage = msg;
-
-                using var sendMessageCts = new CancellationTokenSource(s_defaultOperationTimeout);
-                await serviceClient.Messages.SendAsync(testDevice.Id, msg, sendMessageCts.Token).ConfigureAwait(false);
-
-                using var receiveMessageCts = new CancellationTokenSource(s_defaultOperationTimeout);
-                await testDeviceCallbackHandler.WaitForIncomingMessageCallbackAsync(receiveMessageCts.Token).ConfigureAwait(false);
+                
+                await serviceClient.Messages.SendAsync(testDevice.Id, msg, ct).ConfigureAwait(false);
+                await testDeviceCallbackHandler.WaitForIncomingMessageCallbackAsync(ct).ConfigureAwait(false);
             }
 
-            async Task CleanupOperationAsync(List<IotHubDeviceClient> deviceClients, List<TestDeviceCallbackHandler> testDeviceCallbackHandlers)
+            async Task CleanupOperationAsync(List<TestDevice> _, List<TestDeviceCallbackHandler> testDeviceCallbackHandlers, CancellationToken ct)
             {
-                using var closeCts = new CancellationTokenSource(s_defaultOperationTimeout);
-                await serviceClient.Messages.CloseAsync(closeCts.Token).ConfigureAwait(false);
+                await serviceClient.Messages.CloseAsync(ct).ConfigureAwait(false);
             }
 
             await FaultInjectionPoolingOverAmqp
@@ -222,7 +124,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     InitOperationAsync,
                     TestOperationAsync,
                     CleanupOperationAsync,
-                    ConnectionStringAuthScope.Device)
+                    ct)
                 .ConfigureAwait(false);
         }
     }

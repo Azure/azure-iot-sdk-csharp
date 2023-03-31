@@ -44,7 +44,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
             _methodCallbackSemaphore?.Dispose();
         }
 
-        internal async Task SetModuleReceiveMethodAndRespondAsync<T,H>(H moduleResponsePayload)
+        internal async Task SetModuleReceiveMethodAndRespondAsync<T>(object moduleResponsePayload, CancellationToken ct)
         {
             await _moduleClient.SetDirectMethodCallbackAsync(
                 (request) =>
@@ -77,7 +77,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                         // Always notify that we got the callback.
                         _methodCallbackSemaphore.Release();
                     }
-                }).ConfigureAwait(false);
+                },
+                ct).ConfigureAwait(false);
         }
 
         internal async Task WaitForMethodCallbackAsync(CancellationToken ct)
