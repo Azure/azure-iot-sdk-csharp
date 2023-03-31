@@ -53,9 +53,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
 
             using var iotHub = new IotHub(
                 s_logger,
-                parameters.IotHubConnectionString,
-                parameters.DeviceId,
-                parameters.TransportProtocol);
+                parameters);
 
             // Log system health after initializing hub
             SystemHealthMonitor.BuildAndLogSystemHealth(s_logger);
