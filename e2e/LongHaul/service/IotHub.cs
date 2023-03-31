@@ -26,7 +26,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
         private static readonly TimeSpan s_deviceCountMonitorInterval = TimeSpan.FromSeconds(30);
 
         private static IotHubServiceClient s_serviceClient;
-        private static HashSet<string> s_deviceSet;
+        private static HashSet<string> s_activeDeviceSet;
 
         private long _totalMethodCallsCount = 0;
         private long _totalDesiredPropertiesUpdatesCount = 0;
@@ -51,7 +51,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                 Protocol = _transportProtocol,
             };
             s_serviceClient = new IotHubServiceClient(_hubConnectionString, options);
-            s_deviceSet = new HashSet<string>();
+            s_activeDeviceSet = new HashSet<string>();
             _logger.Trace("Initialized a new service client instance.", TraceSeverity.Information);
         }
 
@@ -64,41 +64,43 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
         {
             while (!ct.IsCancellationRequested)
             {
-                var payload = new CustomDirectMethodPayload
+                if (s_activeDeviceSet.Contains(_deviceId))
                 {
-                    RandomId = Guid.NewGuid(),
-                    CurrentTimeUtc = DateTimeOffset.UtcNow,
-                    MethodCallsCount = ++_totalMethodCallsCount,
-                };
-
-                var methodInvocation = new DirectMethodServiceRequest("EchoPayload")
-                {
-                    Payload = payload,
-                    ResponseTimeout = TimeSpan.FromSeconds(30),
-                };
-
-                _logger.Trace($"Invoking direct method for device: {_deviceId}", TraceSeverity.Information);
-                _logger.Metric(TotalDirectMethodCallsCount, _totalMethodCallsCount);
-
-                try
-                {
-                    // Invoke the direct method asynchronously and get the response from the simulated device.
-                    DirectMethodClientResponse response = await s_serviceClient.DirectMethods.InvokeAsync(_deviceId, methodInvocation, ct);
-
-                    if (response.TryGetPayload(out CustomDirectMethodPayload responsePayload))
+                    var payload = new CustomDirectMethodPayload
                     {
-                        _logger.Metric(
-                            D2cDirectMethodDelaySeconds,
-                            (DateTimeOffset.UtcNow - responsePayload.CurrentTimeUtc).TotalSeconds);
+                        RandomId = Guid.NewGuid(),
+                        CurrentTimeUtc = DateTimeOffset.UtcNow,
+                        MethodCallsCount = ++_totalMethodCallsCount,
+                    };
+
+                    var methodInvocation = new DirectMethodServiceRequest("EchoPayload")
+                    {
+                        Payload = payload,
+                        ResponseTimeout = TimeSpan.FromSeconds(30),
+                    };
+
+                    _logger.Trace($"Invoking direct method for device: {_deviceId}", TraceSeverity.Information);
+                    _logger.Metric(TotalDirectMethodCallsCount, _totalMethodCallsCount);
+
+                    try
+                    {
+                        // Invoke the direct method asynchronously and get the response from the simulated device.
+                        DirectMethodClientResponse response = await s_serviceClient.DirectMethods.InvokeAsync(_deviceId, methodInvocation, ct);
+
+                        if (response.TryGetPayload(out CustomDirectMethodPayload responsePayload))
+                        {
+                            _logger.Metric(
+                                D2cDirectMethodDelaySeconds,
+                                (DateTimeOffset.UtcNow - responsePayload.CurrentTimeUtc).TotalSeconds);
+                        }
+
+                        _logger.Trace($"Response status: {response.Status}, payload:\n\t{JsonConvert.SerializeObject(response.PayloadAsString)}", TraceSeverity.Information);
                     }
-
-                    _logger.Trace($"Response status: {response.Status}, payload:\n\t{JsonConvert.SerializeObject(response.PayloadAsString)}", TraceSeverity.Information);
+                    catch (IotHubServiceException ex) when (ex.ErrorCode == IotHubServiceErrorCode.DeviceNotOnline)
+                    {
+                        _logger.Trace($"Caught exception invoking direct method {ex}", TraceSeverity.Warning);
+                    }
                 }
-                catch (IotHubServiceException ex) when (ex.ErrorCode == IotHubServiceErrorCode.DeviceNotOnline)
-                {
-                    _logger.Trace($"Caught exception invoking direct method {ex}", TraceSeverity.Warning);
-                }
-
                 await Task.Delay(s_directMethodInvokeInterval, ct).ConfigureAwait(false);
             }
         }
@@ -113,16 +115,16 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
 
                 await foreach (ClientTwin device in allDevices)
                 {
-                    if (s_deviceSet.Contains(device.DeviceId) && device.ConnectionState == ClientConnectionState.Disconnected)
+                    if (s_activeDeviceSet.Contains(device.DeviceId) && device.ConnectionState == ClientConnectionState.Disconnected)
                     {
-                        s_deviceSet.Remove(device.DeviceId);
+                        s_activeDeviceSet.Remove(device.DeviceId);
                     }
-                    else if (!s_deviceSet.Contains(device.DeviceId) && device.ConnectionState == ClientConnectionState.Connected)
+                    else if (!s_activeDeviceSet.Contains(device.DeviceId) && device.ConnectionState == ClientConnectionState.Connected)
                     {
-                        s_deviceSet.Add(device.DeviceId);
+                        s_activeDeviceSet.Add(device.DeviceId);
                     }
 
-                    _logger.Trace($"Total number of connected devices: {s_deviceSet.Count}", TraceSeverity.Information);
+                    _logger.Trace($"Total number of connected devices: {s_activeDeviceSet.Count}", TraceSeverity.Information);
                 }
 
                 await Task.Delay(s_deviceCountMonitorInterval, ct).ConfigureAwait(false);
@@ -133,15 +135,17 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
         {
             while (!ct.IsCancellationRequested)
             {
-                var twin = new ClientTwin();
-                twin.Properties.Desired[keyName] = properties;
+                if (s_activeDeviceSet.Contains(_deviceId))
+                {
+                    var twin = new ClientTwin();
+                    twin.Properties.Desired[keyName] = properties;
 
-                ++_totalDesiredPropertiesUpdatesCount;
-                _logger.Trace($"Updating the desired properties for device: {_deviceId}", TraceSeverity.Information);
-                _logger.Metric(TotalDesiredPropertiesUpdatesCount, _totalDesiredPropertiesUpdatesCount);
+                    ++_totalDesiredPropertiesUpdatesCount;
+                    _logger.Trace($"Updating the desired properties for device: {_deviceId}", TraceSeverity.Information);
+                    _logger.Metric(TotalDesiredPropertiesUpdatesCount, _totalDesiredPropertiesUpdatesCount);
 
-                await s_serviceClient.Twins.UpdateAsync(_deviceId, twin, false, ct).ConfigureAwait(false);
-
+                    await s_serviceClient.Twins.UpdateAsync(_deviceId, twin, false, ct).ConfigureAwait(false);
+                }
                 await Task.Delay(s_desiredPropertiesSetInterval, ct).ConfigureAwait(false);
             }
         }
@@ -154,24 +158,26 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
 
                 while (!ct.IsCancellationRequested)
                 {
-                    var payload = new CustomC2dMessagePayload
+                    if (s_activeDeviceSet.Contains(_deviceId))
                     {
-                        RandomId = Guid.NewGuid(),
-                        CurrentTimeUtc = DateTime.UtcNow,
-                        MessagesSentCount = ++_totalC2dMessagesSentCount,
-                    };
-                    var message = new OutgoingMessage(payload)
-                    {
-                        // An acknowledgment is sent on delivery success or failure.
-                        Ack = DeliveryAcknowledgement.Full,
-                        MessageId = payload.RandomId.ToString(),
-                    };
+                        var payload = new CustomC2dMessagePayload
+                        {
+                            RandomId = Guid.NewGuid(),
+                            CurrentTimeUtc = DateTime.UtcNow,
+                            MessagesSentCount = ++_totalC2dMessagesSentCount,
+                        };
+                        var message = new OutgoingMessage(payload)
+                        {
+                            // An acknowledgment is sent on delivery success or failure.
+                            Ack = DeliveryAcknowledgement.Full,
+                            MessageId = payload.RandomId.ToString(),
+                        };
 
-                    _logger.Trace($"Sending message with Id {message.MessageId} to the device: {_deviceId}", TraceSeverity.Information);
-                    _logger.Metric(TotalC2dMessagesSentCount, _totalC2dMessagesSentCount);
+                        _logger.Trace($"Sending message with Id {message.MessageId} to the device: {_deviceId}", TraceSeverity.Information);
+                        _logger.Metric(TotalC2dMessagesSentCount, _totalC2dMessagesSentCount);
 
-                    await s_serviceClient.Messages.SendAsync(_deviceId, message, ct).ConfigureAwait(false);
-
+                        await s_serviceClient.Messages.SendAsync(_deviceId, message, ct).ConfigureAwait(false);
+                    }
                     await Task.Delay(s_c2dMessagesSentInterval, ct).ConfigureAwait(false);
                 }
             }
