@@ -77,7 +77,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
-        public override async Task SendTelemetryBatchAsync(IEnumerable<TelemetryMessage> messages, CancellationToken cancellationToken)
+        public override async Task SendTelemetryAsync(IEnumerable<TelemetryMessage> messages, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, messages, cancellationToken, nameof(SendTelemetryAsync));
@@ -89,7 +89,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         async () =>
                         {
                             await VerifyIsOpenAsync(cancellationToken).ConfigureAwait(false);
-                            await base.SendTelemetryBatchAsync(messages, cancellationToken).ConfigureAwait(false);
+                            await base.SendTelemetryAsync(messages, cancellationToken).ConfigureAwait(false);
                         },
                         cancellationToken)
                     .ConfigureAwait(false);

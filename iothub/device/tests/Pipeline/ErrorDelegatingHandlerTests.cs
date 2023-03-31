@@ -78,7 +78,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             var innerHandler = new Mock<IDelegatingHandler>();
             innerHandler.Setup(x => x.OpenAsync(It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
             innerHandler.Setup(x => x.SendTelemetryAsync(It.IsAny<TelemetryMessage>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
-            using var sut = new ErrorDelegatingHandler(contextMock, innerHandler.Object);
+            using var sut = new ExceptionRemappingHandler(contextMock, innerHandler.Object);
 
             var cancellationToken = new CancellationToken();
             await sut.OpenAsync(cancellationToken).ConfigureAwait(false);
@@ -137,7 +137,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             var contextMock = new PipelineContext();
             var innerHandler = new Mock<IDelegatingHandler>();
             innerHandler.Setup(x => x.OpenAsync(It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
-            using var sut = new ErrorDelegatingHandler(contextMock, innerHandler.Object);
+            using var sut = new ExceptionRemappingHandler(contextMock, innerHandler.Object);
 
             // initial OpenAsync to emulate Gatekeeper behavior
             var cancellationToken = new CancellationToken();
@@ -182,7 +182,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             var contextMock = new PipelineContext();
             var innerHandler = new Mock<IDelegatingHandler>();
-            using var sut = new ErrorDelegatingHandler(contextMock, innerHandler.Object);
+            using var sut = new ExceptionRemappingHandler(contextMock, innerHandler.Object);
 
             // set initial operation result that throws
 

@@ -17,14 +17,11 @@ using Microsoft.Azure.Devices.Client.Extensions;
 
 namespace Microsoft.Azure.Devices.Client.Transport
 {
-    internal sealed class ErrorDelegatingHandler : DefaultDelegatingHandler
+    // Except for well-known and expected exception types (e.g. OperationCanceledException, ObjectDisposedException)
+    // identified by Fx.IsFatal(), we wish to remap these to an IotHubClientException.
+    internal sealed class ExceptionRemappingHandler : DefaultDelegatingHandler
     {
-        public ErrorDelegatingHandler(PipelineContext context, IDelegatingHandler innerHandler)
-            : base(context, innerHandler)
-        {
-        }
-
-        private static readonly HashSet<Type> s_networkExceptions = new HashSet<Type>
+        private static readonly HashSet<Type> s_networkExceptions = new()
         {
             typeof(IOException),
             typeof(SocketException),
@@ -33,69 +30,74 @@ namespace Microsoft.Azure.Devices.Client.Transport
             typeof(WebSocketException),
         };
 
+        public ExceptionRemappingHandler(PipelineContext context, IDelegatingHandler innerHandler)
+            : base(context, innerHandler)
+        {
+        }
+
         public override Task OpenAsync(CancellationToken cancellationToken)
         {
-            return ExecuteWithErrorHandlingAsync(() => base.OpenAsync(cancellationToken));
+            return ExecuteWithExceptionRemappingAsync(() => base.OpenAsync(cancellationToken));
         }
 
         public override Task EnableReceiveMessageAsync(CancellationToken cancellationToken)
         {
-            return ExecuteWithErrorHandlingAsync(() => base.EnableReceiveMessageAsync(cancellationToken));
+            return ExecuteWithExceptionRemappingAsync(() => base.EnableReceiveMessageAsync(cancellationToken));
         }
 
         public override Task DisableReceiveMessageAsync(CancellationToken cancellationToken)
         {
-            return ExecuteWithErrorHandlingAsync(() => base.DisableReceiveMessageAsync(cancellationToken));
+            return ExecuteWithExceptionRemappingAsync(() => base.DisableReceiveMessageAsync(cancellationToken));
         }
 
         public override Task EnableMethodsAsync(CancellationToken cancellationToken)
         {
-            return ExecuteWithErrorHandlingAsync(() => base.EnableMethodsAsync(cancellationToken));
+            return ExecuteWithExceptionRemappingAsync(() => base.EnableMethodsAsync(cancellationToken));
         }
 
         public override Task DisableMethodsAsync(CancellationToken cancellationToken)
         {
-            return ExecuteWithErrorHandlingAsync(() => base.DisableMethodsAsync(cancellationToken));
+            return ExecuteWithExceptionRemappingAsync(() => base.DisableMethodsAsync(cancellationToken));
         }
 
         public override Task EnableTwinPatchAsync(CancellationToken cancellationToken)
         {
-            return ExecuteWithErrorHandlingAsync(() => base.EnableTwinPatchAsync(cancellationToken));
+            return ExecuteWithExceptionRemappingAsync(() => base.EnableTwinPatchAsync(cancellationToken));
         }
 
         public override Task DisableTwinPatchAsync(CancellationToken cancellationToken)
         {
-            return ExecuteWithErrorHandlingAsync(() => base.DisableTwinPatchAsync(cancellationToken));
+            return ExecuteWithExceptionRemappingAsync(() => base.DisableTwinPatchAsync(cancellationToken));
         }
 
         public override Task<TwinProperties> GetTwinAsync(CancellationToken cancellationToken)
         {
-            return ExecuteWithErrorHandlingAsync(() => base.GetTwinAsync(cancellationToken));
+            return RunWithExceptionRemappingAsync(() => base.GetTwinAsync(cancellationToken));
         }
 
         public override Task<DateTime> RefreshSasTokenAsync(CancellationToken cancellationToken)
         {
-            return ExecuteWithErrorHandlingAsync(() => base.RefreshSasTokenAsync(cancellationToken));
+            return RunWithExceptionRemappingAsync(() => base.RefreshSasTokenAsync(cancellationToken));
         }
 
         public override Task<long> UpdateReportedPropertiesAsync(ReportedProperties reportedProperties, CancellationToken cancellationToken)
         {
-            return ExecuteWithErrorHandlingAsync(() => base.UpdateReportedPropertiesAsync(reportedProperties, cancellationToken));
+            return RunWithExceptionRemappingAsync(() => base.UpdateReportedPropertiesAsync(reportedProperties, cancellationToken));
         }
 
-        public override Task SendTelemetryBatchAsync(IEnumerable<TelemetryMessage> messages, CancellationToken cancellationToken)
+        public override Task SendTelemetryAsync(IEnumerable<TelemetryMessage> messages, CancellationToken cancellationToken)
         {
-            return ExecuteWithErrorHandlingAsync(() => base.SendTelemetryBatchAsync(messages, cancellationToken));
+            return ExecuteWithExceptionRemappingAsync(() => base.SendTelemetryAsync(messages, cancellationToken));
         }
 
         public override Task SendTelemetryAsync(TelemetryMessage message, CancellationToken cancellationToken)
         {
-            return ExecuteWithErrorHandlingAsync(() => base.SendTelemetryAsync(message, cancellationToken));
+            return ExecuteWithExceptionRemappingAsync(() => base.SendTelemetryAsync(message, cancellationToken));
         }
 
         public override Task SendMethodResponseAsync(DirectMethodResponse methodResponse, CancellationToken cancellationToken)
         {
-            return ExecuteWithErrorHandlingAsync(() => base.SendMethodResponseAsync(methodResponse, cancellationToken));
+            return ExecuteWithExceptionRemappingAsync(() => base.SendMethodResponseAsync(methodResponse, cancellationToken));
         }
 
         private static bool IsNetworkExceptionChain(Exception exceptionChain)
@@ -128,56 +130,50 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return s_networkExceptions.Any(baseExceptionType => baseExceptionType.IsInstanceOfType(singleException));
         }
 
-        private Task ExecuteWithErrorHandlingAsync(Func<Task> asyncOperation)
+        private Task ExecuteWithExceptionRemappingAsync(Func<Task> asyncOperation)
         {
-            return ExecuteWithErrorHandlingAsync(async () =>
+            return RunWithExceptionRemappingAsync(async () =>
             {
                 await asyncOperation().ConfigureAwait(false);
                 return false;
             });
         }
 
-        private async Task<T> ExecuteWithErrorHandlingAsync<T>(Func<Task<T>> asyncOperation)
+        private async Task<T> RunWithExceptionRemappingAsync<T>(Func<Task<T>> asyncOperation)
         {
+            if (Logging.IsEnabled)
+                Logging.Enter(this, $"{nameof(ExceptionRemappingHandler)}.{nameof(ExecuteWithExceptionRemappingAsync)}");
+
             try
             {
+                return await asyncOperation().ConfigureAwait(false);
+            }
+            catch (Exception ex) when (ex is not IotHubClientException && !Fx.IsFatal(ex))
+            {
                 if (Logging.IsEnabled)
-                    Logging.Enter(this, $"{nameof(ErrorDelegatingHandler)}.{nameof(ExecuteWithErrorHandlingAsync)}");
+                    Logging.Error(this, $"Exception caught: {ex}");
 
-                try
+                if (IsSecurityExceptionChain(ex))
                 {
-                    return await asyncOperation().ConfigureAwait(false);
+                    Exception innerException = (ex is IotHubClientException) ? ex.InnerException : ex;
+                    throw new IotHubClientException("TLS authentication error.", IotHubClientErrorCode.TlsAuthenticationError, innerException);
                 }
-                catch (Exception ex) when (!Fx.IsFatal(ex))
+                else if (IsNetworkExceptionChain(ex))
+                {
+                    throw new IotHubClientException("A transient network error occurred; please retry.", IotHubClientErrorCode.NetworkErrors, ex);
+                }
+                else
                 {
                     if (Logging.IsEnabled)
-                        Logging.Error(this, $"Exception caught: {ex}");
+                        Logging.Error(this, $"Unmapped exception {ex.GetType()}");
 
-                    if (IsSecurityExceptionChain(ex))
-                    {
-                        Exception innerException = (ex is IotHubClientException) ? ex.InnerException : ex;
-                        throw new IotHubClientException("TLS authentication error.", IotHubClientErrorCode.TlsAuthenticationError, innerException);
-                    }
-                    // For historic reasons, part of the Error handling is done within the transport handlers.
-                    else if (ex is IotHubClientException hubEx
-                        && hubEx.ErrorCode is IotHubClientErrorCode.NetworkErrors)
-                    {
-                        throw;
-                    }
-                    else if (IsNetworkExceptionChain(ex))
-                    {
-                        throw new IotHubClientException("Transient network error occurred; please retry.", IotHubClientErrorCode.NetworkErrors, ex);
-                    }
-                    else
-                    {
-                        throw;
-                    }
+                    throw new IotHubClientException("An unexpected exception occurred. See the inner exception for more details.", IotHubClientErrorCode.Unknown, ex);
                 }
             }
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, $"{nameof(ErrorDelegatingHandler)}.{nameof(ExecuteWithErrorHandlingAsync)}");
+                    Logging.Exit(this, $"{nameof(ExceptionRemappingHandler)}.{nameof(ExecuteWithExceptionRemappingAsync)}");
             }
         }
     }

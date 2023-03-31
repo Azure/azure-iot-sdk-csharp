@@ -22,7 +22,7 @@ namespace Microsoft.Azure.Devices.Client
         // Telemetry uplink.
         Task SendTelemetryAsync(TelemetryMessage message, CancellationToken cancellationToken);
 
-        Task SendTelemetryBatchAsync(IEnumerable<TelemetryMessage> messages, CancellationToken cancellationToken);
+        Task SendTelemetryAsync(IEnumerable<TelemetryMessage> messages, CancellationToken cancellationToken);
 
         Task EnableReceiveMessageAsync(CancellationToken cancellationToken);
 

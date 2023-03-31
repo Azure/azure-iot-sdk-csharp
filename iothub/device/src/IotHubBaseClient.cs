@@ -206,7 +206,7 @@ namespace Microsoft.Azure.Devices.Client
                 }
             }
 
-            await InnerHandler.SendTelemetryBatchAsync(messages, cancellationToken).ConfigureAwait(false);
+            await InnerHandler.SendTelemetryAsync(messages, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -581,7 +581,7 @@ namespace Microsoft.Azure.Devices.Client
             var transporthandlerFactory = new TransportHandlerFactory();
             ClientPipelineBuilder pipelineBuilder = new ClientPipelineBuilder()
                 .With((ctx, innerHandler) => new RetryDelegatingHandler(ctx, innerHandler))
-                .With((ctx, innerHandler) => new ErrorDelegatingHandler(ctx, innerHandler))
+                .With((ctx, innerHandler) => new ExceptionRemappingHandler(ctx, innerHandler))
                 .With((ctx, innerHandler) => new TransportDelegatingHandler(ctx, innerHandler))
                 .With((ctx, innerHandler) => transporthandlerFactory.Create(ctx));
 
