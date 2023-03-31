@@ -172,6 +172,12 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     throw;
                 }
 
+                if (ex is IotHubClientException hex)
+                {
+                    // No remapping needed.
+                    throw;
+                }
+
                 if (IsSecurityExceptionChain(ex))
                 {
                     Exception innerException = (ex is IotHubClientException) ? ex.InnerException : ex;
