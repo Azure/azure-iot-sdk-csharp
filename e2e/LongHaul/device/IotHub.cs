@@ -231,7 +231,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
             _logger.Trace($"Set the reported property with name [{keyName}] in device twin.", TraceSeverity.Information);
         }
 
-        public async Task UploadFileAsync(CancellationToken ct)
+        public async Task UploadFilesAsync(CancellationToken ct)
         {
             while (!ct.IsCancellationRequested)
             {
@@ -247,11 +247,11 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
                 {
                     _logger.Trace($"Attempting to upload {fileName}...");
                     var blockBlobClient = new BlockBlobClient(uploadUri);
-                    await blockBlobClient.UploadAsync(ms, new BlobUploadOptions());
+                    await blockBlobClient.UploadAsync(ms, new BlobUploadOptions()).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
-                    _logger.Trace($"WARNING: Exception occured while using Azure Storage SDK to upload file: {ex.Message}");
+                    _logger.Trace($"Exception occurred while using Azure Storage SDK to upload file: {ex}", TraceSeverity.Warning);
                     var failedFileUploadCompletionNotification = new FileUploadCompletionNotification(sasUri.CorrelationId, false)
                     {
                         StatusCode = 500,

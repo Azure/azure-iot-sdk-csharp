@@ -229,7 +229,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                 }
 
                 _serviceClient.FileUploadNotifications.FileUploadNotificationProcessor = FileUploadNotificationCallback;
-                _logger.Trace($"Total File Notifications Received: {_totalFileUploadNotificationsReceived}.");
+                _logger.Metric("TotalFileUploadNotificiationsReceived", _totalFileUploadNotificationsReceived);
 
                 await Task.Delay(30 * 1000);
             }
