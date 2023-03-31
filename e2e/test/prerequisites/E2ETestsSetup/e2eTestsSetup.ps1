@@ -402,7 +402,7 @@ if ($LastExitCode -ne 0)
 Write-Host "`nYour infrastructure is ready in subscription ($SubscriptionId), resource group ($ResourceGroup)."
 
 #########################################################################################################
-# Get propreties to setup the config file for Environment variables.
+# Get properties to setup the config file for environment variables.
 #########################################################################################################
 
 Write-Host "`nGetting generated names and secrets from ARM template output."
@@ -412,7 +412,6 @@ $dpsConnectionString = az deployment group show -g $ResourceGroup -n $deployment
 $storageAccountConnectionString = az deployment group show -g $ResourceGroup -n $deploymentName  --query 'properties.outputs.storageAccountConnectionString.value' --output tsv
 $workspaceId = az deployment group show -g $ResourceGroup -n $deploymentName --query 'properties.outputs.workspaceId.value' --output tsv
 $keyVaultName = az deployment group show -g $ResourceGroup -n $deploymentName --query 'properties.outputs.keyVaultName.value' --output tsv
-$instrumentationKey = az deployment group show -g $ResourceGroup -n $deploymentName --query 'properties.outputs.instrumentationKey.value' --output tsv
 $iotHubName = az deployment group show -g $ResourceGroup -n $deploymentName --query 'properties.outputs.hubName.value' --output tsv
 
 #################################################################################################################################################
@@ -693,7 +692,6 @@ $keyvaultKvps = @{
     "MSFT-TENANT-ID" = "72f988bf-86f1-41af-91ab-2d7cd011db47";
     "E2E-TEST-AAD-APP-CLIENT-ID" = $e2eTestAadAppId;
     "E2E-TEST-AAD-APP-CLIENT-SECRET" = $e2eTestAadAppPassword;
-    "E2E-IKEY" = $instrumentationKey;
 
     # Environment variables for the DevOps pipeline
     "PIPELINE-ENVIRONMENT" = "prod";
