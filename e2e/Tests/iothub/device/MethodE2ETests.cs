@@ -28,7 +28,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         private readonly string _modulePrefix = $"{nameof(MethodE2ETests)}_mod_";
         private const string MethodName = "MethodE2ETest";
 
-        private static readonly TimeSpan s_defaultOperationTimeout = TimeSpan.FromMinutes(30);
+        private static readonly TimeSpan s_defaultMethodResponseTimeout = TimeSpan.FromMinutes(1);
 
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
@@ -91,12 +91,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             // arrange
             const string methodName = "Reboot";
             bool deviceMethodCalledSuccessfully = false;
-            using var createTestDeviceCts = new CancellationTokenSource(s_defaultOperationTimeout);
-            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync("NullMethodPayloadTest", ct: createTestDeviceCts.Token).ConfigureAwait(false);
+            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync("NullMethodPayloadTest").ConfigureAwait(false);
             IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(new IotHubClientMqttSettings()));
-
-            using var openCts = new CancellationTokenSource(s_defaultOperationTimeout);
-            await testDevice.OpenWithRetryAsync(openCts.Token).ConfigureAwait(false);
+            await testDevice.OpenWithRetryAsync().ConfigureAwait(false);
 
             await deviceClient
                 .SetDirectMethodCallbackAsync(
@@ -136,13 +133,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
 
             const string methodName = "GetDateTime";
             bool deviceMethodCalledSuccessfully = false;
-
-            using var createTestDeviceCts = new CancellationTokenSource(s_defaultOperationTimeout);
-            TestDevice testDevice = await TestDevice.GetTestDeviceAsync("DateTimeMethodPayloadTest", ct: createTestDeviceCts.Token).ConfigureAwait(false);
+            TestDevice testDevice = await TestDevice.GetTestDeviceAsync("DateTimeMethodPayloadTest").ConfigureAwait(false);
             await using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(new IotHubClientMqttSettings()));
-
-            using var openCts = new CancellationTokenSource(s_defaultOperationTimeout);
-            await testDevice.OpenWithRetryAsync(openCts.Token).ConfigureAwait(false);
+            await testDevice.OpenWithRetryAsync().ConfigureAwait(false);
             try
             {
                 await deviceClient
@@ -210,7 +203,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         {
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
 
-            TimeSpan methodTimeout = responseTimeout == default ? s_defaultOperationTimeout : responseTimeout;
+            TimeSpan methodTimeout = responseTimeout == default ? s_defaultMethodResponseTimeout : responseTimeout;
             VerboseTestLogger.WriteLine($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Invoke method {methodName}.");
 
             var directMethodRequest = new DirectMethodServiceRequest(methodName)
@@ -293,8 +286,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             TimeSpan responseTimeout = default,
             IotHubServiceClientOptions serviceClientTransportSettings = default)
         {
-            using var createTestDeviceCts = new CancellationTokenSource(s_defaultOperationTimeout);
-            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix, ct: createTestDeviceCts.Token).ConfigureAwait(false);
+            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix).ConfigureAwait(false);
             var options = new IotHubClientOptions(transportSettings);
             await using var deviceClient = new IotHubDeviceClient(testDevice.ConnectionString, options);
             await deviceClient.OpenAsync().ConfigureAwait(false);
@@ -311,8 +303,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
 
         private async Task SendDeviceMethodAndRespondAsync(IotHubClientTransportSettings transportSettings)
         {
-            using var createTestDeviceCts = new CancellationTokenSource(s_defaultOperationTimeout);
-            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix, ct: createTestDeviceCts.Token).ConfigureAwait(false);
+            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix).ConfigureAwait(false);
             var options = new IotHubClientOptions(transportSettings);
             await using var deviceClient = new IotHubDeviceClient(testDevice.ConnectionString, options);
             await deviceClient.OpenAsync().ConfigureAwait(false);
@@ -323,11 +314,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             var directMethodRequest = new DirectMethodServiceRequest(MethodName)
             {
                 Payload = s_serviceRequestPayload,
-                ResponseTimeout = s_defaultOperationTimeout,
+                ResponseTimeout = s_defaultMethodResponseTimeout,
             };
             testDeviceCallbackHandler.ExpectedDirectMethodRequest = directMethodRequest;
 
-            using var cts = new CancellationTokenSource(s_defaultOperationTimeout);
+            using var cts = new CancellationTokenSource(s_defaultMethodResponseTimeout);
             Task methodReceivedTask = testDeviceCallbackHandler.WaitForMethodCallbackAsync(cts.Token);
             Task serviceSendTask = ServiceSendMethodAndVerifyResponseAsync(
                 testDevice.Id,
@@ -340,8 +331,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
 
         private async Task OpenCloseOpenThenSendMethodAndRespondAsync(IotHubClientTransportSettings transportSettings)
         {
-            using var createTestDeviceCts = new CancellationTokenSource(s_defaultOperationTimeout);
-            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix, ct: createTestDeviceCts.Token).ConfigureAwait(false);
+            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix).ConfigureAwait(false);
             var options = new IotHubClientOptions(transportSettings);
             await using var deviceClient = new IotHubDeviceClient(testDevice.ConnectionString, options);
 
@@ -356,11 +346,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             var directMethodRequest = new DirectMethodServiceRequest(MethodName)
             {
                 Payload = s_serviceRequestPayload,
-                ResponseTimeout = s_defaultOperationTimeout,
+                ResponseTimeout = s_defaultMethodResponseTimeout,
             };
             testDeviceCallbackHandler.ExpectedDirectMethodRequest = directMethodRequest;
 
-            using var cts = new CancellationTokenSource(s_defaultOperationTimeout);
+            using var cts = new CancellationTokenSource(s_defaultMethodResponseTimeout);
             Task methodReceivedTask = testDeviceCallbackHandler.WaitForMethodCallbackAsync(cts.Token);
             Task serviceSendTask = ServiceSendMethodAndVerifyResponseAsync(
                 testDevice.Id,
@@ -398,11 +388,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             var directMethodRequest = new DirectMethodServiceRequest(MethodName)
             {
                 Payload = s_serviceRequestPayload,
-                ResponseTimeout = s_defaultOperationTimeout,
+                ResponseTimeout = s_defaultMethodResponseTimeout,
             };
             testModuleCallbackHandler.ExpectedDirectMethodRequest = directMethodRequest;
 
-            using var cts = new CancellationTokenSource(s_defaultOperationTimeout);
+            using var cts = new CancellationTokenSource(s_defaultMethodResponseTimeout);
             Task methodReceivedTask = testModuleCallbackHandler.WaitForMethodCallbackAsync(cts.Token);
             Task serviceSendTask = ServiceSendMethodAndVerifyResponseAsync(
                 testModule.DeviceId,

@@ -54,16 +54,16 @@ namespace Microsoft.Azure.Devices.E2ETests
                     new IotHubClientAmqpSettings(),
                     FaultInjectionConstants.FaultType_Tcp,
                     FaultInjectionConstants.FaultCloseReason_Boom,
-                    FaultInjection.s_defaultFaultDelay,
-                    FaultInjection.s_defaultFaultDuration,
+                    FaultInjection.DefaultFaultDelay,
+                    FaultInjection.DefaultFaultDuration,
                     deviceClient)
                 .ConfigureAwait(false);
 
-            await Task.Delay(FaultInjection.s_defaultFaultDelay).ConfigureAwait(false);
+            await Task.Delay(FaultInjection.DefaultFaultDelay).ConfigureAwait(false);
 
             VerboseTestLogger.WriteLine($"{nameof(FaultInjection_NoRetry_NoRecovery_OpenAsync)}: waiting fault injection occurs...");
             var sw = Stopwatch.StartNew();
-            while (sw.Elapsed < FaultInjection.s_defaultFaultDuration)
+            while (sw.Elapsed < FaultInjection.DefaultFaultDuration)
             {
                 if (connectionStatusChange.ContainsKey(ConnectionStatus.Disconnected))
                 {

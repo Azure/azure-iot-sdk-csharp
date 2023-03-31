@@ -29,7 +29,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         private static readonly TimeSpan s_tenSeconds = TimeSpan.FromSeconds(10);
         private static readonly TimeSpan s_twentySeconds = TimeSpan.FromSeconds(20);
         private static readonly TimeSpan s_oneMinute = TimeSpan.FromMinutes(1);
-        private static readonly TimeSpan s_defaultOperationTimeout = TimeSpan.FromSeconds(30);
 
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
@@ -83,7 +82,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             sw.Start();
 
             while (!received
-                && sw.Elapsed < FaultInjection.s_recoveryTime)
+                && sw.Elapsed < FaultInjection.RecoveryTime)
             {
                 VerboseTestLogger.WriteLine($"Receiving messages for device {deviceId}.");
 
@@ -118,17 +117,14 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             }
 
             sw.Stop();
-            received.Should().BeTrue($"No message received for device {deviceId} with payload={payload} in {FaultInjection.s_recoveryTime}.");
+            received.Should().BeTrue($"No message received for device {deviceId} with payload={payload} in {FaultInjection.RecoveryTime}.");
         }
 
         private static async Task ReceiveMessageUsingCallbackAndUnsubscribeAsync(TestDeviceType type, IotHubClientTransportSettings transportSettings)
         {
-            using var createTestDeviceCts = new CancellationTokenSource(s_defaultOperationTimeout);
             await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(s_devicePrefix, type).ConfigureAwait(false);
             IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(transportSettings));
-
-            using var openCts = new CancellationTokenSource(s_defaultOperationTimeout);
-            await testDevice.OpenWithRetryAsync(openCts.Token).ConfigureAwait(false);
+            await testDevice.OpenWithRetryAsync().ConfigureAwait(false);
             using var deviceHandler = new TestDeviceCallbackHandler(deviceClient, testDevice.Id);
 
             IotHubServiceClient serviceClient = TestDevice.ServiceClient;
@@ -167,12 +163,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
         private static async Task ReceiveMessageAfterOpenCloseOpenAsync(TestDeviceType type, IotHubClientTransportSettings transportSettings)
         {
-            using var createTestDeviceCts = new CancellationTokenSource(s_defaultOperationTimeout);
-            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(s_devicePrefix, type, createTestDeviceCts.Token).ConfigureAwait(false);
+            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(s_devicePrefix, type).ConfigureAwait(false);
             IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(transportSettings));
-
-            using var openCts = new CancellationTokenSource(s_defaultOperationTimeout);
-            await testDevice.OpenWithRetryAsync(openCts.Token).ConfigureAwait(false);
+            await testDevice.OpenWithRetryAsync().ConfigureAwait(false);
             using var deviceHandler = new TestDeviceCallbackHandler(deviceClient, testDevice.Id);
 
             // Close and re-open the client under test.
@@ -201,8 +194,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         // https://github.com/Azure/azure-iot-sdk-csharp/issues/2218
         private async Task UnsubscribeDoesNotCauseConnectionStatusEventAsync(TestDeviceType type, IotHubClientTransportSettings transportSettings)
         {
-            using var createTestDeviceCts = new CancellationTokenSource(s_defaultOperationTimeout);
-            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(s_devicePrefix, type, createTestDeviceCts.Token).ConfigureAwait(false);
+            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(s_devicePrefix, type).ConfigureAwait(false);
             var options = new IotHubClientOptions(transportSettings);
             await using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(options);
             bool lostConnection = false;

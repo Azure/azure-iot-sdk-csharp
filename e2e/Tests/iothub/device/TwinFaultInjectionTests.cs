@@ -305,8 +305,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                     proxyAddress,
                     faultType,
                     reason,
-                    FaultInjection.s_defaultFaultDelay,
-                    FaultInjection.s_defaultFaultDuration,
+                    FaultInjection.DefaultFaultDelay,
+                    FaultInjection.DefaultFaultDuration,
                     InitAsync,
                     TestOperationAsync,
                     () => Task.FromResult(false))
@@ -330,7 +330,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             string proxyAddress = null)
         {
             TestDeviceCallbackHandler testDeviceCallbackHandler = null;
-            using var cts = new CancellationTokenSource(FaultInjection.s_recoveryTime);
+            using var cts = new CancellationTokenSource(FaultInjection.RecoveryTime);
 
             string propName = Guid.NewGuid().ToString();
             string propValue = Guid.NewGuid().ToString();
@@ -371,8 +371,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                     proxyAddress,
                     faultType,
                     reason,
-                    FaultInjection.s_defaultFaultDelay,
-                    FaultInjection.s_defaultFaultDuration,
+                    FaultInjection.DefaultFaultDelay,
+                    FaultInjection.DefaultFaultDuration,
                     InitOperationAsync,
                     TestOperationAsync,
                     CleanupOperationAsync)

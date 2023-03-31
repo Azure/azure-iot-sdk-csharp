@@ -225,8 +225,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                     null,
                     faultType,
                     reason,
-                    FaultInjection.s_defaultFaultDelay,
-                    FaultInjection.s_defaultFaultDuration,
+                    FaultInjection.DefaultFaultDelay,
+                    FaultInjection.DefaultFaultDuration,
                     InitOperationAsync,
                     TestOperationAsync,
                     CleanupOperationAsync)
