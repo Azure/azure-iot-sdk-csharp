@@ -14,9 +14,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
     [TestClass]
     [TestCategory("FaultInjection")]
     [TestCategory("IoTHub-Client")]
-    public partial class MessageReceiveFaultInjectionTests : E2EMsTestBase
+    public partial class IncomingMessageCallbackFaultInjectionTests : E2EMsTestBase
     {
-        private readonly string DevicePrefix = $"{nameof(MessageReceiveFaultInjectionTests)}_";
+        private readonly string DevicePrefix = $"{nameof(IncomingMessageCallbackFaultInjectionTests)}_";
 
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]

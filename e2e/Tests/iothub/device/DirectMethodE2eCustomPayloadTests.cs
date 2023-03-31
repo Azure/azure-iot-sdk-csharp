@@ -16,7 +16,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
     [TestClass]
     [TestCategory("E2E")]
     [TestCategory("IoTHub-Client")]
-    public class MethodE2ECustomPayloadTests : E2EMsTestBase
+    public class DirectMethodE2eCustomPayloadTests : E2EMsTestBase
     {
         private static readonly DirectMethodRequestPayload _customTypeRequest = new() { DesiredState = "on" };
         private static readonly DirectMethodResponsePayload _customTypeResponse = new() { CurrentState = "off" };

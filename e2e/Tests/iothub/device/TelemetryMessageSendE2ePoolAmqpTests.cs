@@ -14,9 +14,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
     [TestClass]
     [TestCategory("E2E")]
     [TestCategory("IoTHub-Client")]
-    public class MessageSendE2EPoolAmqpTests : E2EMsTestBase
+    public class TelemetryMessageSendE2ePoolAmqpTests : E2EMsTestBase
     {
-        private readonly string _devicePrefix = $"{nameof(MessageSendE2EPoolAmqpTests)}_";
+        private readonly string _devicePrefix = $"{nameof(TelemetryMessageSendE2ePoolAmqpTests)}_";
 
         [TestMethod]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
@@ -53,8 +53,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
             async Task TestOperationAsync(TestDevice testDevice, TestDeviceCallbackHandler _)
             {
-                TelemetryMessage testMessage = TelemetryE2ETests.ComposeD2cTestMessage(out string payload, out string p1Value);
-                VerboseTestLogger.WriteLine($"{nameof(MessageSendE2EPoolAmqpTests)}.{testDevice.Id}: messageId='{testMessage.MessageId}' payload='{payload}' p1Value='{p1Value}'");
+                TelemetryMessage testMessage = TelemetryMessageE2eTests.ComposeD2cTestMessage(out string payload, out string p1Value);
+                VerboseTestLogger.WriteLine($"{nameof(TelemetryMessageSendE2ePoolAmqpTests)}.{testDevice.Id}: messageId='{testMessage.MessageId}' payload='{payload}' p1Value='{p1Value}'");
                 await testDevice.DeviceClient.SendTelemetryAsync(testMessage).ConfigureAwait(false);
             }
 

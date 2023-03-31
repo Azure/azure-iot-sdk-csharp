@@ -4,7 +4,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.Azure.Devices.E2ETests
+namespace Microsoft.Azure.Devices.Provisioning.Client
 {
     /// <summary>
     /// Modern .NET supports waiting on the TaskCompletionSource with a cancellation token, but older ones

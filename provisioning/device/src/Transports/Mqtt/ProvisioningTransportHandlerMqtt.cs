@@ -276,11 +276,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             if (Logging.IsEnabled)
                 Logging.Info(this, "Published the initial registration request, now waiting for the service's response.");
 
-            RegistrationOperationStatus registrationStatus = await GetTaskCompletionSourceResultAsync(
-                    _startProvisioningRequestStatusSource,
-                    "Timed out when sending the registration request.",
-                    cancellationToken)
-                .ConfigureAwait(false);
+            RegistrationOperationStatus registrationStatus = await _startProvisioningRequestStatusSource.WaitAsync(cancellationToken).ConfigureAwait(false);
 
             if (Logging.IsEnabled)
                 Logging.Info(this, $"Service responded to the initial registration request with status '{registrationStatus.Status}'.");
@@ -309,11 +305,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                     throw new ProvisioningClientException($"Failed to publish the MQTT registration message with reason code '{publishResult.ReasonCode}'.", true);
                 }
 
-                RegistrationOperationStatus currentStatus = await GetTaskCompletionSourceResultAsync(
-                        _checkRegistrationOperationStatusSource,
-                        "Timed out while polling the registration status.",
-                        cancellationToken)
-                    .ConfigureAwait(false);
+                RegistrationOperationStatus currentStatus = await _checkRegistrationOperationStatusSource.WaitAsync(cancellationToken).ConfigureAwait(false);
 
                 if (Logging.IsEnabled)
                     Logging.Info(this, $"Current provisioning state: {currentStatus.RegistrationState.Status}.");
@@ -452,35 +444,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             }
 
             return Task.CompletedTask;
-        }
-
-        /// <summary>
-        /// Gets the result of the provided task completion source or throws OperationCanceledException if the provided
-        /// cancellation token is cancelled beforehand.
-        /// </summary>
-        /// <typeparam name="T">The type of the result of the task completion source.</typeparam>
-        /// <param name="taskCompletionSource">The task completion source to asynchronously wait for the result of.</param>
-        /// <param name="timeoutErrorMessage">The error message to put in the OperationCanceledException if this taks times out.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>The result of the provided task completion source if it completes before the provided cancellation token is cancelled.</returns>
-        /// <exception cref="OperationCanceledException">If the cancellation token is cancelled before the provided task completion source finishes.</exception>
-        private static async Task<T> GetTaskCompletionSourceResultAsync<T>(
-            TaskCompletionSource<T> taskCompletionSource,
-            string timeoutErrorMessage,
-            CancellationToken cancellationToken)
-        {
-            // Note that Task.Delay(-1, cancellationToken) effectively waits until the cancellation token is cancelled. The -1 value
-            // just means that the task is allowed to run indefinitely.
-            Task finishedTask = await Task.WhenAny(taskCompletionSource.Task, Task.Delay(-1, cancellationToken)).ConfigureAwait(false);
-
-            // If the finished task is not the cancellation token
-            if (finishedTask == taskCompletionSource.Task)
-            {
-                return await ((Task<T>)finishedTask).ConfigureAwait(false);
-            }
-
-            // Otherwise throw operation cancelled exception since the cancellation token was cancelled before the task finished.
-            throw new OperationCanceledException(timeoutErrorMessage);
         }
 
         internal static bool ContainsAuthenticationException(Exception ex)

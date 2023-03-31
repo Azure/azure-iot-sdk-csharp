@@ -221,12 +221,17 @@ namespace Microsoft.Azure.Devices
         internal ArraySegment<byte> DeliveryTag { get; set; }
 
         /// <summary>
-        /// Gets the payload as a byte array.
+        /// Gets the payload as a byte array, serialized and encoded if necessary.
         /// </summary>
-        /// <returns>A fully encoded serialized string as bytes.</returns>
+        /// <remarks>
+        /// If needed, serialization uses Newtonsoft.Json and encoding is UTF8.
+        /// </remarks>
+        /// <returns>A payload as a byte array.</returns>
         internal byte[] GetPayloadObjectBytes()
         {
-            return Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(Payload));
+            return Payload is byte[] payloadAsByteArray
+                ? payloadAsByteArray
+                : Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(Payload));
         }
 
         private T GetSystemProperty<T>(string key)

@@ -148,7 +148,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                             args.CompletedCallback(args);
                         }
 
-                        _transport = await _tcs.Task.ConfigureAwait(false);
+                        _transport = await _tcs.WaitAsync(cancellationToken).ConfigureAwait(false);
                         await _transport.OpenAsync(cancellationToken).ConfigureAwait(false);
                     }
                 }

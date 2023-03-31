@@ -4,9 +4,11 @@
 using System;
 using System.Diagnostics;
 using System.Net;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
+using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -50,10 +52,10 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         private async Task TestTimeout(CancellationToken cancellationToken)
         {
             await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
-            IotHubServiceClient sender = TestDevice.ServiceClient;
+            IotHubServiceClient serviceClient = TestDevice.ServiceClient;
 
             // don't pass in cancellation token here. This test is for seeing how SendAsync reacts with an valid or expired token.
-            await sender.Messages.OpenAsync(CancellationToken.None).ConfigureAwait(false);
+            await serviceClient.Messages.OpenAsync(CancellationToken.None).ConfigureAwait(false);
 
             var sw = new Stopwatch();
             sw.Start();
@@ -62,14 +64,14 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             try
             {
                 var testMessage = new OutgoingMessage("Test Message");
-                await sender.Messages.SendAsync(testDevice.Id, testMessage, cancellationToken).ConfigureAwait(false);
+                await serviceClient.Messages.SendAsync(testDevice.Id, testMessage, cancellationToken).ConfigureAwait(false);
 
                 // Pass in the cancellation token to see how the operation reacts to it.
-                await sender.Messages.SendAsync(testDevice.Id, testMessage, cancellationToken).ConfigureAwait(false);
+                await serviceClient.Messages.SendAsync(testDevice.Id, testMessage, cancellationToken).ConfigureAwait(false);
             }
             finally
             {
-                await sender.Messages.CloseAsync(CancellationToken.None).ConfigureAwait(false);
+                await serviceClient.Messages.CloseAsync(CancellationToken.None).ConfigureAwait(false);
                 sw.Stop();
                 VerboseTestLogger.WriteLine($"Testing ServiceClient SendAsync(): exiting test after time={sw.Elapsed}; ticks={sw.ElapsedTicks}");
             }
@@ -156,7 +158,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         [DataRow(IotHubTransportProtocol.Tcp)]
-        [DataRow (IotHubTransportProtocol.WebSocket)]
+        [DataRow(IotHubTransportProtocol.WebSocket)]
         public async Task MessagingClient_SendMessageOnClosedClient_ThrowsInvalidOperationException(IotHubTransportProtocol protocol)
         {
             // arrange
@@ -165,11 +167,11 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 Protocol = protocol
             };
 
-            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync (DevicePrefix).ConfigureAwait(false);
+            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString, options);
 
             // act
-            var message = new OutgoingMessage(new byte[10]);
+            var message = new OutgoingMessage(new object());
             await serviceClient.Messages.OpenAsync().ConfigureAwait(false);
             await serviceClient.Messages.CloseAsync();
 
@@ -213,8 +215,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         {
             // arrange
             await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
-            using var sender = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
-            await sender.Messages.OpenAsync().ConfigureAwait(false);
+            IotHubServiceClient serviceClient = TestDevice.ServiceClient;
+            await serviceClient.Messages.OpenAsync().ConfigureAwait(false);
             string messageId = Guid.NewGuid().ToString();
 
             // act
@@ -223,10 +225,10 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             {
                 MessageId = messageId,
             };
-            await sender.Messages.SendAsync(testDevice.Id, messageWithoutId).ConfigureAwait(false);
-            await sender.Messages.SendAsync(testDevice.Id, messageWithId).ConfigureAwait(false);
+            await serviceClient.Messages.SendAsync(testDevice.Id, messageWithoutId).ConfigureAwait(false);
+            await serviceClient.Messages.SendAsync(testDevice.Id, messageWithId).ConfigureAwait(false);
 
-            await sender.Messages.CloseAsync().ConfigureAwait(false);
+            await serviceClient.Messages.CloseAsync().ConfigureAwait(false);
 
             // assert
             messageWithoutId.MessageId.Should().BeNull();
@@ -366,6 +368,50 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             {
                 await sender.Messages.CloseAsync().ConfigureAwait(false);
             }
+        }
+
+        // By default, the service client serializes to JSON and encodes with UTF8. For clients wishing to use a binary payload
+        // They should be able to specify the payload as a byte array and not have it serialized and encoded.
+        // Then on the receiving end in the device client, rather than use TryGetPayload<T> which uses the configured payload
+        // convention, they can get the payload as bytes and do their own deserialization.
+        [TestMethod]
+        public async Task OutgoingMessage_GetPayloadObjectBytes_DoesNotSerialize()
+        {
+            // arrange
+            string actualPayloadString = null;
+            var messageReceived = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            using var cts = new CancellationTokenSource(TestTimeoutMilliseconds);
+
+            Encoding payloadEncoder = Encoding.UTF32; // use a different encoder than JSON
+
+            const string payload = "My custom payload";
+            byte[] payloadBytes = payloadEncoder.GetBytes(payload);
+            var outgoingMessage = new OutgoingMessage(payloadBytes);
+
+            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(nameof(OutgoingMessage_GetPayloadObjectBytes_DoesNotSerialize)).ConfigureAwait(false);
+            IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient();
+            await testDevice.OpenWithRetryAsync(cts.Token).ConfigureAwait(false);
+
+            await deviceClient
+                .SetIncomingMessageCallbackAsync((incomingMessage) =>
+                    {
+                        byte[] actualPayloadBytes = incomingMessage.GetPayloadAsBytes();
+                        actualPayloadString = payloadEncoder.GetString(actualPayloadBytes);
+                        VerboseTestLogger.WriteLine($"Received message with payload [{actualPayloadString}].");
+                        messageReceived.TrySetResult(true);
+                        return Task.FromResult(MessageAcknowledgement.Complete);
+                    },
+                     cts.Token)
+                .ConfigureAwait(false);
+
+            // act
+            await TestDevice.ServiceClient.Messages.OpenAsync(cts.Token).ConfigureAwait(false);
+            VerboseTestLogger.WriteLine($"Sending message with payload [{payload}] encoded to bytes using {payloadEncoder}.");
+            await TestDevice.ServiceClient.Messages.SendAsync(testDevice.Id, outgoingMessage, cts.Token).ConfigureAwait(false);
+            await messageReceived.WaitAsync(cts.Token).ConfigureAwait(false);
+
+            // assert
+            actualPayloadString.Should().Be(payload);
         }
     }
 }

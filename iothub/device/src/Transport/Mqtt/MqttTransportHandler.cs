@@ -622,11 +622,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     Logging.Info($"Sent get twin request. Waiting on service response with request id {requestId}");
 
                 // Wait until IoT hub sends a message to this client with the response to this patch twin request.
-                GetTwinResponse getTwinResponse = await GetTaskCompletionSourceResultAsync(
-                        taskCompletionSource,
-                        "Timed out waiting for the service to send the twin.",
-                        cancellationToken)
-                    .ConfigureAwait(false);
+                GetTwinResponse getTwinResponse = await taskCompletionSource.WaitAsync(cancellationToken).ConfigureAwait(false);
 
                 if (Logging.IsEnabled)
                     Logging.Info(this, $"Received get twin response for request id {requestId} with status {getTwinResponse.Status}.");
@@ -724,11 +720,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     Logging.Info(this, $"Sent twin patch request with request id {requestId}. Now waiting for the service response.");
 
                 // Wait until IoT hub sends a message to this client with the response to this patch twin request.
-                PatchTwinResponse patchTwinResponse = await GetTaskCompletionSourceResultAsync(
-                        taskCompletionSource,
-                        "Timed out waiting for the service to send the updated reported properties version.",
-                        cancellationToken)
-                    .ConfigureAwait(false);
+                PatchTwinResponse patchTwinResponse = await taskCompletionSource.WaitAsync(cancellationToken).ConfigureAwait(false);
 
                 if (Logging.IsEnabled)
                     Logging.Info(this, $"Received twin patch response for request id {requestId} with status {patchTwinResponse.Status}.");
@@ -1332,35 +1324,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 ? string.Empty
                 : "/";
             return $"{topicName}{properties}{suffix}";
-        }
-
-        /// <summary>
-        /// Gets the result of the provided task completion source or throws OperationCanceledException if the provided
-        /// cancellation token is cancelled beforehand.
-        /// </summary>
-        /// <typeparam name="T">The type of the result of the task completion source.</typeparam>
-        /// <param name="taskCompletionSource">The task completion source to asynchronously wait for the result of.</param>
-        /// <param name="timeoutErrorMessage">The error message to put in the OperationCanceledException if this taks times out.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>The result of the provided task completion source if it completes before the provided cancellation token is cancelled.</returns>
-        /// <exception cref="OperationCanceledException">If the cancellation token is cancelled before the provided task completion source finishes.</exception>
-        private static async Task<T> GetTaskCompletionSourceResultAsync<T>(
-            TaskCompletionSource<T> taskCompletionSource,
-            string timeoutErrorMessage,
-            CancellationToken cancellationToken)
-        {
-            // Note that Task.Delay(-1, cancellationToken) effectively waits until the cancellation token is cancelled. The -1 value
-            // just means that the task is allowed to run indefinitely.
-            Task finishedTask = await Task.WhenAny(taskCompletionSource.Task, Task.Delay(-1, cancellationToken)).ConfigureAwait(false);
-
-            // If the finished task is not the cancellation token
-            if (finishedTask == taskCompletionSource.Task)
-            {
-                return await ((Task<T>)finishedTask).ConfigureAwait(false);
-            }
-
-            // Otherwise throw operation cancelled exception since the cancellation token was cancelled before the task finished.
-            throw new OperationCanceledException(timeoutErrorMessage);
         }
     }
 }

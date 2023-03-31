@@ -5,11 +5,11 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Azure.Devices.Client;
-using Microsoft.Azure.Devices.E2ETests.helpers;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.Azure.Devices.E2ETests.Helpers.Templates;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -20,9 +20,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
     [TestCategory("E2E")]
     [TestCategory("IoTHub-Client")]
     [TestCategory("LongRunning")]
-    public class MessageReceiveE2ETests : E2EMsTestBase
+    public class IncomingMessageCallbackE2eTests : E2EMsTestBase
     {
-        private static readonly string s_devicePrefix = $"{nameof(MessageReceiveE2ETests)}_";
+        private static readonly string s_devicePrefix = $"{nameof(IncomingMessageCallbackE2eTests)}_";
 
         private static readonly TimeSpan s_oneSecond = TimeSpan.FromSeconds(1);
         private static readonly TimeSpan s_fiveSeconds = TimeSpan.FromSeconds(5);
@@ -88,16 +88,14 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
                 using var cts = new CancellationTokenSource(s_oneMinute);
                 var c2dMessageReceived = new TaskCompletionSource<IncomingMessage>(TaskCreationOptions.RunContinuationsAsynchronously);
-                Func<IncomingMessage, Task<MessageAcknowledgement>> OnC2DMessageReceived = (message) =>
+                Task<MessageAcknowledgement> OnC2DMessageReceived(IncomingMessage message)
                 {
                     c2dMessageReceived.TrySetResult(message);
                     return Task.FromResult(MessageAcknowledgement.Complete);
-                };
+                }
                 await dc.SetIncomingMessageCallbackAsync(OnC2DMessageReceived).ConfigureAwait(false);
 
-                IncomingMessage receivedMessage = await TaskCompletionSourceHelper
-                    .GetTaskCompletionSourceResultAsync(c2dMessageReceived, cts.Token)
-                    .ConfigureAwait(false);
+                IncomingMessage receivedMessage = await c2dMessageReceived.WaitAsync(cts.Token).ConfigureAwait(false);
 
                 receivedMessage.MessageId.Should().Be(message.MessageId, "Received message Id is not what was sent by service");
                 receivedMessage.UserId.Should().Be(message.UserId, "Received user Id is not what was sent by service");
