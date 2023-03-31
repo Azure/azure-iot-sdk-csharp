@@ -41,12 +41,14 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         [DataRow(IotHubTransportProtocol.WebSocket, 1, true)]
         public async Task FileUploadNotification_FileUploadNotificationProcessor_ReceivesNotifications(IotHubTransportProtocol protocol, int filesToUpload, bool shouldReconnect)
         {
+            // arrange
+
             var options = new IotHubServiceClientOptions
             {
                 Protocol = protocol
             };
 
-            using var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(TestTimeoutMilliseconds));
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString, options);
             using StorageContainer storage = await StorageContainer.GetInstanceAsync("fileupload", false).ConfigureAwait(false);
             using var fileNotification = new SemaphoreSlim(1, 1);
@@ -94,6 +96,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                     await serviceClient.FileUploadNotifications.OpenAsync(cts.Token).ConfigureAwait(false);
                 }
 
+                // act
                 for (int i = 0; i < filesToUpload; ++i)
                 {
                     string fileName = $"TestPayload-{Guid.NewGuid()}.txt";
@@ -101,15 +104,15 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                     await UploadFile(fileName, cts.Token).ConfigureAwait(false);
                 }
 
-                await Task
-                    .WhenAny(
-                        allFilesFound.Task,
-                        Task.Delay(-1, cts.Token))
-                    .ConfigureAwait(false);
+                VerboseTestLogger.WriteLine($"Waiting on file upload notification...");
+                await allFilesFound.WaitAsync(cts.Token).ConfigureAwait(false);
+
+                // assert
                 allFilesFound.Task.IsCompleted.Should().BeTrue();
             }
             finally
             {
+                VerboseTestLogger.WriteLine($"Cleanup: closing client...");
                 await serviceClient.FileUploadNotifications.CloseAsync().ConfigureAwait(false);
             }
         }
@@ -149,11 +152,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 // file upload notification without closing and re-opening as long as there is more
                 // than one file upload notification to consume.
                 using var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(TestTimeoutMilliseconds));
-                await Task
-                    .WhenAny(
-                        errorProcessorNotified.Task,
-                        Task.Delay(-1, cts.Token))
-                    .ConfigureAwait(false);
+                await errorProcessorNotified.WaitAsync(cts.Token).ConfigureAwait(false);
                 errorProcessorNotified.Task.IsCompleted.Should().BeTrue();
             }
             finally

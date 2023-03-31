@@ -382,10 +382,10 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             var messageReceived = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
             using var cts = new CancellationTokenSource(TestTimeoutMilliseconds);
 
-            Encoding binaryEncoder = Encoding.UTF32; // use a different encoder than JSON
+            Encoding payloadEncoder = Encoding.UTF32; // use a different encoder than JSON
 
             const string payload = "My custom payload";
-            byte[] payloadBytes = binaryEncoder.GetBytes(payload);
+            byte[] payloadBytes = payloadEncoder.GetBytes(payload);
             var outgoingMessage = new OutgoingMessage(payloadBytes);
 
             await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(nameof(OutgoingMessage_GetPayloadObjectBytes_DoesNotSerialize)).ConfigureAwait(false);
@@ -396,7 +396,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 .SetIncomingMessageCallbackAsync((incomingMessage) =>
                     {
                         byte[] actualPayloadBytes = incomingMessage.GetPayloadAsBytes();
-                        actualPayloadString = binaryEncoder.GetString(actualPayloadBytes);
+                        actualPayloadString = payloadEncoder.GetString(actualPayloadBytes);
+                        VerboseTestLogger.WriteLine($"Received message with payload [{actualPayloadString}].");
                         messageReceived.TrySetResult(true);
                         return Task.FromResult(MessageAcknowledgement.Complete);
                     },
@@ -405,6 +406,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
             // act
             await TestDevice.ServiceClient.Messages.OpenAsync(cts.Token).ConfigureAwait(false);
+            VerboseTestLogger.WriteLine($"Sending message with payload [{payload}] encoded to bytes using {payloadEncoder}.");
             await TestDevice.ServiceClient.Messages.SendAsync(testDevice.Id, outgoingMessage, cts.Token).ConfigureAwait(false);
             await messageReceived.WaitAsync(cts.Token).ConfigureAwait(false);
 
