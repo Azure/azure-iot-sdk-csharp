@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Azure.Devices.E2ETests
@@ -13,5 +14,6 @@ namespace Microsoft.Azure.Devices.E2ETests
     public partial class FaultInjectionPoolAmqpTests : E2EMsTestBase
     {
         private static readonly string s_proxyServerAddress = TestConfiguration.IotHub.ProxyServerAddress;
+        private static readonly TimeSpan s_defaultOperationTimeout = TimeSpan.FromSeconds(30);
     }
 }

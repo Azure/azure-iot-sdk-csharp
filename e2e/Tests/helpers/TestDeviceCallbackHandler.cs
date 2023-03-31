@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Azure.Devices.Client;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.E2ETests.Helpers
 {
@@ -21,6 +22,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
 
         private readonly SemaphoreSlim _twinCallbackSemaphore = new(0, 1);
         private ExceptionDispatchInfo _twinExceptionDispatch;
+        private Tuple<string, object> _expectedTwinPatchKeyValuePair;
 
         private readonly SemaphoreSlim _receivedMessageCallbackSemaphore = new(0, 1);
         private ExceptionDispatchInfo _receiveMessageExceptionDispatch;
@@ -44,6 +46,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
             set => Volatile.Write(ref _expectedDirectMethodRequest, value);
         }
 
+        internal Tuple<string, object> ExpectedTwinPatchKeyValuePair
+        {
+            get => Volatile.Read(ref _expectedTwinPatchKeyValuePair);
+            set => Volatile.Write(ref _expectedTwinPatchKeyValuePair, value);
+        }
+
         internal OutgoingMessage ExpectedOutgoingMessage
         {
             get => Volatile.Read(ref _expectedOutgoingMessage);
@@ -57,7 +65,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
             _receivedMessageCallbackSemaphore?.Dispose();
         }
 
-        internal async Task SetDeviceReceiveMethodAndRespondAsync<T,H>(H deviceResponsePayload)
+        // Set a direct method callback that expects a request with payload of type T.
+        internal async Task SetDeviceReceiveMethodAndRespondAsync<T>(object deviceResponsePayload, CancellationToken ct = default)
         {
             await _deviceClient.SetDirectMethodCallbackAsync(
                 (request) =>
@@ -90,7 +99,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                         // Always notify that we got the callback.
                         _methodCallbackSemaphore.Release();
                     }
-                }).ConfigureAwait(false);
+                },
+                ct).ConfigureAwait(false);
         }
 
         internal async Task WaitForMethodCallbackAsync(CancellationToken ct)
@@ -99,7 +109,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
             _methodExceptionDispatch?.Throw();
         }
 
-        internal async Task SetTwinPropertyUpdateCallbackHandlerAndProcessAsync<T>(string expectedPropName, T expectedPropValue)
+        // Set a twin patch callback that expects a patch of type T.
+        internal async Task SetTwinPropertyUpdateCallbackHandlerAndProcessAsync<T>(CancellationToken ct = default)
         {
             await _deviceClient.SetDesiredPropertyUpdateCallbackAsync(
                 (patch) =>
@@ -108,13 +119,16 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
 
                     try
                     {
-                        bool containsProperty = patch.TryGetValue(expectedPropName, out T actualPropertyValue);
-                        containsProperty.Should().BeTrue($"Expecting property update patch received for {_testDeviceId} for {expectedPropName} to be {expectedPropValue} but was: {patch.GetSerializedString()}");
-                        actualPropertyValue.Should().Be(expectedPropValue, "The property value should match what was set by service");
+                        string expectedPropertyName = ExpectedTwinPatchKeyValuePair.Item1;
+                        var expectedTwinPropertyValue = (T)ExpectedTwinPatchKeyValuePair.Item2;
+                        bool containsProperty = patch.TryGetValue(expectedPropertyName, out T actualPropertyValue);
+                        containsProperty.Should().BeTrue($"Expecting property update patch received for {_testDeviceId} for {expectedPropertyName} to be {expectedTwinPropertyValue} but was: {patch.GetSerializedString()}");
+
+                        // We don't support nested deserialization yet, so we'll need to serialize the response and compare them.
+                        JsonConvert.SerializeObject(expectedTwinPropertyValue).Should().Be(JsonConvert.SerializeObject(actualPropertyValue), "The property value should match what was set by service");
                     }
                     catch (Exception ex)
                     {
-     
                         VerboseTestLogger.WriteLine($"{nameof(SetDeviceReceiveMethodAndRespondAsync)}: Error during DeviceClient desired property callback for patch {patch}: {ex}.");
                         _twinExceptionDispatch = ExceptionDispatchInfo.Capture(ex);
                     }
@@ -124,8 +138,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                         _twinCallbackSemaphore.Release();
                     }
 
-                    return Task.FromResult<bool>(true);
-                }).ConfigureAwait(false);
+                    return Task.FromResult(true);
+                },
+                ct).ConfigureAwait(false);
         }
 
         internal async Task WaitForTwinCallbackAsync(CancellationToken ct)
@@ -134,11 +149,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
             _twinExceptionDispatch?.Throw();
         }
 
-        internal async Task SetMessageReceiveCallbackHandlerAndCompleteMessageAsync<T>()
+        internal async Task SetIncomingMessageCallbackHandlerAndCompleteMessageAsync<T>(CancellationToken ct = default)
         {
             await _deviceClient.SetIncomingMessageCallbackAsync((IncomingMessage message) =>
             {
-                VerboseTestLogger.WriteLine($"{nameof(SetMessageReceiveCallbackHandlerAndCompleteMessageAsync)}: DeviceClient {_testDeviceId} received message with Id: {message.MessageId}.");
+                VerboseTestLogger.WriteLine($"{nameof(SetIncomingMessageCallbackHandlerAndCompleteMessageAsync)}: DeviceClient {_testDeviceId} received message with Id: {message.MessageId}.");
 
                 try
                 {
@@ -150,12 +165,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                     var expectedPayload = (T)ExpectedOutgoingMessage.Payload;
                     payload.Should().Be(expectedPayload);
 
-                    VerboseTestLogger.WriteLine($"{nameof(SetMessageReceiveCallbackHandlerAndCompleteMessageAsync)}: DeviceClient completed message with Id: {message.MessageId}.");
+                    VerboseTestLogger.WriteLine($"{nameof(SetIncomingMessageCallbackHandlerAndCompleteMessageAsync)}: DeviceClient completed message with Id: {message.MessageId}.");
                     return Task.FromResult(MessageAcknowledgement.Complete);
                 }
                 catch (Exception ex)
                 {
-                    VerboseTestLogger.WriteLine($"{nameof(SetMessageReceiveCallbackHandlerAndCompleteMessageAsync)}: Error during DeviceClient receive message callback: {ex}.");
+                    VerboseTestLogger.WriteLine($"{nameof(SetIncomingMessageCallbackHandlerAndCompleteMessageAsync)}: Error during DeviceClient receive message callback: {ex}.");
                     _receiveMessageExceptionDispatch = ExceptionDispatchInfo.Capture(ex);
 
                     return Task.FromResult(MessageAcknowledgement.Abandon);
@@ -165,7 +180,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                     // Always notify that we got the callback.
                     _receivedMessageCallbackSemaphore.Release();
                 }
-            }).ConfigureAwait(false);
+            },
+            ct).ConfigureAwait(false);
         }
 
         internal async Task UnsetMessageReceiveCallbackHandlerAsync()
@@ -174,7 +190,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
             await _deviceClient.SetIncomingMessageCallbackAsync(null).ConfigureAwait(false);
         }
 
-        internal async Task WaitForReceiveMessageCallbackAsync(CancellationToken ct)
+        internal async Task WaitForIncomingMessageCallbackAsync(CancellationToken ct)
         {
             await _receivedMessageCallbackSemaphore.WaitAsync(ct).ConfigureAwait(false);
             _receiveMessageExceptionDispatch?.Throw();

@@ -132,30 +132,30 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             await serviceClient.Messages.OpenAsync().ConfigureAwait(false);
 
             // Now, set a callback on the device client to receive C2D messages.
-            await deviceHandler.SetMessageReceiveCallbackHandlerAndCompleteMessageAsync<string>().ConfigureAwait(false);
+            await deviceHandler.SetIncomingMessageCallbackHandlerAndCompleteMessageAsync<string>().ConfigureAwait(false);
 
             // Now, send a message to the device from the service.
-            OutgoingMessage firstMsg = OutgoingMessageHelper.ComposeOutgoingTestMessage(out string _, out string _);
+            OutgoingMessage firstMsg = OutgoingMessageHelper.ComposeTestMessage(out string _, out string _);
             deviceHandler.ExpectedOutgoingMessage = firstMsg;
             await serviceClient.Messages.SendAsync(testDevice.Id, firstMsg).ConfigureAwait(false);
             VerboseTestLogger.WriteLine($"Sent C2D message from service, messageId={firstMsg.MessageId} - to be received on callback");
 
             // The message should be received on the callback
             using var cts1 = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            await deviceHandler.WaitForReceiveMessageCallbackAsync(cts1.Token).ConfigureAwait(false);
+            await deviceHandler.WaitForIncomingMessageCallbackAsync(cts1.Token).ConfigureAwait(false);
 
             // Now unsubscribe from receiving c2d messages over the callback.
             await deviceHandler.UnsetMessageReceiveCallbackHandlerAsync().ConfigureAwait(false);
 
             // Send a message to the device from the service.
-            OutgoingMessage secondMsg = OutgoingMessageHelper.ComposeOutgoingTestMessage(out string _, out string _);
+            OutgoingMessage secondMsg = OutgoingMessageHelper.ComposeTestMessage(out string _, out string _);
             await serviceClient.Messages.SendAsync(testDevice.Id, secondMsg).ConfigureAwait(false);
             VerboseTestLogger.WriteLine($"Sent C2D message from service, messageId={secondMsg.MessageId} - which should not be received.");
 
             try
             {
                 using var cts2 = new CancellationTokenSource(s_fiveSeconds);
-                await deviceHandler.WaitForReceiveMessageCallbackAsync(cts2.Token).ConfigureAwait(false);
+                await deviceHandler.WaitForIncomingMessageCallbackAsync(cts2.Token).ConfigureAwait(false);
                 Assert.Fail("Should not have received message over callback.");
             }
             catch (OperationCanceledException) { }
@@ -177,17 +177,17 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             await serviceClient.Messages.OpenAsync().ConfigureAwait(false);
 
             // Now, set a callback on the device client to receive C2D messages.
-            await deviceHandler.SetMessageReceiveCallbackHandlerAndCompleteMessageAsync<string>().ConfigureAwait(false);
+            await deviceHandler.SetIncomingMessageCallbackHandlerAndCompleteMessageAsync<string>().ConfigureAwait(false);
 
             // Now, send a message to the device from the service.
-            OutgoingMessage testMessage = OutgoingMessageHelper.ComposeOutgoingTestMessage(out string _, out string _);
+            OutgoingMessage testMessage = OutgoingMessageHelper.ComposeTestMessage(out string _, out string _);
             deviceHandler.ExpectedOutgoingMessage = testMessage;
             await serviceClient.Messages.SendAsync(testDevice.Id, testMessage).ConfigureAwait(false);
             VerboseTestLogger.WriteLine($"Sent C2D message from service, messageId={testMessage.MessageId} - to be received on callback");
 
             // The message should be received on the callback even though the client was re-opened.
             using var cts1 = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            await deviceHandler.WaitForReceiveMessageCallbackAsync(cts1.Token).ConfigureAwait(false);
+            await deviceHandler.WaitForIncomingMessageCallbackAsync(cts1.Token).ConfigureAwait(false);
         }
 
         // This test ensures that the SDK does not have this bug again
@@ -213,7 +213,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             using var testDeviceCallbackHandler = new TestDeviceCallbackHandler(deviceClient, testDevice.Id);
 
             // Subscribe to receive C2D messages over the callback.
-            await testDeviceCallbackHandler.SetMessageReceiveCallbackHandlerAndCompleteMessageAsync<string>().ConfigureAwait(false);
+            await testDeviceCallbackHandler.SetIncomingMessageCallbackHandlerAndCompleteMessageAsync<string>().ConfigureAwait(false);
 
             // This will make the client unsubscribe from the mqtt c2d topic/close the amqp c2d link. Neither event
             // should close the connection as a whole, though.

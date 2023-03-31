@@ -123,7 +123,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
             async Task InitOperationAsync(TestDevice testDevice, TestDeviceCallbackHandler _)
             {
-                OutgoingMessage msg = OutgoingMessageHelper.ComposeOutgoingTestMessage(out string payload, out string _);
+                OutgoingMessage msg = OutgoingMessageHelper.ComposeTestMessage(out string payload, out string _);
                 messagesSent.Add(testDevice.Id, Tuple.Create(msg, payload));
 
                 await TestDevice.ServiceClient.Messages.OpenAsync().ConfigureAwait(false);
@@ -165,10 +165,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             {
                 await serviceClient.Messages.OpenAsync().ConfigureAwait(false);
 
-                OutgoingMessage msg = OutgoingMessageHelper.ComposeOutgoingTestMessage(out string _, out string _);
+                OutgoingMessage msg = OutgoingMessageHelper.ComposeTestMessage(out string _, out string _);
 
                 await testDevice.OpenWithRetryAsync().ConfigureAwait(false);
-                await testDeviceCallbackHandler.SetMessageReceiveCallbackHandlerAndCompleteMessageAsync<string>().ConfigureAwait(false);
+                await testDeviceCallbackHandler.SetIncomingMessageCallbackHandlerAndCompleteMessageAsync<string>().ConfigureAwait(false);
                 testDeviceCallbackHandler.ExpectedOutgoingMessage = msg;
 
                 await serviceClient.Messages.SendAsync(testDevice.Id, msg).ConfigureAwait(false);
@@ -179,7 +179,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 VerboseTestLogger.WriteLine($"{nameof(IncomingMessageCallbackE2ePoolAmqpTests)}: Preparing to receive message for device {testDevice.Id}");
 
                 using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(20));
-                await testDeviceCallbackHandler.WaitForReceiveMessageCallbackAsync(cts.Token).ConfigureAwait(false);
+                await testDeviceCallbackHandler.WaitForIncomingMessageCallbackAsync(cts.Token).ConfigureAwait(false);
             }
 
             async Task CleanupOperationAsync()

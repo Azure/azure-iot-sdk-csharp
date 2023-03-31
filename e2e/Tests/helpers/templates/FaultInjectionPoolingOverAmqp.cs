@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Azure.Devices.Client;
@@ -15,6 +16,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
 {
     internal static class FaultInjectionPoolingOverAmqp
     {
+        private static readonly TimeSpan s_defaultOperationTimeout = TimeSpan.FromSeconds(30);
+
         public static async Task TestFaultInjectionPoolAmqpAsync(
             string devicePrefix,
             IotHubClientTransportSettings TransportSettings,
@@ -59,7 +62,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                 var amqpConnectionStatusesChange = new AmqpConnectionStatusChange(testDevice.Id);
                 deviceClient.ConnectionStatusChangeCallback = amqpConnectionStatusesChange.ConnectionStatusChangeHandler;
 
-                await deviceClient.OpenAsync().ConfigureAwait(false);
+                using var openCts = new CancellationTokenSource(s_defaultOperationTimeout);
+                await deviceClient.OpenAsync(openCts.Token).ConfigureAwait(false);
+
                 var testDeviceCallbackHandler = new TestDeviceCallbackHandler(deviceClient, testDevice.Id);
 
                 testDevices.Add(testDevice);
@@ -84,7 +89,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                 VerboseTestLogger.WriteLine($"{nameof(FaultInjectionPoolingOverAmqp)}: {testDevices.First().Id} Requesting fault injection type={faultType} reason={reason}, delay={faultDelay}, duration={faultDuration}");
                 faultInjectionDuration.Start();
                 TelemetryMessage faultInjectionMessage = FaultInjection.ComposeErrorInjectionProperties(faultType, reason, faultDelay, faultDuration);
-                await deviceClients.First().SendTelemetryAsync(faultInjectionMessage).ConfigureAwait(false);
+
+                using var injectFaultCts = new CancellationTokenSource(s_defaultOperationTimeout);
+                await deviceClients.First().SendTelemetryAsync(faultInjectionMessage, injectFaultCts.Token).ConfigureAwait(false);
 
                 VerboseTestLogger.WriteLine($"{nameof(FaultInjection)}: Waiting for fault injection to be active: {faultDelay} seconds.");
                 await Task.Delay(faultDelay).ConfigureAwait(false);

@@ -15,9 +15,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
     [TestClass]
     [TestCategory("FaultInjection")]
     [TestCategory("IoTHub-Client")]
-    public partial class MessageSendFaultInjectionTests : E2EMsTestBase
+    public partial class TelemetryFaultInjectionTests : E2EMsTestBase
     {
-        private readonly string _devicePrefix = $"{nameof(MessageSendFaultInjectionTests)}_";
+        private readonly string _devicePrefix = $"{nameof(TelemetryFaultInjectionTests)}_";
         private static readonly string s_proxyServerAddress = TestConfiguration.IotHub.ProxyServerAddress;
 
         [TestMethod]

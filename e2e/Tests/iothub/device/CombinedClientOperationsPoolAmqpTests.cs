@@ -26,8 +26,8 @@ namespace Microsoft.Azure.Devices.E2ETests
         private static readonly DirectMethodResponsePayload s_deviceResponsePayload = new() { CurrentState = "on" };
         private static readonly DirectMethodRequestPayload s_serviceRequestPayload = new() { DesiredState = "off" };
 
-        private static readonly TimeSpan s_testOperationTimeSpan = TimeSpan.FromSeconds(30);
-        private static readonly TimeSpan s_defaultMethodResponseTimeout = TimeSpan.FromMinutes(1);
+        private static readonly TimeSpan s_testOperationTimeout = TimeSpan.FromSeconds(30);
+        private static readonly TimeSpan s_defaultMethodResponseTimeout = TimeSpan.FromSeconds(30);
 
         [TestMethod]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
@@ -50,40 +50,28 @@ namespace Microsoft.Azure.Devices.E2ETests
             // Initialize service client for service-side operations
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
 
-            // Message payload and properties for sending outgoing messages
-            var outgoingMessagesSent = new Dictionary<string, Tuple<OutgoingMessage, string>>();
-
-            // Twin properties
-            var twinPropertyMap = new Dictionary<string, List<string>>();
-
             async Task InitOperationAsync(TestDevice testDevice, TestDeviceCallbackHandler testDeviceCallbackHandler)
             {
                 IList<Task> initOperations = new List<Task>();
-                using var openServiceClientCts = new CancellationTokenSource(s_testOperationTimeSpan);
+                using var openServiceClientCts = new CancellationTokenSource(s_testOperationTimeout);
                 await serviceClient.Messages.OpenAsync(openServiceClientCts.Token).ConfigureAwait(false);
 
-                // Send outgoing message
-                VerboseTestLogger.WriteLine($"{nameof(CombinedClientOperationsPoolAmqpTests)}: Send outgoing message for device={testDevice.Id}");
-                OutgoingMessage msg = OutgoingMessageHelper.ComposeOutgoingTestMessage(out string payload, out string p1Value);
-                VerboseTestLogger.WriteLine($"{nameof(CombinedClientOperationsPoolAmqpTests)}: messageId='{msg.MessageId}' userId='{msg.UserId}' payload='{payload}' p1Value='{p1Value}'");
-                outgoingMessagesSent.Add(testDevice.Id, Tuple.Create(msg, payload));
-
-                using var sendOutgoingMessageCts = new CancellationTokenSource(s_testOperationTimeSpan);
-                Task sendOutgoingMessage = serviceClient.Messages.SendAsync(testDevice.Id, msg, sendOutgoingMessageCts.Token);
-                initOperations.Add(sendOutgoingMessage);
+                // Set incoming message callback
+                using var subscribeIncomingMessageCallbackCts = new CancellationTokenSource(s_testOperationTimeout);
+                Task incomingMessageCallbackSet = testDeviceCallbackHandler.SetIncomingMessageCallbackHandlerAndCompleteMessageAsync<string>(subscribeIncomingMessageCallbackCts.Token);
+                initOperations.Add(incomingMessageCallbackSet);
 
                 // Set method handler
                 VerboseTestLogger.WriteLine($"{nameof(CombinedClientOperationsPoolAmqpTests)}: Set direct method {MethodName} for device={testDevice.Id}");
-                Task methodReceivedTask = testDeviceCallbackHandler.SetDeviceReceiveMethodAndRespondAsync<DirectMethodRequestPayload, DirectMethodResponsePayload>(s_deviceResponsePayload);
-                initOperations.Add(methodReceivedTask);
+                using var subscribeMethodCallbackCts = new CancellationTokenSource(s_testOperationTimeout);
+                Task methodCallbackSet = testDeviceCallbackHandler.SetDeviceReceiveMethodAndRespondAsync<DirectMethodRequestPayload>(s_deviceResponsePayload, subscribeMethodCallbackCts.Token);
+                initOperations.Add(methodCallbackSet);
 
                 // Set the twin desired properties callback
                 VerboseTestLogger.WriteLine($"{nameof(CombinedClientOperationsPoolAmqpTests)}: Set desired property callback for device={testDevice.Id}");
-                string propName = Guid.NewGuid().ToString();
-                string propValue = Guid.NewGuid().ToString();
-                twinPropertyMap.Add(testDevice.Id, new List<string> { propName, propValue });
-                Task<Task> updateReceivedTask = TwinE2ETests.SetTwinPropertyUpdateCallbackHandlerAsync(testDevice.DeviceClient, propName, propValue);
-                initOperations.Add(updateReceivedTask);
+                using var twinPatchCallbackCts = new CancellationTokenSource(s_testOperationTimeout);
+                Task twinPatchCallbackSet = testDeviceCallbackHandler.SetTwinPropertyUpdateCallbackHandlerAndProcessAsync<string>(twinPatchCallbackCts.Token);
+                initOperations.Add(twinPatchCallbackSet);
 
                 await Task.WhenAll(initOperations).ConfigureAwait(false);
             }
@@ -96,17 +84,25 @@ namespace Microsoft.Azure.Devices.E2ETests
                 // D2C Operation
                 VerboseTestLogger.WriteLine($"{nameof(CombinedClientOperationsPoolAmqpTests)}: Operation 1: Send D2C for device={testDevice.Id}");
                 TelemetryMessage message = TelemetryMessageE2eTests.ComposeD2cTestMessage(out string _, out string _);
-                Task sendD2cMessage = testDevice.DeviceClient.SendTelemetryAsync(message);
+                using var telemetrySendCts = new CancellationTokenSource(s_testOperationTimeout);
+                Task sendD2cMessage = testDevice.DeviceClient.SendTelemetryAsync(message, telemetrySendCts.Token);
                 clientOperations.Add(sendD2cMessage);
 
                 // C2D Operation
-                VerboseTestLogger.WriteLine($"{nameof(CombinedClientOperationsPoolAmqpTests)}: Operation 2: Receive C2D for device={testDevice.Id}");
-                Tuple<OutgoingMessage, string> msgSent = outgoingMessagesSent[testDevice.Id];
-                OutgoingMessage msg = msgSent.Item1;
-                string payload = msgSent.Item2;
+                VerboseTestLogger.WriteLine($"{nameof(CombinedClientOperationsPoolAmqpTests)}: Send outgoing message for device={testDevice.Id}");
+                OutgoingMessage msg = OutgoingMessageHelper.ComposeTestMessage(out string payload, out string p1Value);
+                VerboseTestLogger.WriteLine($"{nameof(CombinedClientOperationsPoolAmqpTests)}: messageId='{msg.MessageId}' userId='{msg.UserId}' payload='{payload}' p1Value='{p1Value}'");
 
-                Task verifyDeviceClientReceivesMessage = IncomingMessageCallbackE2eTests.VerifyReceivedC2dMessageAsync(testDevice.DeviceClient, testDevice.Id, msg, payload);
-                clientOperations.Add(verifyDeviceClientReceivesMessage);
+                using var sendOutgoingMessageCts = new CancellationTokenSource(s_testOperationTimeout);
+                Task sendOutgoingMessage = serviceClient.Messages.SendAsync(testDevice.Id, msg, sendOutgoingMessageCts.Token);
+                clientOperations.Add(sendOutgoingMessage);
+
+                VerboseTestLogger.WriteLine($"{nameof(CombinedClientOperationsPoolAmqpTests)}: Operation 2: Receive C2D for device={testDevice.Id}");
+                testDeviceCallbackHandler.ExpectedOutgoingMessage = msg;
+
+                using var incomingMessageReceiveCts = new CancellationTokenSource(s_testOperationTimeout);
+                Task incomingMessageReceivedTask = testDeviceCallbackHandler.WaitForIncomingMessageCallbackAsync(incomingMessageReceiveCts.Token);
+                clientOperations.Add(incomingMessageReceivedTask);
 
                 // Invoke direct methods
                 VerboseTestLogger.WriteLine($"{nameof(CombinedClientOperationsPoolAmqpTests)}: Operation 3: Direct methods test for device={testDevice.Id}");
@@ -118,7 +114,10 @@ namespace Microsoft.Azure.Devices.E2ETests
                 testDeviceCallbackHandler.ExpectedDirectMethodRequest = directMethodRequest;
 
                 Task serviceInvokeMethod = MethodE2ETests.ServiceSendMethodAndVerifyResponseAsync(testDevice.Id, null, directMethodRequest, s_deviceResponsePayload);
+                using var methodResponseCts = new CancellationTokenSource(s_defaultMethodResponseTimeout);
+                Task methodReceivedTask = testDeviceCallbackHandler.WaitForMethodCallbackAsync(methodResponseCts.Token);
                 clientOperations.Add(serviceInvokeMethod);
+                clientOperations.Add(methodReceivedTask);
 
                 // Set reported twin properties
                 VerboseTestLogger.WriteLine($"{nameof(CombinedClientOperationsPoolAmqpTests)}: Operation 4: Set reported property for device={testDevice.Id}");
@@ -127,21 +126,17 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                 // Receive set desired twin properties
                 VerboseTestLogger.WriteLine($"{nameof(CombinedClientOperationsPoolAmqpTests)}: Operation 5: Receive desired property for device={testDevice.Id}");
-                List<string> twinProperties = twinPropertyMap[testDevice.Id];
-                string propName = twinProperties[0];
-                string propValue = twinProperties[1];
+                string propName = Guid.NewGuid().ToString();
+                string propValue = Guid.NewGuid().ToString();
+                testDeviceCallbackHandler.ExpectedTwinPatchKeyValuePair = new Tuple<string, object>(propName, propValue);
                 Task updateDesiredProperties = TwinE2ETests.RegistryManagerUpdateDesiredPropertyAsync(testDevice.Id, propName, propValue);
+                using var twinPatchCts = new CancellationTokenSource(s_testOperationTimeout);
+                Task twinReceivedTask = testDeviceCallbackHandler.WaitForTwinCallbackAsync(twinPatchCts.Token);
                 clientOperations.Add(updateDesiredProperties);
+                clientOperations.Add(twinReceivedTask);
 
                 await Task.WhenAll(clientOperations).ConfigureAwait(false);
                 VerboseTestLogger.WriteLine($"{nameof(CombinedClientOperationsPoolAmqpTests)}: All operations completed for device={testDevice.Id}");
-            }
-
-            Task CleanupOperationAsync()
-            {
-                outgoingMessagesSent.Clear();
-                twinPropertyMap.Clear();
-                return Task.FromResult(0);
             }
 
             await PoolingOverAmqp
@@ -152,7 +147,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     devicesCount,
                     InitOperationAsync,
                     TestOperationAsync,
-                    CleanupOperationAsync,
+                    null,
                     ConnectionStringAuthScope.Device)
                 .ConfigureAwait(false);
         }

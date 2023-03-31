@@ -184,8 +184,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 PoolingOverAmqp.SingleConnection_PoolSize,
                 PoolingOverAmqp.SingleConnection_DevicesCount,
                 FaultInjectionConstants.FaultType_Tcp,
-                FaultInjectionConstants.FaultCloseReason_Boom,
-                TwinE2ETests.SetTwinPropertyUpdateCallbackHandlerAsync).ConfigureAwait(false);
+                FaultInjectionConstants.FaultCloseReason_Boom).ConfigureAwait(false);
         }
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
@@ -199,8 +198,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 PoolingOverAmqp.SingleConnection_PoolSize,
                 PoolingOverAmqp.SingleConnection_DevicesCount,
                 FaultInjectionConstants.FaultType_Tcp,
-                FaultInjectionConstants.FaultCloseReason_Boom,
-                TwinE2ETests.SetTwinPropertyUpdateCallbackHandlerAsync).ConfigureAwait(false);
+                FaultInjectionConstants.FaultCloseReason_Boom).ConfigureAwait(false);
         }
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
@@ -214,8 +212,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 PoolingOverAmqp.SingleConnection_PoolSize,
                 PoolingOverAmqp.SingleConnection_DevicesCount,
                 FaultInjectionConstants.FaultType_GracefulShutdownAmqp,
-                FaultInjectionConstants.FaultCloseReason_Bye,
-                TwinE2ETests.SetTwinPropertyUpdateCallbackHandlerAsync).ConfigureAwait(false);
+                FaultInjectionConstants.FaultCloseReason_Bye).ConfigureAwait(false);
         }
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
@@ -229,8 +226,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 PoolingOverAmqp.SingleConnection_PoolSize,
                 PoolingOverAmqp.SingleConnection_DevicesCount,
                 FaultInjectionConstants.FaultType_GracefulShutdownAmqp,
-                FaultInjectionConstants.FaultCloseReason_Bye,
-                TwinE2ETests.SetTwinPropertyUpdateCallbackHandlerAsync).ConfigureAwait(false);
+                FaultInjectionConstants.FaultCloseReason_Bye).ConfigureAwait(false);
         }
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
@@ -244,8 +240,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 PoolingOverAmqp.SingleConnection_PoolSize,
                 PoolingOverAmqp.SingleConnection_DevicesCount,
                 FaultInjectionConstants.FaultType_AmqpConn,
-                "",
-                TwinE2ETests.SetTwinPropertyUpdateCallbackHandlerAsync).ConfigureAwait(false);
+                "").ConfigureAwait(false);
         }
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
@@ -259,8 +254,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 PoolingOverAmqp.SingleConnection_PoolSize,
                 PoolingOverAmqp.SingleConnection_DevicesCount,
                 FaultInjectionConstants.FaultType_AmqpConn,
-                "",
-                TwinE2ETests.SetTwinPropertyUpdateCallbackHandlerAsync).ConfigureAwait(false);
+                "").ConfigureAwait(false);
         }
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
@@ -275,8 +269,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 PoolingOverAmqp.SingleConnection_PoolSize,
                 PoolingOverAmqp.SingleConnection_DevicesCount,
                 FaultInjectionConstants.FaultType_AmqpSess,
-                "",
-                TwinE2ETests.SetTwinPropertyUpdateCallbackHandlerAsync).ConfigureAwait(false);
+                "").ConfigureAwait(false);
         }
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
@@ -291,8 +284,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 PoolingOverAmqp.SingleConnection_PoolSize,
                 PoolingOverAmqp.SingleConnection_DevicesCount,
                 FaultInjectionConstants.FaultType_AmqpSess,
-                "",
-                TwinE2ETests.SetTwinPropertyUpdateCallbackHandlerAsync).ConfigureAwait(false);
+                "").ConfigureAwait(false);
         }
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
@@ -307,8 +299,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 PoolingOverAmqp.SingleConnection_PoolSize,
                 PoolingOverAmqp.SingleConnection_DevicesCount,
                 FaultInjectionConstants.FaultType_AmqpTwinReq,
-                FaultInjectionConstants.FaultCloseReason_Boom,
-                TwinE2ETests.SetTwinPropertyUpdateCallbackHandlerAsync).ConfigureAwait(false);
+                FaultInjectionConstants.FaultCloseReason_Boom).ConfigureAwait(false);
         }
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
@@ -323,8 +314,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 PoolingOverAmqp.SingleConnection_PoolSize,
                 PoolingOverAmqp.SingleConnection_DevicesCount,
                 FaultInjectionConstants.FaultType_AmqpTwinReq,
-                FaultInjectionConstants.FaultCloseReason_Boom,
-                TwinE2ETests.SetTwinPropertyUpdateCallbackHandlerAsync).ConfigureAwait(false);
+                FaultInjectionConstants.FaultCloseReason_Boom).ConfigureAwait(false);
         }
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
@@ -339,8 +329,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 PoolingOverAmqp.SingleConnection_PoolSize,
                 PoolingOverAmqp.SingleConnection_DevicesCount,
                 FaultInjectionConstants.FaultType_AmqpTwinResp,
-                FaultInjectionConstants.FaultCloseReason_Boom,
-                TwinE2ETests.SetTwinPropertyUpdateCallbackHandlerAsync).ConfigureAwait(false);
+                FaultInjectionConstants.FaultCloseReason_Boom).ConfigureAwait(false);
         }
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
@@ -355,8 +344,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 PoolingOverAmqp.SingleConnection_PoolSize,
                 PoolingOverAmqp.SingleConnection_DevicesCount,
                 FaultInjectionConstants.FaultType_AmqpTwinResp,
-                FaultInjectionConstants.FaultCloseReason_Boom,
-                TwinE2ETests.SetTwinPropertyUpdateCallbackHandlerAsync).ConfigureAwait(false);
+                FaultInjectionConstants.FaultCloseReason_Boom).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -368,8 +356,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 PoolingOverAmqp.MultipleConnections_PoolSize,
                 PoolingOverAmqp.MultipleConnections_DevicesCount,
                 FaultInjectionConstants.FaultType_Tcp,
-                FaultInjectionConstants.FaultCloseReason_Boom,
-                TwinE2ETests.SetTwinPropertyUpdateCallbackHandlerAsync).ConfigureAwait(false);
+                FaultInjectionConstants.FaultCloseReason_Boom).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -381,8 +368,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 PoolingOverAmqp.MultipleConnections_PoolSize,
                 PoolingOverAmqp.MultipleConnections_DevicesCount,
                 FaultInjectionConstants.FaultType_Tcp,
-                FaultInjectionConstants.FaultCloseReason_Boom,
-                TwinE2ETests.SetTwinPropertyUpdateCallbackHandlerAsync).ConfigureAwait(false);
+                FaultInjectionConstants.FaultCloseReason_Boom).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -394,8 +380,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 PoolingOverAmqp.MultipleConnections_PoolSize,
                 PoolingOverAmqp.MultipleConnections_DevicesCount,
                 FaultInjectionConstants.FaultType_GracefulShutdownAmqp,
-                FaultInjectionConstants.FaultCloseReason_Bye,
-                TwinE2ETests.SetTwinPropertyUpdateCallbackHandlerAsync).ConfigureAwait(false);
+                FaultInjectionConstants.FaultCloseReason_Bye).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -407,8 +392,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 PoolingOverAmqp.MultipleConnections_PoolSize,
                 PoolingOverAmqp.MultipleConnections_DevicesCount,
                 FaultInjectionConstants.FaultType_GracefulShutdownAmqp,
-                FaultInjectionConstants.FaultCloseReason_Bye,
-                TwinE2ETests.SetTwinPropertyUpdateCallbackHandlerAsync).ConfigureAwait(false);
+                FaultInjectionConstants.FaultCloseReason_Bye).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -420,8 +404,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 PoolingOverAmqp.MultipleConnections_PoolSize,
                 PoolingOverAmqp.MultipleConnections_DevicesCount,
                 FaultInjectionConstants.FaultType_AmqpConn,
-                "",
-                TwinE2ETests.SetTwinPropertyUpdateCallbackHandlerAsync).ConfigureAwait(false);
+                "").ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -433,8 +416,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 PoolingOverAmqp.MultipleConnections_PoolSize,
                 PoolingOverAmqp.MultipleConnections_DevicesCount,
                 FaultInjectionConstants.FaultType_AmqpConn,
-                "",
-                TwinE2ETests.SetTwinPropertyUpdateCallbackHandlerAsync).ConfigureAwait(false);
+                "").ConfigureAwait(false);
         }
 
         // TODO: #950 - Link/session faults for message send/ method/ twin operations closes the connection.
@@ -447,8 +429,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 PoolingOverAmqp.MultipleConnections_PoolSize,
                 PoolingOverAmqp.MultipleConnections_DevicesCount,
                 FaultInjectionConstants.FaultType_AmqpSess,
-                "",
-                TwinE2ETests.SetTwinPropertyUpdateCallbackHandlerAsync).ConfigureAwait(false);
+                "").ConfigureAwait(false);
         }
 
         // TODO: #950 - Link/session faults for message send/ method/ twin operations closes the connection.
@@ -461,8 +442,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 PoolingOverAmqp.MultipleConnections_PoolSize,
                 PoolingOverAmqp.MultipleConnections_DevicesCount,
                 FaultInjectionConstants.FaultType_AmqpSess,
-                "",
-                TwinE2ETests.SetTwinPropertyUpdateCallbackHandlerAsync).ConfigureAwait(false);
+                "").ConfigureAwait(false);
         }
 
         // TODO: #950 - Link/session faults for message send/ method/ twin operations closes the connection.
@@ -475,8 +455,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 PoolingOverAmqp.MultipleConnections_PoolSize,
                 PoolingOverAmqp.MultipleConnections_DevicesCount,
                 FaultInjectionConstants.FaultType_AmqpTwinReq,
-                FaultInjectionConstants.FaultCloseReason_Boom,
-                TwinE2ETests.SetTwinPropertyUpdateCallbackHandlerAsync).ConfigureAwait(false);
+                FaultInjectionConstants.FaultCloseReason_Boom).ConfigureAwait(false);
         }
 
         // TODO: #950 - Link/session faults for message send/ method/ twin operations closes the connection.
@@ -489,8 +468,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 PoolingOverAmqp.MultipleConnections_PoolSize,
                 PoolingOverAmqp.MultipleConnections_DevicesCount,
                 FaultInjectionConstants.FaultType_AmqpTwinReq,
-                FaultInjectionConstants.FaultCloseReason_Boom,
-                TwinE2ETests.SetTwinPropertyUpdateCallbackHandlerAsync).ConfigureAwait(false);
+                FaultInjectionConstants.FaultCloseReason_Boom).ConfigureAwait(false);
         }
 
         // TODO: #950 - Link/session faults for message send/ method/ twin operations closes the connection.
@@ -503,8 +481,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 PoolingOverAmqp.MultipleConnections_PoolSize,
                 PoolingOverAmqp.MultipleConnections_DevicesCount,
                 FaultInjectionConstants.FaultType_AmqpTwinResp,
-                FaultInjectionConstants.FaultCloseReason_Boom,
-                TwinE2ETests.SetTwinPropertyUpdateCallbackHandlerAsync).ConfigureAwait(false);
+                FaultInjectionConstants.FaultCloseReason_Boom).ConfigureAwait(false);
         }
 
         // TODO: #950 - Link/session faults for message send/ method/ twin operations closes the connection.
@@ -517,8 +494,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 PoolingOverAmqp.MultipleConnections_PoolSize,
                 PoolingOverAmqp.MultipleConnections_DevicesCount,
                 FaultInjectionConstants.FaultType_AmqpTwinResp,
-                FaultInjectionConstants.FaultCloseReason_Boom,
-                TwinE2ETests.SetTwinPropertyUpdateCallbackHandlerAsync).ConfigureAwait(false);
+                FaultInjectionConstants.FaultCloseReason_Boom).ConfigureAwait(false);
         }
 
         private async Task Twin_DeviceReportedPropertiesRecoveryPoolOverAmqp(
@@ -568,7 +544,6 @@ namespace Microsoft.Azure.Devices.E2ETests
             int devicesCount,
             string faultType,
             string reason,
-            Func<IotHubDeviceClient, string, string, Task<Task>> setTwinPropertyUpdateCallbackAsync,
             string proxyAddress = null)
         {
             var twinPropertyMap = new Dictionary<string, List<string>>();
@@ -582,7 +557,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                 VerboseTestLogger.WriteLine($"{nameof(FaultInjectionPoolAmqpTests)}: Setting desired propery callback for device {testDevice.Id}");
                 VerboseTestLogger.WriteLine($"{nameof(Twin_DeviceDesiredPropertyUpdateRecoveryPoolOverAmqp)}: name={propName}, value={propValue}");
-                await testDeviceCallbackHandler.SetTwinPropertyUpdateCallbackHandlerAndProcessAsync(propName, propValue).ConfigureAwait(false);
+                await testDeviceCallbackHandler.SetTwinPropertyUpdateCallbackHandlerAndProcessAsync<string>().ConfigureAwait(false);
             }
 
             async Task TestOperationAsync(IotHubDeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler testDeviceCallbackHandler)
@@ -594,6 +569,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 string propValue = twinProperties[1];
 
                 VerboseTestLogger.WriteLine($"{nameof(FaultInjectionPoolAmqpTests)}: Updating the desired properties for device {testDevice.Id}");
+                testDeviceCallbackHandler.ExpectedTwinPatchKeyValuePair = new Tuple<string, object>(propName, propValue);
 
                 Task serviceSendTask = TwinE2ETests.RegistryManagerUpdateDesiredPropertyAsync(testDevice.Id, propName, propValue);
                 Task twinReceivedTask = testDeviceCallbackHandler.WaitForTwinCallbackAsync(cts.Token);

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
@@ -17,6 +18,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
     public class TwinE2EPoolAmqpTests : E2EMsTestBase
     {
         private readonly string _devicePrefix = $"{nameof(TwinE2EPoolAmqpTests)}_";
+        private static readonly TimeSpan s_defaultTwinResponseTimeout = TimeSpan.FromMinutes(1);
 
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
@@ -76,8 +78,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                     TestDeviceType.Sasl,
                     new IotHubClientAmqpSettings(),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
-                    PoolingOverAmqp.MultipleConnections_DevicesCount,
-                    TwinE2ETests.SetTwinPropertyUpdateCallbackHandlerAsync)
+                    PoolingOverAmqp.MultipleConnections_DevicesCount)
                 .ConfigureAwait(false);
         }
 
@@ -89,8 +90,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                     TestDeviceType.Sasl,
                     new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
-                    PoolingOverAmqp.MultipleConnections_DevicesCount,
-                    TwinE2ETests.SetTwinPropertyUpdateCallbackHandlerAsync)
+                    PoolingOverAmqp.MultipleConnections_DevicesCount)
                 .ConfigureAwait(false);
         }
 
@@ -103,7 +103,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                     new IotHubClientAmqpSettings(),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
-                    TwinE2ETests.SetTwinPropertyUpdateCallbackHandlerAsync,
                     authScope: ConnectionStringAuthScope.IotHub)
                 .ConfigureAwait(false);
         }
@@ -117,7 +116,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                     new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
-                    TwinE2ETests.SetTwinPropertyUpdateCallbackHandlerAsync,
                     authScope: ConnectionStringAuthScope.IotHub)
                 .ConfigureAwait(false);
         }
@@ -153,12 +151,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             IotHubClientAmqpSettings transportSettings,
             int poolSize,
             int devicesCount,
-            Func<IotHubDeviceClient, string, string, Task<Task>> setTwinPropertyUpdateCallbackAsync,
             ConnectionStringAuthScope authScope = ConnectionStringAuthScope.Device)
         {
             var twinPropertyMap = new Dictionary<string, List<string>>();
 
-            async Task InitOperationAsync(TestDevice testDevice, TestDeviceCallbackHandler _)
+            async Task InitOperationAsync(TestDevice testDevice, TestDeviceCallbackHandler testDeviceCallbackHandler)
             {
                 string propName = Guid.NewGuid().ToString();
                 string propValue = Guid.NewGuid().ToString();
@@ -166,17 +163,24 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
 
                 VerboseTestLogger.WriteLine($"{nameof(TwinE2EPoolAmqpTests)}: Setting desired propery callback for device {testDevice.Id}");
                 VerboseTestLogger.WriteLine($"{nameof(ServiceSetsDesiredPropertyAndDeviceReceivesEventPoolOverAmqp)}: name={propName}, value={propValue}");
-                Task updateReceivedTask = await setTwinPropertyUpdateCallbackAsync(testDevice.DeviceClient, propName, propValue).ConfigureAwait(false);
+                await testDeviceCallbackHandler.SetTwinPropertyUpdateCallbackHandlerAndProcessAsync<string>().ConfigureAwait(false);
             }
 
-            async Task TestOperationAsync(TestDevice testDevice, TestDeviceCallbackHandler _)
+            async Task TestOperationAsync(TestDevice testDevice, TestDeviceCallbackHandler testDeviceCallbackHandler)
             {
                 VerboseTestLogger.WriteLine($"{nameof(TwinE2EPoolAmqpTests)}: Updating the desired properties for device {testDevice.Id}");
                 List<string> twinProperties = twinPropertyMap[testDevice.Id];
                 string propName = twinProperties[0];
                 string propValue = twinProperties[1];
 
-                await TwinE2ETests.RegistryManagerUpdateDesiredPropertyAsync(testDevice.Id, propName, propValue).ConfigureAwait(false);
+                testDeviceCallbackHandler.ExpectedTwinPatchKeyValuePair = new Tuple<string, object>(propName, propValue);
+
+                using var twinResponseCts = new CancellationTokenSource(s_defaultTwinResponseTimeout);
+                Task updateReceivedTask = testDeviceCallbackHandler.WaitForTwinCallbackAsync(twinResponseCts.Token);
+
+                await Task.WhenAll(
+                    TwinE2ETests.RegistryManagerUpdateDesiredPropertyAsync(testDevice.Id, propName, propValue),
+                    updateReceivedTask).ConfigureAwait(false);
             }
 
             Task CleanupOperationAsync()

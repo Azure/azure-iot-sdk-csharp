@@ -115,7 +115,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             await testDevice.OpenWithRetryAsync().ConfigureAwait(false);
 
             using var testDeviceCallbackHandler = new TestDeviceCallbackHandler(deviceClient, testDevice.Id);
-            await testDeviceCallbackHandler.SetDeviceReceiveMethodAndRespondAsync<T, H>(directMethodResponseFromClient);
+            await testDeviceCallbackHandler.SetDeviceReceiveMethodAndRespondAsync<T>(directMethodResponseFromClient);
 
             var directMethodRequest = new DirectMethodServiceRequest(MethodName)
             {
