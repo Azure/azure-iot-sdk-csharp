@@ -28,7 +28,8 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
         {
             _serviceClient = serviceClient;
             _deviceId = deviceId;
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _logger = logger;
+            _logger.LoggerContext.Add("DeviceId", deviceId);
         }
 
         public async Task InvokeDirectMethodAsync(CancellationToken ct)
@@ -93,46 +94,35 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
 
         public async Task SendC2dMessagesAsync(CancellationToken ct)
         {
-            try
-            {
-                await _serviceClient.Messages.OpenAsync(ct).ConfigureAwait(false);
+            await _serviceClient.Messages.OpenAsync(ct).ConfigureAwait(false);
 
-                while (!ct.IsCancellationRequested)
+            while (!ct.IsCancellationRequested)
+            {
+                var payload = new CustomC2dMessagePayload
                 {
-                    var payload = new CustomC2dMessagePayload
-                    {
-                        RandomId = Guid.NewGuid(),
-                        CurrentTimeUtc = DateTime.UtcNow,
-                        MessagesSentCount = ++_totalC2dMessagesSentCount,
-                    };
-                    var message = new OutgoingMessage(payload)
-                    {
-                        // An acknowledgment is sent on delivery success or failure.
-                        Ack = DeliveryAcknowledgement.Full,
-                        MessageId = payload.RandomId.ToString(),
-                    };
+                    RandomId = Guid.NewGuid(),
+                    CurrentTimeUtc = DateTime.UtcNow,
+                    MessagesSentCount = ++_totalC2dMessagesSentCount,
+                };
+                var message = new OutgoingMessage(payload)
+                {
+                    // An acknowledgment is sent on delivery success or failure.
+                    Ack = DeliveryAcknowledgement.Full,
+                    MessageId = payload.RandomId.ToString(),
+                };
 
-                    _logger.Trace($"Sending message with Id {message.MessageId} to the device: {_deviceId}", TraceSeverity.Information);
-                    _logger.Metric(TotalC2dMessagesSentCount, _totalC2dMessagesSentCount);
+                _logger.Trace($"Sending message with Id {message.MessageId} to the device: {_deviceId}", TraceSeverity.Information);
+                _logger.Metric(TotalC2dMessagesSentCount, _totalC2dMessagesSentCount);
 
-                    await _serviceClient.Messages.SendAsync(_deviceId, message, ct).ConfigureAwait(false);
+                await _serviceClient.Messages.SendAsync(_deviceId, message, ct).ConfigureAwait(false);
 
-                    await Task.Delay(s_c2dMessagesSentInterval, ct).ConfigureAwait(false);
-                }
-            }
-            finally
-            {
-                await _serviceClient.Messages.CloseAsync().ConfigureAwait(false);
+                await Task.Delay(s_c2dMessagesSentInterval, ct).ConfigureAwait(false);
             }
         }
 
         public void Dispose()
         {
-            _logger.Trace("Disposing", TraceSeverity.Verbose);
-
-            _serviceClient?.Dispose();
-
-            _logger.Trace($"IotHub instance disposed", TraceSeverity.Verbose);
+            _logger.Trace($"{nameof(DeviceOperations)} instance disposed for the device [{_deviceId}].", TraceSeverity.Verbose);
         }
     }
 }

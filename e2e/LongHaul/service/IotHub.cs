@@ -29,6 +29,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
         private BlobContainerClient _blobContainerClient;
 
         private static volatile Dictionary<string, Action> s_onlineDeviceOperations;
+        private static volatile Dictionary<string, CancellationTokenSource> s_onlineDeviceCancellationTokenSources;
 
         private long _totalFeedbackMessagesReceivedCount = 0;
 
@@ -50,8 +51,10 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                 Protocol = _transportProtocol,
             };
             s_serviceClient = new IotHubServiceClient(_hubConnectionString, options);
-            s_onlineDeviceOperations = new Dictionary<string, Action>();
             _logger.Trace("Initialized a new service client instance.", TraceSeverity.Information);
+
+            s_onlineDeviceOperations = new Dictionary<string, Action>();
+            s_onlineDeviceCancellationTokenSources = new Dictionary<string, CancellationTokenSource>();
 
             _totalFileUploadNotificationsReceived = 0;
             _blobContainerClient = new BlobContainerClient(_storageConnectionString, "fileupload");
@@ -74,25 +77,42 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                 {
                     string deviceId = device.DeviceId;
 
-                    if (s_onlineDeviceOperations.ContainsKey(deviceId) && device.ConnectionState is ClientConnectionState.Disconnected)
+                    if (s_onlineDeviceCancellationTokenSources.ContainsKey(deviceId)
+                        && s_onlineDeviceOperations.ContainsKey(deviceId)
+                        && device.ConnectionState is ClientConnectionState.Disconnected)
                     {
+                        CancellationTokenSource source = s_onlineDeviceCancellationTokenSources[deviceId];
+                        source.Cancel(); // Signal cancellation to all tasks on the particular device.
+                        s_onlineDeviceCancellationTokenSources.Remove(deviceId);
                         s_onlineDeviceOperations.Remove(deviceId);
                     }
-                    else if (!s_onlineDeviceOperations.ContainsKey(deviceId) && device.ConnectionState is ClientConnectionState.Connected)
+                    else if (!s_onlineDeviceCancellationTokenSources.ContainsKey(deviceId)
+                        && !s_onlineDeviceOperations.ContainsKey(deviceId)
+                        && device.ConnectionState is ClientConnectionState.Connected)
                     {
+                        // For each online device, initiate a new cancellation token source.
+                        // Once the device goes offline, cancel all operations on this device.
+                        var source = new CancellationTokenSource();
+                        CancellationToken token = source.Token;
+                        s_onlineDeviceCancellationTokenSources.Add(deviceId, source);
+
                         s_onlineDeviceOperations.Add(
                             deviceId,
                             async () =>
                             {
-                                using var deviceOperations = new DeviceOperations(s_serviceClient, deviceId, _logger);
+                                using var deviceOperations = new DeviceOperations(s_serviceClient, deviceId, _logger.Clone());
                                 _logger.Trace($"Creating {nameof(DeviceOperations)} on the device [{deviceId}]", TraceSeverity.Verbose);
 
-                                await Task
+                                try
+                                {
+                                    await Task
                                     .WhenAll(
-                                        deviceOperations.InvokeDirectMethodAsync(ct),
-                                        deviceOperations.SetDesiredPropertiesAsync("guidValue", Guid.NewGuid().ToString(), ct),
-                                        deviceOperations.SendC2dMessagesAsync(ct))
+                                        deviceOperations.InvokeDirectMethodAsync(token),
+                                        deviceOperations.SetDesiredPropertiesAsync("guidValue", Guid.NewGuid().ToString(), token),
+                                        deviceOperations.SendC2dMessagesAsync(token))
                                     .ConfigureAwait(false);
+                                }
+                                catch (TaskCanceledException) { } // The cancellation on device is signaled.
                             });
 
                         s_onlineDeviceOperations[deviceId]?.Invoke();
