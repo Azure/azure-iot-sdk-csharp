@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Azure;
 using FluentAssertions;
@@ -27,8 +28,12 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         [Timeout(TestTimeoutMilliseconds)]
         public async Task DigitalTwinWithOnlyRootComponentOperationsAsync()
         {
+            // Setting up one cancellation token for the complete test flow
+            using var cts = new CancellationTokenSource(s_testTimeout);
+            CancellationToken ct = cts.Token;
+
             // Create a new test device instance.
-            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix).ConfigureAwait(false);
+            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix, ct: ct).ConfigureAwait(false);
             string deviceId = testDevice.Id;
 
             // Create a device client instance over Mqtt, initializing it with the "Thermostat" model which has only a root component.
@@ -38,7 +43,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             };
             // Call openAsync() to open the device's connection, so that the ModelId is sent over Mqtt CONNECT packet.
             IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(options);
-            await testDevice.OpenWithRetryAsync().ConfigureAwait(false);
+            await testDevice.OpenWithRetryAsync(ct).ConfigureAwait(false);
 
             // Perform operations on the digital twin.
             IotHubServiceClient serviceClient = TestDevice.ServiceClient;
@@ -102,8 +107,12 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         [Timeout(TestTimeoutMilliseconds)]
         public async Task DigitalTwinWithComponentOperationsAsync()
         {
+            // Setting up one cancellation token for the complete test flow
+            using var cts = new CancellationTokenSource(s_testTimeout);
+            CancellationToken ct = cts.Token;
+
             // Create a new test device instance.
-            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix).ConfigureAwait(false);
+            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix, ct: ct).ConfigureAwait(false);
             string deviceId = testDevice.Id;
 
             // Create a device client instance over Mqtt, initializing it with the "TemperatureController" model which has "Thermostat" components.
@@ -113,7 +122,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             };
             // Call openAsync() to open the device's connection, so that the ModelId is sent over Mqtt CONNECT packet.
             IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(options);
-            await testDevice.OpenWithRetryAsync().ConfigureAwait(false);
+            await testDevice.OpenWithRetryAsync(ct).ConfigureAwait(false);
 
             // Perform operations on the digital twin.
             var serviceClient = TestDevice.ServiceClient;

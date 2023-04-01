@@ -8,9 +8,7 @@ using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
-using Microsoft.Azure.Amqp.Framing;
 using Microsoft.Azure.Devices.Client;
-using Microsoft.VisualStudio.TestPlatform.CommunicationUtilities;
 using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.E2ETests.Helpers

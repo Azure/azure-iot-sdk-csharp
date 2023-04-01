@@ -29,18 +29,22 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         [DataRow(IotHubTransportProtocol.WebSocket)]
         public async Task MessageFeedbackReceiver_Operation(IotHubTransportProtocol protocol)
         {
+            // Setting up one cancellation token for the complete test flow
+            using var cts = new CancellationTokenSource(s_testTimeout);
+            CancellationToken ct = cts.Token;
+
             var options = new IotHubServiceClientOptions
             {
                 Protocol = protocol,
             };
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString, options);
-            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix).ConfigureAwait(false);
+            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix, ct: ct).ConfigureAwait(false);
 
             try
             {
                 // Configure the device to receive messages.
                 await using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(new IotHubClientAmqpSettings()));
-                await testDevice.OpenWithRetryAsync().ConfigureAwait(false);
+                await testDevice.OpenWithRetryAsync(ct).ConfigureAwait(false);
 
                 var c2dMessageReceived = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
                 Task<MessageAcknowledgement> OnC2DMessageReceived(IncomingMessage message)

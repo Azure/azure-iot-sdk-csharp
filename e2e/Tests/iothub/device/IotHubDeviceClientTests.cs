@@ -24,7 +24,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             CancellationToken ct = cts.Token;
 
             // arrange
-            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(nameof(IotHubDeviceClientTests), ct);
+            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(nameof(IotHubDeviceClientTests), ct: ct);
             IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient();
             await testDevice.OpenWithRetryAsync(ct).ConfigureAwait(false);
 

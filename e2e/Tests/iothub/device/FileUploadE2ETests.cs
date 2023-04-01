@@ -27,81 +27,63 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         [TestMethod]
         [TestCategory("LongRunning")]
+        [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task FileUpload_GetFileUploadSasUri_Mqtt_x509_NoFileTransportSettingSpecified()
         {
-            // Setting up one cancellation token for the complete test flow
-            using var cts = new CancellationTokenSource(s_longRunningTestTimeout);
-            CancellationToken ct = cts.Token;
-
             string smallFileBlobName = await GetTestFileNameAsync(FileSizeSmall).ConfigureAwait(false);
-            await GetSasUriAsync(new IotHubClientMqttSettings(), new IotHubClientHttpSettings(), smallFileBlobName, true, ct).ConfigureAwait(false);
+            await GetSasUriAsync(new IotHubClientMqttSettings(), new IotHubClientHttpSettings(), smallFileBlobName, true).ConfigureAwait(false);
         }
 
         [TestMethod]
         [TestCategory("LongRunning")]
+        [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task FileUpload_GetFileUploadSasUri_Amqp_x509_NoFileTransportSettingSpecified()
         {
-            // Setting up one cancellation token for the complete test flow
-            using var cts = new CancellationTokenSource(s_longRunningTestTimeout);
-            CancellationToken ct = cts.Token;
-
             string smallFileBlobName = await GetTestFileNameAsync(FileSizeSmall).ConfigureAwait(false);
-            await GetSasUriAsync(new IotHubClientAmqpSettings(), new IotHubClientHttpSettings(), smallFileBlobName, true, ct).ConfigureAwait(false);
+            await GetSasUriAsync(new IotHubClientAmqpSettings(), new IotHubClientHttpSettings(), smallFileBlobName, true).ConfigureAwait(false);
         }
 
         [TestMethod]
         [TestCategory("LongRunning")]
+        [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task FileUpload_SmallFile_GranularSteps_ValidCorrelationId()
         {
-            // Setting up one cancellation token for the complete test flow
-            using var cts = new CancellationTokenSource(s_longRunningTestTimeout);
-            CancellationToken ct = cts.Token;
-
             string filename = await GetTestFileNameAsync(FileSizeSmall).ConfigureAwait(false);
             using var fileStreamSource = new FileStream(filename, FileMode.Open, FileAccess.Read);
             var fileUploadTransportSettings = new IotHubClientHttpSettings();
 
-            await UploadFileGranularAsync(fileStreamSource, filename, fileUploadTransportSettings, isCorrelationIdValid: true, ct: ct).ConfigureAwait(false);
+            await UploadFileGranularAsync(fileStreamSource, filename, fileUploadTransportSettings, isCorrelationIdValid: true).ConfigureAwait(false);
         }
 
         [TestMethod]
         [TestCategory("LongRunning")]
+        [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task FileUpload_SmallFile_GranularSteps_InvalidCorrelationId()
         {
-            // Setting up one cancellation token for the complete test flow
-            using var cts = new CancellationTokenSource(s_longRunningTestTimeout);
-            CancellationToken ct = cts.Token;
-
             string filename = await GetTestFileNameAsync(FileSizeSmall).ConfigureAwait(false);
             using var fileStreamSource = new FileStream(filename, FileMode.Open, FileAccess.Read);
             var fileUploadTransportSettings = new IotHubClientHttpSettings();
 
-            await UploadFileGranularAsync(fileStreamSource, filename, fileUploadTransportSettings, isCorrelationIdValid: false, ct: ct).ConfigureAwait(false);
+            await UploadFileGranularAsync(fileStreamSource, filename, fileUploadTransportSettings, isCorrelationIdValid: false).ConfigureAwait(false);
         }
 
         [TestMethod]
         [TestCategory("LongRunning")]
+        [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task FileUpload_SmallFile_GranularSteps_x509()
         {
-            // Setting up one cancellation token for the complete test flow
-            using var cts = new CancellationTokenSource(s_longRunningTestTimeout);
-            CancellationToken ct = cts.Token;
-
             string filename = await GetTestFileNameAsync(FileSizeSmall).ConfigureAwait(false);
             using var fileStreamSource = new FileStream(filename, FileMode.Open, FileAccess.Read);
             var fileUploadTransportSettings = new IotHubClientHttpSettings();
 
-            await UploadFileGranularAsync(fileStreamSource, filename, fileUploadTransportSettings, isCorrelationIdValid: true, useX509auth: true, ct: ct).ConfigureAwait(false);
+            await UploadFileGranularAsync(fileStreamSource, filename, fileUploadTransportSettings, isCorrelationIdValid: true, useX509auth: true).ConfigureAwait(false);
         }
 
         [TestMethod]
         [TestCategory("LongRunning")]
+        [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task FileUpload_SmallFile_GranularSteps_Proxy()
         {
-            // Setting up one cancellation token for the complete test flow
-            using var cts = new CancellationTokenSource(s_longRunningTestTimeout);
-            CancellationToken ct = cts.Token;
-
             string filename = await GetTestFileNameAsync(FileSizeSmall).ConfigureAwait(false);
             using var fileStreamSource = new FileStream(filename, FileMode.Open, FileAccess.Read);
             var fileUploadTransportSettings = new IotHubClientHttpSettings()
@@ -109,7 +91,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 Proxy = new WebProxy(TestConfiguration.IotHub.ProxyServerAddress)
             };
 
-            await UploadFileGranularAsync(fileStreamSource, filename, fileUploadTransportSettings, isCorrelationIdValid: true, ct: ct).ConfigureAwait(false);
+            await UploadFileGranularAsync(fileStreamSource, filename, fileUploadTransportSettings, isCorrelationIdValid: true).ConfigureAwait(false);
         }
 
         private async Task UploadFileGranularAsync(
@@ -117,14 +99,12 @@ namespace Microsoft.Azure.Devices.E2ETests
             string filename,
             IotHubClientHttpSettings fileUploadTransportSettings,
             bool isCorrelationIdValid,
-            bool useX509auth = false,
-            CancellationToken ct = default)
+            bool useX509auth = false)
         {
             await using TestDevice testDevice = await TestDevice
                 .GetTestDeviceAsync(
                     _devicePrefix,
-                    useX509auth ? TestDeviceType.X509 : TestDeviceType.Sasl,
-                    ct)
+                    useX509auth ? TestDeviceType.X509 : TestDeviceType.Sasl)
                 .ConfigureAwait(false);
 
             IotHubDeviceClient deviceClient;
@@ -151,7 +131,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             await using (deviceClient)
             {
-                FileUploadSasUriResponse fileUploadSasUriResponse = await deviceClient.GetFileUploadSasUriAsync(fileUploadSasUriRequest, ct).ConfigureAwait(false);
+                FileUploadSasUriResponse fileUploadSasUriResponse = await deviceClient.GetFileUploadSasUriAsync(fileUploadSasUriRequest).ConfigureAwait(false);
 
                 var blob = new CloudBlockBlob(fileUploadSasUriResponse.GetBlobUri());
                 Task uploadTask = blob.UploadFromStreamAsync(source);
@@ -161,7 +141,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 {
                     var notification = new FileUploadCompletionNotification(fileUploadSasUriResponse.CorrelationId, uploadTask.IsCompleted);
 
-                    await deviceClient.CompleteFileUploadAsync(notification, ct).ConfigureAwait(false);
+                    await deviceClient.CompleteFileUploadAsync(notification).ConfigureAwait(false);
                 }
                 else
                 {
@@ -171,7 +151,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                     try
                     {
-                        await deviceClient.CompleteFileUploadAsync(notification, ct).ConfigureAwait(false);
+                        await deviceClient.CompleteFileUploadAsync(notification).ConfigureAwait(false);
                     }
                     catch (IotHubClientException ex) when (ex.ErrorCode is IotHubClientErrorCode.ServerError)
                     {

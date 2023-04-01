@@ -64,12 +64,17 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         public async Task DirectMethodsClient_DeviceClientOpen_DeviceNotSubscribedToDirectMethods()
         {
             // arrange
+
+            // Setting up one cancellation token for the complete test flow
+            using var cts = new CancellationTokenSource(s_testTimeout);
+            CancellationToken ct = cts.Token;
+
             IotHubServiceClient serviceClient = TestDevice.ServiceClient;
-            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix);
+            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix, ct: ct);
             var methodInvocation = new DirectMethodServiceRequest("someDirectMethod");
 
             IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient();
-            await testDevice.OpenWithRetryAsync();
+            await testDevice.OpenWithRetryAsync(ct);
 
             // act
             Func<Task> act = async () => await serviceClient.DirectMethods.InvokeAsync(testDevice.Id, methodInvocation);
@@ -86,8 +91,13 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         public async Task DirectMethodsClient_DeviceOnline_ExceedsRequestTimeout()
         {
             // arrange
+
+            // Setting up one cancellation token for the complete test flow
+            using var cts = new CancellationTokenSource(s_testTimeout);
+            CancellationToken ct = cts.Token;
+
             IotHubServiceClient serviceClient = TestDevice.ServiceClient;
-            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix);
+            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix, ct: ct);
             var responseTimeout = TimeSpan.FromSeconds(5);
 
             var methodInvocation = new DirectMethodServiceRequest("someDirectMethod")
@@ -96,7 +106,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 ResponseTimeout = responseTimeout,
             };
             IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient();
-            await testDevice.OpenWithRetryAsync().ConfigureAwait(false);
+            await testDevice.OpenWithRetryAsync(ct).ConfigureAwait(false);
 
             // act
             await deviceClient
