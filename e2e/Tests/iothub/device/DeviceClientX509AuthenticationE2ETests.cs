@@ -27,7 +27,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         private static X509Certificate2 s_chainCertificateWithPrivateKey = TestConfiguration.IotHub.GetChainDeviceCertificateWithPrivateKey();
         private readonly string _hostName = GetHostName(TestConfiguration.IotHub.ConnectionString);
 
-        [TestMethod]
+        [DataTestMethod]
         [DataRow(IotHubClientTransportProtocol.Tcp)]
         [DataRow(IotHubClientTransportProtocol.WebSocket)]
         public async Task X509_InvalidDeviceId_Throw_UnauthorizedException_Amqp(IotHubClientTransportProtocol protocol)
@@ -39,7 +39,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await X509InvalidDeviceIdOpenAsyncTest(new IotHubClientAmqpSettings(protocol), ct).ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [DataTestMethod]
         // TODO: there is a problem with DotNetty on net6.0 with gatewayv2. Wait for transition to MqttNet to re-enable and try this test out.
 #if !NET6_0_OR_GREATER
         [DataRow(IotHubClientTransportProtocol.Tcp)]
@@ -54,7 +54,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await X509InvalidDeviceIdOpenAsyncTest(new IotHubClientMqttSettings(protocol), ct).ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [DataTestMethod]
         [DataRow(IotHubClientTransportProtocol.Tcp)]
         [DataRow(IotHubClientTransportProtocol.WebSocket)]
         public async Task X509_Enable_CertificateRevocationCheck_Mqtt(IotHubClientTransportProtocol protocol)
@@ -67,7 +67,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await SendMessageTestAsync(transportSetting, ct).ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [DataTestMethod]
         [DataRow(IotHubClientTransportProtocol.Tcp)]
         [DataRow(IotHubClientTransportProtocol.WebSocket)]
         public async Task X509_Enable_CertificateRevocationCheck_Amqp(IotHubClientTransportProtocol protocol)

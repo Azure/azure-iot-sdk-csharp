@@ -18,7 +18,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
     {
         private readonly string _devicePrefix = $"{nameof(TelemetryE2EPoolAmqpTests)}_";
 
-        [TestMethod]
+        [DataTestMethod]
         [TestCategory("LongRunning")]
         [DataRow(IotHubClientTransportProtocol.Tcp)]
         [DataRow(IotHubClientTransportProtocol.WebSocket)]

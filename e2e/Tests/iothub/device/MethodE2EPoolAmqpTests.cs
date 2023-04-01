@@ -26,7 +26,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
 
         private static readonly TimeSpan s_defaultMethodResponseTimeout = TimeSpan.FromSeconds(30);
 
-        [TestMethod]
+        [DataTestMethod]
         [TestCategory("LongRunning")]
         [DataRow(IotHubClientTransportProtocol.Tcp, ConnectionStringAuthScope.Device)]
         [DataRow(IotHubClientTransportProtocol.WebSocket, ConnectionStringAuthScope.Device)]

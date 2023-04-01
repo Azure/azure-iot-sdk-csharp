@@ -19,7 +19,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
     {
         private readonly string _devicePrefix = $"{nameof(TwinE2EPoolAmqpTests)}_";
 
-        [TestMethod]
+        [DataTestMethod]
         [DataRow(IotHubClientTransportProtocol.Tcp, ConnectionStringAuthScope.Device)]
         [DataRow(IotHubClientTransportProtocol.WebSocket, ConnectionStringAuthScope.Device)]
         [DataRow(IotHubClientTransportProtocol.Tcp, ConnectionStringAuthScope.IotHub)]
@@ -40,7 +40,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 .ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [DataTestMethod]
         [DataRow(IotHubClientTransportProtocol.Tcp, ConnectionStringAuthScope.Device)]
         [DataRow(IotHubClientTransportProtocol.WebSocket, ConnectionStringAuthScope.Device)]
         [DataRow(IotHubClientTransportProtocol.Tcp, ConnectionStringAuthScope.IotHub)]

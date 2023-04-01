@@ -24,7 +24,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         private static readonly TimeSpan s_defaultMethodResponseTimeout = TimeSpan.FromSeconds(30);
 
-        [TestMethod]
+        [DataTestMethod]
         [TestCategory("LongRunning")]
         [DataRow(IotHubClientTransportProtocol.Tcp, FaultInjectionConstants.FaultType_Tcp, FaultInjectionConstants.FaultCloseReason_Boom)]
         [DataRow(IotHubClientTransportProtocol.WebSocket, FaultInjectionConstants.FaultType_Tcp, FaultInjectionConstants.FaultCloseReason_Boom)]
@@ -49,7 +49,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         // TODO: #950 - Link/session faults for message send/ method/ twin operations closes the connection.
-        [TestMethod]
+        [DataTestMethod]
         [TestCategory("LongRunning")]
         [DataRow(IotHubClientTransportProtocol.Tcp)]
         [DataRow(IotHubClientTransportProtocol.WebSocket)]
@@ -70,7 +70,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         // TODO: #950 - Link/session faults for message send/ method/ twin operations closes the connection.
-        [TestMethod]
+        [DataTestMethod]
         [TestCategory("LongRunning")]
         [DataRow(IotHubClientTransportProtocol.Tcp, FaultInjectionConstants.FaultType_AmqpMethodReq, FaultInjectionConstants.FaultCloseReason_Boom)]
         [DataRow(IotHubClientTransportProtocol.WebSocket, FaultInjectionConstants.FaultType_AmqpMethodReq, FaultInjectionConstants.FaultCloseReason_Boom)]

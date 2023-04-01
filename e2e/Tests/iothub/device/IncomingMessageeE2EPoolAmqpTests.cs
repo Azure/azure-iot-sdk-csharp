@@ -19,7 +19,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
     {
         private readonly string DevicePrefix = $"{nameof(IncomingMessageeE2EPoolAmqpTests)}_";
 
-        [TestMethod]
+        [DataTestMethod]
         [DataRow(IotHubClientTransportProtocol.Tcp, ConnectionStringAuthScope.Device)]
         [DataRow(IotHubClientTransportProtocol.WebSocket, ConnectionStringAuthScope.Device)]
         [DataRow(IotHubClientTransportProtocol.Tcp, ConnectionStringAuthScope.IotHub)]
@@ -39,7 +39,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 .ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [DataTestMethod]
         [DataRow(IotHubClientTransportProtocol.Tcp, ConnectionStringAuthScope.Device)]
         [DataRow(IotHubClientTransportProtocol.WebSocket, ConnectionStringAuthScope.Device)]
         [DataRow(IotHubClientTransportProtocol.Tcp, ConnectionStringAuthScope.IotHub)]

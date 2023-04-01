@@ -21,7 +21,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
 
         // Ungraceful disconnection recovery test is marked as a build verification test
         // to test client reconnection logic in PR runs.
-        [TestMethod]
+        [DataTestMethod]
         [TestCategory("FaultInjectionBVT")]
         [DataRow(IotHubClientTransportProtocol.Tcp)]
         [DataRow(IotHubClientTransportProtocol.WebSocket)]
@@ -41,7 +41,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
 
         // Ungraceful disconnection recovery test is marked as a build verification test
         // to test client reconnection logic in PR runs.
-        [TestMethod]
+        [DataTestMethod]
         [TestCategory("FaultInjectionBVT")]
         [DataRow(IotHubClientTransportProtocol.Tcp)]
         [DataRow(IotHubClientTransportProtocol.WebSocket)]
@@ -61,7 +61,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
 
         // Graceful disconnection recovery test is marked as a build verification test
         // to test client reconnection logic in PR runs.
-        [TestMethod]
+        [DataTestMethod]
         [TestCategory("FaultInjectionBVT")]
         [DataRow(IotHubClientTransportProtocol.Tcp)]
         [DataRow(IotHubClientTransportProtocol.WebSocket)]
@@ -98,7 +98,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 .ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [DataTestMethod]
         [DoNotParallelize]
         [DataRow(IotHubClientTransportProtocol.Tcp)]
         [DataRow(IotHubClientTransportProtocol.WebSocket)]
@@ -116,7 +116,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 .ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [DataTestMethod]
         [TestCategory("FaultInjection")]
         [DataRow(IotHubClientTransportProtocol.Tcp, FaultInjectionConstants.FaultType_Tcp, FaultInjectionConstants.FaultCloseReason_Boom)]
         [DataRow(IotHubClientTransportProtocol.WebSocket, FaultInjectionConstants.FaultType_Tcp, FaultInjectionConstants.FaultCloseReason_Boom)]
@@ -136,7 +136,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 .ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [DataTestMethod]
         [TestCategory("FaultInjection")]
         [DataRow(IotHubClientTransportProtocol.Tcp, FaultInjectionConstants.FaultType_Tcp, FaultInjectionConstants.FaultCloseReason_Boom)]
         [DataRow(IotHubClientTransportProtocol.WebSocket, FaultInjectionConstants.FaultType_Tcp, FaultInjectionConstants.FaultCloseReason_Boom)]
@@ -158,7 +158,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 .ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [DataTestMethod]
         [DoNotParallelize]
         [DataRow(IotHubClientTransportProtocol.Tcp)]
         [DataRow(IotHubClientTransportProtocol.WebSocket)]

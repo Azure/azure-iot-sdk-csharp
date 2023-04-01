@@ -31,7 +31,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
 
         // Ungraceful disconnection recovery test is marked as a build verification test
         // to test client reconnection logic in PR runs.
-        [TestMethod]
+        [DataTestMethod]
         [TestCategory("FaultInjectionBVT")]
         [DataRow(IotHubClientTransportProtocol.Tcp)]
         [DataRow(IotHubClientTransportProtocol.WebSocket)]
@@ -51,7 +51,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
 
         // Graceful disconnection recovery test is marked as a build verification test
         // to test client reconnection logic in PR runs.
-        [TestMethod]
+        [DataTestMethod]
         [TestCategory("FaultInjectionBVT")]
         [DataRow(IotHubClientTransportProtocol.Tcp)]
         [DataRow(IotHubClientTransportProtocol.WebSocket)]
@@ -71,7 +71,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
 
         // Ungraceful disconnection recovery test is marked as a build verification test
         // to test client reconnection logic in PR runs.
-        [TestMethod]
+        [DataTestMethod]
         [TestCategory("FaultInjectionBVT")]
         [DataRow(IotHubClientTransportProtocol.Tcp)]
         [DataRow(IotHubClientTransportProtocol.WebSocket)]
@@ -91,7 +91,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
 
         // Graceful disconnection recovery test is marked as a build verification test
         // to test client reconnection logic in PR runs.
-        [TestMethod]
+        [DataTestMethod]
         [TestCategory("FaultInjectionBVT")]
         [DataRow(IotHubClientTransportProtocol.Tcp)]
         [DataRow(IotHubClientTransportProtocol.WebSocket)]
@@ -109,7 +109,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 .ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [DataTestMethod]
         [DataRow(IotHubClientTransportProtocol.Tcp)]
         [DataRow(IotHubClientTransportProtocol.WebSocket)]
         public async Task Method_AmqpConnectionLostRecovery_Amqp(IotHubClientTransportProtocol protocol)
@@ -126,7 +126,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 .ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [DataTestMethod]
         [DataRow(IotHubClientTransportProtocol.Tcp)]
         [DataRow(IotHubClientTransportProtocol.WebSocket)]
         public async Task Method_AmqpSessionLostRecovery_Amqp(IotHubClientTransportProtocol protocol)
@@ -143,7 +143,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 .ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [DataTestMethod]
         [DataRow(IotHubClientTransportProtocol.Tcp, FaultInjectionConstants.FaultType_AmqpMethodReq, FaultInjectionConstants.FaultCloseReason_Boom)]
         [DataRow(IotHubClientTransportProtocol.WebSocket, FaultInjectionConstants.FaultType_AmqpMethodReq, FaultInjectionConstants.FaultCloseReason_Boom)]
         [DataRow(IotHubClientTransportProtocol.Tcp, FaultInjectionConstants.FaultType_AmqpMethodResp, FaultInjectionConstants.FaultCloseReason_Boom)]

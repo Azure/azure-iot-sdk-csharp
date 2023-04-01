@@ -28,7 +28,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         private static readonly TimeSpan s_defaultMethodResponseTimeout = TimeSpan.FromSeconds(30);
 
-        [TestMethod]
+        [DataTestMethod]
         [DataRow(IotHubClientTransportProtocol.Tcp)]
         [DataRow(IotHubClientTransportProtocol.WebSocket)]
         public async Task DeviceCombinedClientOperations_MultipleConnections_Amqp(IotHubClientTransportProtocol protocol)

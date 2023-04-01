@@ -30,7 +30,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
 
         private static readonly TimeSpan s_defaultMethodResponseTimeout = TimeSpan.FromSeconds(30);
 
-        [TestMethod]
+        [DataTestMethod]
         [DataRow(IotHubClientTransportProtocol.Tcp)]
         [DataRow(IotHubClientTransportProtocol.WebSocket)]
         public async Task Method_DeviceReceivesMethodAndResponds_Mqtt(IotHubClientTransportProtocol protocol)
@@ -42,7 +42,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             await SendDeviceMethodAndRespondAsync(new IotHubClientMqttSettings(protocol), ct).ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [DataTestMethod]
         [DataRow(IotHubClientTransportProtocol.Tcp)]
         [DataRow(IotHubClientTransportProtocol.WebSocket)]
         public async Task Method_DeviceUnsubscribes_Mqtt(IotHubClientTransportProtocol protocol)
@@ -54,7 +54,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             await SendMethodAndUnsubscribeAsync(new IotHubClientMqttSettings(protocol), ct).ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [DataTestMethod]
         [DataRow(IotHubClientTransportProtocol.Tcp)]
         [DataRow(IotHubClientTransportProtocol.WebSocket)]
         public async Task Method_DeviceReceivesMethodAndResponds_Amqp(IotHubClientTransportProtocol protocol)
@@ -66,7 +66,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             await SendDeviceMethodAndRespondAsync(new IotHubClientAmqpSettings(protocol), ct).ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [DataTestMethod]
         [DataRow(IotHubClientTransportProtocol.Tcp)]
         [DataRow(IotHubClientTransportProtocol.WebSocket)]
         public async Task Method_DeviceUnsubscribes_Amqp(IotHubClientTransportProtocol protocol)
@@ -78,7 +78,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             await SendMethodAndUnsubscribeAsync(new IotHubClientAmqpSettings(protocol), ct).ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [DataTestMethod]
         [DataRow(IotHubClientTransportProtocol.Tcp)]
         [DataRow(IotHubClientTransportProtocol.WebSocket)]
         public async Task Method_ModuleReceivesMethodAndResponse_Mqtt(IotHubClientTransportProtocol protocol)
@@ -90,7 +90,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             await SendModuleMethodAndRespondAsync(new IotHubClientMqttSettings(protocol), ct).ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [DataTestMethod]
         [DataRow(IotHubClientTransportProtocol.Tcp)]
         [DataRow(IotHubClientTransportProtocol.WebSocket)]
         public async Task Method_ModuleReceivesMethodAndResponse_Amqp(IotHubClientTransportProtocol protocol)

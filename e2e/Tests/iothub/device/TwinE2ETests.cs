@@ -98,7 +98,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 .ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [DataTestMethod]
         [DataRow(IotHubClientTransportProtocol.Tcp)]
         [DataRow(IotHubClientTransportProtocol.WebSocket)]
         public async Task Twin_DeviceSetsInvalidReportedPropertyThrowsException_Amqp(IotHubClientTransportProtocol transportProtocol)
@@ -113,7 +113,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 .ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [DataTestMethod]
         [DataRow(IotHubClientTransportProtocol.Tcp)]
         [DataRow(IotHubClientTransportProtocol.WebSocket)]
         public async Task Twin_DeviceSetsInvalidReportedPropertyThrowsException_Mqtt(IotHubClientTransportProtocol transportProtocol)
@@ -338,7 +338,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 .ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [DataTestMethod]
         [DataRow(IotHubClientTransportProtocol.Tcp)]
         [DataRow(IotHubClientTransportProtocol.WebSocket)]
         public async Task Twin_DeviceSetsReportedPropertyAfterOpenCloseOpen_Mqtt()
@@ -353,7 +353,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 .ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [DataTestMethod]
         [DataRow(IotHubClientTransportProtocol.Tcp)]
         [DataRow(IotHubClientTransportProtocol.WebSocket)]
         public async Task Twin_DeviceSetsReportedPropertyAfterOpenCloseOpen_Amqp()
@@ -368,7 +368,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 .ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [DataTestMethod]
         [DataRow(IotHubClientTransportProtocol.Tcp)]
         [DataRow(IotHubClientTransportProtocol.WebSocket)]
         public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesAfterOpenCloseOpen_Mqtt()
@@ -384,7 +384,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 .ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [DataTestMethod]
         [DataRow(IotHubClientTransportProtocol.Tcp)]
         [DataRow(IotHubClientTransportProtocol.WebSocket)]
         public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesAfterOpenCloseOpen_Amqp()
