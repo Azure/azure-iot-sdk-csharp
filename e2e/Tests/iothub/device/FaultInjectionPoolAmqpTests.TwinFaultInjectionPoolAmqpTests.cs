@@ -157,8 +157,8 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             async Task TestOperationAsync(TestDevice testDevice, TestDeviceCallbackHandler _, CancellationToken ct)
             {
-                VerboseTestLogger.WriteLine($"{nameof(TwinE2EPoolAmqpTests)}: Setting reported propery and verifying twin for device {testDevice.Id}");
-                await TwinE2ETests.Twin_DeviceSetsReportedPropertyAndGetsItBackAsync(
+                VerboseTestLogger.WriteLine($"{nameof(TwinE2ePoolAmqpTests)}: Setting reported propery and verifying twin for device {testDevice.Id}");
+                await TwinE2eTests.Twin_DeviceSetsReportedPropertyAndGetsItBackAsync(
                         testDevice.DeviceClient,
                         testDevice.Id,
                         Guid.NewGuid().ToString(),
@@ -214,7 +214,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 VerboseTestLogger.WriteLine($"{nameof(FaultInjectionPoolAmqpTests)}: Updating the desired properties for device {testDevice.Id}");
                 testDeviceCallbackHandler.ExpectedTwinPatchKeyValuePair = new Tuple<string, object>(propName, propValue);
 
-                Task serviceSendTask = TwinE2ETests.RegistryManagerUpdateDesiredPropertyAsync(testDevice.Id, propName, propValue, ct);
+                Task serviceSendTask = TwinE2eTests.RegistryManagerUpdateDesiredPropertyAsync(testDevice.Id, propName, propValue, ct);
                 Task twinReceivedTask = testDeviceCallbackHandler.WaitForTwinCallbackAsync(ct);
 
                 await Task.WhenAll(serviceSendTask, twinReceivedTask).ConfigureAwait(false);

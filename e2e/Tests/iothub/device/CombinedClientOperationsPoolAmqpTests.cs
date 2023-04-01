@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.Azure.Devices.E2ETests.Helpers.Templates;
-using Microsoft.Azure.Devices.E2ETests.Messaging;
 using Microsoft.Azure.Devices.E2ETests.Methods;
 using Microsoft.Azure.Devices.E2ETests.Twins;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -116,7 +115,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                 // Set reported twin properties
                 VerboseTestLogger.WriteLine($"{nameof(CombinedClientOperationsPoolAmqpTests)}: Operation 4: Set reported property for device={testDevice.Id}");
-                Task setReportedProperties = TwinE2ETests.Twin_DeviceSetsReportedPropertyAndGetsItBackAsync(testDevice.DeviceClient, testDevice.Id, Guid.NewGuid().ToString(), ct);
+                Task setReportedProperties = TwinE2eTests.Twin_DeviceSetsReportedPropertyAndGetsItBackAsync(testDevice.DeviceClient, testDevice.Id, Guid.NewGuid().ToString(), ct);
                 clientOperations.Add(setReportedProperties);
 
                 // Receive set desired twin properties
@@ -124,7 +123,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 string propName = Guid.NewGuid().ToString();
                 string propValue = Guid.NewGuid().ToString();
                 testDeviceCallbackHandler.ExpectedTwinPatchKeyValuePair = new Tuple<string, object>(propName, propValue);
-                Task updateDesiredProperties = TwinE2ETests.RegistryManagerUpdateDesiredPropertyAsync(testDevice.Id, propName, propValue, ct);
+                Task updateDesiredProperties = TwinE2eTests.RegistryManagerUpdateDesiredPropertyAsync(testDevice.Id, propName, propValue, ct);
                 Task twinReceivedTask = testDeviceCallbackHandler.WaitForTwinCallbackAsync(ct);
                 clientOperations.Add(updateDesiredProperties);
                 clientOperations.Add(twinReceivedTask);

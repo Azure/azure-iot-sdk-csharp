@@ -81,7 +81,6 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 await serviceClient.Messages.SendAsync(testDevice.Device.Id, message).ConfigureAwait(false);
 
                 // Wait for the device to receive the message.
-                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(20));
                 await c2dMessageReceived.WaitAsync(cts.Token).ConfigureAwait(false);
 
                 c2dMessageReceived.Task.IsCompleted.Should().BeTrue("Timed out waiting for C2D message to be received by device");

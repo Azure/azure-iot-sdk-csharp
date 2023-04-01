@@ -15,9 +15,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
     [TestClass]
     [TestCategory("FaultInjection")]
     [TestCategory("IoTHub-Client")]
-    public partial class TelemetryFaultInjectionTests : E2EMsTestBase
+    public partial class TelemetryMessageFaultInjectionTests : E2EMsTestBase
     {
-        private readonly string _devicePrefix = $"{nameof(TelemetryFaultInjectionTests)}_";
+        private readonly string _devicePrefix = $"{nameof(TelemetryMessageFaultInjectionTests)}_";
         private static readonly string s_proxyServerAddress = TestConfiguration.IotHub.ProxyServerAddress;
 
         // Ungraceful disconnection recovery test is marked as a build verification test

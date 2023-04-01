@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client;
@@ -14,9 +13,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
     [TestClass]
     [TestCategory("E2E")]
     [TestCategory("IoTHub-Client")]
-    public class TelemetryE2EPoolAmqpTests : E2EMsTestBase
+    public class TelemetryMessageE2ePoolAmqpTests : E2EMsTestBase
     {
-        private readonly string _devicePrefix = $"{nameof(TelemetryE2EPoolAmqpTests)}_";
+        private readonly string _devicePrefix = $"{nameof(TelemetryMessageE2ePoolAmqpTests)}_";
 
         [DataTestMethod]
         [TestCategory("LongRunning")]
@@ -45,7 +44,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             async Task TestOperationAsync(TestDevice testDevice, TestDeviceCallbackHandler _, CancellationToken ct)
             {
                 TelemetryMessage testMessage = TelemetryMessageHelper.ComposeTestMessage(out string payload, out string p1Value);
-                VerboseTestLogger.WriteLine($"{nameof(TelemetryE2EPoolAmqpTests)}.{testDevice.Id}: messageId='{testMessage.MessageId}' payload='{payload}' p1Value='{p1Value}'");
+                VerboseTestLogger.WriteLine($"{nameof(TelemetryMessageE2ePoolAmqpTests)}.{testDevice.Id}: messageId='{testMessage.MessageId}' payload='{payload}' p1Value='{p1Value}'");
                 await testDevice.DeviceClient.SendTelemetryAsync(testMessage, ct).ConfigureAwait(false);
             }
 

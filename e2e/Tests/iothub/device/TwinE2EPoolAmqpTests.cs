@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client;
@@ -15,9 +14,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
     [TestClass]
     [TestCategory("E2E")]
     [TestCategory("IoTHub-Client")]
-    public class TwinE2EPoolAmqpTests : E2EMsTestBase
+    public class TwinE2ePoolAmqpTests : E2EMsTestBase
     {
-        private readonly string _devicePrefix = $"{nameof(TwinE2EPoolAmqpTests)}_";
+        private readonly string _devicePrefix = $"{nameof(TwinE2ePoolAmqpTests)}_";
 
         [DataTestMethod]
         [DataRow(IotHubClientTransportProtocol.Tcp, ConnectionStringAuthScope.Device)]
@@ -71,8 +70,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         {
             async Task TestOperationAsync(TestDevice testDevice, TestDeviceCallbackHandler _, CancellationToken ct)
             {
-                VerboseTestLogger.WriteLine($"{nameof(TwinE2EPoolAmqpTests)}: Setting reported propery and verifying twin for device {testDevice.Id}");
-                await TwinE2ETests.Twin_DeviceSetsReportedPropertyAndGetsItBackAsync(testDevice.DeviceClient, testDevice.Id, Guid.NewGuid().ToString(), ct).ConfigureAwait(false);
+                VerboseTestLogger.WriteLine($"{nameof(TwinE2ePoolAmqpTests)}: Setting reported propery and verifying twin for device {testDevice.Id}");
+                await TwinE2eTests.Twin_DeviceSetsReportedPropertyAndGetsItBackAsync(testDevice.DeviceClient, testDevice.Id, Guid.NewGuid().ToString(), ct).ConfigureAwait(false);
             }
 
             await PoolingOverAmqp
@@ -99,13 +98,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         {
             async Task InitOperationAsync(TestDevice testDevice, TestDeviceCallbackHandler testDeviceCallbackHandler, CancellationToken ct)
             {
-                VerboseTestLogger.WriteLine($"{nameof(TwinE2EPoolAmqpTests)}: Setting desired propery callback for device {testDevice.Id}");
+                VerboseTestLogger.WriteLine($"{nameof(TwinE2ePoolAmqpTests)}: Setting desired propery callback for device {testDevice.Id}");
                 await testDeviceCallbackHandler.SetTwinPropertyUpdateCallbackHandlerAndProcessAsync<string>(ct).ConfigureAwait(false);
             }
 
             async Task TestOperationAsync(TestDevice testDevice, TestDeviceCallbackHandler testDeviceCallbackHandler, CancellationToken ct)
             {
-                VerboseTestLogger.WriteLine($"{nameof(TwinE2EPoolAmqpTests)}: Updating the desired properties for device {testDevice.Id}");
+                VerboseTestLogger.WriteLine($"{nameof(TwinE2ePoolAmqpTests)}: Updating the desired properties for device {testDevice.Id}");
                 string propName = Guid.NewGuid().ToString();
                 string propValue = Guid.NewGuid().ToString();
                 VerboseTestLogger.WriteLine($"{nameof(ServiceSetsDesiredPropertyAndDeviceReceivesEventPoolOverAmqp)}: name={propName}, value={propValue}");
@@ -115,7 +114,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 Task updateReceivedTask = testDeviceCallbackHandler.WaitForTwinCallbackAsync(ct);
 
                 await Task.WhenAll(
-                    TwinE2ETests.RegistryManagerUpdateDesiredPropertyAsync(testDevice.Id, propName, propValue, ct),
+                    TwinE2eTests.RegistryManagerUpdateDesiredPropertyAsync(testDevice.Id, propName, propValue, ct),
                     updateReceivedTask).ConfigureAwait(false);
             }
 

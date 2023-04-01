@@ -2,9 +2,9 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using FluentAssertions;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.Azure.Devices.E2ETests.Helpers.Templates;
@@ -19,95 +19,43 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
     {
         private readonly string DevicePrefix = $"{nameof(IncomingMessageCallbackE2ePoolAmqpTests)}_";
 
-        [TestMethod]
-        [Timeout(TestTimeoutMilliseconds)]
-        public async Task Message_DeviceSak_DeviceReceiveSingleMessage_MultipleConnections_Amqp()
+        [DataTestMethod]
+        [DataRow(IotHubClientTransportProtocol.Tcp, ConnectionStringAuthScope.Device)]
+        [DataRow(IotHubClientTransportProtocol.WebSocket, ConnectionStringAuthScope.Device)]
+        [DataRow(IotHubClientTransportProtocol.Tcp, ConnectionStringAuthScope.IotHub)]
+        [DataRow(IotHubClientTransportProtocol.WebSocket, ConnectionStringAuthScope.IotHub)]
+        public async Task IncomingMessage_ReceiveSingleMessage_MultipleConnections_Amqp(IotHubClientTransportProtocol protocol, ConnectionStringAuthScope authScope)
         {
-            await ReceiveMessage_PoolOverAmqpAsync(
-                    new IotHubClientAmqpSettings(),
-                    PoolingOverAmqp.MultipleConnections_PoolSize,
-                    PoolingOverAmqp.MultipleConnections_DevicesCount)
-                .ConfigureAwait(false);
-        }
+            // Setting up one cancellation token for the complete test flow
+            using var cts = new CancellationTokenSource(s_testTimeout);
+            CancellationToken ct = cts.Token;
 
-        [TestMethod]
-        [Timeout(LongRunningTestTimeoutMilliseconds)]
-        public async Task Message_DeviceReceiveSingleMessageUsingCallback_MultipleConnections_AmqpWs()
-        {
             await ReceiveMessage_PoolOverAmqpAsync(
-                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
-                    PoolingOverAmqp.MultipleConnections_PoolSize,
-                    PoolingOverAmqp.MultipleConnections_DevicesCount)
-                .ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        [Timeout(TestTimeoutMilliseconds)]
-        public async Task Message_IoTHubSak_DeviceReceiveSingleMessage_MultipleConnections_Amqp()
-        {
-            await ReceiveMessage_PoolOverAmqpAsync(
-                    new IotHubClientAmqpSettings(),
+                    new IotHubClientAmqpSettings(protocol),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
-                    ConnectionStringAuthScope.IotHub)
+                    authScope,
+                    ct)
                 .ConfigureAwait(false);
         }
 
-        [TestMethod]
-        [Timeout(TestTimeoutMilliseconds)]
-        public async Task Message_IoTHubSak_DeviceReceiveSingleMessage_MultipleConnections_AmqpWs()
+        [DataTestMethod]
+        [DataRow(IotHubClientTransportProtocol.Tcp, ConnectionStringAuthScope.Device)]
+        [DataRow(IotHubClientTransportProtocol.WebSocket, ConnectionStringAuthScope.Device)]
+        [DataRow(IotHubClientTransportProtocol.Tcp, ConnectionStringAuthScope.IotHub)]
+        [DataRow(IotHubClientTransportProtocol.WebSocket, ConnectionStringAuthScope.IotHub)]
+        public async Task IncomingMessage_ReceiveSingleMessageAndUnsubscribe_MultipleConnections_Amqp(IotHubClientTransportProtocol protocol, ConnectionStringAuthScope authScope)
         {
-            await ReceiveMessage_PoolOverAmqpAsync(
-                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
+            // Setting up one cancellation token for the complete test flow
+            using var cts = new CancellationTokenSource(s_testTimeout);
+            CancellationToken ct = cts.Token;
+
+            await ReceiveMessageAndUnsubscribe_PoolOverAmqpAsync(
+                    new IotHubClientAmqpSettings(protocol),
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
-                    ConnectionStringAuthScope.IotHub)
-                .ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        [Timeout(LongRunningTestTimeoutMilliseconds)]
-        public async Task Message_DeviceReceiveSingleMessageUsingCallbackAndUnsubscribe_MultipleConnections_Amqp()
-        {
-            await ReceiveMessageUsingCallback_PoolOverAmqpAsync(
-                    new IotHubClientAmqpSettings(),
-                    PoolingOverAmqp.MultipleConnections_PoolSize,
-                    PoolingOverAmqp.MultipleConnections_DevicesCount)
-                .ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        [Timeout(LongRunningTestTimeoutMilliseconds)]
-        public async Task Message_DeviceReceiveSingleMessageUsingCallbackAndUnsubscribe_MultipleConnections_AmqpWs()
-        {
-            await ReceiveMessageUsingCallback_PoolOverAmqpAsync(
-                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
-                    PoolingOverAmqp.MultipleConnections_PoolSize,
-                    PoolingOverAmqp.MultipleConnections_DevicesCount)
-                .ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        [Timeout(TestTimeoutMilliseconds)]
-        public async Task Message_IoTHubSak_DeviceReceiveSingleMessageUsingCallback_MultipleConnections_Amqp()
-        {
-            await ReceiveMessageUsingCallback_PoolOverAmqpAsync(
-                    new IotHubClientAmqpSettings(),
-                    PoolingOverAmqp.MultipleConnections_PoolSize,
-                    PoolingOverAmqp.MultipleConnections_DevicesCount,
-                    ConnectionStringAuthScope.IotHub)
-                .ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        [Timeout(TestTimeoutMilliseconds)]
-        public async Task Message_IoTHubSak_DeviceReceiveSingleMessageUsingCallback_MultipleConnections_AmqpWs()
-        {
-            await ReceiveMessageUsingCallback_PoolOverAmqpAsync(
-                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
-                    PoolingOverAmqp.MultipleConnections_PoolSize,
-                    PoolingOverAmqp.MultipleConnections_DevicesCount,
-                    ConnectionStringAuthScope.IotHub)
+                    authScope,
+                    ct)
                 .ConfigureAwait(false);
         }
 
@@ -115,28 +63,24 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             IotHubClientAmqpSettings transportSettings,
             int poolSize,
             int devicesCount,
-            ConnectionStringAuthScope authScope = ConnectionStringAuthScope.Device)
+            ConnectionStringAuthScope authScope,
+            CancellationToken ct)
         {
-            var messagesSent = new Dictionary<string, Tuple<OutgoingMessage, string>>();
-
-            // Initialize the service client
-
-            async Task InitOperationAsync(TestDevice testDevice, TestDeviceCallbackHandler _)
+            async Task InitOperationAsync(TestDevice testDevice, TestDeviceCallbackHandler testDeviceCallbackHandler, CancellationToken ct)
             {
-                OutgoingMessage msg = OutgoingMessageHelper.ComposeTestMessage(out string payload, out string _);
-                messagesSent.Add(testDevice.Id, Tuple.Create(msg, payload));
-
-                await TestDevice.ServiceClient.Messages.OpenAsync().ConfigureAwait(false);
-                await TestDevice.ServiceClient.Messages.SendAsync(testDevice.Id, msg).ConfigureAwait(false);
+                await TestDevice.ServiceClient.Messages.OpenAsync(ct).ConfigureAwait(false);
+                await testDeviceCallbackHandler.SetIncomingMessageCallbackHandlerAndCompleteMessageAsync<string>(ct).ConfigureAwait(false);
             }
 
-            async Task TestOperationAsync(TestDevice testDevice, TestDeviceCallbackHandler _)
+            async Task TestOperationAsync(TestDevice testDevice, TestDeviceCallbackHandler testDeviceCallbackHandler, CancellationToken ct)
             {
                 VerboseTestLogger.WriteLine($"{nameof(IncomingMessageCallbackE2ePoolAmqpTests)}: Preparing to receive message for device {testDevice.Id}");
-                await testDevice.OpenWithRetryAsync().ConfigureAwait(false);
 
-                Tuple<OutgoingMessage, string> msgSent = messagesSent[testDevice.Id];
-                await IncomingMessageCallbackE2eTests.VerifyReceivedC2dMessageAsync(testDevice.DeviceClient, testDevice.Id, msgSent.Item1, msgSent.Item2).ConfigureAwait(false);
+                OutgoingMessage msg = OutgoingMessageHelper.ComposeTestMessage(out string payload, out string _);
+                testDeviceCallbackHandler.ExpectedOutgoingMessage = msg;
+
+                await TestDevice.ServiceClient.Messages.SendAsync(testDevice.Id, msg, ct).ConfigureAwait(false);
+                await testDeviceCallbackHandler.WaitForIncomingMessageCallbackAsync(ct).ConfigureAwait(false);
             }
 
             await PoolingOverAmqp
@@ -148,44 +92,47 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                     InitOperationAsync,
                     TestOperationAsync,
                     null,
-                    authScope)
+                    authScope,
+                    ct)
                 .ConfigureAwait(false);
         }
 
-        private async Task ReceiveMessageUsingCallback_PoolOverAmqpAsync(
+        private async Task ReceiveMessageAndUnsubscribe_PoolOverAmqpAsync(
             IotHubClientAmqpSettings transportSettings,
             int poolSize,
             int devicesCount,
-            ConnectionStringAuthScope authScope = ConnectionStringAuthScope.Device)
+            ConnectionStringAuthScope authScope,
+            CancellationToken ct)
         {
-            // Initialize the service client
-            using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
-
-            async Task InitOperationAsync(TestDevice testDevice, TestDeviceCallbackHandler testDeviceCallbackHandler)
+            async Task InitOperationAsync(TestDevice testDevice, TestDeviceCallbackHandler testDeviceCallbackHandler, CancellationToken ct)
             {
-                await serviceClient.Messages.OpenAsync().ConfigureAwait(false);
-
-                OutgoingMessage msg = OutgoingMessageHelper.ComposeTestMessage(out string _, out string _);
-
-                await testDevice.OpenWithRetryAsync().ConfigureAwait(false);
-                await testDeviceCallbackHandler.SetIncomingMessageCallbackHandlerAndCompleteMessageAsync<string>().ConfigureAwait(false);
-                testDeviceCallbackHandler.ExpectedOutgoingMessage = msg;
-
-                await serviceClient.Messages.SendAsync(testDevice.Id, msg).ConfigureAwait(false);
+                await TestDevice.ServiceClient.Messages.OpenAsync(ct).ConfigureAwait(false);
+                await testDeviceCallbackHandler.SetIncomingMessageCallbackHandlerAndCompleteMessageAsync<string>(ct).ConfigureAwait(false);
             }
 
-            async Task TestOperationAsync(TestDevice testDevice, TestDeviceCallbackHandler testDeviceCallbackHandler)
+            async Task TestOperationAsync(TestDevice testDevice, TestDeviceCallbackHandler testDeviceCallbackHandler, CancellationToken ct)
             {
-                VerboseTestLogger.WriteLine($"{nameof(IncomingMessageCallbackE2ePoolAmqpTests)}: Preparing to receive message for device {testDevice.Id}");
+                // Send a message to the device from the service.
+                OutgoingMessage firstMessage = OutgoingMessageHelper.ComposeTestMessage(out string _, out string _);
+                testDeviceCallbackHandler.ExpectedOutgoingMessage = firstMessage;
+                await TestDevice.ServiceClient.Messages.SendAsync(testDevice.Id, firstMessage, ct).ConfigureAwait(false);
 
-                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(20));
-                await testDeviceCallbackHandler.WaitForIncomingMessageCallbackAsync(cts.Token).ConfigureAwait(false);
-            }
+                VerboseTestLogger.WriteLine($"Sent 1st C2D message from service - to be received on callback: deviceId={testDevice.Id}, messageId={firstMessage.MessageId}");
+                await testDeviceCallbackHandler.WaitForIncomingMessageCallbackAsync(ct).ConfigureAwait(false);
 
-            async Task CleanupOperationAsync()
-            {
-                await serviceClient.Messages.CloseAsync().ConfigureAwait(false);
-                serviceClient.Dispose();
+                // Now unsubscribe from receiving c2d messages over the callback.
+                await testDevice.DeviceClient.SetIncomingMessageCallbackAsync(null, ct).ConfigureAwait(false);
+
+                // Send a message to the device from the service.
+                OutgoingMessage secondMessage = OutgoingMessageHelper.ComposeTestMessage(out string _, out string _);
+                await TestDevice.ServiceClient.Messages.SendAsync(testDevice.Id, secondMessage, ct).ConfigureAwait(false);
+
+                VerboseTestLogger.WriteLine($"Sent 2nd C2D message from service - should not be received on callback: deviceId={testDevice.Id}, messageId={secondMessage.MessageId}");
+                Func<Task> receiveMessageOverCallback = async () =>
+                {
+                    await testDeviceCallbackHandler.WaitForIncomingMessageCallbackAsync(ct).ConfigureAwait(false);
+                };
+                await receiveMessageOverCallback.Should().ThrowAsync<OperationCanceledException>();
             }
 
             await PoolingOverAmqp
@@ -196,8 +143,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                     devicesCount,
                     InitOperationAsync,
                     TestOperationAsync,
-                    CleanupOperationAsync,
-                    authScope)
+                    (ct) => Task.FromResult(false),
+                    authScope,
+                    ct)
                 .ConfigureAwait(false);
         }
     }
