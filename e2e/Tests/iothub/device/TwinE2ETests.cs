@@ -341,14 +341,14 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         [DataTestMethod]
         [DataRow(IotHubClientTransportProtocol.Tcp)]
         [DataRow(IotHubClientTransportProtocol.WebSocket)]
-        public async Task Twin_DeviceSetsReportedPropertyAfterOpenCloseOpen_Mqtt()
+        public async Task Twin_DeviceSetsReportedPropertyAfterOpenCloseOpen_Mqtt(IotHubClientTransportProtocol transportProtocol)
         {
             // Setting up one cancellation token for the complete test flow
             using var cts = new CancellationTokenSource(s_testTimeout);
             CancellationToken ct = cts.Token;
 
             await Twin_DeviceSetsReportedPropertyAfterOpenCloseOpenAsync(
-                    new IotHubClientMqttSettings(),
+                    new IotHubClientMqttSettings(transportProtocol),
                     ct)
                 .ConfigureAwait(false);
         }
@@ -356,14 +356,14 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         [DataTestMethod]
         [DataRow(IotHubClientTransportProtocol.Tcp)]
         [DataRow(IotHubClientTransportProtocol.WebSocket)]
-        public async Task Twin_DeviceSetsReportedPropertyAfterOpenCloseOpen_Amqp()
+        public async Task Twin_DeviceSetsReportedPropertyAfterOpenCloseOpen_Amqp(IotHubClientTransportProtocol transportProtocol)
         {
             // Setting up one cancellation token for the complete test flow
             using var cts = new CancellationTokenSource(s_testTimeout);
             CancellationToken ct = cts.Token;
 
             await Twin_DeviceSetsReportedPropertyAfterOpenCloseOpenAsync(
-                    new IotHubClientAmqpSettings(),
+                    new IotHubClientAmqpSettings(transportProtocol),
                     ct)
                 .ConfigureAwait(false);
         }
@@ -371,14 +371,14 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         [DataTestMethod]
         [DataRow(IotHubClientTransportProtocol.Tcp)]
         [DataRow(IotHubClientTransportProtocol.WebSocket)]
-        public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesAfterOpenCloseOpen_Mqtt()
+        public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesAfterOpenCloseOpen_Mqtt(IotHubClientTransportProtocol transportProtocol)
         {
             // Setting up one cancellation token for the complete test flow
             using var cts = new CancellationTokenSource(s_testTimeout);
             CancellationToken ct = cts.Token;
 
             await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesAfterOpenCloseOpenAsync(
-                    new IotHubClientMqttSettings(),
+                    new IotHubClientMqttSettings(transportProtocol),
                     s_listOfPropertyValues,
                     ct)
                 .ConfigureAwait(false);
@@ -387,14 +387,14 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         [DataTestMethod]
         [DataRow(IotHubClientTransportProtocol.Tcp)]
         [DataRow(IotHubClientTransportProtocol.WebSocket)]
-        public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesAfterOpenCloseOpen_Amqp()
+        public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesAfterOpenCloseOpen_Amqp(IotHubClientTransportProtocol transportProtocol)
         {
             // Setting up one cancellation token for the complete test flow
             using var cts = new CancellationTokenSource(s_testTimeout);
             CancellationToken ct = cts.Token;
 
             await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesAfterOpenCloseOpenAsync(
-                    new IotHubClientAmqpSettings(),
+                    new IotHubClientAmqpSettings(transportProtocol),
                     s_listOfPropertyValues,
                     ct)
                 .ConfigureAwait(false);

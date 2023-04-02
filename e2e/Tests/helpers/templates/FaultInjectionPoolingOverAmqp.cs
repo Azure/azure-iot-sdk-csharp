@@ -106,6 +106,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
 
                         await Task.Delay(TimeSpan.FromSeconds(1), ct).ConfigureAwait(false);
                     }
+
+                    VerboseTestLogger.WriteLine($"Waited {connectionChangeWaitDuration.Elapsed} for fault injection to be activated.");
                     connectionChangeWaitDuration.Reset();
 
                     isFaulted.Should().BeTrue($"The device {testDevices.First().Id} did not get faulted with fault type: {faultType}");
