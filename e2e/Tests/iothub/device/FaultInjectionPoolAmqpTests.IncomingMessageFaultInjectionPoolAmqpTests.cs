@@ -55,7 +55,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     FaultInjectionConstants.FaultType_AmqpSess,
-                    "",
+                    FaultInjectionConstants.FaultCloseReason_Boom,
                     ct)
                 .ConfigureAwait(false);
         }

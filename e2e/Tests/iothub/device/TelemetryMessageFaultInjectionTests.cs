@@ -148,7 +148,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             await SendMessageRecoveryAsync(
                     new IotHubClientAmqpSettings(protocol),
                     FaultInjectionConstants.FaultType_AmqpConn,
-                    "",
+                    FaultInjectionConstants.FaultCloseReason_Boom,
                     ct)
                 .ConfigureAwait(false);
         }
@@ -165,7 +165,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             await SendMessageRecoveryAsync(
                     new IotHubClientAmqpSettings(protocol),
                     FaultInjectionConstants.FaultType_AmqpSess,
-                    "",
+                    FaultInjectionConstants.FaultCloseReason_Boom,
                     ct)
                 .ConfigureAwait(false);
         }

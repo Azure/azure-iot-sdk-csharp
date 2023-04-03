@@ -82,7 +82,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             CancellationToken ct = cts.Token;
 
             await SendMethodAndRespondRecoveryAsync(
-                    new IotHubClientMqttSettings(protocol),
+                    new IotHubClientAmqpSettings(protocol),
                     FaultInjectionConstants.FaultType_Tcp,
                     FaultInjectionConstants.FaultCloseReason_Boom,
                     ct)
@@ -102,7 +102,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             CancellationToken ct = cts.Token;
 
             await SendMethodAndRespondRecoveryAsync(
-                    new IotHubClientMqttSettings(protocol),
+                    new IotHubClientAmqpSettings(protocol),
                     FaultInjectionConstants.FaultType_GracefulShutdownAmqp,
                     FaultInjectionConstants.FaultCloseReason_Bye,
                     ct)
@@ -119,7 +119,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             CancellationToken ct = cts.Token;
 
             await SendMethodAndRespondRecoveryAsync(
-                    new IotHubClientMqttSettings(protocol),
+                    new IotHubClientAmqpSettings(protocol),
                     FaultInjectionConstants.FaultType_AmqpConn,
                     FaultInjectionConstants.FaultCloseReason_Boom,
                     ct)
@@ -136,7 +136,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             CancellationToken ct = cts.Token;
 
             await SendMethodAndRespondRecoveryAsync(
-                    new IotHubClientMqttSettings(protocol),
+                    new IotHubClientAmqpSettings(protocol),
                     FaultInjectionConstants.FaultType_AmqpSess,
                     FaultInjectionConstants.FaultCloseReason_Boom,
                     ct)
