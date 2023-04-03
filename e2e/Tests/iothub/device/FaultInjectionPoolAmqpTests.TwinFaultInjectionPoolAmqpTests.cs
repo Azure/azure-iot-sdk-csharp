@@ -23,8 +23,8 @@ namespace Microsoft.Azure.Devices.E2ETests
         [DataRow(IotHubClientTransportProtocol.WebSocket, FaultInjectionConstants.FaultType_Tcp, FaultInjectionConstants.FaultCloseReason_Boom)]
         [DataRow(IotHubClientTransportProtocol.Tcp, FaultInjectionConstants.FaultType_GracefulShutdownAmqp, FaultInjectionConstants.FaultCloseReason_Bye)]
         [DataRow(IotHubClientTransportProtocol.WebSocket, FaultInjectionConstants.FaultType_GracefulShutdownAmqp, FaultInjectionConstants.FaultCloseReason_Bye)]
-        [DataRow(IotHubClientTransportProtocol.Tcp, FaultInjectionConstants.FaultType_AmqpConn, "")]
-        [DataRow(IotHubClientTransportProtocol.WebSocket, FaultInjectionConstants.FaultType_AmqpConn, "")]
+        [DataRow(IotHubClientTransportProtocol.Tcp, FaultInjectionConstants.FaultType_AmqpConn, FaultInjectionConstants.FaultCloseReason_Boom)]
+        [DataRow(IotHubClientTransportProtocol.WebSocket, FaultInjectionConstants.FaultType_AmqpConn, FaultInjectionConstants.FaultCloseReason_Boom)]
         public async Task Twin_DeviceReportedProperties_ConnectionLossRecovery_MultipleConnections_Amqp(IotHubClientTransportProtocol protocol, string faultType, string faultReason)
         {
             // Setting up one cancellation token for the complete test flow
@@ -56,7 +56,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 PoolingOverAmqp.MultipleConnections_PoolSize,
                 PoolingOverAmqp.MultipleConnections_DevicesCount,
                 FaultInjectionConstants.FaultType_AmqpSess,
-                "",
+                FaultInjectionConstants.FaultCloseReason_Boom,
                 ct).ConfigureAwait(false);
         }
 
@@ -88,8 +88,8 @@ namespace Microsoft.Azure.Devices.E2ETests
         [DataRow(IotHubClientTransportProtocol.WebSocket, FaultInjectionConstants.FaultType_Tcp, FaultInjectionConstants.FaultCloseReason_Boom)]
         [DataRow(IotHubClientTransportProtocol.Tcp, FaultInjectionConstants.FaultType_GracefulShutdownAmqp, FaultInjectionConstants.FaultCloseReason_Bye)]
         [DataRow(IotHubClientTransportProtocol.WebSocket, FaultInjectionConstants.FaultType_GracefulShutdownAmqp, FaultInjectionConstants.FaultCloseReason_Bye)]
-        [DataRow(IotHubClientTransportProtocol.Tcp, FaultInjectionConstants.FaultType_AmqpConn, "")]
-        [DataRow(IotHubClientTransportProtocol.WebSocket, FaultInjectionConstants.FaultType_AmqpConn, "")]
+        [DataRow(IotHubClientTransportProtocol.Tcp, FaultInjectionConstants.FaultType_AmqpConn, FaultInjectionConstants.FaultCloseReason_Boom)]
+        [DataRow(IotHubClientTransportProtocol.WebSocket, FaultInjectionConstants.FaultType_AmqpConn, FaultInjectionConstants.FaultCloseReason_Boom)]
         public async Task Twin_DeviceDesiredPropertyUpdate_ConnectionLossRecovery_MultipleConnections_Amqp(IotHubClientTransportProtocol protocol, string faultType, string faultReason)
         {
             // Setting up one cancellation token for the complete test flow
@@ -121,7 +121,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 PoolingOverAmqp.MultipleConnections_PoolSize,
                 PoolingOverAmqp.MultipleConnections_DevicesCount,
                 FaultInjectionConstants.FaultType_AmqpSess,
-                "",
+                FaultInjectionConstants.FaultCloseReason_Boom,
                 ct).ConfigureAwait(false);
         }
 

@@ -171,10 +171,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                     actualPayload.Should().Be(expectedPayload);
 
                     receivedMessage.Properties.Count.Should().Be(ExpectedOutgoingMessage.Properties.Count, $"The count of received properties did not match for device {_testDeviceId}");
-                    KeyValuePair<string, string> expectedMessageProperties = ExpectedOutgoingMessage.Properties.Single();
-                    KeyValuePair<string, string> receivedMessageProperties = receivedMessage.Properties.Single();
-                    receivedMessageProperties.Key.Should().Be(expectedMessageProperties.Key, $"The key \"property1\" did not match for device {_testDeviceId}");
-                    receivedMessageProperties.Value.Should().Be(expectedMessageProperties.Value, $"The value of \"property1\" did not match for device {_testDeviceId}");
+                    if (ExpectedOutgoingMessage.Properties.Count > 0)
+                    {
+                        KeyValuePair<string, string> expectedMessageProperties = ExpectedOutgoingMessage.Properties.Single();
+                        KeyValuePair<string, string> receivedMessageProperties = receivedMessage.Properties.Single();
+                        receivedMessageProperties.Key.Should().Be(expectedMessageProperties.Key, $"The key \"property1\" did not match for device {_testDeviceId}");
+                        receivedMessageProperties.Value.Should().Be(expectedMessageProperties.Value, $"The value of \"property1\" did not match for device {_testDeviceId}");
+                    }
 
                     VerboseTestLogger.WriteLine($"{nameof(SetIncomingMessageCallbackHandlerAndCompleteMessageAsync)}: DeviceClient completed message with Id: {receivedMessage.MessageId}.");
                     return Task.FromResult(MessageAcknowledgement.Complete);

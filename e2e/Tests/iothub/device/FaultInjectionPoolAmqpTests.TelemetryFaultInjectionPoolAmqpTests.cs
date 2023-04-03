@@ -23,8 +23,8 @@ namespace Microsoft.Azure.Devices.E2ETests
         [DataRow(IotHubClientTransportProtocol.WebSocket, FaultInjectionConstants.FaultType_Tcp, FaultInjectionConstants.FaultCloseReason_Boom)]
         [DataRow(IotHubClientTransportProtocol.Tcp, FaultInjectionConstants.FaultType_GracefulShutdownAmqp, FaultInjectionConstants.FaultCloseReason_Bye)]
         [DataRow(IotHubClientTransportProtocol.WebSocket, FaultInjectionConstants.FaultType_GracefulShutdownAmqp, FaultInjectionConstants.FaultCloseReason_Bye)]
-        [DataRow(IotHubClientTransportProtocol.Tcp, FaultInjectionConstants.FaultType_AmqpConn,"")]
-        [DataRow(IotHubClientTransportProtocol.WebSocket, FaultInjectionConstants.FaultType_AmqpConn, "")]
+        [DataRow(IotHubClientTransportProtocol.Tcp, FaultInjectionConstants.FaultType_AmqpConn,FaultInjectionConstants.FaultCloseReason_Boom)]
+        [DataRow(IotHubClientTransportProtocol.WebSocket, FaultInjectionConstants.FaultType_AmqpConn, FaultInjectionConstants.FaultCloseReason_Boom)]
         public async Task Telemetry_ConnectionLossRecovery_MultipleConnections_Amqp(IotHubClientTransportProtocol protocol, string faultType, string faultReason)
         {
             // Setting up one cancellation token for the complete test flow
@@ -37,7 +37,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     faultType,
                     faultReason,
-                    ct: ct)
+                    ct)
                 .ConfigureAwait(false);
         }
 
@@ -57,8 +57,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                     PoolingOverAmqp.MultipleConnections_PoolSize,
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     FaultInjectionConstants.FaultType_AmqpSess,
-                    "",
-                    ct: ct)
+                    FaultInjectionConstants.FaultCloseReason_Boom,
+                    ct)
                 .ConfigureAwait(false);
         }
 
@@ -79,7 +79,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     FaultInjectionConstants.FaultType_AmqpD2C,
                     FaultInjectionConstants.FaultCloseReason_Boom,
-                    ct: ct)
+                    ct)
                 .ConfigureAwait(false);
         }
 
@@ -99,7 +99,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     PoolingOverAmqp.MultipleConnections_DevicesCount,
                     FaultInjectionConstants.FaultType_Throttle,
                     FaultInjectionConstants.FaultCloseReason_Boom,
-                    ct: ct)
+                    ct)
                 .ConfigureAwait(false);
         }
 
@@ -123,7 +123,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                         PoolingOverAmqp.MultipleConnections_DevicesCount,
                         FaultInjectionConstants.FaultType_Auth,
                         FaultInjectionConstants.FaultCloseReason_Boom,
-                        ct: ct)
+                        ct)
                     .ConfigureAwait(false);
             };
 
@@ -160,8 +160,19 @@ namespace Microsoft.Azure.Devices.E2ETests
             int devicesCount,
             string faultType,
             string reason,
-            string proxyAddress = null,
-            CancellationToken ct = default)
+            CancellationToken ct)
+        {
+            await SendMessageRecoveryPoolOverAmqpAsync(transportSettings, poolSize, devicesCount, faultType, reason, null, ct).ConfigureAwait(false);
+        }
+
+        private async Task SendMessageRecoveryPoolOverAmqpAsync(
+            IotHubClientTransportSettings transportSettings,
+            int poolSize,
+            int devicesCount,
+            string faultType,
+            string reason,
+            string proxyAddress,
+            CancellationToken ct)
         {
             async Task TestOperationAsync(TestDevice testDevice, TestDeviceCallbackHandler _, CancellationToken ct)
             {
