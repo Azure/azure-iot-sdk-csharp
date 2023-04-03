@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using CommandLine;
@@ -20,11 +21,14 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
 
         private static async Task Main(string[] args)
         {
+            string sdkVersionInfo = typeof(IotHubServiceClient).Assembly
+                .GetCustomAttribute<AssemblyInformationalVersionAttribute>()
+                .InformationalVersion;
+
             s_commonProperties.Add(TestClient, "IotHubServiceClient");
             s_commonProperties.Add(RunId, Guid.NewGuid().ToString());
             s_commonProperties.Add(SdkLanguage, ".NET");
-            // TODO: get this info at runtime rather than hard-coding it
-            s_commonProperties.Add(SdkVersion, "2.0.0-preview004");
+            s_commonProperties.Add(SdkVersion, sdkVersionInfo);
 
             // Parse application parameters
             Parameters parameters = null;
