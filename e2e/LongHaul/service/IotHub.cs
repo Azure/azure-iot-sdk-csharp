@@ -28,7 +28,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
         private static IotHubServiceClient s_serviceClient;
         private BlobContainerClient _blobContainerClient;
 
-        private static ConcurrentDictionary<string, Tuple<Action, CancellationTokenSource>> s_onlineDeviceOperations;
+        private static ConcurrentDictionary<string, Tuple<Task, CancellationTokenSource>> s_onlineDeviceOperations;
 
         private long _totalFeedbackMessagesReceivedCount = 0;
 
@@ -52,7 +52,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
             s_serviceClient = new IotHubServiceClient(_hubConnectionString, options);
             _logger.Trace("Initialized a new service client instance.", TraceSeverity.Information);
 
-            s_onlineDeviceOperations = new ConcurrentDictionary<string, Tuple<Action, CancellationTokenSource>>();
+            s_onlineDeviceOperations = new ConcurrentDictionary<string, Tuple<Task, CancellationTokenSource>>();
 
             _totalFileUploadNotificationsReceived = 0;
             _blobContainerClient = new BlobContainerClient(_storageConnectionString, "fileupload");
@@ -94,7 +94,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                         var source = new CancellationTokenSource();
                         CancellationToken token = source.Token;
 
-                        async void Operations()
+                        async Task Operations()
                         {
                             var deviceOperations = new DeviceOperations(s_serviceClient, deviceId, _logger.Clone());
                             _logger.Trace($"Creating {nameof(DeviceOperations)} on the device [{deviceId}]", TraceSeverity.Verbose);
@@ -111,9 +111,8 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                             catch (OperationCanceledException) { } // The cancellation on device is signaled.
                         }
 
-                        var operationsTuple = new Tuple<Action, CancellationTokenSource>(Operations, source);
+                        var operationsTuple = new Tuple<Task, CancellationTokenSource>(Operations(), source);
                         s_onlineDeviceOperations.TryAdd(deviceId, operationsTuple);
-                        s_onlineDeviceOperations[deviceId].Item1.Invoke();
                     }
                 }
                 _logger.Trace($"Total number of connected devices: {s_onlineDeviceOperations.Count}", TraceSeverity.Information);
