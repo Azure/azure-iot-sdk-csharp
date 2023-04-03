@@ -21,98 +21,97 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
 
         // Ungraceful disconnection recovery test is marked as a build verification test
         // to test client reconnection logic in PR runs.
-        [DataTestMethod]
+        [TestMethod]
         [TestCategory("FaultInjectionBVT")]
-        [DataRow(IotHubClientTransportProtocol.Tcp)]
-        [DataRow(IotHubClientTransportProtocol.WebSocket)]
-        public async Task Twin_DeviceReportedProperties_ConnectionLossRecovery_Mqtt(IotHubClientTransportProtocol protocol)
+        public async Task Twin_DeviceReportedProperties_ConnectionLossRecovery_MqttWs()
         {
             // Setting up one cancellation token for the complete test flow
             using var cts = new CancellationTokenSource(s_testTimeout);
-            CancellationToken ct = cts.Token;
-
             await Twin_DeviceReportedPropertiesRecoveryAsync(
-                    new IotHubClientMqttSettings(protocol),
+                    new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket),
                     FaultInjectionConstants.FaultType_Tcp,
                     FaultInjectionConstants.FaultCloseReason_Boom,
-                    ct)
+                    cts.Token)
+                .ConfigureAwait(false);
+        }
+
+        // Graceful disconnection recovery test is marked as a build verification test
+        // to test client reconnection logic in PR runs.
+        [TestMethod]
+        [TestCategory("FaultInjectionBVT")]
+        public async Task Twin_DeviceReportedProperties_GracefulShutdownRecovery_MqttWs()
+        {
+            // Setting up one cancellation token for the complete test flow
+            using var cts = new CancellationTokenSource(s_testTimeout);
+            await Twin_DeviceReportedPropertiesRecoveryAsync(
+                    new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket),
+                    FaultInjectionConstants.FaultType_GracefulShutdownMqtt,
+                    FaultInjectionConstants.FaultCloseReason_Bye,
+                    cts.Token)
+                .ConfigureAwait(false);
+        }
+
+        [DataTestMethod]
+        [DataRow(FaultInjectionConstants.FaultType_Tcp, FaultInjectionConstants.FaultCloseReason_Boom)]
+        [DataRow(FaultInjectionConstants.FaultType_GracefulShutdownMqtt, FaultInjectionConstants.FaultCloseReason_Bye)]
+        public async Task Twin_DeviceReportedProperties_ConnectionLossRecovery_Mqtt(string faultType, string faultReason)
+        {
+            // Setting up one cancellation token for the complete test flow
+            using var cts = new CancellationTokenSource(s_testTimeout);
+            await Twin_DeviceReportedPropertiesRecoveryAsync(
+                    new IotHubClientMqttSettings(),
+                    faultType,
+                    faultReason,
+                    cts.Token)
                 .ConfigureAwait(false);
         }
 
         // Ungraceful disconnection recovery test is marked as a build verification test
         // to test client reconnection logic in PR runs.
-        [DataTestMethod]
+        [TestMethod]
         [TestCategory("FaultInjectionBVT")]
-        [DataRow(IotHubClientTransportProtocol.Tcp)]
-        [DataRow(IotHubClientTransportProtocol.WebSocket)]
-        public async Task Twin_DeviceReportedProperties_ConnectionLossRecovery_Amqp(IotHubClientTransportProtocol protocol)
+        public async Task Twin_DeviceReportedProperties_ConnectionLossRecovery_AmqpWs()
         {
             // Setting up one cancellation token for the complete test flow
             using var cts = new CancellationTokenSource(s_testTimeout);
-            CancellationToken ct = cts.Token;
-
             await Twin_DeviceReportedPropertiesRecoveryAsync(
-                    new IotHubClientAmqpSettings(protocol),
+                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
                     FaultInjectionConstants.FaultType_Tcp,
                     FaultInjectionConstants.FaultCloseReason_Boom,
-                    ct)
+                    cts.Token)
                 .ConfigureAwait(false);
         }
 
         // Graceful disconnection recovery test is marked as a build verification test
         // to test client reconnection logic in PR runs.
-        [DataTestMethod]
+        [TestMethod]
         [TestCategory("FaultInjectionBVT")]
-        [DataRow(IotHubClientTransportProtocol.Tcp)]
-        [DataRow(IotHubClientTransportProtocol.WebSocket)]
-        public async Task Twin_DeviceReportedProperties_GracefulShutdownRecovery_Mqtt(IotHubClientTransportProtocol protocol)
+        public async Task Twin_DeviceReportedProperties_GracefulShutdownRecovery_AmqpWs()
         {
             // Setting up one cancellation token for the complete test flow
             using var cts = new CancellationTokenSource(s_testTimeout);
-            CancellationToken ct = cts.Token;
-
             await Twin_DeviceReportedPropertiesRecoveryAsync(
-                    new IotHubClientMqttSettings(protocol),
-                    FaultInjectionConstants.FaultType_GracefulShutdownMqtt,
-                    FaultInjectionConstants.FaultCloseReason_Bye,
-                    ct)
-                .ConfigureAwait(false);
-        }
-
-        // Graceful disconnection recovery test is marked as a build verification test
-        // to test client reconnection logic in PR runs.
-        [DataTestMethod]
-        [TestCategory("FaultInjectionBVT")]
-        [DataRow(IotHubClientTransportProtocol.Tcp)]
-        [DataRow(IotHubClientTransportProtocol.WebSocket)]
-        public async Task Twin_DeviceReportedProperties_GracefulShutdownRecovery_Amqp(IotHubClientTransportProtocol protocol)
-        {
-            // Setting up one cancellation token for the complete test flow
-            using var cts = new CancellationTokenSource(s_testTimeout);
-            CancellationToken ct = cts.Token;
-
-            await Twin_DeviceReportedPropertiesRecoveryAsync(
-                    new IotHubClientAmqpSettings(protocol),
+                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
                     FaultInjectionConstants.FaultType_GracefulShutdownAmqp,
                     FaultInjectionConstants.FaultCloseReason_Bye,
-                    ct)
+                    cts.Token)
                 .ConfigureAwait(false);
         }
 
         [DataTestMethod]
-        [DataRow(IotHubClientTransportProtocol.Tcp)]
-        [DataRow(IotHubClientTransportProtocol.WebSocket)]
-        public async Task Twin_DeviceReportedProperties_AmqpConnectionLossRecovery_Amqp(IotHubClientTransportProtocol protocol)
+        [DataRow(IotHubClientTransportProtocol.Tcp, FaultInjectionConstants.FaultType_Tcp, FaultInjectionConstants.FaultCloseReason_Boom)]
+        [DataRow(IotHubClientTransportProtocol.Tcp, FaultInjectionConstants.FaultType_GracefulShutdownAmqp, FaultInjectionConstants.FaultCloseReason_Bye)]
+        [DataRow(IotHubClientTransportProtocol.Tcp, FaultInjectionConstants.FaultType_AmqpConn, FaultInjectionConstants.FaultCloseReason_Boom)]
+        [DataRow(IotHubClientTransportProtocol.WebSocket, FaultInjectionConstants.FaultType_AmqpConn, FaultInjectionConstants.FaultCloseReason_Boom)]
+        public async Task Twin_DeviceReportedProperties_AmqpConnectionLossRecovery_Amqp(IotHubClientTransportProtocol protocol, string faultType, string faultReason)
         {
             // Setting up one cancellation token for the complete test flow
             using var cts = new CancellationTokenSource(s_testTimeout);
-            CancellationToken ct = cts.Token;
-
             await Twin_DeviceReportedPropertiesRecoveryAsync(
                     new IotHubClientAmqpSettings(protocol),
-                    FaultInjectionConstants.FaultType_AmqpConn,
-                    FaultInjectionConstants.FaultCloseReason_Boom,
-                    ct)
+                    faultType,
+                    faultReason,
+                    cts.Token)
                 .ConfigureAwait(false);
         }
 
