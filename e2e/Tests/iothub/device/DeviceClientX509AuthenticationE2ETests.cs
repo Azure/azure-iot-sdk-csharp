@@ -31,7 +31,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         [DataRow(IotHubClientTransportProtocol.WebSocket)]
         public async Task X509_InvalidDeviceId_Throw_UnauthorizedException_Amqp(IotHubClientTransportProtocol protocol)
         {
-            // Seeting up one cancellation token for the complete test flow
+            // Setting up one cancellation token for the complete test flow
             using var cts = new CancellationTokenSource(s_testTimeout);
             CancellationToken ct = cts.Token;
 
@@ -58,7 +58,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         [DataRow(IotHubClientTransportProtocol.WebSocket)]
         public async Task X509_Enable_CertificateRevocationCheck_Mqtt(IotHubClientTransportProtocol protocol)
         {
-            // Seeting up one cancellation token for the complete test flow
+            // Setting up one cancellation token for the complete test flow
             using var cts = new CancellationTokenSource(s_testTimeout);
             CancellationToken ct = cts.Token;
 
