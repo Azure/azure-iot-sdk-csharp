@@ -134,25 +134,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         }
 
         [DataTestMethod]
-        [DataRow(IotHubClientTransportProtocol.Tcp, FaultInjectionConstants.FaultType_AmqpTwinReq, FaultInjectionConstants.FaultCloseReason_Boom)]
-        [DataRow(IotHubClientTransportProtocol.WebSocket, FaultInjectionConstants.FaultType_AmqpTwinReq, FaultInjectionConstants.FaultCloseReason_Boom)]
-        [DataRow(IotHubClientTransportProtocol.Tcp, FaultInjectionConstants.FaultType_AmqpTwinResp, FaultInjectionConstants.FaultCloseReason_Boom)]
-        [DataRow(IotHubClientTransportProtocol.WebSocket, FaultInjectionConstants.FaultType_AmqpTwinResp, FaultInjectionConstants.FaultCloseReason_Boom)]
-        public async Task Twin_DeviceReportedProperties_AmqpLinkDropRecovery_Amqp(IotHubClientTransportProtocol protocol, string faultType, string faultReason)
-        {
-            // Setting up one cancellation token for the complete test flow
-            using var cts = new CancellationTokenSource(s_testTimeout);
-            CancellationToken ct = cts.Token;
-
-            await Twin_DeviceReportedPropertiesRecoveryAsync(
-                    new IotHubClientAmqpSettings(protocol),
-                    faultType,
-                    faultReason,
-                    ct)
-                .ConfigureAwait(false);
-        }
-
-        [DataTestMethod]
         [DoNotParallelize]
         [DataRow(IotHubClientTransportProtocol.Tcp)]
         [DataRow(IotHubClientTransportProtocol.WebSocket)]

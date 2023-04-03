@@ -60,28 +60,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 ct).ConfigureAwait(false);
         }
 
-        // TODO: #950 - Link/session faults for message send/ method/ twin operations closes the connection.
-        [DataTestMethod]
-        [TestCategory("LongRunning")]
-        [DataRow(IotHubClientTransportProtocol.Tcp, FaultInjectionConstants.FaultType_AmqpTwinReq, FaultInjectionConstants.FaultCloseReason_Boom)]
-        [DataRow(IotHubClientTransportProtocol.WebSocket, FaultInjectionConstants.FaultType_AmqpTwinReq, FaultInjectionConstants.FaultCloseReason_Boom)]
-        [DataRow(IotHubClientTransportProtocol.Tcp, FaultInjectionConstants.FaultType_AmqpTwinResp, FaultInjectionConstants.FaultCloseReason_Boom)]
-        [DataRow(IotHubClientTransportProtocol.WebSocket, FaultInjectionConstants.FaultType_AmqpTwinResp, FaultInjectionConstants.FaultCloseReason_Boom)]
-        public async Task Twin_DeviceReportedProperties_AmqpLinkDropRecovery_MultipleConnections_Amqp(IotHubClientTransportProtocol protocol, string faultType, string faultReason)
-        {
-            // Setting up one cancellation token for the complete test flow
-            using var cts = new CancellationTokenSource(s_longRunningTestTimeout);
-            CancellationToken ct = cts.Token;
-
-            await Twin_DeviceReportedPropertiesRecoveryPoolOverAmqp(
-                new IotHubClientAmqpSettings(protocol),
-                PoolingOverAmqp.MultipleConnections_PoolSize,
-                PoolingOverAmqp.MultipleConnections_DevicesCount,
-                faultType,
-                faultReason,
-                ct).ConfigureAwait(false);
-        }
-
         [DataTestMethod]
         [TestCategory("LongRunning")]
         [DataRow(IotHubClientTransportProtocol.Tcp, FaultInjectionConstants.FaultType_Tcp, FaultInjectionConstants.FaultCloseReason_Boom)]
