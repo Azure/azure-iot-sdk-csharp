@@ -10,7 +10,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 {
     internal static class AmqpIotErrorAdapter
     {
-        public static readonly AmqpSymbol TimeoutName = AmqpIotConstants.Vendor + ":timeout";
         public static readonly AmqpSymbol StackTraceName = AmqpIotConstants.Vendor + ":stack-trace";
 
         // Error codes
@@ -27,6 +26,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         public static readonly AmqpSymbol ArgumentOutOfRangeError = AmqpIotConstants.Vendor + ":argument-out-of-range";
         public static readonly AmqpSymbol DeviceContainerThrottled = AmqpIotConstants.Vendor + ":device-container-throttled";
         public static readonly AmqpSymbol IotHubSuspended = AmqpIotConstants.Vendor + ":iot-hub-suspended";
+        public static readonly AmqpSymbol InternalError = "amqp:internal-error";
 
         public static Exception GetExceptionFromOutcome(Outcome outcome)
         {
@@ -140,10 +140,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             string message = error.Description;
 
             string trackingId = null;
-            if (error.Info != null
-                && error.Info.TryGetValue(AmqpIotConstants.TrackingId, out trackingId))
+            if (error.Info != null)
             {
-                message = $"{message}\r\nTracking Id:{trackingId}";
+                error.Info.TryGetValue(AmqpIotConstants.TrackingId, out trackingId);
             }
 
             IotHubClientErrorCode errorCode = IotHubClientErrorCode.Unknown;
@@ -181,13 +180,19 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                 errorCode = IotHubClientErrorCode.Suspended;
                 message = $"IoT hub {message} is suspended";
             }
-
-            var retException = new IotHubClientException(message, errorCode);
-
-            if (trackingId != null)
+            else if (error.Condition.Equals(InternalError))
             {
-                retException.TrackingId = trackingId;
+                // Seems to happen in fault injection with Gateway V2
+                ErrorPayload result = ClientExceptionHandlingHelper.GetErrorCodeAndTrackingId(error.Description);
+                message = result.Message;
+                errorCode = result.IotHubClientErrorCode;
+                trackingId = result.TrackingId;
             }
+
+            var retException = new IotHubClientException(message, errorCode)
+            {
+                TrackingId = trackingId,
+            };
 
             return retException;
         }

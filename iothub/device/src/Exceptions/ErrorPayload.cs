@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Devices.Client
     internal sealed class ErrorPayload
     {
         [JsonProperty("errorCode")]
-        internal string ErrorCode { get; set; }
+        internal dynamic ErrorCode { get; set; }
 
         [JsonProperty("trackingId")]
         internal string TrackingId { get; set; }
@@ -21,5 +21,8 @@ namespace Microsoft.Azure.Devices.Client
 
         [JsonProperty("timestampUtc")]
         internal string OccurredOnUtc { get; set; }
+
+        [JsonIgnore]
+        internal IotHubClientErrorCode IotHubClientErrorCode { get; set; }
     }
 }

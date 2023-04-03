@@ -35,49 +35,49 @@ namespace Microsoft.Azure.Devices.Client
                     HttpStatusCode.BadRequest,
                     async (response) => await GenerateIotHubClientExceptionAsync(response).ConfigureAwait(false)
                 },
-                { 
+                {
                     HttpStatusCode.Unauthorized,
                     async (response) =>
                         new IotHubClientException(
                             await GetExceptionMessageAsync(response).ConfigureAwait(false),
                             IotHubClientErrorCode.Unauthorized)
                 },
-                { 
+                {
                     HttpStatusCode.Forbidden,
                     async (response) =>
                         new IotHubClientException(
                             await GetExceptionMessageAsync(response).ConfigureAwait(false),
                             IotHubClientErrorCode.QuotaExceeded)
                 },
-                { 
+                {
                     HttpStatusCode.PreconditionFailed,
                     async (response) =>
                         new IotHubClientException(
                             await GetExceptionMessageAsync(response).ConfigureAwait(false),
                             IotHubClientErrorCode.DeviceMessageLockLost)
                 },
-                { 
+                {
                     HttpStatusCode.RequestEntityTooLarge,
                     async (response) =>
                         new IotHubClientException(
                             await GetExceptionMessageAsync(response).ConfigureAwait(false),
                             IotHubClientErrorCode.MessageTooLarge)
                 },
-                { 
+                {
                     HttpStatusCode.InternalServerError,
                     async (response) =>
                         new IotHubClientException(
                             await GetExceptionMessageAsync(response).ConfigureAwait(false),
                             IotHubClientErrorCode.ServerError)
                 },
-                { 
+                {
                     HttpStatusCode.ServiceUnavailable,
                     async (response) =>
                         new IotHubClientException(
                             await GetExceptionMessageAsync(response).ConfigureAwait(false),
                             IotHubClientErrorCode.ServerBusy)
                 },
-                { 
+                {
                     (HttpStatusCode)429,
                     async (response) =>
                         new IotHubClientException(
@@ -96,12 +96,24 @@ namespace Microsoft.Azure.Devices.Client
         internal static async Task<Tuple<string, IotHubClientErrorCode>> GetErrorCodeAndTrackingIdAsync(HttpResponseMessage response)
         {
             string responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            ErrorPayload result = GetErrorCodeAndTrackingId(responseBody);
+            return Tuple.Create(result.TrackingId, result.IotHubClientErrorCode);
+        }
+
+        internal static ErrorPayload GetErrorCodeAndTrackingId(string responseBody)
+        {
             ErrorPayload responseMessage = null;
 
             try
             {
-                IotHubExceptionResult result = JsonConvert.DeserializeObject<IotHubExceptionResult>(responseBody);
-                responseMessage = JsonConvert.DeserializeObject<ErrorPayload>(result.Message);
+                // Sometimes we get the full error payload at the root
+                responseMessage = JsonConvert.DeserializeObject<ErrorPayload>(responseBody);
+                if (responseMessage.ErrorCode == null
+                    && responseMessage.TrackingId == null)
+                {
+                    // And sometimes it is a nested object with a single 'Message' property at the root
+                    responseMessage = JsonConvert.DeserializeObject<ErrorPayload>(responseMessage.Message);
+                }
             }
             catch (JsonException ex)
             {
@@ -113,27 +125,33 @@ namespace Microsoft.Azure.Devices.Client
 
             if (responseMessage != null)
             {
-                string trackingId = string.Empty;
-                if (responseMessage.TrackingId != null)
+                if (Enum.TryParse<IotHubClientErrorCode>(responseMessage.ErrorCode?.ToString(), out IotHubClientErrorCode errorCode))
                 {
-                    trackingId = responseMessage.TrackingId;
+                    responseMessage.IotHubClientErrorCode = errorCode;
+                }
+                else if (int.TryParse(responseMessage.ErrorCode?.ToString(), NumberStyles.Any, CultureInfo.InvariantCulture, out int errorCodeInt))
+                {
+                    responseMessage.IotHubClientErrorCode = (IotHubClientErrorCode)errorCodeInt;
+                }
+                else
+                {
+                    responseMessage.IotHubClientErrorCode = IotHubClientErrorCode.Unknown;
                 }
 
-                if (responseMessage.ErrorCode != null)
-                {
-                    if (int.TryParse(responseMessage.ErrorCode, NumberStyles.Any, CultureInfo.InvariantCulture, out int errorCodeInt))
-                    {
-                        return Tuple.Create(trackingId, (IotHubClientErrorCode)errorCodeInt);
-                    }
-                }
+                return responseMessage;
             }
 
             if (Logging.IsEnabled)
                 Logging.Error(
                     nameof(GetErrorCodeAndTrackingIdAsync),
-                    $"Failed to derive any error code from the response message: {responseBody}");
+                    $"Failed to derive any error code from the response message: '{responseBody}'");
 
-            return Tuple.Create(string.Empty, IotHubClientErrorCode.Unknown);
+            return new ErrorPayload
+            {
+                IotHubClientErrorCode = IotHubClientErrorCode.Unknown,
+                Message = responseBody,
+                TrackingId = "",
+            };
         }
 
         private static string CreateMessageWhenDeviceNotFound(string deviceId)

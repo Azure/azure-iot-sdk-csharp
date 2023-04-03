@@ -78,7 +78,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
 
                 await deviceClient.SendTelemetryAsync(faultInjectionMessage, linkedCts.Token).ConfigureAwait(false);
             }
-            catch (Exception ex) when (ex is IotHubClientException hubEx && hubEx.IsTransient)
+            catch (IotHubClientException ex) when (ex.IsTransient || ex.ErrorCode == IotHubClientErrorCode.ConnectionForcefullyClosedOnFaultInjection)
             {
                 VerboseTestLogger.WriteLine($"{nameof(ActivateFaultInjectionAsync)}: {ex}");
 

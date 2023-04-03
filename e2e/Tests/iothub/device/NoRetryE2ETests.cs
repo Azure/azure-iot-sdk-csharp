@@ -43,8 +43,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             void ConnectionStatusChangeHandler(ConnectionStatusInfo connectionStatusInfo)
             {
                 connectionStatusChange.TryGetValue(connectionStatusInfo.Status, out int count);
-                count++;
-                connectionStatusChange[connectionStatusInfo.Status] = count;
+                connectionStatusChange[connectionStatusInfo.Status] = ++count;
             }
             deviceClient.ConnectionStatusChangeCallback = ConnectionStatusChangeHandler;
 
