@@ -75,7 +75,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         [TestCategory("FaultInjectionBVT")]
         [DataRow(IotHubClientTransportProtocol.Tcp)]
         [DataRow(IotHubClientTransportProtocol.WebSocket)]
-        public async Task Method_ConnectionRecovery_Amqp(IotHubClientTransportProtocol protocol)
+        public async Task Method_ConnectionLossRecovery_Amqp(IotHubClientTransportProtocol protocol)
         {
             // Setting up one cancellation token for the complete test flow
             using var cts = new CancellationTokenSource(s_testTimeout);
@@ -112,7 +112,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         [DataTestMethod]
         [DataRow(IotHubClientTransportProtocol.Tcp)]
         [DataRow(IotHubClientTransportProtocol.WebSocket)]
-        public async Task Method_AmqpConnectionLostRecovery_Amqp(IotHubClientTransportProtocol protocol)
+        public async Task Method_AmqpConnectionLossRecovery_Amqp(IotHubClientTransportProtocol protocol)
         {
             // Setting up one cancellation token for the complete test flow
             using var cts = new CancellationTokenSource(s_testTimeout);
@@ -129,7 +129,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         [DataTestMethod]
         [DataRow(IotHubClientTransportProtocol.Tcp)]
         [DataRow(IotHubClientTransportProtocol.WebSocket)]
-        public async Task Method_AmqpSessionLostRecovery_Amqp(IotHubClientTransportProtocol protocol)
+        public async Task Method_AmqpSessionLossRecovery_Amqp(IotHubClientTransportProtocol protocol)
         {
             // Setting up one cancellation token for the complete test flow
             using var cts = new CancellationTokenSource(s_testTimeout);
@@ -148,7 +148,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         [DataRow(IotHubClientTransportProtocol.WebSocket, FaultInjectionConstants.FaultType_AmqpMethodReq, FaultInjectionConstants.FaultCloseReason_Boom)]
         [DataRow(IotHubClientTransportProtocol.Tcp, FaultInjectionConstants.FaultType_AmqpMethodResp, FaultInjectionConstants.FaultCloseReason_Boom)]
         [DataRow(IotHubClientTransportProtocol.WebSocket, FaultInjectionConstants.FaultType_AmqpMethodResp, FaultInjectionConstants.FaultCloseReason_Boom)]
-        public async Task Method_LinkDropRecovery_Amqp(IotHubClientTransportProtocol protocol, string faultType, string faultReason)
+        public async Task Method_AmqpLinkDropRecovery_Amqp(IotHubClientTransportProtocol protocol, string faultType, string faultReason)
         {
             // Setting up one cancellation token for the complete test flow
             using var cts = new CancellationTokenSource(s_testTimeout);

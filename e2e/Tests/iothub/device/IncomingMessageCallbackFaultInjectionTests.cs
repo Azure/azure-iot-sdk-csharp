@@ -24,7 +24,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         [TestCategory("FaultInjectionBVT")]
         [DataRow(IotHubClientTransportProtocol.Tcp)]
         [DataRow(IotHubClientTransportProtocol.WebSocket)]
-        public async Task IncomingMessage_TcpConnectionLossRecovery_Mqtt(IotHubClientTransportProtocol protocol)
+        public async Task IncomingMessage_ConnectionLossRecovery_Mqtt(IotHubClientTransportProtocol protocol)
         {
             // Setting up one cancellation token for the complete test flow
             using var cts = new CancellationTokenSource(s_testTimeout);
@@ -64,7 +64,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         [TestCategory("FaultInjectionBVT")]
         [DataRow(IotHubClientTransportProtocol.Tcp)]
         [DataRow(IotHubClientTransportProtocol.WebSocket)]
-        public async Task IncomingMessage_TcpConnectionLossRecovery_Amqp(IotHubClientTransportProtocol protocol)
+        public async Task IncomingMessage_ConnectionLossRecovery_Amqp(IotHubClientTransportProtocol protocol)
         {
             // Setting up one cancellation token for the complete test flow
             using var cts = new CancellationTokenSource(s_testTimeout);

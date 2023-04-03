@@ -94,7 +94,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
             await SendMessageRecoveryAsync(
                     new IotHubClientAmqpSettings(protocol),
-                    FaultInjectionConstants.FaultType_GracefulShutdownMqtt,
+                    FaultInjectionConstants.FaultType_GracefulShutdownAmqp,
                     FaultInjectionConstants.FaultCloseReason_Bye,
                     ct)
                 .ConfigureAwait(false);
@@ -103,7 +103,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         // Test device client recovery when proxy settings are enabled
         [TestMethod]
         [TestCategory("Proxy")]
-        public async Task Telemetry_ConnectionLossSendRecovery_MqttWs_WithProxy()
+        public async Task Telemetry_ConnectionLossRecovery_MqttWs_WithProxy()
         {
             // Setting up one cancellation token for the complete test flow
             using var cts = new CancellationTokenSource(s_testTimeout);
@@ -121,7 +121,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         // Test device client recovery when proxy settings are enabled
         [TestMethod]
         [TestCategory("Proxy")]
-        public async Task Telemetry_ConnectionLossSendRecovery_AmqpWs_WithProxy()
+        public async Task Telemetry_ConnectionLossRecovery_AmqpWs_WithProxy()
         {
             // Setting up one cancellation token for the complete test flow
             using var cts = new CancellationTokenSource(s_testTimeout);
@@ -139,7 +139,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         [DataTestMethod]
         [DataRow(IotHubClientTransportProtocol.Tcp)]
         [DataRow(IotHubClientTransportProtocol.WebSocket)]
-        public async Task Telemetry_AmqpConnectionLossSendRecovery_Amqp(IotHubClientTransportProtocol protocol)
+        public async Task Telemetry_AmqpConnectionLossRecovery_Amqp(IotHubClientTransportProtocol protocol)
         {
             // Setting up one cancellation token for the complete test flow
             using var cts = new CancellationTokenSource(s_testTimeout);
@@ -156,7 +156,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         [DataTestMethod]
         [DataRow(IotHubClientTransportProtocol.Tcp)]
         [DataRow(IotHubClientTransportProtocol.WebSocket)]
-        public async Task Telemetry_AmqpSessionLossSendRecovery_Amqp(IotHubClientTransportProtocol protocol)
+        public async Task Telemetry_AmqpSessionLossRecovery_Amqp(IotHubClientTransportProtocol protocol)
         {
             // Setting up one cancellation token for the complete test flow
             using var cts = new CancellationTokenSource(s_testTimeout);
@@ -173,7 +173,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         [DataTestMethod]
         [DataRow(IotHubClientTransportProtocol.Tcp)]
         [DataRow(IotHubClientTransportProtocol.WebSocket)]
-        public async Task Telemetry_AmqpD2cLinkDropSendRecovery_Amqp(IotHubClientTransportProtocol protocol)
+        public async Task Telemetry_AmqpD2cLinkDropRecovery_Amqp(IotHubClientTransportProtocol protocol)
         {
             // Setting up one cancellation token for the complete test flow
             using var cts = new CancellationTokenSource(s_testTimeout);
@@ -193,7 +193,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         [DataRow(IotHubClientTransportProtocol.WebSocket, FaultInjectionConstants.FaultType_Throttle, FaultInjectionConstants.FaultCloseReason_Boom)]
         [DataRow(IotHubClientTransportProtocol.Tcp, FaultInjectionConstants.FaultType_QuotaExceeded, FaultInjectionConstants.FaultCloseReason_Boom)]
         [DataRow(IotHubClientTransportProtocol.WebSocket, FaultInjectionConstants.FaultType_QuotaExceeded, FaultInjectionConstants.FaultCloseReason_Boom)]
-        public async Task Telemetry_ServicLevelRecoverableFault_Amqp(IotHubClientTransportProtocol protocol, string faultType, string faultReason)
+        public async Task Telemetry_ServiceLevelRecoverableFault_Amqp(IotHubClientTransportProtocol protocol, string faultType, string faultReason)
         {
             // Setting up one cancellation token for the complete test flow
             using var cts = new CancellationTokenSource(s_testTimeout);
