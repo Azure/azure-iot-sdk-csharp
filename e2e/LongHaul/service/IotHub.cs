@@ -28,8 +28,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
         private static IotHubServiceClient s_serviceClient;
         private BlobContainerClient _blobContainerClient;
 
-        private static volatile Dictionary<string, Action> s_onlineDeviceOperations;
-        private static volatile Dictionary<string, CancellationTokenSource> s_onlineDeviceCancellationTokenSources;
+        private static volatile Dictionary<string, Tuple<Action, CancellationTokenSource>> s_onlineDeviceOperations;
 
         private long _totalFeedbackMessagesReceivedCount = 0;
 
@@ -53,8 +52,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
             s_serviceClient = new IotHubServiceClient(_hubConnectionString, options);
             _logger.Trace("Initialized a new service client instance.", TraceSeverity.Information);
 
-            s_onlineDeviceOperations = new Dictionary<string, Action>();
-            s_onlineDeviceCancellationTokenSources = new Dictionary<string, CancellationTokenSource>();
+            s_onlineDeviceOperations = new Dictionary<string, Tuple<Action, CancellationTokenSource>>();
 
             _totalFileUploadNotificationsReceived = 0;
             _blobContainerClient = new BlobContainerClient(_storageConnectionString, "fileupload");
@@ -77,45 +75,45 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                 {
                     string deviceId = device.DeviceId;
 
-                    if (s_onlineDeviceCancellationTokenSources.ContainsKey(deviceId)
-                        && s_onlineDeviceOperations.ContainsKey(deviceId)
+                    if (s_onlineDeviceOperations.ContainsKey(deviceId)
                         && device.ConnectionState is ClientConnectionState.Disconnected)
                     {
-                        CancellationTokenSource source = s_onlineDeviceCancellationTokenSources[deviceId];
-                        source.Cancel(); // Signal cancellation to all tasks on the particular device.
-                        s_onlineDeviceCancellationTokenSources.Remove(deviceId);
+                        CancellationTokenSource source = s_onlineDeviceOperations[deviceId].Item2;
+                        // Signal cancellation to all tasks on the particular device.
+                        source.Cancel();
+                        // Dispose the cancellation token source.
+                        source.Dispose();
+                        // Remove the correlated device operations and cancellationtoken source of the particular device from the dictionary.
                         s_onlineDeviceOperations.Remove(deviceId);
                     }
-                    else if (!s_onlineDeviceCancellationTokenSources.ContainsKey(deviceId)
-                        && !s_onlineDeviceOperations.ContainsKey(deviceId)
+                    else if (!s_onlineDeviceOperations.ContainsKey(deviceId)
                         && device.ConnectionState is ClientConnectionState.Connected)
                     {
                         // For each online device, initiate a new cancellation token source.
                         // Once the device goes offline, cancel all operations on this device.
                         var source = new CancellationTokenSource();
                         CancellationToken token = source.Token;
-                        s_onlineDeviceCancellationTokenSources.Add(deviceId, source);
 
-                        s_onlineDeviceOperations.Add(
-                            deviceId,
-                            async () =>
+                        async void Operations()
+                        {
+                            var deviceOperations = new DeviceOperations(s_serviceClient, deviceId, _logger.Clone());
+                            _logger.Trace($"Creating {nameof(DeviceOperations)} on the device [{deviceId}]", TraceSeverity.Verbose);
+
+                            try
                             {
-                                using var deviceOperations = new DeviceOperations(s_serviceClient, deviceId, _logger.Clone());
-                                _logger.Trace($"Creating {nameof(DeviceOperations)} on the device [{deviceId}]", TraceSeverity.Verbose);
+                                await Task
+                                .WhenAll(
+                                    deviceOperations.InvokeDirectMethodAsync(token),
+                                    deviceOperations.SetDesiredPropertiesAsync("guidValue", Guid.NewGuid().ToString(), token),
+                                    deviceOperations.SendC2dMessagesAsync(token))
+                                .ConfigureAwait(false);
+                            }
+                            catch (OperationCanceledException) { } // The cancellation on device is signaled.
+                        }
 
-                                try
-                                {
-                                    await Task
-                                    .WhenAll(
-                                        deviceOperations.InvokeDirectMethodAsync(token),
-                                        deviceOperations.SetDesiredPropertiesAsync("guidValue", Guid.NewGuid().ToString(), token),
-                                        deviceOperations.SendC2dMessagesAsync(token))
-                                    .ConfigureAwait(false);
-                                }
-                                catch (TaskCanceledException) { } // The cancellation on device is signaled.
-                            });
-
-                        s_onlineDeviceOperations[deviceId]?.Invoke();
+                        var operationsTuple = new Tuple<Action, CancellationTokenSource>(Operations, source);
+                        s_onlineDeviceOperations.Add(deviceId, operationsTuple);
+                        s_onlineDeviceOperations[deviceId].Item1.Invoke();
                     }
                 }
                 _logger.Trace($"Total number of connected devices: {s_onlineDeviceOperations.Count}", TraceSeverity.Information);

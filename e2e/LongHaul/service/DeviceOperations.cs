@@ -10,7 +10,7 @@ using static Microsoft.Azure.Devices.LongHaul.Service.LoggingConstants;
 
 namespace Microsoft.Azure.Devices.LongHaul.Service
 {
-    internal class DeviceOperations : IDisposable
+    internal class DeviceOperations
     {
         private readonly IotHubServiceClient _serviceClient;
         private readonly string _deviceId;
@@ -118,11 +118,6 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
 
                 await Task.Delay(s_c2dMessagesSentInterval, ct).ConfigureAwait(false);
             }
-        }
-
-        public void Dispose()
-        {
-            _logger.Trace($"{nameof(DeviceOperations)} instance disposed for the device [{_deviceId}].", TraceSeverity.Verbose);
         }
     }
 }
