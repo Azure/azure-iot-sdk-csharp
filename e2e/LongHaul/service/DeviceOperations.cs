@@ -55,7 +55,9 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                 try
                 {
                     // Invoke the direct method asynchronously and get the response from the simulated device.
-                    DirectMethodClientResponse response = await _serviceClient.DirectMethods.InvokeAsync(_deviceId, methodInvocation, ct);
+                    DirectMethodClientResponse response = await _serviceClient.DirectMethods
+                        .InvokeAsync(_deviceId, methodInvocation, ct)
+                        .ConfigureAwait(false);
 
                     if (response.TryGetPayload(out CustomDirectMethodPayload responsePayload))
                     {

@@ -2,11 +2,11 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Collections.Concurrent;
 using Azure;
 using Mash.Logging;
 using Azure.Storage.Blobs;
@@ -28,7 +28,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
         private static IotHubServiceClient s_serviceClient;
         private BlobContainerClient _blobContainerClient;
 
-        private static volatile Dictionary<string, Tuple<Action, CancellationTokenSource>> s_onlineDeviceOperations;
+        private static ConcurrentDictionary<string, Tuple<Action, CancellationTokenSource>> s_onlineDeviceOperations;
 
         private long _totalFeedbackMessagesReceivedCount = 0;
 
@@ -52,7 +52,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
             s_serviceClient = new IotHubServiceClient(_hubConnectionString, options);
             _logger.Trace("Initialized a new service client instance.", TraceSeverity.Information);
 
-            s_onlineDeviceOperations = new Dictionary<string, Tuple<Action, CancellationTokenSource>>();
+            s_onlineDeviceOperations = new ConcurrentDictionary<string, Tuple<Action, CancellationTokenSource>>();
 
             _totalFileUploadNotificationsReceived = 0;
             _blobContainerClient = new BlobContainerClient(_storageConnectionString, "fileupload");
@@ -84,7 +84,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                         // Dispose the cancellation token source.
                         source.Dispose();
                         // Remove the correlated device operations and cancellation token source of the particular device from the dictionary.
-                        s_onlineDeviceOperations.Remove(deviceId);
+                        s_onlineDeviceOperations.TryRemove(deviceId, out _);
                     }
                     else if (!s_onlineDeviceOperations.ContainsKey(deviceId)
                         && device.ConnectionState is ClientConnectionState.Connected)
@@ -112,7 +112,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                         }
 
                         var operationsTuple = new Tuple<Action, CancellationTokenSource>(Operations, source);
-                        s_onlineDeviceOperations.Add(deviceId, operationsTuple);
+                        s_onlineDeviceOperations.TryAdd(deviceId, operationsTuple);
                         s_onlineDeviceOperations[deviceId].Item1.Invoke();
                     }
                 }
