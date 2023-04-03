@@ -108,6 +108,11 @@ namespace Microsoft.Azure.Devices
         /// }
         /// </code>
         /// </example>
+        /// <remarks>
+        /// This callback will not receive events once <see cref="CloseAsync(CancellationToken)"/> is called. 
+        /// This callback will start receiving events again once <see cref="OpenAsync(CancellationToken)"/> is called.
+        /// This callback will persist across any number of open/close/open calls, so it does not need to be set before each open call.
+        /// </remarks>
         public Func<ErrorContext, Task> ErrorProcessor { get; set; }
 
         /// <summary>

@@ -230,6 +230,8 @@ namespace Microsoft.Azure.Devices.Amqp
 
             try
             {
+                _connection.Closed -= _connectionLossHandler;
+
                 _cbsSession?.Close(); // not async because the cbs link type only has a sync close API
 
                 if (_workerSession != null)

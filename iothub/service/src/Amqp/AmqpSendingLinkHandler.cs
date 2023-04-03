@@ -80,6 +80,7 @@ namespace Microsoft.Azure.Devices.Amqp
             {
                 if (_sendingLink != null)
                 {
+                    _sendingLink.Closed -= _connectionLossHandler;
                     await _sendingLink.CloseAsync(cancellationToken).ConfigureAwait(false);
                 }
             }
