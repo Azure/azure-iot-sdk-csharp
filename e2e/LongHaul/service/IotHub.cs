@@ -83,7 +83,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                         source.Cancel();
                         // Dispose the cancellation token source.
                         source.Dispose();
-                        // Remove the correlated device operations and cancellationtoken source of the particular device from the dictionary.
+                        // Remove the correlated device operations and cancellation token source of the particular device from the dictionary.
                         s_onlineDeviceOperations.Remove(deviceId);
                     }
                     else if (!s_onlineDeviceOperations.ContainsKey(deviceId)
