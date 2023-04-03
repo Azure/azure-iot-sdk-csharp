@@ -1,11 +1,12 @@
-﻿using CommandLine;
+﻿using System;
+using System.Collections.Generic;
+using System.Reflection;
+using System.Threading;
+using System.Threading.Tasks;
+using CommandLine;
 using Mash.Logging;
 using Mash.Logging.ApplicationInsights;
 using Microsoft.Azure.Devices.Client;
-using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
 using static Microsoft.Azure.Devices.LongHaul.Device.LoggingConstants;
 
 namespace Microsoft.Azure.Devices.LongHaul.Device
@@ -19,11 +20,14 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
 
         private static async Task Main(string[] args)
         {
+            string sdkVersionInfo = typeof(IotHubDeviceClient).Assembly
+                .GetCustomAttribute<AssemblyInformationalVersionAttribute>()
+                .InformationalVersion;
+
             s_commonProperties.Add(TestClient, "IotHubDeviceClient");
             s_commonProperties.Add(RunId, _runId);
             s_commonProperties.Add(SdkLanguage, ".NET");
-            // TODO: get this info at runtime rather than hard-coding it
-            s_commonProperties.Add(SdkVersion, "2.0.0-preview004");
+            s_commonProperties.Add(SdkVersion, sdkVersionInfo);
 
             // Parse application parameters
             Parameters parameters = null;
