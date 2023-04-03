@@ -19,6 +19,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         private static readonly string s_devicePrefix = $"{nameof(IncomingMessageCallbackE2eTests)}_";
 
         [TestMethod]
+        [TestCategory("LongRunning")]   // This test takes the complete 3 minutes before exiting. So, we will mark this as "LongRunning" so that it doesn't run at PR gate.
         public async Task DeviceReceiveMessageUsingCallbackAndUnsubscribe_Amqp()
         {
             // Setting up one cancellation token for the complete test flow
@@ -29,6 +30,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         }
 
         [TestMethod]
+        [TestCategory("LongRunning")]   // This test takes the complete 3 minutes before exiting. So, we will mark this as "LongRunning" so that it doesn't run at PR gate.
         public async Task DeviceReceiveMessageUsingCallbackAndUnsubscribe_Mqtt()
         {
             // Setting up one cancellation token for the complete test flow
