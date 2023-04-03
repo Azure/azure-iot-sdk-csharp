@@ -22,10 +22,13 @@ namespace Microsoft.Azure.Devices.E2ETests
         private static readonly string _devicePrefix = $"{nameof(NoRetryE2ETests)}_";
 
         [TestMethod]
-        [Timeout(TestTimeoutMilliseconds)]
         public async Task FaultInjection_NoRetry_NoRecovery_OpenAsync()
         {
-            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix, TestDeviceType.Sasl).ConfigureAwait(false);
+            // Setting up one cancellation token for the complete test flow
+            using var cts = new CancellationTokenSource(s_testTimeout);
+            CancellationToken ct = cts.Token;
+
+            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix, TestDeviceType.Sasl, ct).ConfigureAwait(false);
             
             var options = new IotHubClientOptions(new IotHubClientAmqpSettings())
             {
@@ -46,7 +49,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             deviceClient.ConnectionStatusChangeCallback = ConnectionStatusChangeHandler;
 
             VerboseTestLogger.WriteLine($"{nameof(FaultInjection_NoRetry_NoRecovery_OpenAsync)}: calling OpenAsync...");
-            await testDevice.OpenWithRetryAsync().ConfigureAwait(false);
+            await testDevice.OpenWithRetryAsync(ct).ConfigureAwait(false);
 
             VerboseTestLogger.WriteLine($"{nameof(FaultInjection_NoRetry_NoRecovery_OpenAsync)}: injecting fault {FaultInjectionConstants.FaultType_Tcp}...");
             await FaultInjection
@@ -56,10 +59,11 @@ namespace Microsoft.Azure.Devices.E2ETests
                     FaultInjectionConstants.FaultCloseReason_Boom,
                     FaultInjection.DefaultFaultDelay,
                     FaultInjection.DefaultFaultDuration,
-                    deviceClient)
+                    deviceClient,
+                    ct)
                 .ConfigureAwait(false);
 
-            await Task.Delay(FaultInjection.DefaultFaultDelay).ConfigureAwait(false);
+            await Task.Delay(FaultInjection.DefaultFaultDelay, ct).ConfigureAwait(false);
 
             VerboseTestLogger.WriteLine($"{nameof(FaultInjection_NoRetry_NoRecovery_OpenAsync)}: waiting fault injection occurs...");
             var sw = Stopwatch.StartNew();
@@ -69,7 +73,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 {
                     break;
                 }
-                await Task.Delay(TimeSpan.FromSeconds(1)).ConfigureAwait(false);
+                await Task.Delay(TimeSpan.FromSeconds(1), ct).ConfigureAwait(false);
             }
             sw.Reset();
 

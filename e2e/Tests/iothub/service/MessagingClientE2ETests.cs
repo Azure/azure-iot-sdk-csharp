@@ -51,7 +51,11 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
         private async Task TestTimeout(CancellationToken cancellationToken)
         {
-            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
+            // Setting up one cancellation token for the complete test flow
+            using var cts = new CancellationTokenSource(s_testTimeout);
+            CancellationToken ct = cts.Token;
+
+            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix, ct: ct).ConfigureAwait(false);
             IotHubServiceClient serviceClient = TestDevice.ServiceClient;
 
             // don't pass in cancellation token here. This test is for seeing how SendAsync reacts with an valid or expired token.

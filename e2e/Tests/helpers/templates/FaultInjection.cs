@@ -61,20 +61,22 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
             string reason,
             TimeSpan faultDelay,
             TimeSpan faultDuration,
-            IotHubDeviceClient deviceClient)
+            IotHubDeviceClient deviceClient,
+            CancellationToken ct)
         {
             VerboseTestLogger.WriteLine($"{nameof(ActivateFaultInjectionAsync)}: Requesting fault injection type={faultType} reason={reason}, delay={faultDelay}, duration={DefaultFaultDuration}");
 
             try
             {
                 using var cts = new CancellationTokenSource(LatencyTimeBuffer);
+                using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(ct, cts.Token);
                 TelemetryMessage faultInjectionMessage = ComposeErrorInjectionProperties(
                     faultType,
                     reason,
                     faultDelay,
                     faultDuration);
 
-                await deviceClient.SendTelemetryAsync(faultInjectionMessage, cts.Token).ConfigureAwait(false);
+                await deviceClient.SendTelemetryAsync(faultInjectionMessage, linkedCts.Token).ConfigureAwait(false);
             }
             catch (Exception ex) when (ex is IotHubClientException hubEx && hubEx.IsTransient)
             {
@@ -109,12 +111,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
             string reason,
             TimeSpan faultDelay,
             TimeSpan faultDuration,
-            Func<IotHubDeviceClient, TestDevice, Task> initOperation,
-            Func<IotHubDeviceClient, TestDevice, Task> testOperation,
-            Func<Task> cleanupOperation)
+            Func<TestDevice, TestDeviceCallbackHandler, CancellationToken, Task> initOperation,
+            Func<TestDevice, TestDeviceCallbackHandler, CancellationToken, Task> testOperation,
+            Func<CancellationToken, Task> cleanupOperation,
+            CancellationToken ct)
         {
-            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(devicePrefix, type).ConfigureAwait(false);
-
+            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(devicePrefix, type, ct).ConfigureAwait(false);
             await using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(transportSettings));
 
             int connectionStatusChangeCount = 0;
@@ -127,20 +129,22 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
 
             deviceClient.ConnectionStatusChangeCallback = OnConnectionStatusChanged;
 
+
             var faultInjectionDuration = new Stopwatch();
 
             try
             {
-                await testDevice.OpenWithRetryAsync().ConfigureAwait(false);
+                await testDevice.OpenWithRetryAsync(ct).ConfigureAwait(false);
+                using var testDeviceCallbackHandler = new TestDeviceCallbackHandler(testDevice.DeviceClient, testDevice.Id);
 
-                await initOperation(deviceClient, testDevice).ConfigureAwait(false);
+                await initOperation(testDevice, testDeviceCallbackHandler, ct).ConfigureAwait(false);
 
                 int countBeforeFaultInjection = connectionStatusChangeCount;
                 VerboseTestLogger.WriteLine($"{nameof(FaultInjection)} Testing fault handling");
                 faultInjectionDuration.Start();
-                await ActivateFaultInjectionAsync(transportSettings, faultType, reason, faultDelay, faultDuration, deviceClient).ConfigureAwait(false);
+                await ActivateFaultInjectionAsync(transportSettings, faultType, reason, faultDelay, faultDuration, deviceClient, ct).ConfigureAwait(false);
                 VerboseTestLogger.WriteLine($"{nameof(FaultInjection)}: Waiting for fault injection to be active: {faultDelay} seconds.");
-                await Task.Delay(faultDelay).ConfigureAwait(false);
+                await Task.Delay(faultDelay, ct).ConfigureAwait(false);
 
                 // For disconnect type faults, the device should disconnect and recover.
                 if (FaultShouldDisconnect(faultType))
@@ -158,7 +162,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                             break;
                         }
 
-                        await Task.Delay(TimeSpan.FromSeconds(1)).ConfigureAwait(false);
+                        await Task.Delay(TimeSpan.FromSeconds(1), ct).ConfigureAwait(false);
                     }
                     connectionChangeWaitDuration.Reset();
 
@@ -172,7 +176,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                     while (deviceClient.ConnectionStatusInfo.Status != ConnectionStatus.Connected
                         && faultInjectionDuration.Elapsed < faultDuration.Add(LatencyTimeBuffer))
                     {
-                        await Task.Delay(TimeSpan.FromSeconds(1)).ConfigureAwait(false);
+                        await Task.Delay(TimeSpan.FromSeconds(1), ct).ConfigureAwait(false);
                     }
                     connectionChangeWaitDuration.Reset();
 
@@ -182,7 +186,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
 
                     // Perform the test operation.
                     VerboseTestLogger.WriteLine($"{nameof(FaultInjection)}: Performing test operation for device {testDevice.Id}.");
-                    await testOperation(deviceClient, testDevice).ConfigureAwait(false);
+                    await testOperation(testDevice, testDeviceCallbackHandler, ct).ConfigureAwait(false);
                 }
                 else
                 {
@@ -193,8 +197,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                     while (sw.Elapsed < LatencyTimeBuffer)
                     {
                         VerboseTestLogger.WriteLine($"{nameof(FaultInjection)}: Performing test operation for device - Run {counter++}.");
-                        await testOperation(deviceClient, testDevice).ConfigureAwait(false);
-                        await Task.Delay(TimeSpan.FromSeconds(1)).ConfigureAwait(false);
+                        await testOperation(testDevice, testDeviceCallbackHandler, ct).ConfigureAwait(false);
+                        await Task.Delay(TimeSpan.FromSeconds(1), ct).ConfigureAwait(false);
                     }
                     sw.Reset();
                 }
@@ -203,7 +207,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
             {
                 if (cleanupOperation != null)
                 {
-                    await cleanupOperation().ConfigureAwait(false);
+                    await cleanupOperation(ct).ConfigureAwait(false);
                 }
 
                 if (!FaultShouldDisconnect(faultType))
@@ -214,7 +218,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                     if (timeToFinishFaultInjection > TimeSpan.Zero)
                     {
                         VerboseTestLogger.WriteLine($"{nameof(FaultInjection)}: Waiting {timeToFinishFaultInjection} to ensure that FaultInjection duration passed.");
-                        await Task.Delay(timeToFinishFaultInjection).ConfigureAwait(false);
+                        await Task.Delay(timeToFinishFaultInjection, ct).ConfigureAwait(false);
                     }
                 }
             }

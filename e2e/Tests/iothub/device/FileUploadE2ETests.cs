@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Net;
 using System.Security.Cryptography.X509Certificates;
+using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Azure.Devices.Client;
@@ -25,8 +26,8 @@ namespace Microsoft.Azure.Devices.E2ETests
         private static readonly X509Certificate2 s_selfSignedCertificate = TestConfiguration.IotHub.GetCertificateWithPrivateKey();
 
         [TestMethod]
-        [Timeout(LongRunningTestTimeoutMilliseconds)]
         [TestCategory("LongRunning")]
+        [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task FileUpload_GetFileUploadSasUri_Mqtt_x509_NoFileTransportSettingSpecified()
         {
             string smallFileBlobName = await GetTestFileNameAsync(FileSizeSmall).ConfigureAwait(false);
@@ -34,8 +35,8 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
-        [Timeout(LongRunningTestTimeoutMilliseconds)]
         [TestCategory("LongRunning")]
+        [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task FileUpload_GetFileUploadSasUri_Amqp_x509_NoFileTransportSettingSpecified()
         {
             string smallFileBlobName = await GetTestFileNameAsync(FileSizeSmall).ConfigureAwait(false);
@@ -43,8 +44,8 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
-        [Timeout(LongRunningTestTimeoutMilliseconds)]
         [TestCategory("LongRunning")]
+        [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task FileUpload_SmallFile_GranularSteps_ValidCorrelationId()
         {
             string filename = await GetTestFileNameAsync(FileSizeSmall).ConfigureAwait(false);
@@ -55,8 +56,8 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
-        [Timeout(LongRunningTestTimeoutMilliseconds)]
         [TestCategory("LongRunning")]
+        [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task FileUpload_SmallFile_GranularSteps_InvalidCorrelationId()
         {
             string filename = await GetTestFileNameAsync(FileSizeSmall).ConfigureAwait(false);
@@ -67,8 +68,8 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
-        [Timeout(LongRunningTestTimeoutMilliseconds)]
         [TestCategory("LongRunning")]
+        [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task FileUpload_SmallFile_GranularSteps_x509()
         {
             string filename = await GetTestFileNameAsync(FileSizeSmall).ConfigureAwait(false);
@@ -79,8 +80,8 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
-        [Timeout(LongRunningTestTimeoutMilliseconds)]
         [TestCategory("LongRunning")]
+        [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task FileUpload_SmallFile_GranularSteps_Proxy()
         {
             string filename = await GetTestFileNameAsync(FileSizeSmall).ConfigureAwait(false);
@@ -93,7 +94,12 @@ namespace Microsoft.Azure.Devices.E2ETests
             await UploadFileGranularAsync(fileStreamSource, filename, fileUploadTransportSettings, isCorrelationIdValid: true).ConfigureAwait(false);
         }
 
-        private async Task UploadFileGranularAsync(Stream source, string filename, IotHubClientHttpSettings fileUploadTransportSettings, bool isCorrelationIdValid, bool useX509auth = false)
+        private async Task UploadFileGranularAsync(
+            Stream source,
+            string filename,
+            IotHubClientHttpSettings fileUploadTransportSettings,
+            bool isCorrelationIdValid,
+            bool useX509auth = false)
         {
             await using TestDevice testDevice = await TestDevice
                 .GetTestDeviceAsync(
@@ -166,14 +172,16 @@ namespace Microsoft.Azure.Devices.E2ETests
             IotHubClientTransportSettings clientMainTransport,
             IotHubClientHttpSettings fileUploadSettings,
             string blobName,
-            bool useX509auth = false)
+            bool useX509auth = false,
+            CancellationToken ct = default)
         {
             await using TestDevice testDevice = await TestDevice
                 .GetTestDeviceAsync(
                     _devicePrefix,
                     useX509auth
                         ? TestDeviceType.X509
-                        : TestDeviceType.Sasl)
+                        : TestDeviceType.Sasl,
+                    ct)
                 .ConfigureAwait(false);
 
             var options = new IotHubClientOptions(clientMainTransport)
@@ -198,7 +206,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await using (deviceClient)
             {
                 FileUploadSasUriResponse sasUriResponse = await deviceClient
-                    .GetFileUploadSasUriAsync(new FileUploadSasUriRequest(blobName))
+                    .GetFileUploadSasUriAsync(new FileUploadSasUriRequest(blobName), ct)
                     .ConfigureAwait(false);
             }
         }

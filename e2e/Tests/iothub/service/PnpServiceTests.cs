@@ -3,6 +3,7 @@
 
 using System;
 using System.Security.Cryptography.X509Certificates;
+using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Azure.Devices.Client;
@@ -29,15 +30,19 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         {
             // Setup
 
+            // Setting up one cancellation token for the complete test flow
+            using var cts = new CancellationTokenSource(s_testTimeout);
+            CancellationToken ct = cts.Token;
+
             // Create a device.
-            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
+            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix, ct: ct).ConfigureAwait(false);
             // Send model ID with MQTT connect packet to make the device plug and play.
             var options = new IotHubClientOptions(new IotHubClientMqttSettings())
             {
                 ModelId = TestModelId,
             };
             var deviceClient = testDevice.CreateDeviceClient(options);
-            await testDevice.OpenWithRetryAsync().ConfigureAwait(false);
+            await testDevice.OpenWithRetryAsync(ct).ConfigureAwait(false);
 
             // Act
 
@@ -52,9 +57,12 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         public async Task DeviceTwin_Contains_ModelId_X509()
         {
             // Setup
+            // Setting up one cancellation token for the complete test flow
+            using var cts = new CancellationTokenSource(s_testTimeout);
+            CancellationToken ct = cts.Token;
 
             // Create a device.
-            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix, TestDeviceType.X509).ConfigureAwait(false);
+            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix, TestDeviceType.X509, ct).ConfigureAwait(false);
             // Send model ID with MQTT connect packet to make the device plug and play.
             var options = new IotHubClientOptions(new IotHubClientMqttSettings())
             {
@@ -64,7 +72,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             X509Certificate2 authCertificate = TestConfiguration.IotHub.GetCertificateWithPrivateKey();
             var auth = new ClientAuthenticationWithX509Certificate(authCertificate, testDevice.Id);
             await using var deviceClient = new IotHubDeviceClient(hostName, auth, options);
-            await TestDevice.OpenWithRetryAsync(deviceClient).ConfigureAwait(false);
+            await TestDevice.OpenWithRetryAsync(deviceClient, ct).ConfigureAwait(false);
 
             // Act
             try
@@ -92,8 +100,12 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         {
             // Setup
 
+            // Setting up one cancellation token for the complete test flow
+            using var cts = new CancellationTokenSource(s_testTimeout);
+            CancellationToken ct = cts.Token;
+
             // Create a module.
-            await using TestModule testModule = await TestModule.GetTestModuleAsync(DevicePrefix, ModulePrefix).ConfigureAwait(false);
+            await using TestModule testModule = await TestModule.GetTestModuleAsync(DevicePrefix, ModulePrefix, ct).ConfigureAwait(false);
 
             // Send model ID with MQTT connect packet to make the module plug and play.
             var options = new IotHubClientOptions(new IotHubClientMqttSettings())

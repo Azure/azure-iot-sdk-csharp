@@ -905,8 +905,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             IAuthenticationMethod auth,
             IotHubClientTransportSettings transportSettings)
         {
+            // Setting up one cancellation token for the complete test flow
+            using var cts = new CancellationTokenSource(s_testTimeout);
+            CancellationToken ct = cts.Token;
+
             await using var deviceClient = new IotHubDeviceClient(result.AssignedHub, auth, new IotHubClientOptions(transportSettings));
-            await TestDevice.OpenWithRetryAsync(deviceClient).ConfigureAwait(false);
+            await TestDevice.OpenWithRetryAsync(deviceClient, ct).ConfigureAwait(false);
         }
 
         private static async Task ConfirmExpectedDeviceCapabilitiesAsync(

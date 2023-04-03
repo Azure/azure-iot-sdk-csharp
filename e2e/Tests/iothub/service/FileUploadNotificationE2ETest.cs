@@ -164,7 +164,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
         private async Task UploadFile(string fileName, CancellationToken ct)
         {
-            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix).ConfigureAwait(false);
+            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix, ct: ct).ConfigureAwait(false);
             IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(new IotHubClientAmqpSettings()));
             await testDevice.OpenWithRetryAsync(ct).ConfigureAwait(false);
 

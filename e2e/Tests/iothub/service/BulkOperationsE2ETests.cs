@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
@@ -70,10 +71,14 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         [Timeout(TestTimeoutMilliseconds)]
         public async Task BulkOperations_UpdateTwins2Module_Ok()
         {
+            // Setting up one cancellation token for the complete test flow
+            using var cts = new CancellationTokenSource(s_testTimeout);
+            CancellationToken ct = cts.Token;
+
             string tagName = Guid.NewGuid().ToString();
             string tagValue = Guid.NewGuid().ToString();
 
-            await using TestModule testModule = await TestModule.GetTestModuleAsync(DevicePrefix, ModulePrefix).ConfigureAwait(false);
+            await using TestModule testModule = await TestModule.GetTestModuleAsync(DevicePrefix, ModulePrefix, ct).ConfigureAwait(false);
             IotHubServiceClient serviceClient = TestDevice.ServiceClient;
 
             ClientTwin twin = await serviceClient.Twins.GetAsync(testModule.DeviceId, testModule.Id).ConfigureAwait(false);
@@ -95,10 +100,14 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         [Timeout(TestTimeoutMilliseconds)]
         public async Task BulkOperations_UpdateTwins2ModulePatch_Ok()
         {
+            // Setting up one cancellation token for the complete test flow
+            using var cts = new CancellationTokenSource(s_testTimeout);
+            CancellationToken ct = cts.Token;
+
             string tagName = Guid.NewGuid().ToString();
             string tagValue = Guid.NewGuid().ToString();
 
-            await using TestModule testModule = await TestModule.GetTestModuleAsync(DevicePrefix, ModulePrefix).ConfigureAwait(false);
+            await using TestModule testModule = await TestModule.GetTestModuleAsync(DevicePrefix, ModulePrefix, ct).ConfigureAwait(false);
 
             IotHubServiceClient serviceClient = TestDevice.ServiceClient;
             var twin = new ClientTwin(testModule.DeviceId)
