@@ -23,13 +23,14 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
 
         private static readonly TimeSpan s_deviceCountMonitorInterval = TimeSpan.FromSeconds(30);
         private static readonly TimeSpan s_receiveFileUploadInterval = TimeSpan.FromSeconds(30);
-        private int _totalFileUploadNotificationsReceived;
 
         private static IotHubServiceClient s_serviceClient;
-        private BlobContainerClient _blobContainerClient;
+        private static BlobContainerClient s_blobContainerClient;
 
+        // Create a mapping between a device Id and a tuple of the correlated operations with the cancellation token source per online device.
         private static ConcurrentDictionary<string, Tuple<Task, CancellationTokenSource>> s_onlineDeviceOperations;
 
+        private long _totalFileUploadNotificationsReceived = 0;
         private long _totalFeedbackMessagesReceivedCount = 0;
 
         public IotHub(Logger logger, Parameters parameters)
@@ -53,9 +54,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
             _logger.Trace("Initialized a new service client instance.", TraceSeverity.Information);
 
             s_onlineDeviceOperations = new ConcurrentDictionary<string, Tuple<Task, CancellationTokenSource>>();
-
-            _totalFileUploadNotificationsReceived = 0;
-            _blobContainerClient = new BlobContainerClient(_storageConnectionString, "fileupload");
+            s_blobContainerClient = new BlobContainerClient(_storageConnectionString, "fileupload");
         }
 
         public Task<string> GetEventHubCompatibleConnectionStringAsync(CancellationToken ct)
@@ -108,9 +107,13 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                                     deviceOperations.SendC2dMessagesAsync(token))
                                 .ConfigureAwait(false);
                             }
-                            catch (OperationCanceledException) { } // The cancellation on device is signaled.
+                            catch (OperationCanceledException)
+                            {
+                                _logger.Trace($"Operations on [{deviceId}] have been canceled as the device goes offline.", TraceSeverity.Information);
+                            }
                         }
 
+                        // Passing in "Operations()" as Task so we don't need to manually call "Invoke()" on it.
                         var operationsTuple = new Tuple<Task, CancellationTokenSource>(Operations(), source);
                         s_onlineDeviceOperations.TryAdd(deviceId, operationsTuple);
                     }
@@ -170,7 +173,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                 Task<AcknowledgementType> FileUploadNotificationCallback(FileUploadNotification fileUploadNotification)
                 {
                     AcknowledgementType ackType = AcknowledgementType.Complete;
-                    _totalFileUploadNotificationsReceived++;
+                    ++_totalFileUploadNotificationsReceived;
 
                     var sb = new StringBuilder();
                     sb.Append($"Received file upload notification.");
@@ -180,7 +183,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                     sb.Append($"\tBlobSizeInBytes: {fileUploadNotification.BlobSizeInBytes}.");
                     _logger.Trace(sb.ToString(), TraceSeverity.Information);
 
-                    _blobContainerClient.DeleteBlobIfExists(fileUploadNotification.BlobName);
+                    s_blobContainerClient.DeleteBlobIfExists(fileUploadNotification.BlobName);
                     return Task.FromResult(ackType);
                 }
 
