@@ -69,7 +69,8 @@ Param(
     [switch] $skipIotHubTests,
     [switch] $skipDPSTests,
     [switch] $noBuildBeforeTesting,
-    [switch] $runSamples
+    [switch] $runAllSamples,
+    [switch] $runCleanupSamples
 )
 
 Function IsWindows()
@@ -132,7 +133,7 @@ Function BuildProject($path, $message)
     }
 }
 
-Function RunSamples($path, $message)
+Function RunSamples($message, $runAll)
 {
     $label = "RUNNING SAMPLES: --- $message $configuration ---"
 
@@ -141,6 +142,16 @@ Function RunSamples($path, $message)
 
     try 
     {
+        Write-Host -ForegroundColor Cyan "Running cleanup samples"
+
+        # Run the cleanup samples so that identities and enrollments created for the samples are cleaned up.
+        RunSample 'provisioning\service\samples\getting started\CleanupEnrollmentsSample' "Provisioning\Service\CleanupEnrollmentsSample" "-c ""$env:PROVISIONING_CONNECTION_STRING"""
+        RunSample 'iothub\service\samples\how to guides\CleanupDevicesSample' "IoTHub\Service\CleanupDevicesSample" "-c ""$env:IOTHUB_CONNECTION_STRING"" -a ""$env:STORAGE_ACCOUNT_CONNECTION_STRING"""
+        
+        if ($runAll)
+        {
+            Write-Host -ForegroundColor Cyan "Running all samples"
+
             $sampleRunningTimeInSeconds = 30
 
             # Run the iot-hub\device samples
@@ -180,10 +191,8 @@ Function RunSamples($path, $message)
             # Run provisioning\service samples
             RunSample 'provisioning\service\samples\how to guides\BulkOperationSample' "Provisioning\Service\BulkOperationSample" "-c ""$env:PROVISIONING_CONNECTION_STRING"""
 
-            # Run the cleanup again so that identities and enrollments created for the samples are cleaned up.
-            RunSample 'provisioning\service\samples\getting started\CleanupEnrollmentsSample' "Provisioning\Service\CleanupEnrollmentsSample" "-c ""$env:PROVISIONING_CONNECTION_STRING"""
-            RunSample 'iothub\service\samples\how to guides\CleanupDevicesSample' "IoTHub\Service\CleanupDevicesSample" "-c ""$env:IOTHUB_CONNECTION_STRING"" -a ""$env:STORAGE_ACCOUNT_CONNECTION_STRING"""
-    }  
+        }
+    }
     catch [Exception]
     {
         throw "Running Samples Failed: $label"
@@ -332,9 +341,14 @@ try
         # TODO: BuildProject <path> "<desc>"
     }
 
-    if ($runSamples)
+    if ($runAllSamples)
     {
-        RunSamples . "Azure IoT C# SDK Samples"
+        RunSamples "Azure IoT .NET SDK Samples" $true
+    }
+
+    if ($runCleanupSamples)
+    {
+        RunSamples "Azure IoT .NET SDK Cleanup Samples" $false
     }
 
     # Unit Tests require InternalsVisibleTo and can only run in Debug builds.
