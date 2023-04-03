@@ -12,7 +12,6 @@ namespace Microsoft.Azure.Devices.Client
     {
         private static readonly Type[] s_fatalExceptionTypes = new[]
         {
-            typeof(OperationCanceledException),
             typeof(ObjectDisposedException),
             typeof(OutOfMemoryException),
             typeof(SEHException),
