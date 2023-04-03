@@ -53,7 +53,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestCategory("LongRunning")]
         [DataRow(IotHubClientTransportProtocol.Tcp)]
         [DataRow(IotHubClientTransportProtocol.WebSocket)]
-        public async Task Method_AmqpSessionLostRecovery_MultipleConnections_Amqp(IotHubClientTransportProtocol protocol)
+        public async Task Method_AmqpSessionLossRecovery_MultipleConnections_Amqp(IotHubClientTransportProtocol protocol)
         {
             // Setting up one cancellation token for the complete test flow
             using var cts = new CancellationTokenSource(s_longRunningTestTimeout);
@@ -76,7 +76,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         [DataRow(IotHubClientTransportProtocol.WebSocket, FaultInjectionConstants.FaultType_AmqpMethodReq, FaultInjectionConstants.FaultCloseReason_Boom)]
         [DataRow(IotHubClientTransportProtocol.Tcp, FaultInjectionConstants.FaultType_AmqpMethodResp, FaultInjectionConstants.FaultCloseReason_Boom)]
         [DataRow(IotHubClientTransportProtocol.WebSocket, FaultInjectionConstants.FaultType_AmqpMethodResp, FaultInjectionConstants.FaultCloseReason_Boom)]
-        public async Task Method_LinkDropRecovery_MultipleConnections_Amqp(IotHubClientTransportProtocol protocol, string faultType, string faultReason)
+        public async Task Method_AmqpLinkDropRecovery_MultipleConnections_Amqp(IotHubClientTransportProtocol protocol, string faultType, string faultReason)
         {
             // Setting up one cancellation token for the complete test flow
             using var cts = new CancellationTokenSource(s_longRunningTestTimeout);
