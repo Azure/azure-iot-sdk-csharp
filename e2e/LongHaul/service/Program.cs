@@ -17,6 +17,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
     {
         private static readonly IDictionary<string, string> s_commonProperties = new Dictionary<string, string>();
         private static Logger s_logger;
+        private static int s_port;
         private static ApplicationInsightsLoggingProvider s_aiLoggingProvider;
 
         private static async Task Main(string[] args)
@@ -49,6 +50,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
             }
 
             s_logger = InitializeLogging(parameters);
+            s_port = PortFilter(parameters);
 
             // Log system health before initializing hub
             SystemHealthMonitor.BuildAndLogSystemHealth(s_logger);
@@ -74,7 +76,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                 Console.WriteLine("Exiting ...");
             };
 
-            var systemHealthMonitor = new SystemHealthMonitor(s_logger.Clone());
+            var systemHealthMonitor = new SystemHealthMonitor(s_port, s_logger.Clone());
             var hubEvents = new HubEvents(iotHub, s_logger.Clone());
 
             try
@@ -100,6 +102,11 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
 
             s_logger.Flush();
             s_aiLoggingProvider.Dispose();
+        }
+
+        private static int PortFilter(Parameters parameters)
+        {
+            return parameters.TransportProtocol == IotHubTransportProtocol.WebSocket? 443 : 5671;
         }
 
         private static Logger InitializeLogging(Parameters parameters)

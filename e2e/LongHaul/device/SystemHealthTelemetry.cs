@@ -1,53 +1,38 @@
-﻿using System.Diagnostics;
-using System.Text.Json.Serialization;
+﻿using System;
+using System.Diagnostics;
+using System.Net.NetworkInformation;
 
 namespace Microsoft.Azure.Devices.LongHaul.Device
 {
     internal class SystemHealthTelemetry : TelemetryBase
     {
+        public SystemHealthTelemetry(int port) 
+        {
+            s_tcpPortFilter = port;
+        }
+
         private static readonly Process s_currentProcess = Process.GetCurrentProcess();
-        private static readonly string s_processName = s_currentProcess.ProcessName;
+        public static long s_tcpPortFilter;
+        public double processCpu { get; set; } = s_currentProcess.TotalProcessorTime.TotalMilliseconds / Environment.ProcessorCount;
+        public long totalAssignedMemoryBytes { get; set; } = s_currentProcess.WorkingSet64;
+        public long totalGCBytes { get; set; } = GC.GetTotalMemory(false);
+        public long tcpConnections { get; set; } = updateTCPConnections();
 
-        private static readonly PerformanceCounter s_processCpuCounter = new(
-            "Process",
-            "% Processor Time",
-            s_processName,
-            true);
-        private static readonly PerformanceCounter s_processWorkingSet = new(
-            "Process",
-            "Working Set",
-            s_processName,
-            true);
-        private static readonly PerformanceCounter s_processWorkingSetPrivate = new(
-            "Process",
-            "Working Set - Private",
-            s_processName,
-            true);
-        private static readonly PerformanceCounter s_processPrivateBytes = new(
-            "Process",
-            "Private bytes",
-            s_processName,
-            true);
-        private static readonly PerformanceCounter s_processBytesInAllHeaps = null;
-        //new PerformanceCounter(
-        //    ".NET CLR Memory",
-        //    "# Bytes in all Heaps",
-        //    _processName,
-        //    true);
 
-        [JsonPropertyName("processCpuUsagePercent")]
-        public float ProcessCpuUsagePercent { get; set; } = s_processCpuCounter.NextValue();
+        private static long updateTCPConnections()
+        {
+            IPGlobalProperties properties = IPGlobalProperties.GetIPGlobalProperties();
+            TcpConnectionInformation[] connections = properties.GetActiveTcpConnections();
 
-        [JsonPropertyName("processWorkingSet")]
-        public float ProcessWorkingSet { get; set; } = s_processWorkingSet.NextValue();
-
-        [JsonPropertyName("processWorkingSetPrivate")]
-        public float ProcessWorkingSetPrivate { get; set; } = s_processWorkingSetPrivate.NextValue();
-
-        [JsonPropertyName("processPrivateBytes")]
-        public float ProcessPrivateBytes { get; set; } = s_processPrivateBytes.NextValue();
-
-        [JsonPropertyName("processBytesInAllHeaps")]
-        public float? ProcessBytesInAllHeaps { get; set; } = s_processBytesInAllHeaps?.NextValue();
+            long n = 0;
+            foreach (TcpConnectionInformation conn in connections)
+            {
+                if (s_tcpPortFilter != 0 && conn.RemoteEndPoint.Port != s_tcpPortFilter)
+                    continue;
+                if (conn.State == TcpState.Established) 
+                    n++;
+            }
+            return n;
+        }
     }
 }

@@ -15,11 +15,13 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
     {
         private readonly IIotHub _iotHub;
         private readonly Logger _logger;
+        private static int s_port;
         private static readonly TimeSpan s_interval = TimeSpan.FromSeconds(3);
 
-        public SystemHealthMonitor(IIotHub iotHub, Logger logger)
+        public SystemHealthMonitor(IIotHub iotHub, int portFilter, Logger logger)
         {
             _iotHub = iotHub;
+            s_port = portFilter;
             _logger = logger;
             _logger.LoggerContext.Add("Component", nameof(SystemHealthMonitor));
         }
@@ -49,15 +51,11 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
 
         internal static SystemHealthTelemetry BuildAndLogSystemHealth(Logger logger)
         {
-            var telemetry = new SystemHealthTelemetry();
-            logger.Metric(nameof(telemetry.ProcessCpuUsagePercent), telemetry.ProcessCpuUsagePercent);
-            logger.Metric(nameof(telemetry.ProcessWorkingSet), telemetry.ProcessWorkingSet);
-            logger.Metric(nameof(telemetry.ProcessWorkingSetPrivate), telemetry.ProcessWorkingSetPrivate);
-            logger.Metric(nameof(telemetry.ProcessPrivateBytes), telemetry.ProcessPrivateBytes);
-            if (telemetry.ProcessBytesInAllHeaps.HasValue)
-            {
-                logger.Metric(nameof(telemetry.ProcessBytesInAllHeaps), telemetry.ProcessBytesInAllHeaps.Value);
-            }
+            var telemetry = new SystemHealthTelemetry(s_port);
+            logger.Metric(nameof(telemetry.totalAssignedMemoryBytes), telemetry.totalAssignedMemoryBytes);
+            logger.Metric(nameof(telemetry.processCpu), telemetry.processCpu);
+            logger.Metric(nameof(telemetry.totalGCBytes), telemetry.totalGCBytes);
+            logger.Metric(nameof(telemetry.tcpConnections), telemetry.tcpConnections);
 
             return telemetry;
         }
