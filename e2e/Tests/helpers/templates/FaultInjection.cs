@@ -205,9 +205,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
             }
             finally
             {
+                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+
                 if (cleanupOperation != null)
                 {
-                    await cleanupOperation(ct).ConfigureAwait(false);
+                    await cleanupOperation(cts.Token).ConfigureAwait(false);
                 }
 
                 if (!FaultShouldDisconnect(faultType))
@@ -218,7 +220,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                     if (timeToFinishFaultInjection > TimeSpan.Zero)
                     {
                         VerboseTestLogger.WriteLine($"{nameof(FaultInjection)}: Waiting {timeToFinishFaultInjection} to ensure that FaultInjection duration passed.");
-                        await Task.Delay(timeToFinishFaultInjection, ct).ConfigureAwait(false);
+                        await Task.Delay(timeToFinishFaultInjection, cts.Token).ConfigureAwait(false);
                     }
                 }
             }

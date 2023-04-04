@@ -148,26 +148,20 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 return await asyncOperation().ConfigureAwait(false);
             }
-            catch (Exception ex) when (!Fx.IsFatal(ex))
+            catch (Exception ex) when (ex is not IotHubClientException && !Fx.IsFatal(ex))
             {
                 if (Logging.IsEnabled)
                     Logging.Error(this, $"Exception caught: {ex}");
 
-                if (ex is IotHubClientException hex)
+                if (IsNetworkExceptionChain(ex))
                 {
-                    // No remapping needed.
-                    throw;
+                    throw new IotHubClientException("A transient network error occurred; please retry.", IotHubClientErrorCode.NetworkErrors, ex);
                 }
 
                 if (IsSecurityExceptionChain(ex))
                 {
                     Exception innerException = (ex is IotHubClientException) ? ex.InnerException : ex;
                     throw new IotHubClientException("TLS authentication error.", IotHubClientErrorCode.TlsAuthenticationError, innerException);
-                }
-
-                if (IsNetworkExceptionChain(ex))
-                {
-                    throw new IotHubClientException("A transient network error occurred; please retry.", IotHubClientErrorCode.NetworkErrors, ex);
                 }
 
                 if (Logging.IsEnabled)
