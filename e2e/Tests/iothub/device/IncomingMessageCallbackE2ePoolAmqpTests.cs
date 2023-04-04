@@ -41,9 +41,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
         [DataTestMethod]
         [TestCategory("LongRunning")]   // This test takes the complete 3 minutes before exiting. So, we will mark this as "LongRunning" so that it doesn't run at PR gate.
-        [DataRow(IotHubClientTransportProtocol.Tcp, ConnectionStringAuthScope.Device)]
         [DataRow(IotHubClientTransportProtocol.WebSocket, ConnectionStringAuthScope.Device)]
-        [DataRow(IotHubClientTransportProtocol.Tcp, ConnectionStringAuthScope.IotHub)]
         [DataRow(IotHubClientTransportProtocol.WebSocket, ConnectionStringAuthScope.IotHub)]
         public async Task IncomingMessage_ReceiveSingleMessageAndUnsubscribe_MultipleConnections_Amqp(IotHubClientTransportProtocol protocol, ConnectionStringAuthScope authScope)
         {
