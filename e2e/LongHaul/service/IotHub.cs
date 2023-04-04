@@ -163,7 +163,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
             }
         }
 
-        public async Task ReceiveFileUploadAsync(CancellationToken ct)
+        public async Task ReceiveFileUploadNotificationsAsync(CancellationToken ct)
         {
             _logger.Trace("Starting to listen to file upload notifications...", TraceSeverity.Verbose);
 
