@@ -128,7 +128,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
         public async Task ReceiveMessageFeedbacksAsync(CancellationToken ct)
         {
             // It is important to note that receiver only gets feedback messages when the device is actively running and acting on messages.
-            _logger.Trace("Starting to listen to cloud-to-device feedback messages", TraceSeverity.Verbose);
+            _logger.Trace("Starting to listen to cloud-to-device feedback messages...", TraceSeverity.Verbose);
 
             AcknowledgementType OnC2dMessageAck(FeedbackBatch feedbackMessages)
             {
@@ -165,32 +165,41 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
 
         public async Task ReceiveFileUploadAsync(CancellationToken ct)
         {
-            while (!ct.IsCancellationRequested)
+            _logger.Trace("Starting to listen to file upload notifications...", TraceSeverity.Verbose);
+
+            Task<AcknowledgementType> FileUploadNotificationCallback(FileUploadNotification fileUploadNotification)
+            {
+                AcknowledgementType ackType = AcknowledgementType.Complete;
+                ++_totalFileUploadNotificationsReceived;
+                _logger.Metric(TotalFileUploadNotificiationsReceivedCount, _totalFileUploadNotificationsReceived);
+
+                var sb = new StringBuilder();
+                sb.Append($"Received file upload notification.");
+                sb.Append($"\n\tDeviceId: {fileUploadNotification.DeviceId ?? "N/A"}.");
+                sb.Append($"\n\tFileName: {fileUploadNotification.BlobName ?? "N/A"}.");
+                sb.Append($"\n\tEnqueueTimeUTC: {fileUploadNotification.EnqueuedOnUtc}.");
+                sb.Append($"\n\tBlobSizeInBytes: {fileUploadNotification.BlobSizeInBytes}.");
+                _logger.Trace(sb.ToString(), TraceSeverity.Information);
+
+                s_blobContainerClient.DeleteBlobIfExists(fileUploadNotification.BlobName);
+                return Task.FromResult(ackType);
+            }
+
+            s_serviceClient.FileUploadNotifications.FileUploadNotificationProcessor = FileUploadNotificationCallback;
+
+            try
             {
                 await s_serviceClient.FileUploadNotifications.OpenAsync(ct).ConfigureAwait(false);
-                _logger.Trace("Listening for file upload notifications from the service...", TraceSeverity.Verbose);
 
-                Task<AcknowledgementType> FileUploadNotificationCallback(FileUploadNotification fileUploadNotification)
+                try
                 {
-                    AcknowledgementType ackType = AcknowledgementType.Complete;
-                    ++_totalFileUploadNotificationsReceived;
-
-                    var sb = new StringBuilder();
-                    sb.Append($"Received file upload notification.");
-                    sb.Append($"\tDeviceId: {fileUploadNotification.DeviceId ?? "N/A"}.");
-                    sb.Append($"\tFileName: {fileUploadNotification.BlobName ?? "N/A"}.");
-                    sb.Append($"\tEnqueueTimeUTC: {fileUploadNotification.EnqueuedOnUtc}.");
-                    sb.Append($"\tBlobSizeInBytes: {fileUploadNotification.BlobSizeInBytes}.");
-                    _logger.Trace(sb.ToString(), TraceSeverity.Information);
-
-                    s_blobContainerClient.DeleteBlobIfExists(fileUploadNotification.BlobName);
-                    return Task.FromResult(ackType);
+                    await Task.Delay(-1, ct);
                 }
-
-                s_serviceClient.FileUploadNotifications.FileUploadNotificationProcessor = FileUploadNotificationCallback;
-                _logger.Metric("TotalFileUploadNotificiationsReceived", _totalFileUploadNotificationsReceived);
-
-                await Task.Delay(s_receiveFileUploadInterval, ct).ConfigureAwait(false);
+                catch (OperationCanceledException) { }
+            }
+            finally
+            {
+                await s_serviceClient.FileUploadNotifications.CloseAsync().ConfigureAwait(false);
             }
         }
 
