@@ -26,5 +26,6 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
         public const string TotalDesiredPropertiesUpdatesCount = "TotalDesiredPropertiesUpdatesCount";
         public const string TotalC2dMessagesSentCount = "TotalC2dMessagesSentCount";
         public const string TotalFeedbackMessagesReceivedCount = "TotalFeedbackMessagesReceivedCount";
+        public const string TotalOnlineDevicesCount = "TotalOnlineDevicesCount";
     }
 }
