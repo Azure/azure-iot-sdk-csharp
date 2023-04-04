@@ -18,8 +18,8 @@ namespace Microsoft.Azure.Devices.Client
 
             try
             {
-                // If the cannot be cast to <T> directly we need to try to convert it using the serializer.
-                // If it can be successfully converted, go ahead and return it.
+                // We'll serialize the object back to JSON using the user's configured payload convention
+                // and then to the type of their choosing with the same payload convention.
                 value = payloadConvention.GetObject<T>(payloadConvention.GetObjectBytes(objectToCastOrConvert));
                 return true;
             }
