@@ -16,9 +16,23 @@ namespace Microsoft.Azure.Devices.Client.Test
         public void ConstructorTakingPayloadTest()
         {
             const string payloadString = "Hello, World!";
-            byte[] payloadBytes = Encoding.UTF8.GetBytes(payloadString);
+            var msg = new TelemetryMessage(payloadString);
+            msg.Payload.Should().BeEquivalentTo(payloadString);
+
+            msg.GetPayloadObjectBytes().Should().BeEquivalentTo(DefaultPayloadConvention.Instance.GetObjectBytes(payloadString));
+        }
+
+        [TestMethod]
+        public void ConstructorTakingBytePayloadTest()
+        {
+            Encoding encoder = Encoding.UTF32;
+            const string payloadString = "Hello, World!";
+            byte[] payloadBytes = encoder.GetBytes(payloadString);
             var msg = new TelemetryMessage(payloadBytes);
-            msg.Payload.Should().BeEquivalentTo(payloadBytes);
+            msg.Payload.Should().Be(payloadBytes);
+
+            byte[] actualPayload = msg.GetPayloadObjectBytes();
+            encoder.GetString(actualPayload).Should().BeEquivalentTo(payloadString);
         }
 
         [TestMethod]

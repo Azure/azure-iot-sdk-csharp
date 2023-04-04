@@ -33,6 +33,15 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
+        /// Creates a cloud-to-device message with the specified binary payload.
+        /// </summary>
+        /// <param name="binaryPayload">The binary payload to send.</param>
+        public OutgoingMessage(byte[] binaryPayload)
+        {
+            Payload = binaryPayload;
+        }
+
+        /// <summary>
         /// [Required for two way requests] Used to correlate two-way communication.
         /// Format: A case-sensitive string ( up to 128 char long) of ASCII 7-bit alphanumeric chars
         /// + {'-', ':', '/', '\', '.', '+', '%', '_', '#', '*', '?', '!', '(', ')', ',', '=', '@', ';', '$', '''}.

@@ -151,8 +151,8 @@ namespace Microsoft.Azure.Devices.Client
             }
 
             message.PayloadConvention = _clientOptions.PayloadConvention;
-            message.ContentType = _clientOptions.PayloadConvention.ContentType;
-            message.ContentEncoding = _clientOptions.PayloadConvention.ContentEncoding;
+            message.ContentType ??= _clientOptions.PayloadConvention.ContentType;
+            message.ContentEncoding ??= _clientOptions.PayloadConvention.ContentEncoding;
 
             try
             {
@@ -197,8 +197,8 @@ namespace Microsoft.Azure.Devices.Client
             foreach (TelemetryMessage message in messages)
             {
                 message.PayloadConvention = _clientOptions.PayloadConvention;
-                message.ContentType = _clientOptions.PayloadConvention.ContentType;
-                message.ContentEncoding = _clientOptions.PayloadConvention.ContentEncoding;
+                message.ContentType ??= _clientOptions.PayloadConvention.ContentType;
+                message.ContentEncoding ??= _clientOptions.PayloadConvention.ContentEncoding;
 
                 if (_clientOptions?.SdkAssignsMessageId == SdkAssignsMessageId.WhenUnset)
                 {
