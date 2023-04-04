@@ -142,16 +142,24 @@ namespace Microsoft.Azure.Devices.Client.Transport
         private async Task<T> RunWithExceptionRemappingAsync<T>(Func<Task<T>> asyncOperation)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"{nameof(ExceptionRemappingHandler)}.{nameof(ExecuteWithExceptionRemappingAsync)}");
+                Logging.Enter(this, memberName: nameof(ExecuteWithExceptionRemappingAsync));
 
             try
             {
                 return await asyncOperation().ConfigureAwait(false);
             }
-            catch (Exception ex) when (ex is not IotHubClientException && !Fx.IsFatal(ex))
+            catch (NullReferenceException ex) when (Logging.IsEnabled)
+            {
+                // Customers should never get NREs, but if they do we want to log it out.
+                Logging.Error(this, ex, nameof(RunWithExceptionRemappingAsync));
+                throw;
+            }
+            catch (Exception ex) when (ex is not IotHubClientException
+                && ex is not OperationCanceledException
+                && !Fx.IsFatal(ex))
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"Exception caught: {ex}");
+                    Logging.Error(this, $"Exception caught: {ex}", nameof(RunWithExceptionRemappingAsync));
 
                 if (IsNetworkExceptionChain(ex))
                 {
@@ -165,14 +173,17 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 }
 
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"Unmapped exception {ex.GetType()}");
+                    Logging.Error(this, $"Unmapped exception {ex.GetType()}", nameof(RunWithExceptionRemappingAsync));
 
-                throw new IotHubClientException("An unexpected exception occurred. See the inner exception for more details.", IotHubClientErrorCode.Unknown, ex);
+                throw new IotHubClientException(
+                    "An unexpected exception occurred. See the inner exception for more details.",
+                    IotHubClientErrorCode.Unknown,
+                    ex);
             }
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, $"{nameof(ExceptionRemappingHandler)}.{nameof(ExecuteWithExceptionRemappingAsync)}");
+                    Logging.Exit(this, memberName: nameof(ExecuteWithExceptionRemappingAsync));
             }
         }
     }
