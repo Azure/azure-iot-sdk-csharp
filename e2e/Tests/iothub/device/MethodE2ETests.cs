@@ -272,7 +272,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                     .InvokeAsync(deviceId, directMethodRequest, ct)
                     .ConfigureAwait(false);
             }
-            else {
+            else
+            {
                 response = await serviceClient.DirectMethods
                     .InvokeAsync(deviceId, moduleId, directMethodRequest, ct)
                     .ConfigureAwait(false);

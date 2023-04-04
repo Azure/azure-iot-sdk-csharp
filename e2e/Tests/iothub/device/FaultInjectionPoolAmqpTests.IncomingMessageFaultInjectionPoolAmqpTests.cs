@@ -13,7 +13,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 {
     public partial class FaultInjectionPoolAmqpTests
     {
-        private readonly string MessageReceive_DevicePrefix = $"{nameof(FaultInjectionPoolAmqpTests)}.MessagaeReceive";
+        private readonly string IncomingMessage_DevicePrefix = $"{nameof(FaultInjectionPoolAmqpTests)}.IncomingMessaage";
 
         [DataTestMethod]
         [TestCategory("LongRunning")]
@@ -102,7 +102,9 @@ namespace Microsoft.Azure.Devices.E2ETests
                 testDeviceCallbackHandler.ExpectedOutgoingMessage = msg;
                 
                 await serviceClient.Messages.SendAsync(testDevice.Id, msg, ct).ConfigureAwait(false);
+                VerboseTestLogger.WriteLine($"C2D message sent for {testDevice.Id}");
                 await testDeviceCallbackHandler.WaitForIncomingMessageCallbackAsync(ct).ConfigureAwait(false);
+                VerboseTestLogger.WriteLine($"C2D message received for {testDevice.Id}");
             }
 
             async Task CleanupOperationAsync(List<TestDevice> _, List<TestDeviceCallbackHandler> testDeviceCallbackHandlers, CancellationToken ct)
@@ -112,7 +114,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             await FaultInjectionPoolingOverAmqp
                 .TestFaultInjectionPoolAmqpAsync(
-                    MessageReceive_DevicePrefix,
+                    IncomingMessage_DevicePrefix,
                     transportSettings,
                     null,
                     poolSize,

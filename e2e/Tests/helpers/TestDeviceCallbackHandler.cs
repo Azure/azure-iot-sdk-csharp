@@ -179,12 +179,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                         receivedMessageProperties.Value.Should().Be(expectedMessageProperties.Value, $"The value of \"property1\" did not match for device {_testDeviceId}");
                     }
 
-                    VerboseTestLogger.WriteLine($"{nameof(SetIncomingMessageCallbackHandlerAndCompleteMessageAsync)}: DeviceClient completed message with Id: {receivedMessage.MessageId}.");
+                    VerboseTestLogger.WriteLine($"{nameof(SetIncomingMessageCallbackHandlerAndCompleteMessageAsync)}: Device {_testDeviceId} completed message with Id: {receivedMessage.MessageId}.");
                     return Task.FromResult(MessageAcknowledgement.Complete);
                 }
                 catch (Exception ex)
                 {
-                    VerboseTestLogger.WriteLine($"{nameof(SetIncomingMessageCallbackHandlerAndCompleteMessageAsync)}: Error during DeviceClient receive message callback: {ex}.");
+                    VerboseTestLogger.WriteLine($"{nameof(SetIncomingMessageCallbackHandlerAndCompleteMessageAsync)}: Error during device {_testDeviceId} receive message callback: {ex}.");
                     _receiveMessageExceptionDispatch = ExceptionDispatchInfo.Capture(ex);
 
                     return Task.FromResult(MessageAcknowledgement.Abandon);

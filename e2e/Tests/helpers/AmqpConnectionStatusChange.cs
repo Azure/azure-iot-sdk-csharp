@@ -11,11 +11,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
 
         public AmqpConnectionStatusChange(string deviceId)
         {
-            ConnectionStatusChangeCount = 0;
             _deviceId = deviceId;
         }
 
-        public int ConnectionStatusChangeCount { get; set; }
+        public int ConnectionStatusChangeCount { get; private set; }
 
         public void ConnectionStatusChangeHandler(ConnectionStatusInfo connectionStatusInfo)
         {

@@ -80,10 +80,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                 int countBeforeFaultInjection = amqpConnectionStatuses.First().ConnectionStatusChangeCount;
 
                 // Inject the fault into device 0
-                VerboseTestLogger.WriteLine($"{nameof(FaultInjectionPoolingOverAmqp)}: {testDevices.First().Id} Requesting fault injection type={faultType} reason={reason}, delay={faultDelay}, duration={faultDuration}");
+                int deviceIndexToFault = 0;
+                VerboseTestLogger.WriteLine($"{nameof(FaultInjectionPoolingOverAmqp)}: {testDevices[deviceIndexToFault].Id} Requesting fault injection type={faultType} reason={reason}, delay={faultDelay}, duration={faultDuration}");
                 faultInjectionDuration.Start();
-                TelemetryMessage faultInjectionMessage = FaultInjection.ComposeErrorInjectionProperties(faultType, reason, faultDelay, faultDuration);
-                await testDevices.First().DeviceClient.SendTelemetryAsync(faultInjectionMessage, ct).ConfigureAwait(false);
+                await FaultInjection.ActivateFaultInjectionAsync(amqpTransportSettings, faultType, reason, faultDelay, faultDuration, testDevices[deviceIndexToFault].DeviceClient, ct).ConfigureAwait(false);
 
                 VerboseTestLogger.WriteLine($"{nameof(FaultInjection)}: Waiting for fault injection to be active: {faultDelay} seconds.");
                 await Task.Delay(faultDelay, ct).ConfigureAwait(false);
@@ -92,13 +92,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                 if (FaultInjection.FaultShouldDisconnect(faultType))
                 {
                     VerboseTestLogger.WriteLine($"{nameof(FaultInjectionPoolingOverAmqp)}: Confirming fault injection has been actived.");
-                    // Check that service issued the fault to the faulting device [device 0]
+                    // Check that service issued the fault to the faulting device
                     bool isFaulted = false;
 
                     var connectionChangeWaitDuration = Stopwatch.StartNew();
                     while (connectionChangeWaitDuration.Elapsed < FaultInjection.LatencyTimeBuffer)
                     {
-                        if (amqpConnectionStatuses.First().ConnectionStatusChangeCount > countBeforeFaultInjection)
+                        if (amqpConnectionStatuses[deviceIndexToFault].ConnectionStatusChangeCount > countBeforeFaultInjection)
                         {
                             isFaulted = true;
                             break;
@@ -147,7 +147,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                     // Perform the test operation for all devices
                     for (int i = 0; i < devicesCount; i++)
                     {
-                        VerboseTestLogger.WriteLine($"{nameof(FaultInjectionPoolingOverAmqp)}: Performing test operation for device {i}.");
+                        VerboseTestLogger.WriteLine($"{nameof(FaultInjectionPoolingOverAmqp)}: Performing test operation for device {testDevices[i].Id}.");
                         operations.Add(testOperation(testDevices[i], testDeviceCallbackHandlers[i], ct));
                     }
                     await Task.WhenAll(operations).ConfigureAwait(false);
@@ -169,7 +169,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
             }
             finally
             {
-                await cleanupOperation(testDevices, testDeviceCallbackHandlers, ct).ConfigureAwait(false);
+                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+                await cleanupOperation(testDevices, testDeviceCallbackHandlers, cts.Token).ConfigureAwait(false);
 
                 testDeviceCallbackHandlers.ForEach(x => x.Dispose());
                 await Task.WhenAll(testDevices.Select(x => x.DisposeAsync().AsTask())).ConfigureAwait(false);
@@ -182,7 +183,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                     if (timeToFinishFaultInjection > TimeSpan.Zero)
                     {
                         VerboseTestLogger.WriteLine($"{nameof(FaultInjection)}: Waiting {timeToFinishFaultInjection} to ensure that FaultInjection duration passed.");
-                        await Task.Delay(timeToFinishFaultInjection, ct).ConfigureAwait(false);
+                        await Task.Delay(timeToFinishFaultInjection, cts.Token).ConfigureAwait(false);
                     }
                 }
             }

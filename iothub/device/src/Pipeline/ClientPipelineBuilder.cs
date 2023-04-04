@@ -6,6 +6,11 @@ using System.Collections.Generic;
 
 namespace Microsoft.Azure.Devices.Client
 {
+    /// <summary>
+    /// The client uses a decorator pattern of tasks that act on AMQP and MQTT requests
+    /// which bring functionality such as checking for and throwing if the client is disposed,
+    /// retry logic, etc.
+    /// </summary>
     internal sealed class ClientPipelineBuilder
     {
         private readonly List<ContinuationFactory<IDelegatingHandler>> _pipeline = new();

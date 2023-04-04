@@ -393,8 +393,15 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                             IotHubClientErrorCode.NetworkErrors);
                     }
                 }
-                catch (MqttCommunicationTimedOutException ex) when (!cancellationToken.IsCancellationRequested)
+                catch (MqttCommunicationTimedOutException ex)
                 {
+                    if (cancellationToken.IsCancellationRequested)
+                    {
+                        // MQTTNet throws MqttCommunicationTimedOutException instead of OperationCanceledException
+                        // when the cancellation token requests cancellation.
+                        throw new OperationCanceledException(MessageTimedOutErrorMessage, ex);
+                    }
+
                     // This execption may be thrown even if cancellation has not been requested yet.
                     // This case is treated as a timeout error rather than an OperationCanceledException
                     throw new IotHubClientException(
@@ -402,23 +409,31 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                         IotHubClientErrorCode.Timeout,
                         ex);
                 }
-                catch (MqttCommunicationTimedOutException ex) when (cancellationToken.IsCancellationRequested)
-                {
-                    // MQTTNet throws MqttCommunicationTimedOutException instead of OperationCanceledException
-                    // when the cancellation token requests cancellation.
-                    throw new OperationCanceledException(MessageTimedOutErrorMessage, ex);
-                }
             }
-            catch (Exception ex) when (ex is not IotHubClientException && ex is not InvalidOperationException && ex is not OperationCanceledException)
+            catch (Exception ex) when (ex is not IotHubClientException && ex is not InvalidOperationException)
             {
+                if (ex is OperationCanceledException
+                    && cancellationToken.IsCancellationRequested)
+                {
+                    throw;
+                }
+
+                if (message.Properties.ContainsKey("AzIoTHub_FaultOperationType"))
+                {
+                    // When fualt injection causes this operation to fail, the MQTT layer throws a TaskCanceledException.
+                    // Normally, we don't want that to get to the device app, but for fault injection tests we prefer
+                    // an exception that is not retryable so we'll let this exception slip through.
+                    throw;
+                }
+
                 throw new IotHubClientException(
-                    $"Failed to send message with message Id: {message.MessageId}.",
+                    $"Failed to send message with message Id: [{message.MessageId}].",
                     IotHubClientErrorCode.NetworkErrors,
                     ex);
             }
         }
 
-        public override Task SendTelemetryBatchAsync(IEnumerable<TelemetryMessage> messages, CancellationToken cancellationToken)
+        public override Task SendTelemetryAsync(IEnumerable<TelemetryMessage> messages, CancellationToken cancellationToken)
         {
             throw new InvalidOperationException("This operation is not supported over MQTT. Please refer to the API comments for additional details.");
         }
