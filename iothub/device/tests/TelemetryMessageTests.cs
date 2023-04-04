@@ -21,6 +21,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             msg.GetPayloadObjectBytes().Should().BeEquivalentTo(DefaultPayloadConvention.Instance.GetObjectBytes(payloadString));
         }
+
         [TestMethod]
         public void ConstructorTakingBytePayloadTest()
         {
