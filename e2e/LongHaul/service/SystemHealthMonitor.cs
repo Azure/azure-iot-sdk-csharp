@@ -5,7 +5,6 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Mash.Logging;
-using Microsoft.ApplicationInsights.Channel;
 
 namespace Microsoft.Azure.Devices.LongHaul.Service
 {
