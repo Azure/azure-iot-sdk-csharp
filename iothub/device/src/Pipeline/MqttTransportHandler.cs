@@ -272,7 +272,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             try
             {
-                string clientId = string.IsNullOrWhiteSpace(_moduleId) ? _deviceId : $"{_deviceId}/{_moduleId}";
+                string clientId = string.IsNullOrWhiteSpace(_moduleId)
+                    ? _deviceId
+                    : $"{_deviceId}/{_moduleId}";
                 _mqttClientOptionsBuilder.WithClientId(clientId);
 
                 string username = $"{_hostName}/{clientId}/?{ClientApiVersionHelper.ApiVersionQueryStringLatest}&DeviceClientType={Uri.EscapeDataString(_productInfo.ToString())}";
