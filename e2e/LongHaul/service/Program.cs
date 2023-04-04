@@ -106,7 +106,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
 
         private static int PortFilter(Parameters parameters)
         {
-            return parameters.TransportProtocol == IotHubTransportProtocol.WebSocket? 443 : 5671;
+            return parameters.TransportProtocol == IotHubTransportProtocol.WebSocket ? 443 : 5671;
         }
 
         private static Logger InitializeLogging(Parameters parameters)

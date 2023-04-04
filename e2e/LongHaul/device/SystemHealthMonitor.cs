@@ -1,6 +1,8 @@
 ﻿using Mash.Logging;
+using Microsoft.Diagnostics.Runtime;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -52,10 +54,10 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
         internal static SystemHealthTelemetry BuildAndLogSystemHealth(Logger logger)
         {
             var telemetry = new SystemHealthTelemetry(s_port);
-            logger.Metric(nameof(telemetry.totalAssignedMemoryBytes), telemetry.totalAssignedMemoryBytes);
-            logger.Metric(nameof(telemetry.processCpu), telemetry.processCpu);
-            logger.Metric(nameof(telemetry.totalGCBytes), telemetry.totalGCBytes);
-            logger.Metric(nameof(telemetry.tcpConnections), telemetry.tcpConnections);
+            logger.Metric(nameof(telemetry.TotalAssignedMemoryBytes), telemetry.TotalAssignedMemoryBytes);
+            logger.Metric(nameof(telemetry.ProcessCpu), telemetry.ProcessCpu);
+            logger.Metric(nameof(telemetry.TotalGCBytes), telemetry.TotalGCBytes);
+            logger.Metric(nameof(telemetry.TcpConnections), telemetry.TcpConnections);
 
             return telemetry;
         }

@@ -39,10 +39,10 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
         internal static SystemHealthMessage BuildAndLogSystemHealth(Logger logger)
         {
             var message = new SystemHealthMessage(s_port);
-            logger.Metric(nameof(message.totalAssignedMemoryBytes), message.totalAssignedMemoryBytes);
-            logger.Metric(nameof(message.processCpu), message.processCpu);
-            logger.Metric(nameof(message.totalGCBytes), message.totalGCBytes);
-            logger.Metric(nameof(message.tcpConnections), message.tcpConnections);
+            logger.Metric(nameof(message.TotalAssignedMemoryBytes), message.TotalAssignedMemoryBytes);
+            logger.Metric(nameof(message.ProcessCpu), message.ProcessCpu);
+            logger.Metric(nameof(message.TotalGCBytes), message.TotalGCBytes);
+            logger.Metric(nameof(message.TcpConnections), message.TcpConnections);
 
             return message;
         }

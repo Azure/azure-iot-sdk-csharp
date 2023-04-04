@@ -4,7 +4,6 @@
 using System;
 using System.Diagnostics;
 using System.Net.NetworkInformation;
-using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices.LongHaul.Service
 {
@@ -12,18 +11,18 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
     {
         public SystemHealthMessage(int port) 
         {
-            s_tcpPortFilter = port;
+            TcpPortFilter = port;
         }
 
         private static readonly Process s_currentProcess = Process.GetCurrentProcess();
-        public static long s_tcpPortFilter;
-        public double processCpu { get; set; } = s_currentProcess.TotalProcessorTime.TotalMilliseconds / Environment.ProcessorCount;
-        public long totalAssignedMemoryBytes { get; set; } = s_currentProcess.WorkingSet64;
-        public long totalGCBytes { get; set; } = GC.GetTotalMemory(false);
-        public long tcpConnections { get; set; } = updateTCPConnections();
+        public static long TcpPortFilter;
+        public double ProcessCpu { get; set; } = s_currentProcess.TotalProcessorTime.TotalMilliseconds / Environment.ProcessorCount;
+        public long TotalAssignedMemoryBytes { get; set; } = s_currentProcess.WorkingSet64;
+        public long TotalGCBytes { get; set; } = GC.GetTotalMemory(false);
+        public long TcpConnections { get; set; } = UpdateTCPConnections();
 
 
-        private static long updateTCPConnections()
+        private static long UpdateTCPConnections()
         {
             IPGlobalProperties properties = IPGlobalProperties.GetIPGlobalProperties();
             TcpConnectionInformation[] connections = properties.GetActiveTcpConnections();
@@ -31,7 +30,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
             long n = 0;
             foreach (TcpConnectionInformation conn in connections)
             {
-                if (s_tcpPortFilter != 0 && conn.RemoteEndPoint.Port != s_tcpPortFilter)
+                if (TcpPortFilter != 0 && conn.RemoteEndPoint.Port != TcpPortFilter)
                     continue;
                 if (conn.State == TcpState.Established)
                     n++;
