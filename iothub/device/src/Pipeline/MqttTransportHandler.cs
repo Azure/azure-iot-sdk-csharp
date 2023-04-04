@@ -630,7 +630,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, cancellationToken, nameof(DisableReceiveMessageAsync);
+                    Logging.Exit(this, cancellationToken, nameof(DisableReceiveMessageAsync));
             }
         }
 

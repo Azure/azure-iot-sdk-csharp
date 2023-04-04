@@ -197,7 +197,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
             await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(nameof(IotHubDeviceClient_SendTelemetryAsync_ThrowsWithBulkOverMqtt));
             IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(new IotHubClientMqttSettings(IotHubClientTransportProtocol.Tcp)));
-            await testDevice.OpenWithRetryAsync().ConfigureAwait(false);
+            await testDevice.OpenWithRetryAsync(CancellationToken.None).ConfigureAwait(false);
 
             // act
             Func<Task> act = async () => await deviceClient.SendTelemetryAsync(new[] { new TelemetryMessage() }).ConfigureAwait(false);
