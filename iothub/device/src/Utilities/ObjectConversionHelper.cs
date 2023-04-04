@@ -69,6 +69,7 @@ namespace Microsoft.Azure.Devices.Client
                 return false;
             }
 
+            // This call requires parameter labels to avoid confusion with an overload.
             return double.TryParse(
                 s: Convert.ToString(
                     expression,
