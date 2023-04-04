@@ -1,7 +1,6 @@
-﻿using Azure.Storage.Blobs.Models;
-using Azure.Storage.Blobs.Specialized;
-using Mash.Logging;
-using Microsoft.Azure.Devices.Client;
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -12,6 +11,10 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure.Storage.Blobs.Models;
+using Azure.Storage.Blobs.Specialized;
+using Mash.Logging;
+using Microsoft.Azure.Devices.Client;
 using static Microsoft.Azure.Devices.LongHaul.Device.LoggingConstants;
 
 namespace Microsoft.Azure.Devices.LongHaul.Device
@@ -158,7 +161,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
                     {
                         { "TotalTelemetryMessagesSent", _totalTelemetryMessagesSent },
                     };
-                    await _deviceClient.UpdateReportedPropertiesAsync(reported ,ct).ConfigureAwait(false);
+                    await _deviceClient.UpdateReportedPropertiesAsync(reported, ct).ConfigureAwait(false);
 
                     ++_totalTwinUpdatesReported;
                     _logger.Metric(TotalTwinUpdatesReported, _totalTwinUpdatesReported);

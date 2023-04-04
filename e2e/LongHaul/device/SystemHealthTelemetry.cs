@@ -1,14 +1,15 @@
-﻿using System;
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
 using System.Diagnostics;
-using System.Linq;
 using System.Net.NetworkInformation;
-using Microsoft.Diagnostics.Runtime;
 
 namespace Microsoft.Azure.Devices.LongHaul.Device
 {
     internal class SystemHealthTelemetry : TelemetryBase
     {
-        
+
 
         private static readonly Process s_currentProcess = Process.GetCurrentProcess();
         public static long TcpPortFilter;
@@ -33,7 +34,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
             {
                 if (TcpPortFilter != 0 && conn.RemoteEndPoint.Port != TcpPortFilter)
                     continue;
-                if (conn.State == TcpState.Established) 
+                if (conn.State == TcpState.Established)
                     n++;
             }
             return n;
