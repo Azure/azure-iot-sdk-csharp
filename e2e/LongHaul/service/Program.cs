@@ -84,7 +84,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                         systemHealthMonitor.RunAsync(cancellationTokenSource.Token),
                         iotHub.MonitorConnectedDevicesAsync(cancellationTokenSource.Token),
                         iotHub.ReceiveMessageFeedbacksAsync(cancellationTokenSource.Token),
-                        iotHub.ReceiveFileUploadAsync(cancellationTokenSource.Token),
+                        iotHub.ReceiveFileUploadNotificationsAsync(cancellationTokenSource.Token),
                         hubEvents.RunAsync(cancellationTokenSource.Token))
                     .ConfigureAwait(false);
             }
