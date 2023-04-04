@@ -2,7 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.LongHaul.Service
 {
@@ -11,13 +11,13 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
     /// </summary>
     internal class CustomDirectMethodPayload
     {
-        [JsonPropertyName("randomId")]
+        [JsonProperty("randomId")]
         public Guid RandomId { get; set; }
 
-        [JsonPropertyName("currentTimeUtc")]
+        [JsonProperty("currentTimeUtc")]
         public DateTimeOffset CurrentTimeUtc { get; set; } = DateTimeOffset.UtcNow;
 
-        [JsonPropertyName("methodCallsCount")]
+        [JsonProperty("methodCallsCount")]
         public long MethodCallsCount { get; set; }
     }
 }
