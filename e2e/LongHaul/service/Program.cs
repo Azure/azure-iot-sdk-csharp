@@ -57,6 +57,10 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
 
             using var iotHub = new IotHub(s_logger, parameters);
 
+            s_logger.Trace(
+                $"The transport protocol [{parameters.TransportProtocol}] is applied into the service app.",
+                TraceSeverity.Verbose);
+
             // Log system health after initializing hub
             SystemHealthMonitor.BuildAndLogSystemHealth(s_logger);
             iotHub.Initialize();

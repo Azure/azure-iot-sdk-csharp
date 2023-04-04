@@ -57,13 +57,16 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
                 iotHub.TelemetryUserProperties.Add(prop.Key, prop.Value);
             }
 
+            s_logger.Trace(
+                $"The transport protocol [{parameters.Transport}/{parameters.TransportProtocol}] is applied into the device app.",
+                TraceSeverity.Verbose);
+
             // Log system health after initializing hub
             SystemHealthMonitor.BuildAndLogSystemHealth(s_logger);
             await iotHub.InitializeAsync().ConfigureAwait(false);
 
             // Log system health after opening connection to hub
             SystemHealthMonitor.BuildAndLogSystemHealth(s_logger);
-
 
             // Set up a condition to quit the sample
             Console.WriteLine("Press CTRL+C to exit");
@@ -75,7 +78,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
                 Console.WriteLine("Exiting ...");
             };
 
-            await iotHub.SetPropertiesAsync(LoggingConstants.RunId, _runId, cancellationTokenSource.Token).ConfigureAwait(false);
+            await iotHub.SetPropertiesAsync(RunId, _runId, cancellationTokenSource.Token).ConfigureAwait(false);
 
             var systemHealthMonitor = new SystemHealthMonitor(iotHub, s_logger.Clone());
 
