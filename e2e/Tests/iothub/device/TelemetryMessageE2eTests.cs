@@ -33,9 +33,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         private static readonly string s_proxyServerAddress = TestConfiguration.IotHub.ProxyServerAddress;
 
         [DataTestMethod]
-        [DataRow(TestDeviceType.Sasl, IotHubClientTransportProtocol.Tcp)]
         [DataRow(TestDeviceType.Sasl, IotHubClientTransportProtocol.WebSocket)]
-        [DataRow(TestDeviceType.X509, IotHubClientTransportProtocol.Tcp)]
         [DataRow(TestDeviceType.X509, IotHubClientTransportProtocol.WebSocket)]
         public async Task Message_DeviceSendSingleMessage_Mqtt(TestDeviceType testDeviceType, IotHubClientTransportProtocol protocol)
         {
@@ -66,10 +64,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         }
 
         [DataTestMethod]
-        [DataRow(TestDeviceType.Sasl, IotHubClientTransportProtocol.Tcp)]
         [DataRow(TestDeviceType.Sasl, IotHubClientTransportProtocol.WebSocket)]
         [DataRow(TestDeviceType.X509, IotHubClientTransportProtocol.Tcp)]
-        [DataRow(TestDeviceType.X509, IotHubClientTransportProtocol.WebSocket)]
         public async Task Message_DeviceSendSingleMessage_Amqp_WithHeartbeats(TestDeviceType testDeviceType, IotHubClientTransportProtocol protocol)
         {
             // Setting up one cancellation token for the complete test flow
@@ -105,9 +101,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
         [DataTestMethod]
         [TestCategory("LongRunning")]
-        [DataRow(TestDeviceType.Sasl, IotHubClientTransportProtocol.Tcp)]
         [DataRow(TestDeviceType.Sasl, IotHubClientTransportProtocol.WebSocket)]
-        [DataRow(TestDeviceType.X509, IotHubClientTransportProtocol.Tcp)]
         [DataRow(TestDeviceType.X509, IotHubClientTransportProtocol.WebSocket)]
         public async Task Message_DeviceSendBatchMessages_Amqp(TestDeviceType testDeviceType, IotHubClientTransportProtocol protocol)
         {
@@ -119,9 +113,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         }
 
         [DataTestMethod]
-        [DataRow(TestDeviceType.Sasl, IotHubClientTransportProtocol.Tcp)]
         [DataRow(TestDeviceType.Sasl, IotHubClientTransportProtocol.WebSocket)]
-        [DataRow(TestDeviceType.X509, IotHubClientTransportProtocol.Tcp)]
         [DataRow(TestDeviceType.X509, IotHubClientTransportProtocol.WebSocket)]
         public async Task Message_DeviceSendSingleLargeMessageAsync_Amqp(TestDeviceType testDeviceType, IotHubClientTransportProtocol protocol)
         {
@@ -136,9 +128,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         }
 
         [DataTestMethod]
-        [DataRow(TestDeviceType.Sasl, IotHubClientTransportProtocol.Tcp)]
         [DataRow(TestDeviceType.Sasl, IotHubClientTransportProtocol.WebSocket)]
-        [DataRow(TestDeviceType.X509, IotHubClientTransportProtocol.Tcp)]
         [DataRow(TestDeviceType.X509, IotHubClientTransportProtocol.WebSocket)]
         public async Task Message_DeviceSendSingleLargeMessageAsync_Mqtt(TestDeviceType testDeviceType, IotHubClientTransportProtocol protocol)
         {

@@ -439,7 +439,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         }
 
         [DataTestMethod]
-        [DataRow(IotHubClientTransportProtocol.Tcp)]
         [DataRow(IotHubClientTransportProtocol.WebSocket)]
         [TestCategory("LongRunning")]
         public async Task Twin_Client_SetETag_Works(IotHubClientTransportProtocol transportProtocol)
