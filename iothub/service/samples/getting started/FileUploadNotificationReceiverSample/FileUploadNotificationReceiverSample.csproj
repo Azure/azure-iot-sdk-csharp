@@ -4,9 +4,9 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>net6.0</TargetFramework>
     <LangVersion>9.0</LangVersion>
-	<IsPackable>false</IsPackable>
+    <IsPackable>false</IsPackable>
 
-	  <!--
+    <!--
     NU5104: Warning for using pre-release nugets can be ignored since this sample 
     can't target a main release yet.
 
