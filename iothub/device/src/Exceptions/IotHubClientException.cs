@@ -98,7 +98,9 @@ namespace Microsoft.Azure.Devices.Client
         /// <inheritdoc/>
         public override string ToString()
         {
-            return $"{Message}\nError code: {ErrorCode}\n{StackTrace}n";
+            return $"Message: {Message}\n" +
+                   $"ErrorCode: {ErrorCode}, TrackingId: {TrackingId}, IsTransient: {IsTransient}\n" +
+                   $"StackTrace: {StackTrace}";
         }
 
         private static bool DetermineIfTransient(IotHubClientErrorCode errorCode)

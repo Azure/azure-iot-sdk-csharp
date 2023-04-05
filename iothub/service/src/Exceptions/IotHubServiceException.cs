@@ -104,6 +104,14 @@ namespace Microsoft.Azure.Devices
             info.AddValue(TrackingIdValueSerializationStoreName, TrackingId);
         }
 
+        /// <inheritdoc/>
+        public override string ToString()
+        {
+            return $"Message: {Message}\n" +
+                   $"ErrorCode: {ErrorCode}, TrackingId: {TrackingId}, IsTransient: {IsTransient}\n" +
+                   $"StackTrace: {StackTrace}";
+        }
+
         private static bool DetermineIfTransient(HttpStatusCode statusCode, IotHubServiceErrorCode errorCode)
         {
             return errorCode switch

@@ -124,10 +124,14 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
                 }
 
                 // If not connected, skip the work below this round
-                if (!IsConnected && !loggedDisconnection)
+                if (!IsConnected)
                 {
-                    loggedDisconnection = true;
-                    _logger.Trace($"Waiting for connection before sending telemetry", TraceSeverity.Warning);
+                    if (!loggedDisconnection)
+                    {
+                        loggedDisconnection = true;
+                        _logger.Trace($"Waiting for connection before sending telemetry", TraceSeverity.Warning);
+                    }
+                    continue;
                 }
 
                 // Make get a message to send, unless we're retrying a previous message
@@ -167,7 +171,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
                     ++_totalTwinUpdatesReported;
                     _logger.Metric(TotalTwinUpdatesReported, _totalTwinUpdatesReported);
                 }
-                else if(!loggedDisconnection)
+                else if (!loggedDisconnection)
                 {
                     loggedDisconnection = true;
                     _logger.Trace($"Waiting for connection before any other operations.", TraceSeverity.Warning);
