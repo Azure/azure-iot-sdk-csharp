@@ -137,5 +137,13 @@ namespace Microsoft.Azure.Devices.Client.Tests
             Func<Task> op = async () => await s_client.CompleteFileUploadAsync(new FileUploadCompletionNotification("correlationId", true), cts.Token).ConfigureAwait(false);
             await op.Should().ThrowAsync<ObjectDisposedException>().ConfigureAwait(false);
         }
+
+        [TestMethod]
+        public async Task IotHubDeviceClient_DisposeAsync_CanBeCalledTwice()
+        {
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(1));
+            Func<Task> op = async () => await s_client.DisposeAsync().ConfigureAwait(false);
+            await op.Should().NotThrowAsync().ConfigureAwait(false);
+        }
     }
 }

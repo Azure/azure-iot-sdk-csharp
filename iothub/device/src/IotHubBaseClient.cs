@@ -448,6 +448,11 @@ namespace Microsoft.Azure.Devices.Client
 
             try
             {
+                if (_isDisposed)
+                {
+                    return;
+                }
+
                 await CloseAsync(CancellationToken.None).ConfigureAwait(false);
                 Dispose(true);
                 GC.SuppressFinalize(this);
