@@ -8,12 +8,12 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.Client.Transport
 {
-    internal abstract class DefaultDelegatingHandler : IDelegatingHandler
+    internal class DefaultDelegatingHandler : IDelegatingHandler
     {
         private volatile IDelegatingHandler _nextHandler;
         protected volatile bool _isDisposed;
 
-        protected DefaultDelegatingHandler(PipelineContext context, IDelegatingHandler nextHandler)
+        protected internal DefaultDelegatingHandler(PipelineContext context, IDelegatingHandler nextHandler)
         {
             Context = context;
             _nextHandler = nextHandler;
