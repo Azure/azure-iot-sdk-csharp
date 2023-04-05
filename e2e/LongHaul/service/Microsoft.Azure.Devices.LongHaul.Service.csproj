@@ -6,6 +6,7 @@
     <EnableNETAnalyzers>False</EnableNETAnalyzers>
     <AnalysisLevel>latest-recommended</AnalysisLevel>
     <LangVersion>9.0</LangVersion>
+    <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>
