@@ -18,10 +18,9 @@ namespace Microsoft.Azure.Devices.Client
 
             try
             {
-                // If the cannot be cast to <T> directly we need to try to convert it using the serializer.
-                // If it can be successfully converted, go ahead and return it.
-                string objectAsString = objectToCastOrConvert as string ?? objectToCastOrConvert.ToString();
-                value = payloadConvention.GetObject<T>(objectAsString);
+                // We'll serialize the object back to JSON using the user's configured payload convention
+                // and then to the type of their choosing with the same payload convention.
+                value = payloadConvention.GetObject<T>(payloadConvention.GetObjectBytes(objectToCastOrConvert));
                 return true;
             }
             catch
@@ -53,7 +52,7 @@ namespace Microsoft.Azure.Devices.Client
             {
                 try
                 {
-                    result = (T)Convert.ChangeType(input, typeof(T), CultureInfo.InvariantCulture);
+                    result = (T)Convert.ChangeType(input.ToString(), typeof(T), CultureInfo.InvariantCulture);
                     return true;
                 }
                 catch { }
@@ -70,13 +69,14 @@ namespace Microsoft.Azure.Devices.Client
                 return false;
             }
 
+            // This call requires parameter labels to avoid confusion with an overload.
             return double.TryParse(
-                Convert.ToString(
+                s: Convert.ToString(
                     expression,
                     CultureInfo.InvariantCulture),
-                NumberStyles.Any,
-                NumberFormatInfo.InvariantInfo,
-                out _);
+                style: NumberStyles.Any,
+                provider: NumberFormatInfo.InvariantInfo,
+                result: out _);
         }
     }
 }
