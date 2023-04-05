@@ -209,8 +209,6 @@ This table shows previous LTS releases and end dates.
 | Release                                                                                                                        | LTS Start Date | Maintenance End Date |
 | :----------------------------------------------------------------------------------------------------------------------------: | :------------: | :------------------: |
 | [2022-06-07](https://github.com/Azure/azure-iot-sdk-csharp/releases/tag/lts_2021-3-18_patch6) <sub>patch 6 of 2021-03-18</sub> | 2021-03-18     | current              |
-| [2020-9-23](https://github.com/Azure/azure-iot-sdk-csharp/releases/tag/lts_2020-8-19_patch1) <sub>patch 1 of 2020-08-19</sub>  | 2020-08-19     | 2021-08-19           |
-| [2020-4-3](https://github.com/Azure/azure-iot-sdk-csharp/releases/tag/lts_2020-1-31_patch1) <sub>patch 1 of 2020-01-31</sub>   | 2020-01-31     | 2021-01-30           |
 
 ---
 
