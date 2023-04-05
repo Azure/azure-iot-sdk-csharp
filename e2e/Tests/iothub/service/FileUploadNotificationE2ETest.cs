@@ -34,6 +34,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         private readonly AcknowledgementType _defaultAcknowledgementType = AcknowledgementType.Abandon;
 
         [TestMethod]
+        [TestCategory("Flaky")]    // The test times out intermittently on the PR gates.
         [DataRow(IotHubTransportProtocol.Tcp, 1, false)]
         [DataRow(IotHubTransportProtocol.Tcp, 2, false)]
         [DataRow(IotHubTransportProtocol.Tcp, 1, true)]

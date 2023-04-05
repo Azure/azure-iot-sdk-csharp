@@ -4,13 +4,11 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using FluentAssertions;
 using Microsoft.Azure.Devices.Client.Transport;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using FluentAssertions;
 using Moq;
 
 namespace Microsoft.Azure.Devices.Client.Test
@@ -22,12 +20,10 @@ namespace Microsoft.Azure.Devices.Client.Test
         public const string TestExceptionMessage = "Test exception";
 
         [TestMethod]
-        public async Task RetryDelegatingHandler_OpenAsyncRetries()
+        public async Task RetryDelegatingHandler_OpenAsync_Retries()
         {
             // arrange
             int callCounter = 0;
-
-            var ct = CancellationToken.None;
             var contextMock = new PipelineContext
             {
                 RetryPolicy = new IotHubClientTestRetryPolicy(2),
@@ -37,7 +33,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             var nextHandlerMock = new Mock<IDelegatingHandler>();
 
             nextHandlerMock
-                .Setup(x => x.OpenAsync(ct))
+                .Setup(x => x.OpenAsync(It.IsAny<CancellationToken>()))
                 .Returns(() =>
                     {
                         return ++callCounter == 1
@@ -54,14 +50,14 @@ namespace Microsoft.Azure.Devices.Client.Test
             using var retryDelegatingHandler = new RetryDelegatingHandler(contextMock, nextHandlerMock.Object);
 
             // act
-            await retryDelegatingHandler.OpenAsync(ct).ConfigureAwait(false);
+            await retryDelegatingHandler.OpenAsync(CancellationToken.None).ConfigureAwait(false);
 
             // assert
             callCounter.Should().Be(2);
         }
 
         [TestMethod]
-        public async Task RetryDelegatingHandler_SendTelemetryAsyncRetries()
+        public async Task RetryDelegatingHandler_SendTelemetryAsync_Retries()
         {
             // arrange
             int callCounter = 0;
@@ -105,7 +101,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public async Task RetryDelegatingHandler_DoesNotRetryOnNotSupportedException()
+        public async Task RetryDelegatingHandler_DoesNotRetry_OnNotSupportedException()
         {
             // arrange
             int callCounter = 0;
@@ -144,7 +140,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public async Task RetryOneMessageHasBeenTouchedTransientExceptionOccuredSuccess()
+        public async Task RetryDelegatingHandler_OneMessageHasBeenTouched_TransientExceptionOccured_RetriesSuccessfully()
         {
             // arrange
             int callCounter = 0;
@@ -186,7 +182,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public async Task RetryMessageWithSeekableStreamHasBeenReadTransientExceptionOccuredThrows()
+        public async Task RetryDelegatingHandler_NonTransientErrorThrown_Throws()
         {
             // arrange
             int callCounter = 0;
@@ -197,42 +193,8 @@ namespace Microsoft.Azure.Devices.Client.Test
                 ConnectionStatusChangeHandler = (connectionStatusInfo) => { }
             };
             var nextHandlerMock = new Mock<IDelegatingHandler>();
-            var message = new TelemetryMessage(new byte[] { 1, 2, 3 });
-            IEnumerable<TelemetryMessage> messages = new[] { message };
-
             nextHandlerMock
                 .Setup(x => x.OpenAsync(It.IsAny<CancellationToken>()))
-                .Returns(() => Task.CompletedTask);
-            nextHandlerMock
-                .Setup(x => x.SendTelemetryAsync(messages, It.IsAny<CancellationToken>()))
-                .Returns(() => ++callCounter == 1
-                            ? throw new IotHubClientException(TestExceptionMessage) { IsTransient = true }
-                            : Task.CompletedTask);
-
-            using var retryDelegatingHandler = new RetryDelegatingHandler(contextMock, nextHandlerMock.Object);
-
-            // act
-            await retryDelegatingHandler.OpenAsync(CancellationToken.None).ConfigureAwait(false);
-            await retryDelegatingHandler.SendTelemetryAsync(messages, CancellationToken.None).ConfigureAwait(false);
-
-            // assert
-            callCounter.Should().Be(2);
-        }
-
-        [TestMethod]
-        public async Task RetryNonTransientErrorThrownThrows()
-        {
-            // arrange
-            int callCounter = 0;
-
-            var contextMock = new PipelineContext
-            {
-                RetryPolicy = new IotHubClientTestRetryPolicy(2),
-                ConnectionStatusChangeHandler = (connectionStatusInfo) => { }
-            };
-            var nextHandlerMock = new Mock<IDelegatingHandler>();
-            nextHandlerMock
-                .Setup(x => x.OpenAsync(CancellationToken.None))
                 .Returns(() =>
                 {
                     if (++callCounter == 1)
@@ -256,7 +218,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public async Task DeviceNotFoundExceptionReturnsDeviceDisabledStatus()
+        public async Task RetryDelegatingHandler_DeviceNotFoundException_ReturnsDeviceDisabledStatus()
         {
             // arrange
             var contextMock = new PipelineContext
@@ -295,7 +257,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public async Task OperationCanceledExceptionThrownAfterNumberOfRetriesThrows()
+        public async Task RetryDelegatingHandler_OperationCanceledExceptionThrownAfterNumberOfRetries_Throws()
         {
             // arrange
             using var cts = new CancellationTokenSource(100);
@@ -306,7 +268,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             };
             var nextHandlerMock = new Mock<IDelegatingHandler>();
             nextHandlerMock
-                .Setup(x => x.OpenAsync(cts.Token))
+                .Setup(x => x.OpenAsync(It.IsAny<CancellationToken>()))
                 .Returns(() => throw new IotHubClientException(TestExceptionMessage)
                 {
                     IsTransient = true,
@@ -323,7 +285,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public async Task RetryCancellationTokenCanceledOpen()
+        public async Task RetryDelegatingHandler_CancellationTokenCanceled_Open_Throws()
         {
             // arrange
             var contextMock = new PipelineContext
@@ -348,7 +310,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public async Task RetryCancellationTokenCanceledSendEvent()
+        public async Task RetryDelegatingHandler_CancellationTokenCanceled_SendEvent_Throws()
         {
             // arrange
             var contextMock = new PipelineContext
@@ -361,7 +323,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 .Setup(x => x.OpenAsync(It.IsAny<CancellationToken>()))
                 .Returns(() => Task.CompletedTask);
             nextHandlerMock
-                .Setup(x => x.SendTelemetryAsync((IEnumerable<TelemetryMessage>)null, CancellationToken.None))
+                .Setup(x => x.SendTelemetryAsync((IEnumerable<TelemetryMessage>)null, It.IsAny<CancellationToken>()))
                 .Returns(() => Task.CompletedTask);
 
             using var retryDelegatingHandler = new RetryDelegatingHandler(contextMock, nextHandlerMock.Object);
@@ -377,7 +339,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public async Task RetryCancellationTokenCanceledSendEventWithIEnumMessage()
+        public async Task RetryDelegatingHandler_CancellationTokenCanceled_SendEventWithIEnumMessage_Throws()
         {
             // arrange
             var contextMock = new PipelineContext
@@ -388,10 +350,10 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             var nextHandlerMock = new Mock<IDelegatingHandler>();
             nextHandlerMock
-                .Setup(x => x.OpenAsync(CancellationToken.None))
+                .Setup(x => x.OpenAsync(It.IsAny<CancellationToken>()))
                 .Returns(() => Task.CompletedTask);
             nextHandlerMock
-                .Setup(x => x.SendTelemetryAsync((IEnumerable<TelemetryMessage>)null, CancellationToken.None))
+                .Setup(x => x.SendTelemetryAsync((IEnumerable<TelemetryMessage>)null, It.IsAny<CancellationToken>()))
                 .Returns(() => Task.CompletedTask);
 
             using var retryDelegatingHandler = new RetryDelegatingHandler(contextMock, nextHandlerMock.Object);
@@ -412,7 +374,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public async Task RetrySetRetryPolicyVerifyInternalsSuccess()
+        public async Task RetryDelegatingHandler_SetRetryPolicyVerifyInternals_Succeeds()
         {
             // arrange
             var contextMock = new PipelineContext
@@ -425,13 +387,13 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             using var retryDelegatingHandler = new RetryDelegatingHandler(contextMock, nextHandlerMock.Object);
 
-            var retryPolicy = new TestRetryPolicy();
+            var retryPolicy = new TestRetryOncePolicy();
             retryDelegatingHandler.SetRetryPolicy(retryPolicy);
 
             int nextHandlerCallCounter = 0;
 
             nextHandlerMock
-                .Setup(x => x.OpenAsync(CancellationToken.None))
+                .Setup(x => x.OpenAsync(It.IsAny<CancellationToken>()))
                 .Returns(() =>
                    {
                        nextHandlerCallCounter++;
@@ -453,6 +415,190 @@ namespace Microsoft.Azure.Devices.Client.Test
             nextHandlerCallCounter.Should().Be(3);
             retryPolicy.Counter.Should().Be(2);
         }
+
+        [Ignore]
+        [TestMethod]
+        public async Task RetryDelegatingHandler_CloseAsync_CancelsPendingOpenAsync()
+        {
+            // arrange
+            var contextMock = new PipelineContext
+            {
+                RetryPolicy = new TestRetryOncePolicy(),
+                ConnectionStatusChangeHandler = (connectionStatusInfo) => { }
+            };
+
+            var nextHandlerMock = new Mock<IDelegatingHandler>();
+            nextHandlerMock
+                .Setup(x => x.OpenAsync(It.IsAny<CancellationToken>()))
+                .Returns(async (CancellationToken ct) =>
+                {
+                    // Artificial wait to simulate the transport protocol level operations.
+                    await Task.Delay(TimeSpan.FromSeconds(5), ct);
+                });
+
+            using var retryDelegatingHandler = new RetryDelegatingHandler(contextMock, nextHandlerMock.Object);
+
+            // act
+            Task openTask = retryDelegatingHandler.OpenAsync(CancellationToken.None);
+            await retryDelegatingHandler.CloseAsync(CancellationToken.None).ConfigureAwait(false);
+
+            // assert
+
+            Func<Task> openFunc = async () => await openTask.ConfigureAwait(false);
+            await openFunc.Should().ThrowAsync<OperationCanceledException>();
+            nextHandlerMock.Verify(
+                x => x.OpenAsync(It.IsAny<CancellationToken>()),
+                Times.Once);
+        }
+
+        [Ignore]
+        [TestMethod]
+        public async Task RetryDelegatingHandler_CloseAsync_CancelsPendingSendTelemetryAsync()
+        {
+            // arrange
+            var contextMock = new PipelineContext
+            {
+                RetryPolicy = new TestRetryOncePolicy(),
+                ConnectionStatusChangeHandler = (connectionStatusInfo) => { }
+            };
+
+            var nextHandlerMock = new Mock<IDelegatingHandler>();
+            nextHandlerMock
+                .Setup(x => x.SendTelemetryAsync(It.IsAny<TelemetryMessage>(), It.IsAny<CancellationToken>()))
+                .Returns(async (TelemetryMessage message, CancellationToken ct) =>
+                {
+                    // Artificial wait to simulate the transport protocol level operations.
+                    await Task.Delay(TimeSpan.FromSeconds(5), ct);
+                });
+            // Artificial wait to simulate the transport protocol level operations.
+            nextHandlerMock
+                .Setup(x => x.WaitForTransportClosedAsync())
+                .Returns(() => Task.Delay(TimeSpan.FromSeconds(5)));
+
+            using var retryDelegatingHandler = new RetryDelegatingHandler(contextMock, nextHandlerMock.Object);
+
+            // act
+            await retryDelegatingHandler.OpenAsync(CancellationToken.None).ConfigureAwait(false);
+            Task sendTelemetryTask = retryDelegatingHandler.SendTelemetryAsync(It.IsAny<TelemetryMessage>(), CancellationToken.None);
+            await retryDelegatingHandler.CloseAsync(CancellationToken.None).ConfigureAwait(false);
+
+            // assert
+            Func<Task> sendTelemetryFunc = async () => await sendTelemetryTask.ConfigureAwait(false);
+            await sendTelemetryFunc.Should().ThrowAsync<OperationCanceledException>().ConfigureAwait(false);
+            nextHandlerMock.Verify(
+                x => x.SendTelemetryAsync(It.IsAny<TelemetryMessage>(), It.IsAny<CancellationToken>()),
+                Times.Once);
+        }
+
+        [TestMethod]
+        public async Task RetryDelegatingHandler_OpenAsyncAfterCloseAsync_Succeeds()
+        {
+            // arrange
+            var contextMock = new PipelineContext
+            {
+                RetryPolicy = new TestRetryOncePolicy(),
+                ConnectionStatusChangeHandler = (connectionStatusInfo) => { }
+            };
+
+            var nextHandlerMock = new Mock<IDelegatingHandler>();
+            nextHandlerMock
+                .Setup(x => x.OpenAsync(It.IsAny<CancellationToken>()))
+                .Returns(() => Task.CompletedTask);
+
+            using var retryDelegatingHandler = new RetryDelegatingHandler(contextMock, nextHandlerMock.Object);
+
+            await retryDelegatingHandler.OpenAsync(CancellationToken.None).ConfigureAwait(false);
+            await retryDelegatingHandler.CloseAsync(CancellationToken.None).ConfigureAwait(false);
+
+            // act
+            Func<Task> open = () => retryDelegatingHandler.OpenAsync(CancellationToken.None);
+
+            // assert
+            await open.Should().NotThrowAsync().ConfigureAwait(false); ;
+        }
+
+        [TestMethod]
+        public async Task RetryDelegatingHandler_SendTelemetryAsyncAfterCloseAsync_Throws()
+        {
+            // arrange
+            var contextMock = new PipelineContext
+            {
+                RetryPolicy = new TestRetryOncePolicy(),
+                ConnectionStatusChangeHandler = (connectionStatusInfo) => { }
+            };
+
+            var nextHandlerMock = new Mock<IDelegatingHandler>();
+            nextHandlerMock
+                .Setup(x => x.OpenAsync(It.IsAny<CancellationToken>()))
+                .Returns(() => Task.CompletedTask);
+
+            using var retryDelegatingHandler = new RetryDelegatingHandler(contextMock, nextHandlerMock.Object);
+
+            await retryDelegatingHandler.OpenAsync(CancellationToken.None).ConfigureAwait(false);
+            await retryDelegatingHandler.CloseAsync(CancellationToken.None).ConfigureAwait(false);
+
+            // act
+            Func<Task> sendTelemetry = () => retryDelegatingHandler.SendTelemetryAsync(It.IsAny<TelemetryMessage>(), CancellationToken.None);
+
+            // assert
+            await sendTelemetry.Should().ThrowAsync<InvalidOperationException>().ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task RetryDelegatingHandler_OpenAsyncAfterDispose_Throws()
+        {
+            // arrange
+            var contextMock = new PipelineContext
+            {
+                RetryPolicy = new TestRetryOncePolicy(),
+                ConnectionStatusChangeHandler = (connectionStatusInfo) => { }
+            };
+
+            var nextHandlerMock = new Mock<IDelegatingHandler>();
+            nextHandlerMock
+                .Setup(x => x.OpenAsync(It.IsAny<CancellationToken>()))
+                .Returns(() => Task.CompletedTask);
+
+            using var retryDelegatingHandler = new RetryDelegatingHandler(contextMock, nextHandlerMock.Object);
+
+            await retryDelegatingHandler.OpenAsync(CancellationToken.None).ConfigureAwait(false);
+            retryDelegatingHandler.Dispose();
+
+            // act
+            Func<Task> open = () => retryDelegatingHandler.OpenAsync(CancellationToken.None);
+
+            // assert
+            await open.Should().ThrowAsync<ObjectDisposedException>().ConfigureAwait(false);
+        }
+
+        [Ignore]
+        [TestMethod]
+        public async Task RetryDelegatingHandler_SendTelemetryAsyncAfterDispose_Throws()
+        {
+            // arrange
+            var contextMock = new PipelineContext
+            {
+                RetryPolicy = new TestRetryOncePolicy(),
+                ConnectionStatusChangeHandler = (connectionStatusInfo) => { }
+            };
+
+            var nextHandlerMock = new Mock<IDelegatingHandler>();
+            nextHandlerMock
+                .Setup(x => x.OpenAsync(It.IsAny<CancellationToken>()))
+                .Returns(() => Task.CompletedTask);
+
+            using var retryDelegatingHandler = new RetryDelegatingHandler(contextMock, nextHandlerMock.Object);
+
+            await retryDelegatingHandler.OpenAsync(CancellationToken.None).ConfigureAwait(false);
+            retryDelegatingHandler.Dispose();
+
+            // act
+            Func<Task> sendTelemetry = () => retryDelegatingHandler.SendTelemetryAsync(It.IsAny<TelemetryMessage>(), CancellationToken.None);
+
+            // assert
+            await sendTelemetry.Should().ThrowAsync<ObjectDisposedException>().ConfigureAwait(false);
+        }
+
 
         [TestMethod]
         [DataRow(IotHubClientErrorCode.NetworkErrors)]
@@ -548,7 +694,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 .ConfigureAwait(false);
             callCounter.Should().Be(1);
         }
-        private class TestRetryPolicy : IIotHubClientRetryPolicy
+        private class TestRetryOncePolicy : IIotHubClientRetryPolicy
         {
             public uint Counter { get; private set; }
 
