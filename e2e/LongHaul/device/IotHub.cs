@@ -102,7 +102,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
         public async Task SendTelemetryMessagesAsync(CancellationToken ct)
         {
             TelemetryMessage pendingMessage = null;
-
+            bool loggedDisconnection = false;
             while (!ct.IsCancellationRequested)
             {
                 _logger.Metric(MessageBacklog, _messagesToSend.Count);
@@ -124,10 +124,10 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
                 }
 
                 // If not connected, skip the work below this round
-                if (!IsConnected)
+                if (!IsConnected && !loggedDisconnection)
                 {
+                    loggedDisconnection = true;
                     _logger.Trace($"Waiting for connection before sending telemetry", TraceSeverity.Warning);
-                    continue;
                 }
 
                 // Make get a message to send, unless we're retrying a previous message
@@ -152,6 +152,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
 
         public async Task ReportReadOnlyPropertiesAsync(CancellationToken ct)
         {
+            bool loggedDisconnection = false;
             while (!ct.IsCancellationRequested)
             {
                 // If not connected, skip the work below this round
@@ -166,10 +167,10 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
                     ++_totalTwinUpdatesReported;
                     _logger.Metric(TotalTwinUpdatesReported, _totalTwinUpdatesReported);
                 }
-                else
+                else if(!loggedDisconnection)
                 {
+                    loggedDisconnection = true;
                     _logger.Trace($"Waiting for connection before any other operations.", TraceSeverity.Warning);
-                    continue;
                 }
 
                 await Task.Delay(s_deviceTwinUpdateInterval, ct).ConfigureAwait(false);

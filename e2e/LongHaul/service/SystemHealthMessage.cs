@@ -18,6 +18,11 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
         // always include HTTPS and AMQP port.
         public static HashSet<int> TcpPortFilter = new() { 443, 5671 };
 
+        public SystemHealthMessage(int port)
+        {
+            TcpPortFilter.Add(port);
+        }
+
         [JsonPropertyName("processCpuUsagePercent")]
         public double ProcessCpuUsagePercent { get; set; } = UpdateCpuUsage();
         
@@ -29,11 +34,6 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
         
         [JsonPropertyName("activeTcpConnections")] 
         public long ActiveTcpConnections { get; set; } = UpdateTcpConnections();
-
-        public SystemHealthMessage(int port)
-        {
-            TcpPortFilter.Add(port);
-        }
 
         private static long UpdateTcpConnections()
         {

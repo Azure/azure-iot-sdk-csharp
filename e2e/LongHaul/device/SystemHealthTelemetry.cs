@@ -18,6 +18,11 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
         // always include HTTPS port.
         public static HashSet<int> TcpPortFilter = new() { 443 };
 
+        public SystemHealthTelemetry(int port)
+        {
+            TcpPortFilter.Add(port);
+        }
+
         [JsonPropertyName("processCpuUsagePercent")]
         public double ProcessCpuUsagePercent { get; set; } = UpdateCpuUsage();
 
@@ -29,12 +34,6 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
 
         [JsonPropertyName("activeTcpConnections")]
         public long ActiveTcpConnections { get; set; } = UpdateTcpConnections();
-
-        public SystemHealthTelemetry(int port)
-        {
-            TcpPortFilter.Add(port);
-        }
-
 
         private static long UpdateTcpConnections()
         {
