@@ -111,6 +111,10 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                             {
                                 _logger.Trace($"Operations on [{deviceId}] have been canceled as the device goes offline.", TraceSeverity.Information);
                             }
+                            catch (Exception ex)
+                            {
+                                _logger.Trace($"Service app failed with exception {ex}", TraceSeverity.Error);
+                            }
                         }
 
                         // Passing in "Operations()" as Task so we don't need to manually call "Invoke()" on it.

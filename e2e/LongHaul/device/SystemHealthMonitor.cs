@@ -1,8 +1,11 @@
-﻿using Mash.Logging;
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Mash.Logging;
 
 namespace Microsoft.Azure.Devices.LongHaul.Device
 {
@@ -15,11 +18,13 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
     {
         private readonly IIotHub _iotHub;
         private readonly Logger _logger;
+        private static int s_port;
         private static readonly TimeSpan s_interval = TimeSpan.FromSeconds(3);
 
-        public SystemHealthMonitor(IIotHub iotHub, Logger logger)
+        public SystemHealthMonitor(IIotHub iotHub, int portFilter, Logger logger)
         {
             _iotHub = iotHub;
+            s_port = portFilter;
             _logger = logger;
             _logger.LoggerContext.Add("Component", nameof(SystemHealthMonitor));
         }
@@ -49,15 +54,11 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
 
         internal static SystemHealthTelemetry BuildAndLogSystemHealth(Logger logger)
         {
-            var telemetry = new SystemHealthTelemetry();
+            var telemetry = new SystemHealthTelemetry(s_port);
+            logger.Metric(nameof(telemetry.TotalAssignedMemoryBytes), telemetry.TotalAssignedMemoryBytes);
             logger.Metric(nameof(telemetry.ProcessCpuUsagePercent), telemetry.ProcessCpuUsagePercent);
-            logger.Metric(nameof(telemetry.ProcessWorkingSet), telemetry.ProcessWorkingSet);
-            logger.Metric(nameof(telemetry.ProcessWorkingSetPrivate), telemetry.ProcessWorkingSetPrivate);
-            logger.Metric(nameof(telemetry.ProcessPrivateBytes), telemetry.ProcessPrivateBytes);
-            if (telemetry.ProcessBytesInAllHeaps.HasValue)
-            {
-                logger.Metric(nameof(telemetry.ProcessBytesInAllHeaps), telemetry.ProcessBytesInAllHeaps.Value);
-            }
+            logger.Metric(nameof(telemetry.TotalGCBytes), telemetry.TotalGCBytes);
+            logger.Metric(nameof(telemetry.ActiveTcpConnections), telemetry.ActiveTcpConnections);
 
             return telemetry;
         }

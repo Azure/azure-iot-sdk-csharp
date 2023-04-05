@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Threading;
@@ -15,6 +18,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
     {
         private static readonly IDictionary<string, string> s_commonProperties = new Dictionary<string, string>();
         private static Logger s_logger;
+        private static int s_port;
         private static ApplicationInsightsLoggingProvider s_aiLoggingProvider;
         internal static readonly string _runId = Guid.NewGuid().ToString();
 
@@ -42,6 +46,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
                 });
 
             s_logger = InitializeLogging(parameters);
+            s_port = PortFilter(parameters);
 
             // Log system health before initializing hub
             SystemHealthMonitor.BuildAndLogSystemHealth(s_logger);
@@ -80,7 +85,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
 
             await iotHub.SetPropertiesAsync(RunId, _runId, cancellationTokenSource.Token).ConfigureAwait(false);
 
-            var systemHealthMonitor = new SystemHealthMonitor(iotHub, s_logger.Clone());
+            var systemHealthMonitor = new SystemHealthMonitor(iotHub, s_port, s_logger.Clone());
 
             try
             {
@@ -129,6 +134,18 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
 
             Logger logger = logBuilder.BuildLogger();
             return logger;
+        }
+
+        private static int PortFilter(Parameters parameters)
+        {
+            return parameters.TransportProtocol == IotHubClientTransportProtocol.WebSocket
+                ? 443
+                : parameters.Transport switch
+                {
+                    TransportType.Mqtt => 8883,
+                    TransportType.Amqp => 5671,
+                    _ => throw new NotSupportedException($"Unsupported transport type {parameters.Transport}/{parameters.TransportProtocol}"),
+                };
         }
 
         private static IotHubClientTransportSettings GetTransportSettings(Parameters parameters)

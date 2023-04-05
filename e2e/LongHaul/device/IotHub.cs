@@ -1,7 +1,6 @@
-﻿using Azure.Storage.Blobs.Models;
-using Azure.Storage.Blobs.Specialized;
-using Mash.Logging;
-using Microsoft.Azure.Devices.Client;
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -12,6 +11,10 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure.Storage.Blobs.Models;
+using Azure.Storage.Blobs.Specialized;
+using Mash.Logging;
+using Microsoft.Azure.Devices.Client;
 using static Microsoft.Azure.Devices.LongHaul.Device.LoggingConstants;
 
 namespace Microsoft.Azure.Devices.LongHaul.Device
@@ -99,7 +102,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
         public async Task SendTelemetryMessagesAsync(CancellationToken ct)
         {
             TelemetryMessage pendingMessage = null;
-
+            bool loggedDisconnection = false;
             while (!ct.IsCancellationRequested)
             {
                 _logger.Metric(MessageBacklog, _messagesToSend.Count);
@@ -123,7 +126,11 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
                 // If not connected, skip the work below this round
                 if (!IsConnected)
                 {
-                    _logger.Trace($"Waiting for connection before sending telemetry", TraceSeverity.Warning);
+                    if (!loggedDisconnection)
+                    {
+                        loggedDisconnection = true;
+                        _logger.Trace($"Waiting for connection before sending telemetry", TraceSeverity.Warning);
+                    }
                     continue;
                 }
 
@@ -149,6 +156,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
 
         public async Task ReportReadOnlyPropertiesAsync(CancellationToken ct)
         {
+            bool loggedDisconnection = false;
             while (!ct.IsCancellationRequested)
             {
                 // If not connected, skip the work below this round
@@ -158,15 +166,15 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
                     {
                         { "TotalTelemetryMessagesSent", _totalTelemetryMessagesSent },
                     };
-                    await _deviceClient.UpdateReportedPropertiesAsync(reported ,ct).ConfigureAwait(false);
+                    await _deviceClient.UpdateReportedPropertiesAsync(reported, ct).ConfigureAwait(false);
 
                     ++_totalTwinUpdatesReported;
                     _logger.Metric(TotalTwinUpdatesReported, _totalTwinUpdatesReported);
                 }
-                else
+                else if (!loggedDisconnection)
                 {
+                    loggedDisconnection = true;
                     _logger.Trace($"Waiting for connection before any other operations.", TraceSeverity.Warning);
-                    continue;
                 }
 
                 await Task.Delay(s_deviceTwinUpdateInterval, ct).ConfigureAwait(false);
