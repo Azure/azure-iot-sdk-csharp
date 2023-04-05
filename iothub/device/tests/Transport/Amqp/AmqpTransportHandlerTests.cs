@@ -9,6 +9,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
+using Microsoft.Azure.Devices.Client.Transport;
 using Microsoft.Azure.Devices.Client.Transport.Amqp;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;

@@ -345,7 +345,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             // arrange
             string messageId = Guid.NewGuid().ToString();
-            await using var moduleClient = new IotHubModuleClient(fakeConnectionString);
+            await using var moduleClient = new IotHubModuleClient(fakeConnectionString, new IotHubClientOptions(new IotHubClientAmqpSettings()));
 
             var innerHandler = new Mock<IDelegatingHandler>();
             innerHandler

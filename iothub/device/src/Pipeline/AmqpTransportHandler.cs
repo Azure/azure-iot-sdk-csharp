@@ -9,10 +9,11 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Amqp;
+using Microsoft.Azure.Devices.Client.Transport.Amqp;
 using Microsoft.Azure.Devices.Client.Transport.AmqpIot;
 using Newtonsoft.Json;
 
-namespace Microsoft.Azure.Devices.Client.Transport.Amqp
+namespace Microsoft.Azure.Devices.Client.Transport
 {
 #pragma warning disable CA1852 // used in debug for unit test mocking
     internal class AmqpTransportHandler : TransportHandler
@@ -276,18 +277,19 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
         public override async Task DisableMethodsAsync(CancellationToken cancellationToken)
         {
+            if (Logging.IsEnabled)
+                Logging.Enter(this, cancellationToken, nameof(DisableMethodsAsync));
+
             try
             {
-                if (Logging.IsEnabled)
-                    Logging.Enter(this, cancellationToken, nameof(DisableMethodsAsync));
-
                 cancellationToken.ThrowIfCancellationRequested();
 
                 await _amqpUnit.DisableMethodsAsync(cancellationToken).ConfigureAwait(false);
             }
             finally
             {
-                Logging.Exit(this, cancellationToken, nameof(DisableMethodsAsync));
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, cancellationToken, nameof(DisableMethodsAsync));
             }
         }
 
@@ -336,10 +338,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
         public override async Task DisableTwinPatchAsync(CancellationToken cancellationToken)
         {
-            try
-            {
+            if (Logging.IsEnabled)
                 Logging.Enter(this, cancellationToken, nameof(DisableTwinPatchAsync));
 
+            try
+            {
                 cancellationToken.ThrowIfCancellationRequested();
 
                 await _amqpUnit.DisableTwinLinksAsync(cancellationToken).ConfigureAwait(false);
@@ -461,6 +464,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             {
                 _twinResponseCompletions.TryRemove(correlationId, out _);
                 _twinResponseTimeouts.TryRemove(correlationId, out _);
+
                 if (Logging.IsEnabled)
                     Logging.Exit(this, cancellationToken, nameof(RoundTripTwinMessageAsync));
             }
@@ -531,11 +535,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
         protected private override void Dispose(bool disposing)
         {
+            if (Logging.IsEnabled)
+                Logging.Enter(this, $"{nameof(DefaultDelegatingHandler)}.Disposed={_isDisposed}; disposing={disposing}", $"{nameof(AmqpTransportHandler)}.{nameof(Dispose)}");
+
             try
             {
-                if (Logging.IsEnabled)
-                    Logging.Enter(this, $"{nameof(DefaultDelegatingHandler)}.Disposed={_isDisposed}; disposing={disposing}", $"{nameof(AmqpTransportHandler)}.{nameof(Dispose)}");
-
                 lock (_lock)
                 {
                     if (!_isDisposed)

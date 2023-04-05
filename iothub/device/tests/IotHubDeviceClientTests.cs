@@ -11,7 +11,6 @@ using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Devices.Client.Test
 {
@@ -1256,7 +1255,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             // arrange
             string messageId = Guid.NewGuid().ToString();
-            await using var deviceClient = new IotHubDeviceClient(fakeConnectionString);
+            await using var deviceClient = new IotHubDeviceClient(fakeConnectionString, new IotHubClientOptions(new IotHubClientAmqpSettings()));
 
             var innerHandler = new Mock<IDelegatingHandler>();
             innerHandler
@@ -1282,7 +1281,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             // arrange
             string messageId = Guid.NewGuid().ToString();
-            var options = new IotHubClientOptions(new IotHubClientMqttSettings())
+            var options = new IotHubClientOptions(new IotHubClientAmqpSettings())
             {
                 SdkAssignsMessageId = SdkAssignsMessageId.Never,
             };
@@ -1312,7 +1311,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             // arrange
             string messageId = Guid.NewGuid().ToString();
-            var options = new IotHubClientOptions(new IotHubClientMqttSettings())
+            var options = new IotHubClientOptions(new IotHubClientAmqpSettings())
             {
                 SdkAssignsMessageId = SdkAssignsMessageId.WhenUnset,
             };
@@ -1454,7 +1453,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         public async Task IotHubDeviceClient_SendTelemetryBatchAsync_Cancelled_ThrowsOperationCanceledException()
         {
             //arrange
-            await using var deviceClient = new IotHubDeviceClient(fakeConnectionString);
+            await using var deviceClient = new IotHubDeviceClient(fakeConnectionString, new IotHubClientOptions(new IotHubClientAmqpSettings()));
 
             // act
             var ct = new CancellationToken(true);
