@@ -39,9 +39,9 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
         {
             var message = new SystemHealthMessage(s_port);
             logger.Metric(nameof(message.TotalAssignedMemoryBytes), message.TotalAssignedMemoryBytes);
-            logger.Metric(nameof(message.ProcessCpu), message.ProcessCpu);
+            logger.Metric(nameof(message.ProcessCpuUsagePercent), message.ProcessCpuUsagePercent);
             logger.Metric(nameof(message.TotalGCBytes), message.TotalGCBytes);
-            logger.Metric(nameof(message.TcpConnections), message.TcpConnections);
+            logger.Metric(nameof(message.ActiveTcpConnections), message.ActiveTcpConnections);
 
             return message;
         }

@@ -56,9 +56,9 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
         {
             var telemetry = new SystemHealthTelemetry(s_port);
             logger.Metric(nameof(telemetry.TotalAssignedMemoryBytes), telemetry.TotalAssignedMemoryBytes);
-            logger.Metric(nameof(telemetry.ProcessCpu), telemetry.ProcessCpu);
+            logger.Metric(nameof(telemetry.ProcessCpuUsagePercent), telemetry.ProcessCpuUsagePercent);
             logger.Metric(nameof(telemetry.TotalGCBytes), telemetry.TotalGCBytes);
-            logger.Metric(nameof(telemetry.TcpConnections), telemetry.TcpConnections);
+            logger.Metric(nameof(telemetry.ActiveTcpConnections), telemetry.ActiveTcpConnections);
 
             return telemetry;
         }
