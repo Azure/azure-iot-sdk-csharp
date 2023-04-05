@@ -65,11 +65,12 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                         {
                             feedbackMessageReceived.TrySetResult(true);
                         }
-                        return AcknowledgementType.Complete;
+
+                        return Task.FromResult(AcknowledgementType.Complete);
                     }
 
                     // Same hub as other tests, so we don't want to complete messages that aren't meant for us.
-                    return AcknowledgementType.Abandon;
+                    return Task.FromResult(AcknowledgementType.Abandon);
                 };
                 await serviceClient.MessageFeedback.OpenAsync().ConfigureAwait(false);
 
@@ -104,6 +105,38 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                     VerboseTestLogger.WriteLine($"Cleanup in {nameof(MessageFeedbackReceiver_Operation)} failed over {protocol} due to {ex}");
                 }
             }
+        }
+
+        [TestMethod]
+        public async Task MessageFeedbackReceiver_CloseGracefully_DoesNotExecuteConnectionLoss()
+        {
+            // arrange
+            using var sender = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
+            bool connectionLossEventExecuted = false;
+            Func<ErrorContext, Task> OnConnectionLost = delegate
+            {
+                // There is a small chance that this test's connection is interrupted by an actual
+                // network failure (when this callback should be executed), but the operations
+                // tested here are so quick that it should be safe to ignore that possibility.
+                connectionLossEventExecuted = true;
+                return Task.CompletedTask;
+            };
+            sender.MessageFeedback.ErrorProcessor = OnConnectionLost;
+
+            Task<AcknowledgementType> OnFeedbackMessageReceivedAsync(FeedbackBatch feedbackBatch)
+            {
+                return Task.FromResult(AcknowledgementType.Complete);
+            }
+            sender.MessageFeedback.MessageFeedbackProcessor = OnFeedbackMessageReceivedAsync;
+
+            await sender.MessageFeedback.OpenAsync().ConfigureAwait(false);
+            
+            // act
+            await sender.MessageFeedback.CloseAsync().ConfigureAwait(false);
+
+            // assert
+            connectionLossEventExecuted.Should().BeFalse(
+                "One or more connection lost events were reported by the error processor unexpectedly");
         }
     }
 }

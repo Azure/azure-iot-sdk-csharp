@@ -88,7 +88,7 @@ namespace Microsoft.Azure.Devices
         /// public void OnConnectionLost(ErrorContext errorContext)
         /// {
         ///    // Add reconnection logic as needed
-        ///    Console.WriteLine("Messaging client connection lost")
+        ///    Console.WriteLine("Messaging client connection lost");
         /// }
         /// </code>
         /// </example>
@@ -97,7 +97,7 @@ namespace Microsoft.Azure.Devices
         /// This callback will start receiving events again once <see cref="OpenAsync(CancellationToken)"/> is called.
         /// This callback will persist across any number of open/close/open calls, so it does not need to be set before each open call.
         /// </remarks>
-        public Action<ErrorContext> ErrorProcessor { get; set; }
+        public Func<ErrorContext, Task> ErrorProcessor { get; set; }
 
         /// <summary>
         /// Open the connection. Must be done before any cloud-to-device messages can be sent.

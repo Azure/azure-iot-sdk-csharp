@@ -56,7 +56,7 @@ namespace Microsoft.Azure.Devices.Samples
             // It is important to note that receiver only gets feedback messages when the device is actively running and acting on messages.
             _logger.LogInformation("Starting to listen to feedback messages");
 
-            AcknowledgementType OnC2dMessageAck(FeedbackBatch feedbackMessages)
+            Task<AcknowledgementType> OnC2dMessageAck(FeedbackBatch feedbackMessages)
             {
                 AcknowledgementType ackType = AcknowledgementType.Abandon;
 
@@ -72,7 +72,7 @@ namespace Microsoft.Azure.Devices.Samples
                     _logger.LogInformation($"\tDevice {feedbackRecord.DeviceId} acted on message: {feedbackRecord.OriginalMessageId} with status: {feedbackRecord.StatusCode}");
                 }
 
-                return ackType;
+                return Task.FromResult(ackType);
             }
 
             s_serviceClient.MessageFeedback.MessageFeedbackProcessor = OnC2dMessageAck;
