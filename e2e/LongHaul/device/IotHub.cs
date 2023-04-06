@@ -46,7 +46,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
         private long _totalC2dMessagesCompleted = 0;
         private long _totalC2dMessagesRejected = 0;
 
-        public IDictionary<string, string> TelemetryUserProperties { get; } = new Dictionary<string, string>();
+        public Dictionary<string, string> TelemetryUserProperties { get; } = new();
 
         public IotHub(Logger logger, string deviceConnectionString, IotHubClientTransportSettings transportSettings)
         {
@@ -144,11 +144,12 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
                 // Send any message prepped to send
                 if (pendingMessage != null)
                 {
+                    var sw = Stopwatch.StartNew();
                     await _deviceClient.SendTelemetryAsync(pendingMessage, ct).ConfigureAwait(false);
+                    sw.Stop();
 
-                    ++_totalTelemetryMessagesSent;
-                    logger.Metric(TotalTelemetryMessagesSent, _totalTelemetryMessagesSent);
-                    logger.Metric(TelemetryMessageDelaySeconds, (DateTime.UtcNow - pendingMessage.CreatedOnUtc).TotalSeconds);
+                    _logger.Metric(TotalTelemetryMessagesSent, ++_totalTelemetryMessagesSent);
+                    _logger.Metric(TelemetryMessageDelaySeconds, sw.Elapsed.TotalSeconds);
 
                     pendingMessage = null;
                 }

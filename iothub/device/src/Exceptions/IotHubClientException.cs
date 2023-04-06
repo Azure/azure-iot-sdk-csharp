@@ -82,6 +82,18 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         public IotHubClientErrorCode ErrorCode { get; }
 
+        /// <inheritdoc/>
+        public override string ToString()
+        {
+            var sb = new StringBuilder($"Message: {Message}\nErrorCode: {ErrorCode}, IsTransient: {IsTransient}");
+            if (!string.IsNullOrEmpty(TrackingId))
+            {
+                sb.Append($", TrackingId: {TrackingId}");
+            }
+            sb.Append($"\n{StackTrace}");
+            return sb.ToString();
+        }
+
         /// <summary>
         /// Sets the <see cref="SerializationInfo"/> with information about the exception.
         /// Use this to set <see cref="IsTransient"/> and <see cref="TrackingId"/> to the serialized object data.
@@ -94,17 +106,6 @@ namespace Microsoft.Azure.Devices.Client
             base.GetObjectData(info, context);
             info.AddValue(IsTransientValueSerializationStoreName, IsTransient);
             info.AddValue(TrackingIdValueSerializationStoreName, TrackingId);
-        }
-
-        /// <inheritdoc/>
-        public override string ToString()
-        {
-            var sb = new StringBuilder();
-            sb.Append($"Message: {Message}\nErrorCode: {ErrorCode}, IsTransient: {IsTransient}");
-            if (!string.IsNullOrEmpty(TrackingId))
-                sb.Append($", TrackingId: {TrackingId}");
-            sb.Append($"\n{StackTrace}");
-            return sb.ToString();
         }
 
         private static bool DetermineIfTransient(IotHubClientErrorCode errorCode)
