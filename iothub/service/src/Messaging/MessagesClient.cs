@@ -3,6 +3,7 @@
 
 using System;
 using System.Globalization;
+using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
@@ -85,9 +86,9 @@ namespace Microsoft.Azure.Devices
         ///
         /// //...
         ///
-        /// public void OnConnectionLost(ErrorContext errorContext)
+        /// public void OnConnectionLost(MessagingError error)
         /// {
-        ///    Console.WriteLine("Messaging client connection lost");
+        ///    Console.WriteLine($"Messaging client connection lost. Error: {error.Exception.Message}")
         ///
         ///    // Add reconnection logic as needed, for example:
         ///    await serviceClient.Messaging.OpenAsync();
@@ -99,7 +100,7 @@ namespace Microsoft.Azure.Devices
         /// This callback will start receiving events again once <see cref="OpenAsync(CancellationToken)"/> is called.
         /// This callback will persist across any number of open/close/open calls, so it does not need to be set before each open call.
         /// </remarks>
-        public Func<ErrorContext, Task> ErrorProcessor { get; set; }
+        public Func<MessagingError, Task> ErrorProcessor { get; set; }
 
         /// <summary>
         /// Open the connection. Must be done before any cloud-to-device messages can be sent.
@@ -391,17 +392,16 @@ namespace Microsoft.Azure.Devices
         {
             if (((AmqpObject)sender).TerminalException is AmqpException exception)
             {
-                ErrorContext errorContext = AmqpClientHelper.GetErrorContextFromException(exception);
-                ErrorProcessor?.Invoke(errorContext);
-                Exception exceptionToLog = errorContext.IotHubServiceException;
+                IotHubServiceException mappedException = AmqpClientHelper.GetIotHubExceptionFromAmqpException(exception);
+                ErrorProcessor?.Invoke(new MessagingError(mappedException));
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"{nameof(sender)}.{nameof(OnConnectionClosed)} threw an exception: {exceptionToLog}", nameof(OnConnectionClosed));
+                    Logging.Error(this, $"{nameof(sender)}.{nameof(OnConnectionClosed)} threw an exception: {mappedException}", nameof(OnConnectionClosed));
             }
             else
             {
-                var defaultException = new IotHubServiceException("AMQP connection was lost", ((AmqpObject)sender).TerminalException);
-                var errorContext = new ErrorContext(defaultException);
-                ErrorProcessor?.Invoke(errorContext);
+                var defaultException = new IOException("AMQP connection was lost", ((AmqpObject)sender).TerminalException);
+                var error = new MessagingError(defaultException);
+                ErrorProcessor?.Invoke(error);
                 if (Logging.IsEnabled)
                     Logging.Error(this, $"{nameof(sender)}.{nameof(OnConnectionClosed)} threw an exception: {defaultException}", nameof(OnConnectionClosed));
             }

@@ -147,9 +147,9 @@ namespace Microsoft.Azure.Devices.Amqp
             return retException;
         }
 
-        internal static ErrorContext GetErrorContextFromException(AmqpException exception)
+        internal static IotHubServiceException GetIotHubExceptionFromAmqpException(AmqpException exception)
         {
-            return new ErrorContext(new IotHubServiceException(exception.Error.ToString(), exception));
+            return new IotHubServiceException(exception.Error.ToString(), exception);
         }
     }
 }
