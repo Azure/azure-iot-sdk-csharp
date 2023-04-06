@@ -131,7 +131,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             await sender.MessageFeedback.CloseAsync().ConfigureAwait(false);
 
             // assert
-            connectionLossEventExecuted.Should().BeFalse(
+            Assert.IsFalse(
+                connectionLossEventExecuted,
                 "One or more connection lost events were reported by the error processor unexpectedly");
         }
     }
