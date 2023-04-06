@@ -210,7 +210,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                 Exception exToLog = errorContext.IotHubServiceException == null
                     ? errorContext.IOException
                     : errorContext.IotHubServiceException;
-                _logger.Trace($"Error processing C2D message.\n{exToLog}");
+                _logger.Trace($"Error processing FileUploadNotification.\n{exToLog}");
 
                 _logger.Trace("Attempting reconnect for FileUploadNotifications...");
                 await s_serviceClient.FileUploadNotifications.OpenAsync(ct).ConfigureAwait(false);
