@@ -99,11 +99,11 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
         /// Frequently send telemetry messages to the hub.
         /// </summary>
         /// <param name="ct">The cancellation token</param>
-        public async Task SendTelemetryMessagesAsync(CancellationToken ct, Logger logger)
+        public async Task SendTelemetryMessagesAsync(Logger logger, CancellationToken ct)
         {
             TelemetryMessage pendingMessage = null;
             bool loggedDisconnection = false;
-            logger.LoggerContext.Add("OperationName", "TelemetryMessage");
+            logger.LoggerContext.Add(OperationName, LoggingConstants.TelemetryMessage);
             while (!ct.IsCancellationRequested)
             {
                 logger.Metric(MessageBacklog, _messagesToSend.Count);
@@ -155,10 +155,10 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
             }
         }
 
-        public async Task ReportReadOnlyPropertiesAsync(CancellationToken ct, Logger logger)
+        public async Task ReportReadOnlyPropertiesAsync(Logger logger, CancellationToken ct)
         {
             bool loggedDisconnection = false;
-            logger.LoggerContext.Add("OperationName", "ReportTwinProperties");
+            logger.LoggerContext.Add(OperationName, ReportTwinProperties);
             while (!ct.IsCancellationRequested)
             {
                 // If not connected, skip the work below this round
@@ -242,9 +242,9 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
             _logger.Trace($"Set the reported property with name [{keyName}] in device twin.", TraceSeverity.Information);
         }
 
-        public async Task UploadFilesAsync(CancellationToken ct, Logger logger)
+        public async Task UploadFilesAsync(Logger logger, CancellationToken ct)
         {
-            logger.LoggerContext.Add("OperationName", "UploadFiles");
+            logger.LoggerContext.Add(OperationName, UploadFiles);
             while (!ct.IsCancellationRequested)
             {
                 string fileName = $"TestPayload-{Guid.NewGuid()}.txt";

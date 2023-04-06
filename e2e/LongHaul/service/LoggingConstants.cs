@@ -13,6 +13,13 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
         public const string SdkVersion = "sdkVersion";
         public const string Hub = "hub";
         public const string Transport = "transport";
+        public const string OperationName = "OperationName";
+
+        // Operations
+
+        public const string DirectMethod = "DirectMethod";
+        public const string SetDesiredProperties = "SetDesiredProperties";
+        public const string C2DMessage = "C2DMessage";
 
         // Events
 

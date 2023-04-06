@@ -32,9 +32,9 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
             _logger.LoggerContext.Add("DeviceId", deviceId);
         }
 
-        public async Task InvokeDirectMethodAsync(CancellationToken ct, Logger logger)
+        public async Task InvokeDirectMethodAsync(Logger logger, CancellationToken ct)
         {
-            logger.LoggerContext.Add("OperationName", "DirectMethod");
+            logger.LoggerContext.Add(OperationName, DirectMethod);
             while (!ct.IsCancellationRequested)
             {
                 var payload = new CustomDirectMethodPayload
@@ -78,9 +78,9 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
             }
         }
 
-        public async Task SetDesiredPropertiesAsync(string keyName, string properties, CancellationToken ct, Logger logger)
+        public async Task SetDesiredPropertiesAsync(string keyName, string properties, Logger logger, CancellationToken ct)
         {
-            logger.LoggerContext.Add("OperationName", "SetDesiredProperties");
+            logger.LoggerContext.Add(OperationName, SetDesiredProperties);
             while (!ct.IsCancellationRequested)
             {
                 var twin = new ClientTwin();
@@ -96,10 +96,10 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
             }
         }
 
-        public async Task SendC2dMessagesAsync(CancellationToken ct, Logger logger)
+        public async Task SendC2dMessagesAsync(Logger logger, CancellationToken ct)
         {
             await _serviceClient.Messages.OpenAsync(ct).ConfigureAwait(false);
-            logger.LoggerContext.Add("OperationName", "C2DMessages");
+            logger.LoggerContext.Add(OperationName, C2DMessage);
             while (!ct.IsCancellationRequested)
             {
                 var payload = new CustomC2dMessagePayload

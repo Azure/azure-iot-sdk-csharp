@@ -103,9 +103,9 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                             {
                                 await Task
                                 .WhenAll(
-                                    deviceOperations.InvokeDirectMethodAsync(token, _logger.Clone()),
-                                    deviceOperations.SetDesiredPropertiesAsync("guidValue", Guid.NewGuid().ToString(), token, _logger.Clone()),
-                                    deviceOperations.SendC2dMessagesAsync(token, _logger.Clone()))
+                                    deviceOperations.InvokeDirectMethodAsync(_logger.Clone(), token),
+                                    deviceOperations.SetDesiredPropertiesAsync("guidValue", Guid.NewGuid().ToString(), _logger.Clone(), token),
+                                    deviceOperations.SendC2dMessagesAsync(_logger.Clone(), token))
                                 .ConfigureAwait(false);
                             }
                             catch (OperationCanceledException)
