@@ -32,8 +32,9 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
             _logger.LoggerContext.Add("DeviceId", deviceId);
         }
 
-        public async Task InvokeDirectMethodAsync(CancellationToken ct)
+        public async Task InvokeDirectMethodAsync(Logger logger, CancellationToken ct)
         {
+            logger.LoggerContext.Add(OperationName, DirectMethod);
             while (!ct.IsCancellationRequested)
             {
                 var payload = new CustomDirectMethodPayload
@@ -49,8 +50,8 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                     ResponseTimeout = TimeSpan.FromSeconds(30),
                 };
 
-                _logger.Trace($"Invoking direct method for device: {_deviceId}", TraceSeverity.Information);
-                _logger.Metric(TotalDirectMethodCallsCount, _totalMethodCallsCount);
+                logger.Trace($"Invoking direct method for device: {_deviceId}", TraceSeverity.Information);
+                logger.Metric(TotalDirectMethodCallsCount, _totalMethodCallsCount);
 
                 try
                 {
@@ -61,32 +62,33 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
 
                     if (response.TryGetPayload(out CustomDirectMethodPayload responsePayload))
                     {
-                        _logger.Metric(
+                        logger.Metric(
                             D2cDirectMethodDelaySeconds,
                             (DateTimeOffset.UtcNow - responsePayload.CurrentTimeUtc).TotalSeconds);
                     }
 
-                    _logger.Trace($"Response status: {response.Status}, payload:\n\t{JsonConvert.SerializeObject(response.PayloadAsString)}", TraceSeverity.Information);
+                    logger.Trace($"Response status: {response.Status}, payload:\n\t{JsonConvert.SerializeObject(response.PayloadAsString)}", TraceSeverity.Information);
                 }
                 catch (IotHubServiceException ex) when (ex.ErrorCode == IotHubServiceErrorCode.DeviceNotOnline)
                 {
-                    _logger.Trace($"Caught exception invoking direct method {ex}", TraceSeverity.Warning);
+                    logger.Trace($"Caught exception invoking direct method {ex}", TraceSeverity.Warning);
                 }
 
                 await Task.Delay(s_directMethodInvokeInterval, ct).ConfigureAwait(false);
             }
         }
 
-        public async Task SetDesiredPropertiesAsync(string keyName, string properties, CancellationToken ct)
+        public async Task SetDesiredPropertiesAsync(string keyName, string properties, Logger logger, CancellationToken ct)
         {
+            logger.LoggerContext.Add(OperationName, SetDesiredProperties);
             while (!ct.IsCancellationRequested)
             {
                 var twin = new ClientTwin();
                 twin.Properties.Desired[keyName] = properties;
 
                 ++_totalDesiredPropertiesUpdatesCount;
-                _logger.Trace($"Updating the desired properties for device: {_deviceId}", TraceSeverity.Information);
-                _logger.Metric(TotalDesiredPropertiesUpdatesCount, _totalDesiredPropertiesUpdatesCount);
+                logger.Trace($"Updating the desired properties for device: {_deviceId}", TraceSeverity.Information);
+                logger.Metric(TotalDesiredPropertiesUpdatesCount, _totalDesiredPropertiesUpdatesCount);
 
                 await _serviceClient.Twins.UpdateAsync(_deviceId, twin, false, ct).ConfigureAwait(false);
 
@@ -94,10 +96,10 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
             }
         }
 
-        public async Task SendC2dMessagesAsync(CancellationToken ct)
+        public async Task SendC2dMessagesAsync(Logger logger, CancellationToken ct)
         {
             await _serviceClient.Messages.OpenAsync(ct).ConfigureAwait(false);
-
+            logger.LoggerContext.Add(OperationName, C2DMessage);
             while (!ct.IsCancellationRequested)
             {
                 var payload = new CustomC2dMessagePayload
@@ -113,8 +115,8 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                     MessageId = payload.RandomId.ToString(),
                 };
 
-                _logger.Trace($"Sending message with Id {message.MessageId} to the device: {_deviceId}", TraceSeverity.Information);
-                _logger.Metric(TotalC2dMessagesSentCount, _totalC2dMessagesSentCount);
+                logger.Trace($"Sending message with Id {message.MessageId} to the device: {_deviceId}", TraceSeverity.Information);
+                logger.Metric(TotalC2dMessagesSentCount, _totalC2dMessagesSentCount);
 
                 await _serviceClient.Messages.SendAsync(_deviceId, message, ct).ConfigureAwait(false);
 
