@@ -87,8 +87,10 @@ namespace Microsoft.Azure.Devices
         ///
         /// public void OnConnectionLost(ErrorContext errorContext)
         /// {
-        ///    // Add reconnection logic as needed
         ///    Console.WriteLine("Messaging client connection lost");
+        ///
+        ///    // Add reconnection logic as needed, for example:
+        ///    await serviceClient.Messaging.OpenAsync();
         /// }
         /// </code>
         /// </example>

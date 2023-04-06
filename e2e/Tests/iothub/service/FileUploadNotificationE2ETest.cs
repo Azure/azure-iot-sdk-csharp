@@ -136,7 +136,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
             Task<AcknowledgementType> OnFileUploadNotificationReceivedAsync(FileUploadNotification fileUploadNotification) 
             { 
-                return Task.FromResult(AcknowledgementType.Complete); 
+                // No file upload notifications belong to this test, so abandon any that it may receive
+                return Task.FromResult(AcknowledgementType.Abandon); 
             }
             sender.FileUploadNotifications.FileUploadNotificationProcessor = OnFileUploadNotificationReceivedAsync;
             await sender.FileUploadNotifications.OpenAsync().ConfigureAwait(false);

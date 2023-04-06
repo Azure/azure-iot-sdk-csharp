@@ -120,7 +120,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
             Task<AcknowledgementType> OnFeedbackMessageReceivedAsync(FeedbackBatch feedbackBatch)
             {
-                return Task.FromResult(AcknowledgementType.Complete);
+                // No feedback messages belong to this test, so abandon any that it may receive
+                return Task.FromResult(AcknowledgementType.Abandon);
             }
             sender.MessageFeedback.MessageFeedbackProcessor = OnFeedbackMessageReceivedAsync;
 

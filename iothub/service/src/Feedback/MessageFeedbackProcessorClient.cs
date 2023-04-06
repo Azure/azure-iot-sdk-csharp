@@ -101,8 +101,10 @@ namespace Microsoft.Azure.Devices
         ///
         /// public void OnConnectionLost(ErrorContext errorContext)
         /// {
-        ///    // Add reconnection logic as needed
         ///    Console.WriteLine("Feedback message processor connection lost")
+        ///
+        ///    // Add reconnection logic as needed, for example:
+        ///    await serviceClient.MessageFeedbackProcessor.OpenAsync();
         /// }
         /// </code>
         /// </example>
