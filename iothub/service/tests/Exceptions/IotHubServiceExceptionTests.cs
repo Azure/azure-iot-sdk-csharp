@@ -18,6 +18,7 @@ namespace Microsoft.Azure.Devices.Tests.Exceptions
         [TestMethod]
         [DataRow(IotHubServiceErrorCode.DeviceNotFound)]
         [DataRow(IotHubServiceErrorCode.InvalidProtocolVersion)]
+        [DataRow(IotHubServiceErrorCode.Unknown)]
         [DataRow(IotHubServiceErrorCode.InvalidOperation)]
         [DataRow(IotHubServiceErrorCode.ArgumentInvalid)]
         [DataRow(IotHubServiceErrorCode.ArgumentNull)]
