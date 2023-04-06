@@ -2,14 +2,13 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Collections.Concurrent;
 using Azure;
 using Mash.Logging;
-using Newtonsoft.Json;
 using Azure.Storage.Blobs;
 using static Microsoft.Azure.Devices.LongHaul.Service.LoggingConstants;
 
@@ -20,29 +19,24 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
         private readonly Logger _logger;
         private readonly string _hubConnectionString;
         private readonly IotHubTransportProtocol _transportProtocol;
-        private readonly string _deviceId;
         private readonly string _storageConnectionString;
 
-        private static readonly TimeSpan s_directMethodInvokeInterval = TimeSpan.FromSeconds(3);
-        private static readonly TimeSpan s_desiredPropertiesSetInterval = TimeSpan.FromSeconds(3);
-        private static readonly TimeSpan s_c2dMessagesSentInterval = TimeSpan.FromSeconds(3);
         private static readonly TimeSpan s_deviceCountMonitorInterval = TimeSpan.FromSeconds(30);
-        private int _totalFileUploadNotificationsReceived;
+        private static readonly TimeSpan s_receiveFileUploadInterval = TimeSpan.FromSeconds(30);
 
         private static IotHubServiceClient s_serviceClient;
-        private static HashSet<string> s_activeDeviceSet;
-        private BlobContainerClient _blobContainerClient;
+        private static BlobContainerClient s_blobContainerClient;
 
-        private long _totalMethodCallsCount = 0;
-        private long _totalDesiredPropertiesUpdatesCount = 0;
-        private long _totalC2dMessagesSentCount = 0;
+        // Create a mapping between a device Id and a tuple of the correlated operations with the cancellation token source per online device.
+        private static ConcurrentDictionary<string, Tuple<Task, CancellationTokenSource>> s_onlineDeviceOperations;
+
+        private long _totalFileUploadNotificationsReceived = 0;
         private long _totalFeedbackMessagesReceivedCount = 0;
 
         public IotHub(Logger logger, Parameters parameters)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _hubConnectionString = parameters.IotHubConnectionString;
-            _deviceId = parameters.DeviceId;
             _transportProtocol = parameters.TransportProtocol;
             _storageConnectionString = parameters.StorageConnectionString;
         }
@@ -57,61 +51,15 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                 Protocol = _transportProtocol,
             };
             s_serviceClient = new IotHubServiceClient(_hubConnectionString, options);
-            s_activeDeviceSet = new HashSet<string>();
             _logger.Trace("Initialized a new service client instance.", TraceSeverity.Information);
 
-            _totalFileUploadNotificationsReceived = 0;
-            _blobContainerClient = new BlobContainerClient(_storageConnectionString, "fileupload");
+            s_onlineDeviceOperations = new ConcurrentDictionary<string, Tuple<Task, CancellationTokenSource>>();
+            s_blobContainerClient = new BlobContainerClient(_storageConnectionString, "fileupload");
         }
 
         public Task<string> GetEventHubCompatibleConnectionStringAsync(CancellationToken ct)
         {
             return s_serviceClient.GetEventHubCompatibleConnectionStringAsync(_hubConnectionString, ct);
-        }
-
-        public async Task InvokeDirectMethodAsync(CancellationToken ct)
-        {
-            while (!ct.IsCancellationRequested)
-            {
-                if (s_activeDeviceSet.Contains(_deviceId))
-                {
-                    var payload = new CustomDirectMethodPayload
-                    {
-                        RandomId = Guid.NewGuid(),
-                        CurrentTimeUtc = DateTimeOffset.UtcNow,
-                        MethodCallsCount = ++_totalMethodCallsCount,
-                    };
-
-                    var methodInvocation = new DirectMethodServiceRequest("EchoPayload")
-                    {
-                        Payload = payload,
-                        ResponseTimeout = TimeSpan.FromSeconds(30),
-                    };
-
-                    _logger.Trace($"Invoking direct method for device: {_deviceId}", TraceSeverity.Information);
-                    _logger.Metric(TotalDirectMethodCallsCount, _totalMethodCallsCount);
-
-                    try
-                    {
-                        // Invoke the direct method asynchronously and get the response from the simulated device.
-                        DirectMethodClientResponse response = await s_serviceClient.DirectMethods.InvokeAsync(_deviceId, methodInvocation, ct);
-
-                        if (response.TryGetPayload(out CustomDirectMethodPayload responsePayload))
-                        {
-                            _logger.Metric(
-                                D2cDirectMethodDelaySeconds,
-                                (DateTimeOffset.UtcNow - responsePayload.CurrentTimeUtc).TotalSeconds);
-                        }
-
-                        _logger.Trace($"Response status: {response.Status}, payload:\n\t{JsonConvert.SerializeObject(response.PayloadAsString)}", TraceSeverity.Information);
-                    }
-                    catch (IotHubServiceException ex) when (ex.ErrorCode == IotHubServiceErrorCode.DeviceNotOnline)
-                    {
-                        _logger.Trace($"Caught exception invoking direct method {ex}", TraceSeverity.Warning);
-                    }
-                }
-                await Task.Delay(s_directMethodInvokeInterval, ct).ConfigureAwait(false);
-            }
         }
 
         public async Task MonitorConnectedDevicesAsync(CancellationToken ct)
@@ -124,82 +72,67 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
 
                 await foreach (ClientTwin device in allDevices)
                 {
-                    if (s_activeDeviceSet.Contains(device.DeviceId) && device.ConnectionState == ClientConnectionState.Disconnected)
-                    {
-                        s_activeDeviceSet.Remove(device.DeviceId);
-                    }
-                    else if (!s_activeDeviceSet.Contains(device.DeviceId) && device.ConnectionState == ClientConnectionState.Connected)
-                    {
-                        s_activeDeviceSet.Add(device.DeviceId);
-                    }
+                    string deviceId = device.DeviceId;
 
-                    _logger.Trace($"Total number of connected devices: {s_activeDeviceSet.Count}", TraceSeverity.Information);
+                    if (s_onlineDeviceOperations.ContainsKey(deviceId)
+                        && device.ConnectionState is ClientConnectionState.Disconnected)
+                    {
+                        CancellationTokenSource source = s_onlineDeviceOperations[deviceId].Item2;
+                        // Signal cancellation to all tasks on the particular device.
+                        source.Cancel();
+                        // Dispose the cancellation token source.
+                        source.Dispose();
+                        // Remove the correlated device operations and cancellation token source of the particular device from the dictionary.
+                        s_onlineDeviceOperations.TryRemove(deviceId, out _);
+                    }
+                    else if (!s_onlineDeviceOperations.ContainsKey(deviceId)
+                        && device.ConnectionState is ClientConnectionState.Connected)
+                    {
+                        // For each online device, initiate a new cancellation token source.
+                        // Once the device goes offline, cancel all operations on this device.
+                        var source = new CancellationTokenSource();
+                        CancellationToken token = source.Token;
+
+                        async Task Operations()
+                        {
+                            var deviceOperations = new DeviceOperations(s_serviceClient, deviceId, _logger.Clone());
+                            _logger.Trace($"Creating {nameof(DeviceOperations)} on the device [{deviceId}]", TraceSeverity.Verbose);
+
+                            try
+                            {
+                                await Task
+                                .WhenAll(
+                                    deviceOperations.InvokeDirectMethodAsync(token),
+                                    deviceOperations.SetDesiredPropertiesAsync("guidValue", Guid.NewGuid().ToString(), token),
+                                    deviceOperations.SendC2dMessagesAsync(token))
+                                .ConfigureAwait(false);
+                            }
+                            catch (OperationCanceledException)
+                            {
+                                _logger.Trace($"Operations on [{deviceId}] have been canceled as the device goes offline.", TraceSeverity.Information);
+                            }
+                            catch (Exception ex)
+                            {
+                                _logger.Trace($"Service app failed with exception {ex}", TraceSeverity.Error);
+                            }
+                        }
+
+                        // Passing in "Operations()" as Task so we don't need to manually call "Invoke()" on it.
+                        var operationsTuple = new Tuple<Task, CancellationTokenSource>(Operations(), source);
+                        s_onlineDeviceOperations.TryAdd(deviceId, operationsTuple);
+                    }
                 }
+                _logger.Trace($"Total number of connected devices: {s_onlineDeviceOperations.Count}", TraceSeverity.Information);
+                _logger.Metric(TotalOnlineDevicesCount, s_onlineDeviceOperations.Count);
 
                 await Task.Delay(s_deviceCountMonitorInterval, ct).ConfigureAwait(false);
-            }
-        }
-
-        public async Task SetDesiredPropertiesAsync(string keyName, string properties, CancellationToken ct)
-        {
-            while (!ct.IsCancellationRequested)
-            {
-                if (s_activeDeviceSet.Contains(_deviceId))
-                {
-                    var twin = new ClientTwin();
-                    twin.Properties.Desired[keyName] = properties;
-
-                    ++_totalDesiredPropertiesUpdatesCount;
-                    _logger.Trace($"Updating the desired properties for device: {_deviceId}", TraceSeverity.Information);
-                    _logger.Metric(TotalDesiredPropertiesUpdatesCount, _totalDesiredPropertiesUpdatesCount);
-
-                    await s_serviceClient.Twins.UpdateAsync(_deviceId, twin, false, ct).ConfigureAwait(false);
-                }
-                await Task.Delay(s_desiredPropertiesSetInterval, ct).ConfigureAwait(false);
-            }
-        }
-
-        public async Task SendC2dMessagesAsync(CancellationToken ct)
-        {
-            try
-            {
-                await s_serviceClient.Messages.OpenAsync(ct).ConfigureAwait(false);
-
-                while (!ct.IsCancellationRequested)
-                {
-                    if (s_activeDeviceSet.Contains(_deviceId))
-                    {
-                        var payload = new CustomC2dMessagePayload
-                        {
-                            RandomId = Guid.NewGuid(),
-                            CurrentTimeUtc = DateTime.UtcNow,
-                            MessagesSentCount = ++_totalC2dMessagesSentCount,
-                        };
-                        var message = new OutgoingMessage(payload)
-                        {
-                            // An acknowledgment is sent on delivery success or failure.
-                            Ack = DeliveryAcknowledgement.Full,
-                            MessageId = payload.RandomId.ToString(),
-                        };
-
-                        _logger.Trace($"Sending message with Id {message.MessageId} to the device: {_deviceId}", TraceSeverity.Information);
-                        _logger.Metric(TotalC2dMessagesSentCount, _totalC2dMessagesSentCount);
-
-                        await s_serviceClient.Messages.SendAsync(_deviceId, message, ct).ConfigureAwait(false);
-                    }
-                    await Task.Delay(s_c2dMessagesSentInterval, ct).ConfigureAwait(false);
-                }
-            }
-            finally
-            {
-                await s_serviceClient.Messages.CloseAsync().ConfigureAwait(false);
             }
         }
 
         public async Task ReceiveMessageFeedbacksAsync(CancellationToken ct)
         {
             // It is important to note that receiver only gets feedback messages when the device is actively running and acting on messages.
-            _logger.Trace("Starting to listen to cloud-to-device feedback messages", TraceSeverity.Verbose);
+            _logger.Trace("Starting to listen to cloud-to-device feedback messages...", TraceSeverity.Verbose);
 
             Task<AcknowledgementType> OnC2dMessageAck(FeedbackBatch feedbackMessages)
             {
@@ -234,34 +167,43 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
             }
         }
 
-        public async Task ReceiveFileUploadAsync(CancellationToken ct)
+        public async Task ReceiveFileUploadNotificationsAsync(CancellationToken ct)
         {
-            while (!ct.IsCancellationRequested)
+            _logger.Trace("Starting to listen to file upload notifications...", TraceSeverity.Verbose);
+
+            Task<AcknowledgementType> FileUploadNotificationCallback(FileUploadNotification fileUploadNotification)
+            {
+                AcknowledgementType ackType = AcknowledgementType.Complete;
+                ++_totalFileUploadNotificationsReceived;
+                _logger.Metric(TotalFileUploadNotificiationsReceivedCount, _totalFileUploadNotificationsReceived);
+
+                var sb = new StringBuilder();
+                sb.Append($"Received file upload notification.");
+                sb.Append($"\n\tDeviceId: {fileUploadNotification.DeviceId ?? "N/A"}.");
+                sb.Append($"\n\tFileName: {fileUploadNotification.BlobName ?? "N/A"}.");
+                sb.Append($"\n\tEnqueueTimeUTC: {fileUploadNotification.EnqueuedOnUtc}.");
+                sb.Append($"\n\tBlobSizeInBytes: {fileUploadNotification.BlobSizeInBytes}.");
+                _logger.Trace(sb.ToString(), TraceSeverity.Information);
+
+                s_blobContainerClient.DeleteBlobIfExists(fileUploadNotification.BlobName);
+                return Task.FromResult(ackType);
+            }
+
+            s_serviceClient.FileUploadNotifications.FileUploadNotificationProcessor = FileUploadNotificationCallback;
+
+            try
             {
                 await s_serviceClient.FileUploadNotifications.OpenAsync(ct).ConfigureAwait(false);
-                _logger.Trace("Listening for file upload notifications from the service...");
 
-                Task<AcknowledgementType> FileUploadNotificationCallback(FileUploadNotification fileUploadNotification)
+                try
                 {
-                    AcknowledgementType ackType = AcknowledgementType.Complete;
-                    _totalFileUploadNotificationsReceived++;
-
-                    var sb = new StringBuilder();
-                    sb.Append($"Received file upload notification.");
-                    sb.Append($"\tDeviceId: {fileUploadNotification.DeviceId ?? "N/A"}.");
-                    sb.Append($"\tFileName: {fileUploadNotification.BlobName ?? "N/A"}.");
-                    sb.Append($"\tEnqueueTimeUTC: {fileUploadNotification.EnqueuedOnUtc}.");
-                    sb.Append($"\tBlobSizeInBytes: {fileUploadNotification.BlobSizeInBytes}.");
-                    _logger.Trace(sb.ToString());
-
-                    _blobContainerClient.DeleteBlobIfExists(fileUploadNotification.BlobName);
-                    return Task.FromResult(ackType);
+                    await Task.Delay(-1, ct);
                 }
-
-                s_serviceClient.FileUploadNotifications.FileUploadNotificationProcessor = FileUploadNotificationCallback;
-                _logger.Metric("TotalFileUploadNotificiationsReceived", _totalFileUploadNotificationsReceived);
-
-                await Task.Delay(TimeSpan.FromSeconds(30));
+                catch (OperationCanceledException) { }
+            }
+            finally
+            {
+                await s_serviceClient.FileUploadNotifications.CloseAsync().ConfigureAwait(false);
             }
         }
 

@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.Serialization;
+using System.Text;
 
 namespace Microsoft.Azure.Devices.Client
 {
@@ -98,7 +99,12 @@ namespace Microsoft.Azure.Devices.Client
         /// <inheritdoc/>
         public override string ToString()
         {
-            return $"{Message}\nError code: {ErrorCode}\n{StackTrace}n";
+            var sb = new StringBuilder();
+            sb.Append($"Message: {Message}\nErrorCode: {ErrorCode}, IsTransient: {IsTransient}");
+            if (!string.IsNullOrEmpty(TrackingId))
+                sb.Append($", TrackingId: {TrackingId}");
+            sb.Append($"\n{StackTrace}");
+            return sb.ToString();
         }
 
         private static bool DetermineIfTransient(IotHubClientErrorCode errorCode)

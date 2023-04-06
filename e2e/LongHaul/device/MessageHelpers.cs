@@ -1,6 +1,9 @@
-﻿using Microsoft.Azure.Devices.Client;
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
+using Microsoft.Azure.Devices.Client;
 
 namespace Microsoft.Azure.Devices.LongHaul.Device
 {

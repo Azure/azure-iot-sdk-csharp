@@ -151,8 +151,8 @@ namespace Microsoft.Azure.Devices.Client
             }
 
             message.PayloadConvention = _clientOptions.PayloadConvention;
-            message.ContentType = _clientOptions.PayloadConvention.ContentType;
-            message.ContentEncoding = _clientOptions.PayloadConvention.ContentEncoding;
+            message.ContentType ??= _clientOptions.PayloadConvention.ContentType;
+            message.ContentEncoding ??= _clientOptions.PayloadConvention.ContentEncoding;
 
             try
             {
@@ -192,13 +192,18 @@ namespace Microsoft.Azure.Devices.Client
         public async Task SendTelemetryAsync(IEnumerable<TelemetryMessage> messages, CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNullOrEmpty(messages, nameof(messages));
+            if (_clientOptions.TransportSettings is IotHubClientMqttSettings)
+            {
+                throw new InvalidOperationException("This operation is not supported over MQTT. Please refer to the API comments for additional details.");
+            }
+
             cancellationToken.ThrowIfCancellationRequested();
 
             foreach (TelemetryMessage message in messages)
             {
                 message.PayloadConvention = _clientOptions.PayloadConvention;
-                message.ContentType = _clientOptions.PayloadConvention.ContentType;
-                message.ContentEncoding = _clientOptions.PayloadConvention.ContentEncoding;
+                message.ContentType ??= _clientOptions.PayloadConvention.ContentType;
+                message.ContentEncoding ??= _clientOptions.PayloadConvention.ContentEncoding;
 
                 if (_clientOptions?.SdkAssignsMessageId == SdkAssignsMessageId.WhenUnset)
                 {
@@ -206,7 +211,7 @@ namespace Microsoft.Azure.Devices.Client
                 }
             }
 
-            await InnerHandler.SendTelemetryBatchAsync(messages, cancellationToken).ConfigureAwait(false);
+            await InnerHandler.SendTelemetryAsync(messages, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -581,7 +586,7 @@ namespace Microsoft.Azure.Devices.Client
             var transporthandlerFactory = new TransportHandlerFactory();
             ClientPipelineBuilder pipelineBuilder = new ClientPipelineBuilder()
                 .With((ctx, innerHandler) => new RetryDelegatingHandler(ctx, innerHandler))
-                .With((ctx, innerHandler) => new ErrorDelegatingHandler(ctx, innerHandler))
+                .With((ctx, innerHandler) => new ExceptionRemappingHandler(ctx, innerHandler))
                 .With((ctx, innerHandler) => new TransportDelegatingHandler(ctx, innerHandler))
                 .With((ctx, innerHandler) => transporthandlerFactory.Create(ctx));
 

@@ -1,4 +1,11 @@
-﻿using System.Diagnostics;
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Net.NetworkInformation;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices.LongHaul.Device
@@ -6,48 +13,59 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
     internal class SystemHealthTelemetry : TelemetryBase
     {
         private static readonly Process s_currentProcess = Process.GetCurrentProcess();
-        private static readonly string s_processName = s_currentProcess.ProcessName;
+        private static DateTime? s_previousCpuStartTime = null;
+        private static TimeSpan? s_previousTotalProcessorTime = null;
+        // always include HTTPS port.
+        public static HashSet<int> TcpPortFilter = new() { 443 };
 
-        private static readonly PerformanceCounter s_processCpuCounter = new(
-            "Process",
-            "% Processor Time",
-            s_processName,
-            true);
-        private static readonly PerformanceCounter s_processWorkingSet = new(
-            "Process",
-            "Working Set",
-            s_processName,
-            true);
-        private static readonly PerformanceCounter s_processWorkingSetPrivate = new(
-            "Process",
-            "Working Set - Private",
-            s_processName,
-            true);
-        private static readonly PerformanceCounter s_processPrivateBytes = new(
-            "Process",
-            "Private bytes",
-            s_processName,
-            true);
-        private static readonly PerformanceCounter s_processBytesInAllHeaps = null;
-        //new PerformanceCounter(
-        //    ".NET CLR Memory",
-        //    "# Bytes in all Heaps",
-        //    _processName,
-        //    true);
+        public SystemHealthTelemetry(int port)
+        {
+            TcpPortFilter.Add(port);
+        }
 
         [JsonPropertyName("processCpuUsagePercent")]
-        public float ProcessCpuUsagePercent { get; set; } = s_processCpuCounter.NextValue();
+        public double ProcessCpuUsagePercent { get; set; } = UpdateCpuUsage();
 
-        [JsonPropertyName("processWorkingSet")]
-        public float ProcessWorkingSet { get; set; } = s_processWorkingSet.NextValue();
+        [JsonPropertyName("totalAssignedMemoryBytes")]
+        public long TotalAssignedMemoryBytes { get; set; } = s_currentProcess.WorkingSet64;
 
-        [JsonPropertyName("processWorkingSetPrivate")]
-        public float ProcessWorkingSetPrivate { get; set; } = s_processWorkingSetPrivate.NextValue();
+        [JsonPropertyName("totalGCBytes")]
+        public long TotalGCBytes { get; set; } = GC.GetTotalMemory(false);
 
-        [JsonPropertyName("processPrivateBytes")]
-        public float ProcessPrivateBytes { get; set; } = s_processPrivateBytes.NextValue();
+        [JsonPropertyName("activeTcpConnections")]
+        public long ActiveTcpConnections { get; set; } = UpdateTcpConnections();
 
-        [JsonPropertyName("processBytesInAllHeaps")]
-        public float? ProcessBytesInAllHeaps { get; set; } = s_processBytesInAllHeaps?.NextValue();
+        private static long UpdateTcpConnections()
+        {
+            var properties = IPGlobalProperties.GetIPGlobalProperties();
+            TcpConnectionInformation[] connections = properties.GetActiveTcpConnections();
+            return connections
+                .Where(c => TcpPortFilter.Contains(c.RemoteEndPoint.Port))
+                .Where(c => c.State == TcpState.Established)
+                .Count();
+        }
+
+        private static double UpdateCpuUsage()
+        {
+            DateTime currentCpuStartTime = DateTime.UtcNow;
+            TimeSpan currentCpuUsage = s_currentProcess.TotalProcessorTime;
+
+            // If no start time set then set to now
+            if (!s_previousCpuStartTime.HasValue)
+            {
+                s_previousCpuStartTime = currentCpuStartTime;
+                s_previousTotalProcessorTime = currentCpuUsage;
+            }
+
+            double cpuUsedMs = (currentCpuUsage - s_previousTotalProcessorTime.Value).TotalMilliseconds;
+            double totalMsPassed = (currentCpuStartTime - s_previousCpuStartTime.Value).TotalMilliseconds;
+            double cpuUsageTotal = cpuUsedMs / (Environment.ProcessorCount * totalMsPassed);
+
+            // Set previous times.
+            s_previousCpuStartTime = currentCpuStartTime;
+            s_previousTotalProcessorTime = currentCpuUsage;
+
+            return cpuUsageTotal * 100.0;
+        }
     }
 }

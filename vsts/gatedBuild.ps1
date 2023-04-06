@@ -58,7 +58,7 @@ else
 {
 	#Likely a nightly or CI build
 	Write-Host "Not a pull request build, will run all tests and samples"
-	$runTestCmd += " -unittests -e2etests -runSamples"
+	$runTestCmd += " -unittests -e2etests -runCleanupSamples"
 }
 
 Write-Host "Starting tests... with '$runTestCmd'"

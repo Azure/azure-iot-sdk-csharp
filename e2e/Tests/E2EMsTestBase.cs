@@ -16,10 +16,7 @@ namespace Microsoft.Azure.Devices.E2ETests
     /// </summary>
     public class E2EMsTestBase : IDisposable
     {
-        private ConsoleEventListener _listener;
-
-        // Test specific logger instance
-        public TestContext TestContext { get; set; }
+        public static readonly bool s_collectSdkLogs;
 
         // The test timeout for typical e2e tests
         protected const int TestTimeoutMilliseconds = 3 * 60 * 1000; // 3 minutes
@@ -33,8 +30,20 @@ namespace Microsoft.Azure.Devices.E2ETests
         // The test timeout for e2e tests that involve testing token refresh
         protected const int TokenRefreshTestTimeoutMilliseconds = 20 * 60 * 1000; // 20 minutes
 
+        // The test timeout for typical e2e tests
+        protected static readonly TimeSpan s_testTimeout = TimeSpan.FromMinutes(3);
+
+        // The test timeout for long running e2e tests
+        protected static readonly TimeSpan s_longRunningTestTimeout = TimeSpan.FromMinutes(5);
+
+        // The test timeout for long running e2e tests the inspect the connection status change logic on disabling a device.
+        protected static readonly TimeSpan s_connectionStateChangeTestTimeout = TimeSpan.FromMinutes(10);
+
+        // The test timeout for e2e tests that involve testing token refresh
+        protected static readonly TimeSpan s_tokenRefreshTestTimeout = TimeSpan.FromMinutes(20);
+
         private const string CollectSdkLogsEnvVar = "COLLECT_SDK_LOGS";
-        public static readonly bool s_collectSdkLogs;
+        private ConsoleEventListener _listener;
 
         static E2EMsTestBase()
         {
@@ -43,6 +52,9 @@ namespace Microsoft.Azure.Devices.E2ETests
                 s_collectSdkLogs = collectSdkLogs;
             }
         }
+
+        // Test specific logger instance
+        public TestContext TestContext { get; set; }
 
         [TestInitialize]
         public void TestInitialize()

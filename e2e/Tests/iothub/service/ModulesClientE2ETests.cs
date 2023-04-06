@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using Azure;
 using FluentAssertions;
@@ -142,8 +143,12 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         [Timeout(TestTimeoutMilliseconds)]
         public async Task ModulesClient_SetModulesETag_Works()
         {
+            // Setting up one cancellation token for the complete test flow
+            using var cts = new CancellationTokenSource(s_testTimeout);
+            CancellationToken ct = cts.Token;
+
             IotHubServiceClient serviceClient = TestDevice.ServiceClient;
-            await using TestModule testModule = await TestModule.GetTestModuleAsync(_idPrefix, _idPrefix).ConfigureAwait(false);
+            await using TestModule testModule = await TestModule.GetTestModuleAsync(_idPrefix, _idPrefix, ct).ConfigureAwait(false);
 
             await RetryOperationHelper
                 .RunWithHubServiceRetryAsync(

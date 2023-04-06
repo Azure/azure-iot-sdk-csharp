@@ -29,18 +29,22 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         [DataRow(IotHubTransportProtocol.WebSocket)]
         public async Task MessageFeedbackReceiver_Operation(IotHubTransportProtocol protocol)
         {
+            // Setting up one cancellation token for the complete test flow
+            using var cts = new CancellationTokenSource(s_testTimeout);
+            CancellationToken ct = cts.Token;
+
             var options = new IotHubServiceClientOptions
             {
                 Protocol = protocol,
             };
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString, options);
-            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix).ConfigureAwait(false);
+            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix, ct: ct).ConfigureAwait(false);
 
             try
             {
                 // Configure the device to receive messages.
                 await using IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(new IotHubClientAmqpSettings()));
-                await testDevice.OpenWithRetryAsync().ConfigureAwait(false);
+                await testDevice.OpenWithRetryAsync(ct).ConfigureAwait(false);
 
                 var c2dMessageReceived = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
                 Task<MessageAcknowledgement> OnC2DMessageReceived(IncomingMessage message)
@@ -61,11 +65,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 {
                     if (feedback.Records.Any(x => x.OriginalMessageId == message.MessageId))
                     {
-                        if (!feedbackMessageReceived.Task.IsCompleted)
-                        {
-                            feedbackMessageReceived.TrySetResult(true);
-                        }
-
+                        feedbackMessageReceived.TrySetResult(true);
                         return Task.FromResult(AcknowledgementType.Complete);
                     }
 
@@ -78,16 +78,11 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 await serviceClient.Messages.SendAsync(testDevice.Device.Id, message).ConfigureAwait(false);
 
                 // Wait for the device to receive the message.
-                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(20));
                 await c2dMessageReceived.WaitAsync(cts.Token).ConfigureAwait(false);
-
-                c2dMessageReceived.Task.IsCompleted.Should().BeTrue("Timed out waiting for C2D message to be received by device");
 
                 // Wait for the service to receive the feedback message.
                 using var cts2 = new CancellationTokenSource(TimeSpan.FromSeconds(200));
                 await feedbackMessageReceived.WaitAsync(cts2.Token).ConfigureAwait(false);
-
-                feedbackMessageReceived.Task.IsCompleted.Should().BeTrue("service client never received c2d feedback message even though the device received the message");
             }
             catch (Exception ex)
             {

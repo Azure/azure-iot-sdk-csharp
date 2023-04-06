@@ -34,6 +34,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         private readonly AcknowledgementType _defaultAcknowledgementType = AcknowledgementType.Abandon;
 
         [TestMethod]
+        [TestCategory("Flaky")]    // The test times out intermittently on the PR gates.
         [DataRow(IotHubTransportProtocol.Tcp, 1, false)]
         [DataRow(IotHubTransportProtocol.Tcp, 2, false)]
         [DataRow(IotHubTransportProtocol.Tcp, 1, true)]
@@ -150,7 +151,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
         private async Task UploadFile(string fileName, CancellationToken ct)
         {
-            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix).ConfigureAwait(false);
+            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix, ct: ct).ConfigureAwait(false);
             IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(new IotHubClientAmqpSettings()));
             await testDevice.OpenWithRetryAsync(ct).ConfigureAwait(false);
 

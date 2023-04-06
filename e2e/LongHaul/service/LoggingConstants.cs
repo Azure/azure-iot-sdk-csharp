@@ -11,7 +11,6 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
         public const string RunId = "runId";
         public const string SdkLanguage = "sdkLanguage";
         public const string SdkVersion = "sdkVersion";
-
         public const string Hub = "hub";
         public const string Transport = "transport";
 
@@ -26,5 +25,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
         public const string TotalDesiredPropertiesUpdatesCount = "TotalDesiredPropertiesUpdatesCount";
         public const string TotalC2dMessagesSentCount = "TotalC2dMessagesSentCount";
         public const string TotalFeedbackMessagesReceivedCount = "TotalFeedbackMessagesReceivedCount";
+        public const string TotalOnlineDevicesCount = "TotalOnlineDevicesCount";
+        public const string TotalFileUploadNotificiationsReceivedCount = "TotalFileUploadNotificiationsReceivedCount";
     }
 }

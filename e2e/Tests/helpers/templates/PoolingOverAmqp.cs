@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client;
 
@@ -21,10 +22,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
             IotHubClientAmqpSettings transportSettings,
             int poolSize,
             int devicesCount,
-            Func<TestDevice, TestDeviceCallbackHandler, Task> initOperation,
-            Func<TestDevice, TestDeviceCallbackHandler, Task> testOperation,
-            Func<Task> cleanupOperation,
-            ConnectionStringAuthScope authScope)
+            Func<TestDevice, TestDeviceCallbackHandler, CancellationToken, Task> initOperation,
+            Func<TestDevice, TestDeviceCallbackHandler, CancellationToken, Task> testOperation,
+            Func<CancellationToken, Task> cleanupOperation,
+            ConnectionStringAuthScope authScope,
+            CancellationToken ct)
         {
             transportSettings.ConnectionPoolSettings = new AmqpConnectionPoolSettings
             {
@@ -46,14 +48,14 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                 for (int deviceCreateIndex = 0; deviceCreateIndex < devicesCount; deviceCreateIndex++)
                 {
                     // Initialize the test device client instances
-                    TestDevice testDevice = await TestDevice.GetTestDeviceAsync($"{devicePrefix}_{deviceCreateIndex}_").ConfigureAwait(false);
+                    TestDevice testDevice = await TestDevice.GetTestDeviceAsync($"{devicePrefix}_{deviceCreateIndex}_", ct: ct).ConfigureAwait(false);
                     IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(transportSettings), authScope: authScope);
 
                     // Set the device client connection status change handler
                     var amqpConnectionStatusChange = new AmqpConnectionStatusChange();
                     deviceClient.ConnectionStatusChangeCallback = amqpConnectionStatusChange.ConnectionStatusChangeHandler;
 
-                    await deviceClient.OpenAsync().ConfigureAwait(false);
+                    await deviceClient.OpenAsync(ct).ConfigureAwait(false);
                     var testDeviceCallbackHandler = new TestDeviceCallbackHandler(deviceClient, testDevice.Id);
 
                     testDevices.Add(testDevice);
@@ -62,13 +64,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
 
                     if (initOperation != null)
                     {
-                        await initOperation(testDevice, testDeviceCallbackHandler).ConfigureAwait(false);
+                        await initOperation(testDevice, testDeviceCallbackHandler, ct).ConfigureAwait(false);
                     }
                 }
 
                 for (int deviceInitIndex = 0; deviceInitIndex < devicesCount; deviceInitIndex++)
                 {
-                    operations.Add(testOperation(testDevices[deviceInitIndex], testDeviceCallbackHandlers[deviceInitIndex]));
+                    operations.Add(testOperation(testDevices[deviceInitIndex], testDeviceCallbackHandlers[deviceInitIndex], ct));
                 }
                 await Task.WhenAll(operations).ConfigureAwait(false);
                 operations.Clear();
@@ -80,7 +82,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                 {
                     try
                     {
-                        await cleanupOperation().ConfigureAwait(false);
+                        await cleanupOperation(ct).ConfigureAwait(false);
                     }
                     catch (Exception ex)
                     {

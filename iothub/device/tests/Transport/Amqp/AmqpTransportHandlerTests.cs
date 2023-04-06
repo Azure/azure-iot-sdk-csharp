@@ -9,6 +9,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
+using Microsoft.Azure.Devices.Client.Transport;
 using Microsoft.Azure.Devices.Client.Transport.Amqp;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
@@ -36,7 +37,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
         [TestMethod]
         public async Task AmqpTransportHandlerSendTelemetryAsyncMultipleMessagesTokenCancellationRequested()
         {
-            await TestOperationCanceledByToken(token => CreateFromConnectionString().SendTelemetryBatchAsync(new List<TelemetryMessage>(), token)).ConfigureAwait(false);
+            await TestOperationCanceledByToken(token => CreateFromConnectionString().SendTelemetryAsync(new List<TelemetryMessage>(), token)).ConfigureAwait(false);
         }
 
         [TestMethod]

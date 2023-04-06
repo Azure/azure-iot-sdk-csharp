@@ -67,6 +67,9 @@
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="Microsoft.Win32.Registry" Version="5.0.0" />
     
+    <!--Required for dynamic-->
+    <PackageReference Include="Microsoft.CSharp" Version="4.7" />
+    
     <!-- Add support for IAsyncDisposable, match version used in track2 https://github.com/Azure/azure-sdk-for-net/blob/main/eng/Packages.Data.props#L80 -->
     <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="1.1.1" />
   </ItemGroup>

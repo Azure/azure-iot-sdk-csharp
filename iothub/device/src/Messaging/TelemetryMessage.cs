@@ -30,6 +30,15 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
+        /// Creates an instance of this class with the specified binary payload.
+        /// </summary>
+        /// <param name="binaryPayload">The binary payload to send.</param>
+        public TelemetryMessage(byte[] binaryPayload)
+        {
+            Payload = binaryPayload;
+        }
+
+        /// <summary>
         /// The message payload.
         /// </summary>
         public object Payload { get; }
@@ -119,7 +128,7 @@ namespace Microsoft.Azure.Devices.Client
         public string ContentType
         {
             get => GetSystemProperty<string>(MessageSystemPropertyNames.ContentType);
-            protected internal set => SystemProperties[MessageSystemPropertyNames.ContentType] = value;
+            set => SystemProperties[MessageSystemPropertyNames.ContentType] = value;
         }
 
         /// <summary>
@@ -128,7 +137,7 @@ namespace Microsoft.Azure.Devices.Client
         public string ContentEncoding
         {
             get => GetSystemProperty<string>(MessageSystemPropertyNames.ContentEncoding);
-            protected internal set => SystemProperties[MessageSystemPropertyNames.ContentEncoding] = value;
+            set => SystemProperties[MessageSystemPropertyNames.ContentEncoding] = value;
         }
 
         /// <summary>
@@ -236,9 +245,18 @@ namespace Microsoft.Azure.Devices.Client
             SystemProperties[MessageSystemPropertyNames.InterfaceId] = CommonConstants.SecurityMessageInterfaceId;
         }
 
+        /// <summary>
+        /// Gets the payload as a byte array, serialized and encoded if necessary.
+        /// </summary>
+        /// <remarks>
+        /// If needed, serialization uses Newtonsoft.Json and encoding is UTF8.
+        /// </remarks>
+        /// <returns>A payload as a byte array.</returns>
         internal byte[] GetPayloadObjectBytes()
         {
-            return PayloadConvention.GetObjectBytes(Payload);
+            return Payload is byte[] payloadAsByteArray
+                ? payloadAsByteArray
+                : PayloadConvention.GetObjectBytes(Payload);
         }
 
         private T GetSystemProperty<T>(string key)

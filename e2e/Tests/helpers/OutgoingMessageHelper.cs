@@ -7,7 +7,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
 {
     internal static class OutgoingMessageHelper
     {
-        public static OutgoingMessage ComposeOutgoingTestMessage(out string payload, out string p1Value)
+        public static OutgoingMessage ComposeTestMessage(out string payload, out string p1Value)
         {
             payload = Guid.NewGuid().ToString();
             p1Value = Guid.NewGuid().ToString();

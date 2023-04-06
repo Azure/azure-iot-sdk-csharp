@@ -17,6 +17,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
     {
         private static readonly IDictionary<string, string> s_commonProperties = new Dictionary<string, string>();
         private static Logger s_logger;
+        private static int s_port;
         private static ApplicationInsightsLoggingProvider s_aiLoggingProvider;
 
         private static async Task Main(string[] args)
@@ -49,15 +50,18 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
             }
 
             s_logger = InitializeLogging(parameters);
+            s_port = PortFilter(parameters);
 
             // Log system health before initializing hub
             SystemHealthMonitor.BuildAndLogSystemHealth(s_logger);
 
             s_logger.Event(StartingRun);
 
-            using var iotHub = new IotHub(
-                s_logger,
-                parameters);
+            using var iotHub = new IotHub(s_logger, parameters);
+
+            s_logger.Trace(
+                $"The transport protocol [{parameters.TransportProtocol}] is applied into the service app.",
+                TraceSeverity.Verbose);
 
             // Log system health after initializing hub
             SystemHealthMonitor.BuildAndLogSystemHealth(s_logger);
@@ -76,7 +80,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                 Console.WriteLine("Exiting ...");
             };
 
-            var systemHealthMonitor = new SystemHealthMonitor(s_logger.Clone());
+            var systemHealthMonitor = new SystemHealthMonitor(s_port, s_logger.Clone());
             var hubEvents = new HubEvents(iotHub, s_logger.Clone());
 
             try
@@ -85,11 +89,8 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                     .WhenAll(
                         systemHealthMonitor.RunAsync(cancellationTokenSource.Token),
                         iotHub.MonitorConnectedDevicesAsync(cancellationTokenSource.Token),
-                        iotHub.InvokeDirectMethodAsync(cancellationTokenSource.Token),
-                        iotHub.SetDesiredPropertiesAsync("guidValue", Guid.NewGuid().ToString(), cancellationTokenSource.Token),
-                        iotHub.SendC2dMessagesAsync(cancellationTokenSource.Token),
                         iotHub.ReceiveMessageFeedbacksAsync(cancellationTokenSource.Token),
-                        iotHub.ReceiveFileUploadAsync(cancellationTokenSource.Token),
+                        iotHub.ReceiveFileUploadNotificationsAsync(cancellationTokenSource.Token),
                         hubEvents.RunAsync(cancellationTokenSource.Token))
                     .ConfigureAwait(false);
             }
@@ -105,6 +106,11 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
 
             s_logger.Flush();
             s_aiLoggingProvider.Dispose();
+        }
+
+        private static int PortFilter(Parameters parameters)
+        {
+            return parameters.TransportProtocol == IotHubTransportProtocol.WebSocket ? 443 : 5671;
         }
 
         private static Logger InitializeLogging(Parameters parameters)

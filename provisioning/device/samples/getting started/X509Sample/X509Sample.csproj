@@ -5,6 +5,7 @@
     <TargetFramework>net6.0</TargetFramework>
     <LangVersion>9.0</LangVersion>
     <RootNamespace>Microsoft.Azure.Devices.Provisioning.Client.Samples</RootNamespace>
+    <IsPackable>false</IsPackable>
 
     <!--
     Warning for using pre-release nugets can be ignored since this sample 

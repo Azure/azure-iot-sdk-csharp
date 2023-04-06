@@ -3,6 +3,7 @@
 
 using System;
 using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.LongHaul.Device
 {
@@ -11,12 +12,15 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
     /// </summary>
     internal class CustomDirectMethodPayload
     {
+        [JsonProperty("randomId")]
         [JsonPropertyName("randomId")]
         public Guid RandomId { get; set; }
 
+        [JsonProperty("methodCallsCount")]
         [JsonPropertyName("methodCallsCount")]
         public long MethodCallsCount { get; set; }
 
+        [JsonProperty("currentTimeUtc")]
         [JsonPropertyName("currentTimeUtc")]
         public DateTimeOffset CurrentTimeUtc { get; set; } = DateTimeOffset.UtcNow;
     }

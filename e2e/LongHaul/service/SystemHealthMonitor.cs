@@ -16,10 +16,12 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
     internal class SystemHealthMonitor
     {
         private readonly Logger _logger;
+        private static int s_port;
         private static readonly TimeSpan s_interval = TimeSpan.FromSeconds(3);
 
-        public SystemHealthMonitor(Logger logger)
+        public SystemHealthMonitor(int port, Logger logger)
         {
+            s_port = port;
             _logger = logger;
             _logger.LoggerContext.Add("Component", nameof(SystemHealthMonitor));
         }
@@ -35,15 +37,11 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
 
         internal static SystemHealthMessage BuildAndLogSystemHealth(Logger logger)
         {
-            var message = new SystemHealthMessage();
+            var message = new SystemHealthMessage(s_port);
+            logger.Metric(nameof(message.TotalAssignedMemoryBytes), message.TotalAssignedMemoryBytes);
             logger.Metric(nameof(message.ProcessCpuUsagePercent), message.ProcessCpuUsagePercent);
-            logger.Metric(nameof(message.ProcessWorkingSet), message.ProcessWorkingSet);
-            logger.Metric(nameof(message.ProcessWorkingSetPrivate), message.ProcessWorkingSetPrivate);
-            logger.Metric(nameof(message.ProcessPrivateBytes), message.ProcessPrivateBytes);
-            if (message.ProcessBytesInAllHeaps.HasValue)
-            {
-                logger.Metric(nameof(message.ProcessBytesInAllHeaps), message.ProcessBytesInAllHeaps.Value);
-            }
+            logger.Metric(nameof(message.TotalGCBytes), message.TotalGCBytes);
+            logger.Metric(nameof(message.ActiveTcpConnections), message.ActiveTcpConnections);
 
             return message;
         }

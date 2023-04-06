@@ -4,6 +4,7 @@
 using System;
 using System.Net;
 using System.Runtime.Serialization;
+using System.Text;
 
 namespace Microsoft.Azure.Devices
 {
@@ -102,6 +103,17 @@ namespace Microsoft.Azure.Devices
             base.GetObjectData(info, context);
             info.AddValue(IsTransientValueSerializationStoreName, IsTransient);
             info.AddValue(TrackingIdValueSerializationStoreName, TrackingId);
+        }
+
+        /// <inheritdoc/>
+        public override string ToString()
+        {
+            var sb = new StringBuilder();
+            sb.Append($"Message: {Message}\nErrorCode: {ErrorCode}, IsTransient: {IsTransient}");
+            if (!string.IsNullOrEmpty(TrackingId))
+                sb.Append($", TrackingId: {TrackingId}");
+            sb.Append($"\n{StackTrace}");
+            return sb.ToString();
         }
 
         private static bool DetermineIfTransient(HttpStatusCode statusCode, IotHubServiceErrorCode errorCode)

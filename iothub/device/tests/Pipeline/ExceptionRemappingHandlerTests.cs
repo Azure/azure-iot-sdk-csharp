@@ -22,11 +22,11 @@ namespace Microsoft.Azure.Devices.Client.Test
 {
     [TestClass]
     [TestCategory("Unit")]
-    public class ErrorDelegatingHandlerTests
+    public class ExceptionRemappingHandlerTests
     {
         private const string ErrorMessage = "Error occurred.";
 
-        private static readonly Dictionary<Type, Func<Exception>> s_exceptionFactory = new Dictionary<Type, Func<Exception>>
+        private static readonly Dictionary<Type, Func<Exception>> s_exceptionFactory = new()
         {
             { typeof(IotHubClientException), () => new IotHubClientException(ErrorMessage) },
             { typeof(IOException), () => new IOException(ErrorMessage) },
@@ -42,7 +42,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             { typeof(TestDerivedException), () => new TestDerivedException() },
         };
 
-        private static readonly HashSet<Type> s_networkExceptions = new HashSet<Type>
+        private static readonly HashSet<Type> s_networkExceptions = new()
         {
             typeof(IOException),
             typeof(SocketException),
@@ -72,13 +72,13 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public async Task ErrorHandler_NoErrors_Success()
+        public async Task ExceptionRemappingHandler_NoErrors_Success()
         {
             var contextMock = new PipelineContext();
             var innerHandler = new Mock<IDelegatingHandler>();
             innerHandler.Setup(x => x.OpenAsync(It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
             innerHandler.Setup(x => x.SendTelemetryAsync(It.IsAny<TelemetryMessage>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
-            using var sut = new ErrorDelegatingHandler(contextMock, innerHandler.Object);
+            using var sut = new ExceptionRemappingHandler(contextMock, innerHandler.Object);
 
             var cancellationToken = new CancellationToken();
             await sut.OpenAsync(cancellationToken).ConfigureAwait(false);
@@ -89,7 +89,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public async Task ErrorHandler_TransientErrorOccuredChannelIsAlive_ChannelIsTheSame()
+        public async Task ExceptionRemappingHandler_TransientErrorOccuredChannelIsAlive_ChannelIsTheSame()
         {
             foreach (Type exceptionType in s_networkExceptions)
             {
@@ -106,7 +106,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public async Task ErrorHandler_SecurityErrorOccured_ChannelIsAborted()
+        public async Task ExceptionRemappingHandler_SecurityErrorOccured_ChannelIsAborted()
         {
             List<IotHubClientException> actualExceptions = await TestExceptionThrownAsync(typeof(TestSecurityException)).ConfigureAwait(false);
 
@@ -118,7 +118,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        public async Task ErrorHandler_NonTransientErrorOccured_ChannelIsRecreated()
+        public async Task ExceptionRemappingHandler_NonTransientErrorOccured_ChannelIsRecreated()
         {
             await TestExceptionThrownAsync(typeof(IotHubClientException)).ConfigureAwait(false);
         }
@@ -137,7 +137,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             var contextMock = new PipelineContext();
             var innerHandler = new Mock<IDelegatingHandler>();
             innerHandler.Setup(x => x.OpenAsync(It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
-            using var sut = new ErrorDelegatingHandler(contextMock, innerHandler.Object);
+            using var sut = new ExceptionRemappingHandler(contextMock, innerHandler.Object);
 
             // initial OpenAsync to emulate Gatekeeper behavior
             var cancellationToken = new CancellationToken();
@@ -182,7 +182,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             var contextMock = new PipelineContext();
             var innerHandler = new Mock<IDelegatingHandler>();
-            using var sut = new ErrorDelegatingHandler(contextMock, innerHandler.Object);
+            using var sut = new ExceptionRemappingHandler(contextMock, innerHandler.Object);
 
             // set initial operation result that throws
 

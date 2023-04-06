@@ -70,9 +70,10 @@ namespace Microsoft.Azure.Devices.Client
         /// <inheritdoc/>
         public override T GetObject<T>(Stream streamToConvert)
         {
-            using var sw = new StreamReader(streamToConvert);
-            using var jtr = new JsonTextReader(sw);
-            return s_jsonSerializer.Deserialize<T>(jtr);
+            using var sw = new StreamReader(streamToConvert, s_encoding);
+            string body = sw.ReadToEnd();
+
+            return GetObject<T>(body);
         }
 
         /// <inheritdoc/>

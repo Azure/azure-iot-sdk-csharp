@@ -5,6 +5,9 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.Client.Transport
 {
+    /// <summary>
+    /// Base class for transport-specific handlers, i.e. MQTT and AMQP.
+    /// </summary>
     internal abstract class TransportHandler : DefaultDelegatingHandler
     {
         private TaskCompletionSource<bool> _transportShouldRetry;
@@ -24,11 +27,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         protected private override void Dispose(bool disposing)
         {
+            if (Logging.IsEnabled)
+                Logging.Enter(this, $"{nameof(DefaultDelegatingHandler)}.Disposed={_isDisposed}; disposing={disposing}", $"{nameof(TransportHandler)}.{nameof(Dispose)}");
+
             try
             {
-                if (Logging.IsEnabled)
-                    Logging.Enter(this, $"{nameof(DefaultDelegatingHandler)}.Disposed={_isDisposed}; disposing={disposing}", $"{nameof(TransportHandler)}.{nameof(Dispose)}");
-
                 if (!_isDisposed) // the _disposed flag is inherited from the base class DefaultDelegatingHandler and is finally set to null there.
                 {
                     base.Dispose(disposing);
