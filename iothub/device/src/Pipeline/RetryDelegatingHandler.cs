@@ -19,7 +19,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
         private IIotHubClientRetryPolicy _retryPolicy;
 
         private volatile bool _isOpen;
-        private readonly SemaphoreSlim _clientOpenCloseSemaphore = new(1, 1);
         private readonly SemaphoreSlim _cloudToDeviceMessageSubscriptionSemaphore = new(1, 1);
         private readonly SemaphoreSlim _directMethodSubscriptionSemaphore = new(1, 1);
         private readonly SemaphoreSlim _twinEventsSubscriptionSemaphore = new(1, 1);
@@ -389,14 +388,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         public override async Task OpenAsync(CancellationToken cancellationToken)
         {
-            // If this object has already been disposed, we will throw an exception indicating that.
-            // This is the entry point for interacting with the client and this safety check should be done here.
-            // The current behavior does not support open->close->open
-            if (_isDisposed)
-            {
-                throw new ObjectDisposedException(nameof(RetryDelegatingHandler));
-            }
-
             if (_isOpen)
             {
                 return;
