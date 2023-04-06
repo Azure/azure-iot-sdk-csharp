@@ -20,7 +20,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         private bool _recoverSubscriptions;
 
-        private readonly SemaphoreSlim _clientOpenCloseSemaphore = new(1, 1);
         private readonly SemaphoreSlim _cloudToDeviceMessageSubscriptionSemaphore = new(1, 1);
         private readonly SemaphoreSlim _directMethodSubscriptionSemaphore = new(1, 1);
         private readonly SemaphoreSlim _twinEventsSubscriptionSemaphore = new(1, 1);
@@ -624,7 +623,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     {
                         _loopCancellationTokenSource?.Dispose();
 
-                        _clientOpenCloseSemaphore?.Dispose();
                         _cloudToDeviceMessageSubscriptionSemaphore?.Dispose();
                         _directMethodSubscriptionSemaphore?.Dispose();
                         _twinEventsSubscriptionSemaphore?.Dispose();
