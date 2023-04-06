@@ -18,7 +18,6 @@ namespace Microsoft.Azure.Devices.Tests.Exceptions
         [TestMethod]
         [DataRow(IotHubServiceErrorCode.DeviceNotFound)]
         [DataRow(IotHubServiceErrorCode.InvalidProtocolVersion)]
-        [DataRow(IotHubServiceErrorCode.Unknown)]
         [DataRow(IotHubServiceErrorCode.InvalidOperation)]
         [DataRow(IotHubServiceErrorCode.ArgumentInvalid)]
         [DataRow(IotHubServiceErrorCode.ArgumentNull)]
@@ -77,42 +76,6 @@ namespace Microsoft.Azure.Devices.Tests.Exceptions
         }
 
         [TestMethod]
-        public void IotHubServiceException_UntrackedErrorCode_NotHttpStatusCodeRequestTimeout_IsNotTransient()
-        {
-            // arrange - act
-            HttpStatusCode statusCode = HttpStatusCode.MovedPermanently; // not HttpStatusCode.RequestTimeout
-
-            var exception = new IotHubServiceException(
-                Message,
-                statusCode,
-                IotHubServiceErrorCode.Unknown);
-
-            // assert
-            exception.StatusCode.Should().Be(statusCode);
-            exception.Message.Should().Be(Message);
-            exception.IsTransient.Should().BeFalse();
-            exception.TrackingId.Should().BeNull();
-        }
-
-        [TestMethod]
-        public void IotHubServiceException_UntrackedErrorCode_HttpStatusCodeRequestTimeout_IsTransient()
-        {
-            // arrange - act
-            HttpStatusCode statusCode = HttpStatusCode.RequestTimeout;
-
-            var exception = new IotHubServiceException(
-                Message,
-                statusCode,
-                IotHubServiceErrorCode.Unknown);
-
-            // assert
-            exception.StatusCode.Should().Be(statusCode);
-            exception.Message.Should().Be(Message);
-            exception.IsTransient.Should().BeTrue();
-            exception.TrackingId.Should().BeNull();
-        }
-
-        [TestMethod]
         public void IotHubServiceException_GetObjectData_NullInfoThrows()
         {
             // arrange - act
@@ -121,7 +84,7 @@ namespace Microsoft.Azure.Devices.Tests.Exceptions
             var exception = new IotHubServiceException(
                 Message,
                 statusCode,
-                IotHubServiceErrorCode.Unknown);
+                IotHubServiceErrorCode.GenericRequestTimeout);
             var sctx = new StreamingContext();
 
             // act
@@ -140,7 +103,7 @@ namespace Microsoft.Azure.Devices.Tests.Exceptions
             var exception = new IotHubServiceException(
                 Message,
                 statusCode,
-                IotHubServiceErrorCode.Unknown);
+                IotHubServiceErrorCode.GenericRequestTimeout);
             var sInfo = new SerializationInfo(GetType(), new FormatterConverter());
             var sctx = new StreamingContext();
 

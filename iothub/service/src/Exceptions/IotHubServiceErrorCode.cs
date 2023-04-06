@@ -159,6 +159,13 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         ConfigurationNotFound = 404301,
 
+        // Request Timeout - 408
+
+        /// <summary>
+        /// The client did not send a request within the time the server was expecting the request.
+        /// </summary>
+        GenericRequestTimeout,
+
         // Conflict - 409
 
         /// <summary>
