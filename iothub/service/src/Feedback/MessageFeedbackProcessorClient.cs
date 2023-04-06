@@ -99,7 +99,7 @@ namespace Microsoft.Azure.Devices
         ///
         /// //...
         ///
-        /// public void OnConnectionLost(FeedbackMessagingError error)
+        /// public async Task OnConnectionLost(FeedbackMessagingError error)
         /// {
         ///    Console.WriteLine("Feedback message processor connection lost. Error: {error.Exception.Message}")
         ///

@@ -86,7 +86,7 @@ namespace Microsoft.Azure.Devices
         ///
         /// //...
         ///
-        /// public void OnConnectionLost(MessagingError error)
+        /// public async Task OnConnectionLost(MessagingError error)
         /// {
         ///    Console.WriteLine($"Messaging client connection lost. Error: {error.Exception.Message}")
         ///
