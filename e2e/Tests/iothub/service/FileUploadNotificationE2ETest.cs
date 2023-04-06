@@ -119,48 +119,35 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         }
 
         [TestMethod]
-        [DataRow(IotHubTransportProtocol.Tcp)]
-        [DataRow(IotHubTransportProtocol.WebSocket)]
-        public async Task FileUploadNotification_ErrorProcessor_ReceivesNotifications(IotHubTransportProtocol protocol)
+        public async Task FileUploadNotification_CloseGracefully_DoesNotExecuteConnectionLoss()
         {
-            var options = new IotHubServiceClientOptions
+            // arrange
+            using var sender = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
+            bool connectionLossEventExecuted = false;
+            Func<ErrorContext, Task> OnConnectionLost = delegate
             {
-                Protocol = protocol
+                // There is a small chance that this test's connection is interrupted by an actual
+                // network failure (when this callback should be executed), but the operations
+                // tested here are so quick that it should be safe to ignore that possibility.
+                connectionLossEventExecuted = true;
+                return Task.CompletedTask;
             };
+            sender.FileUploadNotifications.ErrorProcessor = OnConnectionLost;
 
-            using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString, options);
-
-            try
-            {
-                var errorProcessorNotified = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
-                serviceClient.FileUploadNotifications.FileUploadNotificationProcessor = (_) => Task.FromResult(_defaultAcknowledgementType);
-                serviceClient.FileUploadNotifications.ErrorProcessor = (errorContext) =>
-                {
-                    VerboseTestLogger.WriteLine("Error processor fired.");
-                    errorProcessorNotified.TrySetResult(true);
-                    return Task.CompletedTask;
-                };
-
-                VerboseTestLogger.WriteLine("Opening client...");
-                await serviceClient.FileUploadNotifications.OpenAsync().ConfigureAwait(false);
-                VerboseTestLogger.WriteLine("Client opened.");
-
-                VerboseTestLogger.WriteLine("Client closing...");
-                await serviceClient.FileUploadNotifications.CloseAsync().ConfigureAwait(false);
-                VerboseTestLogger.WriteLine("Client closed.");
-
-                // The open file upload notification processor should be able to receive more than one
-                // file upload notification without closing and re-opening as long as there is more
-                // than one file upload notification to consume.
-                using var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(TestTimeoutMilliseconds));
-                await errorProcessorNotified.WaitAsync(cts.Token).ConfigureAwait(false);
-                errorProcessorNotified.Task.IsCompleted.Should().BeTrue();
+            Task<AcknowledgementType> OnFileUploadNotificationReceivedAsync(FileUploadNotification fileUploadNotification) 
+            { 
+                // No file upload notifications belong to this test, so abandon any that it may receive
+                return Task.FromResult(AcknowledgementType.Abandon); 
             }
-            finally
-            {
-                serviceClient.FileUploadNotifications.ErrorProcessor = null;
-                await serviceClient.FileUploadNotifications.CloseAsync().ConfigureAwait(false);
-            }
+            sender.FileUploadNotifications.FileUploadNotificationProcessor = OnFileUploadNotificationReceivedAsync;
+            await sender.FileUploadNotifications.OpenAsync().ConfigureAwait(false);
+            
+            // act
+            await sender.FileUploadNotifications.CloseAsync().ConfigureAwait(false);
+
+            // assert
+            connectionLossEventExecuted.Should().BeFalse(
+                "One or more connection lost events were reported by the error processor unexpectedly");
         }
 
         private async Task UploadFile(string fileName, CancellationToken ct)

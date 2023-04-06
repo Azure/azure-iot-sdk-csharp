@@ -87,7 +87,7 @@ namespace Microsoft.Azure.Devices
         /// }
         /// </code>
         /// </example>
-        public Func<FeedbackBatch, AcknowledgementType> MessageFeedbackProcessor { get; set; }
+        public Func<FeedbackBatch, Task<AcknowledgementType>> MessageFeedbackProcessor { get; set; }
 
         /// <summary>
         /// The callback to be executed when the connection is lost.
@@ -101,12 +101,19 @@ namespace Microsoft.Azure.Devices
         ///
         /// public void OnConnectionLost(ErrorContext errorContext)
         /// {
-        ///    // Add reconnection logic as needed
         ///    Console.WriteLine("Feedback message processor connection lost")
+        ///
+        ///    // Add reconnection logic as needed, for example:
+        ///    await serviceClient.MessageFeedbackProcessor.OpenAsync();
         /// }
         /// </code>
         /// </example>
-        public Action<ErrorContext> ErrorProcessor { get; set; }
+        /// <remarks>
+        /// This callback will not receive events once <see cref="CloseAsync(CancellationToken)"/> is called. 
+        /// This callback will start receiving events again once <see cref="OpenAsync(CancellationToken)"/> is called.
+        /// This callback will persist across any number of open/close/open calls, so it does not need to be set before each open call.
+        /// </remarks>
+        public Func<ErrorContext, Task> ErrorProcessor { get; set; }
 
         /// <summary>
         /// Open the connection and start receiving acknowledgements for messages sent.
@@ -223,7 +230,7 @@ namespace Microsoft.Azure.Devices
                                 amqpMessage.Properties.UserId.Count)
                         };
 
-                        AcknowledgementType ack = MessageFeedbackProcessor.Invoke(feedbackBatch);
+                        AcknowledgementType ack = await MessageFeedbackProcessor.Invoke(feedbackBatch);
                         if (ack == AcknowledgementType.Complete)
                         {
                             await _amqpConnection.CompleteMessageAsync(amqpMessage.DeliveryTag).ConfigureAwait(false);

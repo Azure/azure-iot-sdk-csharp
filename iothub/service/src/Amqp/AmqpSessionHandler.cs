@@ -131,6 +131,8 @@ namespace Microsoft.Azure.Devices.Amqp
 
             try
             {
+                _session.Closed -= _connectionLossHandler;
+
                 if (_sendingLinkHandler != null)
                 {
                     await _sendingLinkHandler.CloseAsync(cancellationToken).ConfigureAwait(false);

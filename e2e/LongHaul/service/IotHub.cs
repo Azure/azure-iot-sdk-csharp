@@ -134,7 +134,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
             // It is important to note that receiver only gets feedback messages when the device is actively running and acting on messages.
             _logger.Trace("Starting to listen to cloud-to-device feedback messages...", TraceSeverity.Verbose);
 
-            AcknowledgementType OnC2dMessageAck(FeedbackBatch feedbackMessages)
+            Task<AcknowledgementType> OnC2dMessageAck(FeedbackBatch feedbackMessages)
             {
                 foreach (FeedbackRecord feedbackRecord in feedbackMessages.Records)
                 {
@@ -146,7 +146,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                 _totalFeedbackMessagesReceivedCount += feedbackMessages.Records.Count();
                 _logger.Metric(TotalFeedbackMessagesReceivedCount, _totalFeedbackMessagesReceivedCount);
 
-                return AcknowledgementType.Complete;
+                return Task.FromResult(AcknowledgementType.Complete);
             }
 
             s_serviceClient.MessageFeedback.MessageFeedbackProcessor = OnC2dMessageAck;
