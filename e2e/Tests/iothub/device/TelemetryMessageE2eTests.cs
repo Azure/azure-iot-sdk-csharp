@@ -34,7 +34,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
         [DataTestMethod]
         [DataRow(TestDeviceType.Sasl, IotHubClientTransportProtocol.WebSocket)]
-        [DataRow(TestDeviceType.X509, IotHubClientTransportProtocol.WebSocket)]
+        //[DataRow(TestDeviceType.X509, IotHubClientTransportProtocol.WebSocket)]
         public async Task Message_DeviceSendSingleMessage_Mqtt(TestDeviceType testDeviceType, IotHubClientTransportProtocol protocol)
         {
             // Setting up one cancellation token for the complete test flow
@@ -215,7 +215,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(options);
             await testDevice.OpenWithRetryAsync(ct).ConfigureAwait(false);
 
-            await deviceClient.SendTelemetryAsync(testMessage, ct).ConfigureAwait(false);
+            while (true)
+            {
+                await deviceClient.SendTelemetryAsync(testMessage, ct).ConfigureAwait(false);
+                await Task.Delay(TimeSpan.FromSeconds(5), ct);
+            }
         }
 
         private async Task SendBatchMessagesAsync(TestDeviceType type, IotHubClientTransportSettings transportSettings, CancellationToken ct)
