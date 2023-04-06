@@ -20,7 +20,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         private bool _recoverSubscriptions;
 
-        private volatile bool _isOpen;
         private readonly SemaphoreSlim _clientOpenCloseSemaphore = new(1, 1);
         private readonly SemaphoreSlim _cloudToDeviceMessageSubscriptionSemaphore = new(1, 1);
         private readonly SemaphoreSlim _directMethodSubscriptionSemaphore = new(1, 1);
@@ -445,32 +444,23 @@ namespace Microsoft.Azure.Devices.Client.Transport
             if (Logging.IsEnabled)
                 Logging.Enter(this, cancellationToken, nameof(CloseAsync));
 
-            if (!_isOpen)
-            {
-                // Already closed so gracefully exit, instead of throw.
-                return;
-            }
-
-            await _clientOpenCloseSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
-
             try
             {
-                if (!_isOpen)
-                {
-                    // Already closed so gracefully exit, instead of throw.
-                    return;
-                }
-
-                await base.CloseAsync(cancellationToken).ConfigureAwait(false);
+                await _internalRetryHandler
+                    .RunWithRetryAsync(
+                        async () =>
+                        {
+                            await base.CloseAsync(cancellationToken).ConfigureAwait(false);
+                        },
+                        cancellationToken)
+                    .ConfigureAwait(false);
             }
             finally
             {
-                _isOpen = false;
+                _recoverSubscriptions = false;
 
                 if (Logging.IsEnabled)
                     Logging.Exit(this, cancellationToken, nameof(CloseAsync));
-
-                _clientOpenCloseSemaphore?.Release();
             }
         }
 
@@ -629,8 +619,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 if (!_isDisposed)
                 {
                     base.Dispose(disposing);
-
-                    _isOpen = false;
 
                     if (disposing)
                     {

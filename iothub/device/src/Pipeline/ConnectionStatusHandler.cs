@@ -11,20 +11,25 @@ namespace Microsoft.Azure.Devices.Client.Pipeline
 {
     internal sealed class ConnectionStatusHandler : DefaultDelegatingHandler
     {
+
         private readonly SemaphoreSlim _clientOpenSemaphore = new(1, 1);
+
+        private readonly CancellationTokenSource _handleDisconnectCts = new();
+        private readonly Action<ConnectionStatusInfo> _onConnectionStatusChanged;
+        private Task _transportClosedTask;
+        private readonly IIotHubClientRetryPolicy _retryPolicy;
 
         private long _clientTransportStatus; // references the current client transport status as the int value of ClientTransportStatus
         private bool _wasOpened;
         private CancellationTokenSource _cancelPendingOperationsCts;
 
-        private Task _transportClosedTask;
-        private readonly CancellationTokenSource _handleDisconnectCts = new();
-        private readonly Action<ConnectionStatusInfo> _onConnectionStatusChanged;
-
         internal ConnectionStatusHandler(PipelineContext context, IDelegatingHandler innerHandler)
             : base(context, innerHandler)
         {
             _onConnectionStatusChanged = context.ConnectionStatusChangeHandler;
+
+            // This retry policy is saved only to handle the client state when the retry policy informs that no more retry attempts are to be made
+            _retryPolicy = context.RetryPolicy;
         }
 
         public override async Task OpenAsync(CancellationToken cancellationToken)
@@ -74,7 +79,7 @@ namespace Microsoft.Azure.Devices.Client.Pipeline
                                         _onConnectionStatusChanged(connectionStatusInfo);
 
                                         // Send the request for transport close notification.
-                                        //_transportClosedTask = HandleDisconnectAsync();
+                                        _transportClosedTask = HandleDisconnectAsync();
                                     }
                                     catch (Exception ex) when (!Fx.IsFatal(ex))
                                     {
@@ -177,7 +182,7 @@ namespace Microsoft.Azure.Devices.Client.Pipeline
             }
         }
 
-        /*// Triggered from connection loss event
+        // Triggered from connection loss event
         // This method is set up for SDK internal retry attempts. We invoke this task as soon as the client is opened.
         // WaitForTransportClosedAsync() waits for the signal that the transport layer has been closed or disconnected.
         // Once disconnected, either gracefully or ungracefully, the SDK begins its reconnection attempt.
@@ -250,49 +255,7 @@ namespace Microsoft.Azure.Devices.Client.Pipeline
                     CancellationToken cancellationToken = _handleDisconnectCts.Token;
 
                     // This will recover to the status before the disconnect.
-                    await _internalRetryHandler.RunWithRetryAsync(async () =>
-                    {
-                        if (Logging.IsEnabled)
-                            Logging.Info(this, "Attempting to recover subscriptions.", nameof(HandleDisconnectAsync));
-
-                        await base.OpenAsync(cancellationToken).ConfigureAwait(false);
-
-                        var tasks = new List<Task>(3);
-
-                        // This is to ensure that, if previously enabled, the callback to receive direct methods is recovered.
-                        if (_methodsEnabled)
-                        {
-                            tasks.Add(base.EnableMethodsAsync(cancellationToken));
-                        }
-
-                        // This is to ensure that, if previously enabled, the callback to receive twin properties is recovered.
-                        if (_twinEnabled)
-                        {
-                            tasks.Add(base.EnableTwinPatchAsync(cancellationToken));
-                        }
-
-                        // This is to ensure that, if previously enabled, the callback to receive C2D messages is recovered.
-                        if (_deviceReceiveMessageEnabled)
-                        {
-                            tasks.Add(base.EnableReceiveMessageAsync(cancellationToken));
-                        }
-
-                        if (tasks.Any())
-                        {
-                            await Task.WhenAll(tasks).ConfigureAwait(false);
-                        }
-
-                        // Send the request for transport close notification.
-                        _transportClosedTask = HandleDisconnectAsync();
-
-                        SetClientTransportStatus(ClientTransportStatus.Open);
-                        connectionStatusInfo = new ConnectionStatusInfo(ConnectionStatus.Connected, ConnectionStatusChangeReason.ConnectionOk);
-                        _onConnectionStatusChanged(connectionStatusInfo);
-
-                        if (Logging.IsEnabled)
-                            Logging.Info(this, "Subscriptions recovered.", nameof(HandleDisconnectAsync));
-                    },
-                    cancellationToken).ConfigureAwait(false);
+                    await OpenAsync(cancellationToken).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
@@ -311,7 +274,7 @@ namespace Microsoft.Azure.Devices.Client.Pipeline
                 if (Logging.IsEnabled)
                     Logging.Exit(this, nameof(HandleDisconnectAsync));
             }
-        }*/
+        }
 
         // The retryAttemptsExhausted flag differentiates between calling this method while still retrying
         // vs calling this when no more retry attempts are being made.
