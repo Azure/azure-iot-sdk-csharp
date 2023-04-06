@@ -92,9 +92,9 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
                 await Task
                     .WhenAll(
                         systemHealthMonitor.RunAsync(cancellationTokenSource.Token),
-                        iotHub.SendTelemetryMessagesAsync(cancellationTokenSource.Token),
-                        iotHub.ReportReadOnlyPropertiesAsync(cancellationTokenSource.Token),
-                        iotHub.UploadFilesAsync(cancellationTokenSource.Token))
+                        iotHub.SendTelemetryMessagesAsync(cancellationTokenSource.Token, s_logger.Clone()),
+                        iotHub.ReportReadOnlyPropertiesAsync(cancellationTokenSource.Token, s_logger.Clone()),
+                        iotHub.UploadFilesAsync(cancellationTokenSource.Token, s_logger.Clone()))
                     .ConfigureAwait(false);
             }
             catch (TaskCanceledException) { } // user signalled an exit
@@ -108,6 +108,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
             // Log system health after disposing hub
             SystemHealthMonitor.BuildAndLogSystemHealth(s_logger);
 
+            s_logger.Event(EndingRun);
             s_logger.Flush();
             s_aiLoggingProvider.Dispose();
         }

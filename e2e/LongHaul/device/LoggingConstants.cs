@@ -24,6 +24,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
         public const string StartingRun = "StartingRun";
         public const string ConnectedEvent = "Connected";
         public const string DiscconnectedEvent = "Disconnected";
+        public const string EndingRun = "EndingRun";
 
         // Logging properties
 

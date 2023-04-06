@@ -99,13 +99,14 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
         /// Frequently send telemetry messages to the hub.
         /// </summary>
         /// <param name="ct">The cancellation token</param>
-        public async Task SendTelemetryMessagesAsync(CancellationToken ct)
+        public async Task SendTelemetryMessagesAsync(CancellationToken ct, Logger logger)
         {
             TelemetryMessage pendingMessage = null;
             bool loggedDisconnection = false;
+            logger.LoggerContext.Add("OperationName", "TelemetryMessage");
             while (!ct.IsCancellationRequested)
             {
-                _logger.Metric(MessageBacklog, _messagesToSend.Count);
+                logger.Metric(MessageBacklog, _messagesToSend.Count);
 
                 // Wait when there are no messages to send, or if not connected
                 if (!IsConnected
@@ -129,7 +130,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
                     if (!loggedDisconnection)
                     {
                         loggedDisconnection = true;
-                        _logger.Trace($"Waiting for connection before sending telemetry", TraceSeverity.Warning);
+                        logger.Trace($"Waiting for connection before sending telemetry", TraceSeverity.Warning);
                     }
                     continue;
                 }
@@ -146,17 +147,18 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
                     await _deviceClient.SendTelemetryAsync(pendingMessage, ct).ConfigureAwait(false);
 
                     ++_totalTelemetryMessagesSent;
-                    _logger.Metric(TotalTelemetryMessagesSent, _totalTelemetryMessagesSent);
-                    _logger.Metric(TelemetryMessageDelaySeconds, (DateTime.UtcNow - pendingMessage.CreatedOnUtc).TotalSeconds);
+                    logger.Metric(TotalTelemetryMessagesSent, _totalTelemetryMessagesSent);
+                    logger.Metric(TelemetryMessageDelaySeconds, (DateTime.UtcNow - pendingMessage.CreatedOnUtc).TotalSeconds);
 
                     pendingMessage = null;
                 }
             }
         }
 
-        public async Task ReportReadOnlyPropertiesAsync(CancellationToken ct)
+        public async Task ReportReadOnlyPropertiesAsync(CancellationToken ct, Logger logger)
         {
             bool loggedDisconnection = false;
+            logger.LoggerContext.Add("OperationName", "ReportTwinProperties");
             while (!ct.IsCancellationRequested)
             {
                 // If not connected, skip the work below this round
@@ -169,12 +171,12 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
                     await _deviceClient.UpdateReportedPropertiesAsync(reported, ct).ConfigureAwait(false);
 
                     ++_totalTwinUpdatesReported;
-                    _logger.Metric(TotalTwinUpdatesReported, _totalTwinUpdatesReported);
+                    logger.Metric(TotalTwinUpdatesReported, _totalTwinUpdatesReported);
                 }
                 else if (!loggedDisconnection)
                 {
                     loggedDisconnection = true;
-                    _logger.Trace($"Waiting for connection before any other operations.", TraceSeverity.Warning);
+                    logger.Trace($"Waiting for connection before any other operations.", TraceSeverity.Warning);
                 }
 
                 await Task.Delay(s_deviceTwinUpdateInterval, ct).ConfigureAwait(false);
@@ -240,8 +242,9 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
             _logger.Trace($"Set the reported property with name [{keyName}] in device twin.", TraceSeverity.Information);
         }
 
-        public async Task UploadFilesAsync(CancellationToken ct)
+        public async Task UploadFilesAsync(CancellationToken ct, Logger logger)
         {
+            logger.LoggerContext.Add("OperationName", "UploadFiles");
             while (!ct.IsCancellationRequested)
             {
                 string fileName = $"TestPayload-{Guid.NewGuid()}.txt";
@@ -256,13 +259,13 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
 
                 try
                 {
-                    _logger.Trace($"Attempting to upload {fileName}...", TraceSeverity.Information);
+                    logger.Trace($"Attempting to upload {fileName}...", TraceSeverity.Information);
                     var blockBlobClient = new BlockBlobClient(uploadUri);
                     await blockBlobClient.UploadAsync(ms, new BlobUploadOptions(), ct).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
-                    _logger.Trace($"Exception occurred while using Azure Storage SDK to upload file: {ex}", TraceSeverity.Warning);
+                    logger.Trace($"Exception occurred while using Azure Storage SDK to upload file: {ex}", TraceSeverity.Warning);
                     var failedFileUploadCompletionNotification = new FileUploadCompletionNotification(sasUri.CorrelationId, false)
                     {
                         StatusCode = 500,
@@ -272,7 +275,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
                     return;
                 }
 
-                _logger.Trace("File uploaded to Azure Storage was a success", TraceSeverity.Information);
+                logger.Trace("File uploaded to Azure Storage was a success", TraceSeverity.Information);
                 var successfulFileUploadCompletionNotification = new FileUploadCompletionNotification(sasUri.CorrelationId, true)
                 {
                     StatusCode = 200,

@@ -104,6 +104,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
             // Log system health after disposing hub
             SystemHealthMonitor.BuildAndLogSystemHealth(s_logger);
 
+            s_logger.Event(EndingRun);
             s_logger.Flush();
             s_aiLoggingProvider.Dispose();
         }

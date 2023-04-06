@@ -17,6 +17,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
         // Events
 
         public const string StartingRun = "StartingRun";
+        public const string EndingRun = "EndingRun";
 
         // Metrics
 

@@ -11,6 +11,7 @@ using Azure;
 using Mash.Logging;
 using Azure.Storage.Blobs;
 using static Microsoft.Azure.Devices.LongHaul.Service.LoggingConstants;
+using System.Collections.Generic;
 
 namespace Microsoft.Azure.Devices.LongHaul.Service
 {
@@ -102,9 +103,9 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                             {
                                 await Task
                                 .WhenAll(
-                                    deviceOperations.InvokeDirectMethodAsync(token),
-                                    deviceOperations.SetDesiredPropertiesAsync("guidValue", Guid.NewGuid().ToString(), token),
-                                    deviceOperations.SendC2dMessagesAsync(token))
+                                    deviceOperations.InvokeDirectMethodAsync(token, _logger.Clone()),
+                                    deviceOperations.SetDesiredPropertiesAsync("guidValue", Guid.NewGuid().ToString(), token, _logger.Clone()),
+                                    deviceOperations.SendC2dMessagesAsync(token, _logger.Clone()))
                                 .ConfigureAwait(false);
                             }
                             catch (OperationCanceledException)
