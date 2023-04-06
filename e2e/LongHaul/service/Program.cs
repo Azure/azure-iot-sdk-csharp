@@ -77,7 +77,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
             {
                 e.Cancel = true;
                 cancellationTokenSource.Cancel();
-                Console.WriteLine("Exiting ...");
+                Console.WriteLine("Exiting...");
             };
 
             var systemHealthMonitor = new SystemHealthMonitor(s_port, s_logger.Clone());

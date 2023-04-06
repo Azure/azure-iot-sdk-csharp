@@ -80,7 +80,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
             {
                 e.Cancel = true;
                 cancellationTokenSource.Cancel();
-                Console.WriteLine("Exiting ...");
+                Console.WriteLine("Exiting...");
             };
 
             await iotHub.SetPropertiesAsync(RunId, _runId, cancellationTokenSource.Token).ConfigureAwait(false);
