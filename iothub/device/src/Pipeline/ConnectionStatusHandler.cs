@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -13,11 +12,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         private readonly SemaphoreSlim _clientOpenSemaphore = new(1, 1);
 
-        private readonly CancellationTokenSource _handleDisconnectCts = new();
         private readonly Action<ConnectionStatusInfo> _onConnectionStatusChanged;
         private readonly IIotHubClientRetryPolicy _retryPolicy;
 
         private Task _transportClosedTask;
+        private CancellationTokenSource _handleDisconnectCts;
         private CancellationTokenSource _cancelPendingOperationsCts;
         private long _clientTransportStatus; // references the current client transport status as the int value of ClientTransportStatus
 
@@ -51,9 +50,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         {
                             SetClientTransportStatus(ClientTransportStatus.Opening);
 
+                            // Create a new cancelaltion token source that will be used for reconnection recovery attempts.
+                            _handleDisconnectCts = new CancellationTokenSource();
+
                             // Create a new cancellation token source that will be signaled by any subsequently invoked CloseAsync() for cancellation.
                             _cancelPendingOperationsCts = new CancellationTokenSource();
-
                             using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
 
                             await _clientOpenSemaphore.WaitAsync(operationCts.Token).ConfigureAwait(false);
@@ -177,7 +178,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 SetClientTransportStatus(ClientTransportStatus.Closed);
 
                 _cancelPendingOperationsCts?.Dispose();
+                _cancelPendingOperationsCts = null;
+
                 _handleDisconnectCts?.Dispose();
+                _handleDisconnectCts = null;
             }
         }
 
@@ -202,13 +206,18 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     if (Logging.IsEnabled)
                         Logging.Info(this, "Disposed during disconnection.", nameof(HandleDisconnectAsync));
 
-                    _handleDisconnectCts.Cancel();
+                    _handleDisconnectCts?.Cancel();
                 }
 
                 try
                 {
                     // This waits for a disconnection event to be signaled by the transport layer
                     await WaitForTransportClosedAsync().ConfigureAwait(false);
+
+                    if (Logging.IsEnabled)
+                        Logging.Info(this, "Transport disconnected: unexpected.", nameof(HandleDisconnectAsync));
+
+                    SetClientTransportStatus(ClientTransportStatus.Closed);
                 }
                 catch (OperationCanceledException)
                 {
@@ -223,45 +232,30 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     return;
                 }
 
-                if (Logging.IsEnabled)
-                    Logging.Info(this, "Transport disconnected: unexpected.", nameof(HandleDisconnectAsync));
-
-                await _clientOpenSemaphore.WaitAsync().ConfigureAwait(false);
-                SetClientTransportStatus(ClientTransportStatus.Closed);
-
-                try
+                // This is used to ensure that when IotHubServiceNoRetry() policy is enabled, we should not be retrying.
+                // This exception is not returned to the user.
+                var networkException = new IotHubClientException("", IotHubClientErrorCode.NetworkErrors);
+                if (!_retryPolicy.ShouldRetry(0, networkException, out TimeSpan delay))
                 {
-                    // This is used to ensure that when IotHubServiceNoRetry() policy is enabled, we should not be retrying.
-                    // This exception is not returned to the user.
-                    var networkException = new IotHubClientException("", IotHubClientErrorCode.NetworkErrors);
+                    if (Logging.IsEnabled)
+                        Logging.Info(this, "Transport disconnected: closed by application.", nameof(HandleDisconnectAsync));
 
-                    if (!_retryPolicy.ShouldRetry(0, networkException, out TimeSpan delay))
-                    {
-                        if (Logging.IsEnabled)
-                            Logging.Info(this, "Transport disconnected: closed by application.", nameof(HandleDisconnectAsync));
-
-                        connectionStatusInfo = new ConnectionStatusInfo(ConnectionStatus.Disconnected, ConnectionStatusChangeReason.RetryExpired);
-                        _onConnectionStatusChanged(connectionStatusInfo);
-                        return;
-                    }
-
-                    if (delay > TimeSpan.Zero)
-                    {
-                        await Task.Delay(delay).ConfigureAwait(false);
-                    }
-
-                    // always reconnect.
-                    connectionStatusInfo = new ConnectionStatusInfo(ConnectionStatus.DisconnectedRetrying, ConnectionStatusChangeReason.CommunicationError);
+                    connectionStatusInfo = new ConnectionStatusInfo(ConnectionStatus.Disconnected, ConnectionStatusChangeReason.RetryExpired);
                     _onConnectionStatusChanged(connectionStatusInfo);
-                    CancellationToken cancellationToken = _handleDisconnectCts.Token;
+                    return;
+                }
 
-                    // This will recover to the status before the disconnect.
-                    await OpenAsync(cancellationToken).ConfigureAwait(false);
-                }
-                finally
+                if (delay > TimeSpan.Zero)
                 {
-                    _clientOpenSemaphore?.Release();
+                    await Task.Delay(delay).ConfigureAwait(false);
                 }
+
+                // always reconnect.
+                connectionStatusInfo = new ConnectionStatusInfo(ConnectionStatus.DisconnectedRetrying, ConnectionStatusChangeReason.CommunicationError);
+                _onConnectionStatusChanged(connectionStatusInfo);
+
+                // This will recover to the status before the disconnect.
+                await OpenAsync(_handleDisconnectCts.Token).ConfigureAwait(false);
             }
             finally
             {
@@ -346,25 +340,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         _handleDisconnectCts?.Cancel();
                         _cancelPendingOperationsCts?.Cancel();
 
-                        var disposables = new List<IDisposable>
-                        {
-                            _handleDisconnectCts,
-                            _cancelPendingOperationsCts,
-                        };
+                        _handleDisconnectCts?.Dispose();
+                        _cancelPendingOperationsCts?.Dispose();
 
-                        foreach (IDisposable disposable in disposables)
-                        {
-                            try
-                            {
-                                disposable?.Dispose();
-                            }
-                            catch (ObjectDisposedException)
-                            {
-                                if (Logging.IsEnabled)
-                                    Logging.Error(this, $"Tried disposing the IDisposable {disposable} but it has already been disposed by client disposal on a separate thread." +
-                                        "Ignoring this exception and continuing with client cleanup.");
-                            }
-                        }
+                        _handleDisconnectCts = null;
+                        _cancelPendingOperationsCts = null;
                     }
                     // the _disposed flag is inherited from the base class DefaultDelegatingHandler and is finally set to null there.
                 }
