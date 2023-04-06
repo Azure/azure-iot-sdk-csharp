@@ -5,9 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Azure.Devices.Client.Transport;
 
-namespace Microsoft.Azure.Devices.Client.Pipeline
+namespace Microsoft.Azure.Devices.Client.Transport
 {
     internal sealed class ConnectionStatusHandler : DefaultDelegatingHandler
     {
