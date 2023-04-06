@@ -113,7 +113,7 @@ namespace Microsoft.Azure.Devices
         /// This callback will start receiving events again once <see cref="OpenAsync(CancellationToken)"/> is called.
         /// This callback will persist across any number of open/close/open calls, so it does not need to be set before each open call.
         /// </remarks>
-        public Func<FileUploadNotificationError, Task> ErrorProcessor { get; set; }
+        public Func<FileUploadNotificationProcessorError, Task> ErrorProcessor { get; set; }
 
         /// <summary>
         /// Open the connection and start receiving file upload notifications.
@@ -239,7 +239,7 @@ namespace Microsoft.Azure.Devices
                 {
                     try
                     {
-                        await ErrorProcessor.Invoke(new FileUploadNotificationError(ex)).ConfigureAwait(false);
+                        await ErrorProcessor.Invoke(new FileUploadNotificationProcessorError(ex)).ConfigureAwait(false);
                     }
                     catch (Exception ex3)
                     {
@@ -274,7 +274,7 @@ namespace Microsoft.Azure.Devices
             if (((AmqpObject)sender).TerminalException is AmqpException exception)
             {
                 IotHubServiceException mappedException = AmqpClientHelper.GetIotHubExceptionFromAmqpException(exception);
-                ErrorProcessor?.Invoke(new FileUploadNotificationError(mappedException));
+                ErrorProcessor?.Invoke(new FileUploadNotificationProcessorError(mappedException));
 
                 if (Logging.IsEnabled)
                 {
@@ -284,7 +284,7 @@ namespace Microsoft.Azure.Devices
             else
             {
                 var defaultException = new IOException("AMQP connection was lost", ((AmqpObject)sender).TerminalException);
-                var error = new FileUploadNotificationError(defaultException);
+                var error = new FileUploadNotificationProcessorError(defaultException);
                 ErrorProcessor?.Invoke(error);
 
                 if (Logging.IsEnabled)

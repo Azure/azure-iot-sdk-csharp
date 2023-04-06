@@ -7,11 +7,11 @@ namespace Microsoft.Azure.Devices
 {
     /// <summary>
     /// The context provided to the error processor for a connection loss event or other failure 
-    /// when using the <see cref="MessagesClient"/>.
+    /// when using the <see cref="FileUploadNotificationProcessorClient"/>.
     /// </summary>
-    public class MessagingError : ErrorContext
+    public class FileUploadNotificationProcessorError : ErrorContext
     {
-        internal MessagingError(Exception exception) : base(exception)
+        internal FileUploadNotificationProcessorError(Exception exception) : base(exception)
         {
         }
     }

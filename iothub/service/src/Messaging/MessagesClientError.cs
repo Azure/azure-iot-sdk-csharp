@@ -7,11 +7,11 @@ namespace Microsoft.Azure.Devices
 {
     /// <summary>
     /// The context provided to the error processor for a connection loss event or other failure 
-    /// when using the <see cref="MessageFeedbackProcessorClient"/>.
+    /// when using the <see cref="MessagesClient"/>.
     /// </summary>
-    public class FeedbackMessagingError : ErrorContext
+    public class MessagesClientError : ErrorContext
     {
-        internal FeedbackMessagingError(Exception exception) : base(exception)
+        internal MessagesClientError(Exception exception) : base(exception)
         {
         }
     }
