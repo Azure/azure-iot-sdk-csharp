@@ -18,7 +18,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         private readonly RetryHandler _internalRetryHandler;
         private IIotHubClientRetryPolicy _retryPolicy;
 
-        private bool _isOpen;
+        private volatile bool _isOpen;
         private readonly SemaphoreSlim _clientOpenCloseSemaphore = new(1, 1);
         private readonly SemaphoreSlim _cloudToDeviceMessageSubscriptionSemaphore = new(1, 1);
         private readonly SemaphoreSlim _directMethodSubscriptionSemaphore = new(1, 1);

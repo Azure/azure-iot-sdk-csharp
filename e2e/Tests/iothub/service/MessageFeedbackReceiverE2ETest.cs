@@ -3,10 +3,8 @@
 
 using System;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using FluentAssertions;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -27,6 +25,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         [DataRow(IotHubTransportProtocol.Tcp)]
         [DataRow(IotHubTransportProtocol.WebSocket)]
+        [TestCategory("Flaky")]
         public async Task MessageFeedbackReceiver_Operation(IotHubTransportProtocol protocol)
         {
             // Setting up one cancellation token for the complete test flow

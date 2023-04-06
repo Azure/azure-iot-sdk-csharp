@@ -9,7 +9,6 @@ using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client.Transport;
-using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Client
 {
@@ -19,6 +18,8 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     public abstract class IotHubBaseClient : IAsyncDisposable
     {
+        protected private volatile bool _isDisposed;
+
         private readonly SemaphoreSlim _methodsSemaphore = new(1, 1);
         private readonly SemaphoreSlim _twinDesiredPropertySemaphore = new(1, 1);
         private readonly SemaphoreSlim _receiveMessageSemaphore = new(1, 1);
@@ -113,6 +114,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </remarks>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
+        /// <exception cref="ObjectDisposedException">When the client has been disposed.</exception>
         public async Task OpenAsync(CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -140,6 +142,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         /// <exception cref="InvalidOperationException">Thrown if the client instance is not opened already.</exception>
         /// <exception cref="IotHubClientException">Thrown if an error occurs when communicating with IoT hub service.</exception>
+        /// <exception cref="ObjectDisposedException">When the client has been disposed.</exception>
         public async Task SendTelemetryAsync(TelemetryMessage message, CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNull(message, nameof(message));
@@ -230,6 +233,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="InvalidOperationException">Thrown if instance is not opened already.</exception>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
+        /// <exception cref="ObjectDisposedException">When the client has been disposed.</exception>
         public async Task SetIncomingMessageCallbackAsync(
             Func<IncomingMessage, Task<MessageAcknowledgement>> messageCallback,
             CancellationToken cancellationToken = default)
@@ -284,6 +288,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="directMethodCallback">The callback to be invoked when any method is invoked by the cloud service.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
+        /// <exception cref="ObjectDisposedException">When the client has been disposed.</exception>
         public async Task SetDirectMethodCallbackAsync(
             Func<DirectMethodRequest, Task<DirectMethodResponse>> directMethodCallback,
             CancellationToken cancellationToken = default)
@@ -329,6 +334,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="InvalidOperationException">Thrown if the client instance is not opened already.</exception>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
+        /// <exception cref="ObjectDisposedException">When the client has been disposed.</exception>
         /// <returns>The twin object for the current client.</returns>
         public async Task<TwinProperties> GetTwinPropertiesAsync(CancellationToken cancellationToken = default)
         {
@@ -345,8 +351,9 @@ namespace Microsoft.Azure.Devices.Client
         /// </remarks>
         /// <param name="reportedProperties">Reported properties to push</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <returns>The new version of the updated twin if the update was successful.</returns>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
+        /// <exception cref="ObjectDisposedException">When the client has been disposed.</exception>
+        /// <returns>The new version of the updated twin if the update was successful.</returns>
         public async Task<long> UpdateReportedPropertiesAsync(ReportedProperties reportedProperties, CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNull(reportedProperties, nameof(reportedProperties));
@@ -375,6 +382,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="callback">The callback to be invoked when a desired property update is received from the service.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
+        /// <exception cref="ObjectDisposedException">When the client has been disposed.</exception>
         public async Task SetDesiredPropertyUpdateCallbackAsync(
             Func<DesiredProperties, Task> callback,
             CancellationToken cancellationToken = default)
@@ -419,6 +427,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </remarks>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
+        /// <exception cref="ObjectDisposedException">When the client has been disposed.</exception>
         public async Task CloseAsync(CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -439,9 +448,15 @@ namespace Microsoft.Azure.Devices.Client
 
             try
             {
+                if (_isDisposed)
+                {
+                    return;
+                }
+
                 await CloseAsync(CancellationToken.None).ConfigureAwait(false);
                 Dispose(true);
                 GC.SuppressFinalize(this);
+                _isDisposed = true;
             }
             catch (Exception ex) when (Logging.IsEnabled)
             {
@@ -585,6 +600,7 @@ namespace Microsoft.Azure.Devices.Client
         {
             var transporthandlerFactory = new TransportHandlerFactory();
             ClientPipelineBuilder pipelineBuilder = new ClientPipelineBuilder()
+                .With((ctx, innerHandler) => new DefaultDelegatingHandler(ctx, innerHandler))
                 .With((ctx, innerHandler) => new RetryDelegatingHandler(ctx, innerHandler))
                 .With((ctx, innerHandler) => new ExceptionRemappingHandler(ctx, innerHandler))
                 .With((ctx, innerHandler) => new TransportDelegatingHandler(ctx, innerHandler))

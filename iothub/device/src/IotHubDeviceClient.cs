@@ -103,11 +103,17 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns>The file upload details to be used with the Azure Storage SDK in order to upload a file from this device.</returns>
         /// <exception cref="ArgumentNullException">When <paramref name="request"/> is null.</exception>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
+        /// <exception cref="ObjectDisposedException">When the client has been disposed.</exception>
         public Task<FileUploadSasUriResponse> GetFileUploadSasUriAsync(
             FileUploadSasUriRequest request,
             CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNull(request, nameof(request));
+            if (_isDisposed)
+            {
+                throw new ObjectDisposedException(nameof(IotHubDeviceClient));
+            }
+
             return _fileUploadHttpTransportHandler.GetFileUploadSasUriAsync(request, cancellationToken);
         }
 
@@ -119,9 +125,15 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <exception cref="ArgumentNullException">When <paramref name="notification"/> is null.</exception>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
+        /// <exception cref="ObjectDisposedException">When the client has been disposed.</exception>
         public Task CompleteFileUploadAsync(FileUploadCompletionNotification notification, CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNull(notification, nameof(notification));
+            if (_isDisposed)
+            {
+                throw new ObjectDisposedException(nameof(IotHubDeviceClient));
+            }
+
             return _fileUploadHttpTransportHandler.CompleteFileUploadAsync(notification, cancellationToken);
         }
 
