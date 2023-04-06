@@ -2,12 +2,13 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.Client.Transport
 {
-    internal sealed class ConnectionStatusHandler : DefaultDelegatingHandler
+    internal sealed class ConnectionStateDelegatingHandler : DefaultDelegatingHandler
     {
 
         private readonly SemaphoreSlim _clientOpenSemaphore = new(1, 1);
@@ -18,9 +19,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
         private Task _transportClosedTask;
         private CancellationTokenSource _handleDisconnectCts;
         private CancellationTokenSource _cancelPendingOperationsCts;
-        private long _clientTransportStatus; // references the current client transport status as the int value of ClientTransportStatus
+        private long _clientTransportState; // references the current client transport state as the int value of ClientTransportState
 
-        internal ConnectionStatusHandler(PipelineContext context, IDelegatingHandler innerHandler)
+        internal ConnectionStateDelegatingHandler(PipelineContext context, IDelegatingHandler innerHandler)
             : base(context, innerHandler)
         {
             _onConnectionStatusChanged = context.ConnectionStatusChangeHandler;
@@ -38,20 +39,17 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 switch (GetClientTransportStatus())
                 {
-                    case ClientTransportStatus.Opening:
-                    case ClientTransportStatus.Open:
+                    case ClientTransportState.Opening:
+                    case ClientTransportState.Open:
                         return;
 
-                    case ClientTransportStatus.Closing:
+                    case ClientTransportState.Closing:
                         throw new InvalidOperationException($"The client is currently closing. To reopen the client wait until {nameof(CloseAsync)} completes" +
                             $" and then invoke {nameof(OpenAsync)}.");
 
-                    case ClientTransportStatus.Closed:
+                    case ClientTransportState.Closed:
                         {
-                            SetClientTransportStatus(ClientTransportStatus.Opening);
-
-                            // Create a new cancelaltion token source that will be used for reconnection recovery attempts.
-                            _handleDisconnectCts = new CancellationTokenSource();
+                            SetClientTransportStatus(ClientTransportState.Opening);
 
                             // Create a new cancellation token source that will be signaled by any subsequently invoked CloseAsync() for cancellation.
                             _cancelPendingOperationsCts = new CancellationTokenSource();
@@ -60,7 +58,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                             await _clientOpenSemaphore.WaitAsync(operationCts.Token).ConfigureAwait(false);
                             try
                             {
-                                if (GetClientTransportStatus() == ClientTransportStatus.Opening)
+                                if (GetClientTransportStatus() == ClientTransportState.Opening)
                                 {
                                     if (Logging.IsEnabled)
                                         Logging.Info(this, "Opening connection", nameof(OpenAsync));
@@ -71,9 +69,12 @@ namespace Microsoft.Azure.Devices.Client.Transport
                                     {
                                         await base.OpenAsync(operationCts.Token).ConfigureAwait(false);
 
-                                        SetClientTransportStatus(ClientTransportStatus.Open);
+                                        SetClientTransportStatus(ClientTransportState.Open);
                                         var connectionStatusInfo = new ConnectionStatusInfo(ConnectionStatus.Connected, ConnectionStatusChangeReason.ConnectionOk);
                                         _onConnectionStatusChanged(connectionStatusInfo);
+
+                                        // Create a new cancelaltion token source that will be used for reconnection recovery attempts.
+                                        _handleDisconnectCts = new CancellationTokenSource();
 
                                         // Send the request for transport close notification.
                                         _transportClosedTask = HandleDisconnectAsync();
@@ -84,7 +85,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                                             Logging.Error(this, ex, nameof(HandleDisconnectAsync));
 
                                         HandleConnectionStatusExceptions(ex, true);
-                                        SetClientTransportStatus(ClientTransportStatus.Closed);
+                                        SetClientTransportStatus(ClientTransportState.Closed);
 
                                         throw;
                                     }
@@ -117,12 +118,12 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
                 switch (GetClientTransportStatus())
                 {
-                    case ClientTransportStatus.Opening:
+                    case ClientTransportState.Opening:
                         await _clientOpenSemaphore.WaitAsync(operationCts.Token).ConfigureAwait(false);
 
                         try
                         {
-                            if (GetClientTransportStatus() != ClientTransportStatus.Open)
+                            if (GetClientTransportStatus() != ClientTransportState.Open)
                             {
                                 throw new InvalidOperationException($"The client connection must be opened before operations can begin. Call '{nameof(OpenAsync)}' and try again.");
                             }
@@ -134,16 +135,16 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         await base.SendTelemetryAsync(message, operationCts.Token).ConfigureAwait(false);
                         break;
 
-                    case ClientTransportStatus.Open:
+                    case ClientTransportState.Open:
                         await base.SendTelemetryAsync(message, operationCts.Token).ConfigureAwait(false);
                         break;
 
-                    case ClientTransportStatus.Closing:
-                        throw new InvalidOperationException($"The client is currently closing. To send telemetry wait until {nameof(CloseAsync)} completes" +
-                            $" and then invoke {nameof(OpenAsync)} and try again.");
+                    case ClientTransportState.Closing:
+                        throw new InvalidOperationException($"The client is currently closing. Wait until {nameof(CloseAsync)} completes" +
+                            $" and then invoke {nameof(OpenAsync)} and try the operation again.");
 
-                    case ClientTransportStatus.Closed:
-                        throw new InvalidOperationException($"The client is currently closed. To send telemetry reopen the client using {nameof(OpenAsync)} and try again.");
+                    case ClientTransportState.Closed:
+                        throw new InvalidOperationException($"The client is currently closed. Reopen the client using {nameof(OpenAsync)} and try the operation again.");
                 }
             }
             finally
@@ -158,13 +159,13 @@ namespace Microsoft.Azure.Devices.Client.Transport
             if (Logging.IsEnabled)
                 Logging.Enter(this, cancellationToken, nameof(CloseAsync));
 
-            if (GetClientTransportStatus() == ClientTransportStatus.Closed)
+            if (GetClientTransportStatus() == ClientTransportState.Closed)
             {
                 // Already closed so gracefully exit.
                 return;
             }
 
-            SetClientTransportStatus(ClientTransportStatus.Closing);
+            SetClientTransportStatus(ClientTransportState.Closing);
 
             try
             {
@@ -175,23 +176,23 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
             finally
             {
-                SetClientTransportStatus(ClientTransportStatus.Closed);
-
                 _cancelPendingOperationsCts?.Dispose();
                 _cancelPendingOperationsCts = null;
 
                 _handleDisconnectCts?.Dispose();
                 _handleDisconnectCts = null;
+
+                SetClientTransportStatus(ClientTransportState.Closed);
             }
         }
 
         // Triggered from connection loss event
-        // This method is set up for SDK internal retry attempts. We invoke this task as soon as the client is opened.
+        // This method sets up the SDK to try to recover from a connection loss. We start this task as soon as the client is opened.
         // WaitForTransportClosedAsync() waits for the signal that the transport layer has been closed or disconnected.
-        // Once disconnected, either gracefully or ungracefully, the SDK begins its reconnection attempt.
-        // This reconnection attempt consults the retry policy supplied to infer if a reconnection attempt should be made.
-        // These reconnection attempts are monitored through the _handleDisconnectCts cancellation token source.
-        // This cancellation token source is set to be canceled when either CloseAsync() or Dispose() is invoked.
+        // Once disconnected ungracefully, the SDK begins its reconnection attempt.
+        // This reconnection attempt consults the retry policy supplied to determine if a reconnection attempt should be made.
+        // These reconnection attempts can be canceled through the _handleDisconnectCts cancellation token source.
+        // This cancellation token source is set to be canceled when CloseAsync() is invoked.
         private async Task HandleDisconnectAsync()
         {
             if (Logging.IsEnabled)
@@ -201,14 +202,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 var connectionStatusInfo = new ConnectionStatusInfo();
 
-                if (_isDisposed)
-                {
-                    if (Logging.IsEnabled)
-                        Logging.Info(this, "Disposed during disconnection.", nameof(HandleDisconnectAsync));
-
-                    _handleDisconnectCts?.Cancel();
-                }
-
                 try
                 {
                     // This waits for a disconnection event to be signaled by the transport layer
@@ -217,7 +210,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     if (Logging.IsEnabled)
                         Logging.Info(this, "Transport disconnected: unexpected.", nameof(HandleDisconnectAsync));
 
-                    SetClientTransportStatus(ClientTransportStatus.Closed);
+                    SetClientTransportStatus(ClientTransportState.Closed);
                 }
                 catch (OperationCanceledException)
                 {
@@ -225,7 +218,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     if (Logging.IsEnabled)
                         Logging.Info(this, "Transport disconnected: closed by application.", nameof(HandleDisconnectAsync));
 
-                    SetClientTransportStatus(ClientTransportStatus.Closed);
+                    SetClientTransportStatus(ClientTransportState.Closed);
                     connectionStatusInfo = new ConnectionStatusInfo(ConnectionStatus.Closed, ConnectionStatusChangeReason.ClientClosed);
                     _onConnectionStatusChanged(connectionStatusInfo);
 
@@ -250,11 +243,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     await Task.Delay(delay).ConfigureAwait(false);
                 }
 
-                // always reconnect.
+                // Reconnect
                 connectionStatusInfo = new ConnectionStatusInfo(ConnectionStatus.DisconnectedRetrying, ConnectionStatusChangeReason.CommunicationError);
                 _onConnectionStatusChanged(connectionStatusInfo);
 
-                // This will recover to the status before the disconnect.
+                // This will recover to the state before the disconnect.
                 await OpenAsync(_handleDisconnectCts.Token).ConfigureAwait(false);
             }
             finally
@@ -310,14 +303,14 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     nameof(HandleConnectionStatusExceptions));
         }
 
-        private ClientTransportStatus GetClientTransportStatus()
+        private ClientTransportState GetClientTransportStatus()
         {
-            return (ClientTransportStatus)Interlocked.Read(ref _clientTransportStatus);
+            return (ClientTransportState)Interlocked.Read(ref _clientTransportState);
         }
 
-        private void SetClientTransportStatus(ClientTransportStatus clientTransportStatus)
+        private void SetClientTransportStatus(ClientTransportState clientTransportStatus)
         {
-            _ = Interlocked.Exchange(ref _clientTransportStatus, (int)clientTransportStatus);
+            _ = Interlocked.Exchange(ref _clientTransportState, (int)clientTransportStatus);
         }
 
         protected private override void Dispose(bool disposing)
@@ -329,30 +322,56 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 if (!_isDisposed)
                 {
-                    if (GetClientTransportStatus() != ClientTransportStatus.Closed)
-                    {
-                        SetClientTransportStatus(ClientTransportStatus.Closing);
-                    }
                     base.Dispose(disposing);
 
                     if (disposing)
                     {
-                        _handleDisconnectCts?.Cancel();
-                        _cancelPendingOperationsCts?.Cancel();
+                        var cancellationTokenSources = new List<CancellationTokenSource>
+                        {
+                            _handleDisconnectCts,
+                            _cancelPendingOperationsCts,
+                        };
 
-                        _handleDisconnectCts?.Dispose();
-                        _cancelPendingOperationsCts?.Dispose();
+                        foreach (CancellationTokenSource cancellationTokenSource in cancellationTokenSources)
+                        {
+                            try
+                            {
+                                cancellationTokenSource?.Cancel();
+                            }
+                            catch (ObjectDisposedException)
+                            {
+                                if (Logging.IsEnabled)
+                                    Logging.Error(this, $"Tried canceling the canccelation token source {cancellationTokenSource} but it has already been disposed by client disposal on a separate thread." +
+                                        "Ignoring this exception and continuing with client cleanup.");
+                            }
+                        }
 
-                        _handleDisconnectCts = null;
-                        _cancelPendingOperationsCts = null;
+                        var disposables = new List<IDisposable>
+                        {
+                            _handleDisconnectCts,
+                            _cancelPendingOperationsCts,
+                            _clientOpenSemaphore,
+                        };
+
+                        foreach (IDisposable disposable in disposables)
+                        {
+                            try
+                            {
+                                disposable?.Dispose();
+                            }
+                            catch (ObjectDisposedException)
+                            {
+                                if (Logging.IsEnabled)
+                                    Logging.Error(this, $"Tried disposing the IDisposable {disposable} but it has already been disposed by client disposal on a separate thread." +
+                                        "Ignoring this exception and continuing with client cleanup.");
+                            }
+                        }
                     }
                     // the _disposed flag is inherited from the base class DefaultDelegatingHandler and is finally set to null there.
                 }
             }
             finally
             {
-                SetClientTransportStatus(ClientTransportStatus.Closed);
-
                 if (Logging.IsEnabled)
                     Logging.Exit(this, $"{nameof(DefaultDelegatingHandler)}.Disposed={_isDisposed}; disposing={disposing}", $"{nameof(RetryDelegatingHandler)}.{nameof(Dispose)}");
             }

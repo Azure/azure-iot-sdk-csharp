@@ -5,7 +5,7 @@ using System.Threading;
 
 namespace Microsoft.Azure.Devices.Client.Transport
 {
-    internal enum ClientTransportStatus
+    internal enum ClientTransportState
     {
         /// <summary>
         /// Represents the state when the client (transport) is closed.
@@ -16,9 +16,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
         ///         <item><description>The initial state when the client is initialized.</description></item>
         ///         <item><description><see cref="Opening"/> to <see cref="Closed"/>: <see cref="IDelegatingHandler.OpenAsync(CancellationToken)"/>
         ///             is called but the call doesn't complete successfully.</description></item>
-        ///         <item><description><see cref="Open"/> to <see cref="Closed"/>: when the connection is lost after the client had been successfully opened..</description></item>
+        ///         <item><description><see cref="Open"/> to <see cref="Closed"/>: when the connection is lost after the client had been successfully opened.</description></item>
         ///         <item><description><see cref="Closing"/> to <see cref="Closed"/>: <see cref="IDelegatingHandler.CloseAsync(CancellationToken)"/> completes successfully.</description></item>
-        ///         <item><description><see cref="Closing"/> to <see cref="Closed"/>: <see cref="DefaultDelegatingHandler.Dispose()"/> completes successfully.</description></item>
         ///     </list>
         /// </remarks>
         Closed,
@@ -54,8 +53,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
         ///     <list type="bullet">
         ///         <item><description>Any state but <see cref="Closed"/> to <see cref="Closing"/>: <see cref="IDelegatingHandler.CloseAsync(CancellationToken)"/>
         ///             is called and the client is attempting to close.</description></item>
-        ///         <item><description>Any state but <see cref="Closed"/> to <see cref="Closing"/>: <see cref="DefaultDelegatingHandler.Dispose()"/>
-        ///             is called and the client is attempting to dispose.</description></item>
         ///     </list>
         /// </remarks>
         Closing,
