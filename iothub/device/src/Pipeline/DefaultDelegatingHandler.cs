@@ -48,13 +48,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             ThrowIfDisposed();
 
-            if (NextHandler == null)
-            {
-                return Task.CompletedTask;
-            }
-
-            Task closeTask = NextHandler.CloseAsync(cancellationToken);
-            return closeTask;
+            return NextHandler == null
+                ? Task.CompletedTask
+                : NextHandler.CloseAsync(cancellationToken);
         }
 
         /// <summary>
@@ -63,22 +59,19 @@ namespace Microsoft.Azure.Devices.Client.Transport
         public virtual Task WaitForTransportClosedAsync()
         {
             ThrowIfDisposed();
-
-            return NextHandler == null
-                ? throw new InvalidOperationException()
-                : NextHandler.WaitForTransportClosedAsync();
+            return NextHandler?.WaitForTransportClosedAsync() ?? throw new InvalidOperationException();
         }
 
         public virtual Task EnableReceiveMessageAsync(CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
-            return NextHandler.EnableReceiveMessageAsync(cancellationToken);
+            return NextHandler?.EnableReceiveMessageAsync(cancellationToken) ?? Task.CompletedTask;
         }
 
         public virtual Task DisableReceiveMessageAsync(CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
-            return NextHandler.DisableReceiveMessageAsync(cancellationToken);
+            return NextHandler?.DisableReceiveMessageAsync(cancellationToken) ?? Task.CompletedTask;
         }
 
         public virtual Task SendTelemetryAsync(TelemetryMessage message, CancellationToken cancellationToken)
