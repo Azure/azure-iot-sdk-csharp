@@ -16,12 +16,11 @@ namespace Microsoft.Azure.Devices.Client.Pipeline
 
         private readonly CancellationTokenSource _handleDisconnectCts = new();
         private readonly Action<ConnectionStatusInfo> _onConnectionStatusChanged;
-        private Task _transportClosedTask;
         private readonly IIotHubClientRetryPolicy _retryPolicy;
 
-        private long _clientTransportStatus; // references the current client transport status as the int value of ClientTransportStatus
-        private bool _wasOpened;
+        private Task _transportClosedTask;
         private CancellationTokenSource _cancelPendingOperationsCts;
+        private long _clientTransportStatus; // references the current client transport status as the int value of ClientTransportStatus
 
         internal ConnectionStatusHandler(PipelineContext context, IDelegatingHandler innerHandler)
             : base(context, innerHandler)
@@ -73,8 +72,6 @@ namespace Microsoft.Azure.Devices.Client.Pipeline
                                         await base.OpenAsync(operationCts.Token).ConfigureAwait(false);
 
                                         SetClientTransportStatus(ClientTransportStatus.Open);
-                                        _wasOpened = true;
-
                                         var connectionStatusInfo = new ConnectionStatusInfo(ConnectionStatus.Connected, ConnectionStatusChangeReason.ConnectionOk);
                                         _onConnectionStatusChanged(connectionStatusInfo);
 
@@ -83,6 +80,9 @@ namespace Microsoft.Azure.Devices.Client.Pipeline
                                     }
                                     catch (Exception ex) when (!Fx.IsFatal(ex))
                                     {
+                                        if (Logging.IsEnabled)
+                                            Logging.Error(this, ex, nameof(HandleDisconnectAsync));
+
                                         HandleConnectionStatusExceptions(ex, true);
                                         SetClientTransportStatus(ClientTransportStatus.Closed);
 
@@ -160,7 +160,7 @@ namespace Microsoft.Azure.Devices.Client.Pipeline
 
             if (GetClientTransportStatus() == ClientTransportStatus.Closed)
             {
-                // Already closed so gracefully exit, instead of throw.
+                // Already closed so gracefully exit.
                 return;
             }
 
@@ -175,10 +175,10 @@ namespace Microsoft.Azure.Devices.Client.Pipeline
             }
             finally
             {
+                SetClientTransportStatus(ClientTransportStatus.Closed);
+
                 _cancelPendingOperationsCts?.Dispose();
                 _handleDisconnectCts?.Dispose();
-
-                SetClientTransportStatus(ClientTransportStatus.Closed);
             }
         }
 
@@ -217,8 +217,10 @@ namespace Microsoft.Azure.Devices.Client.Pipeline
                     if (Logging.IsEnabled)
                         Logging.Info(this, "Transport disconnected: closed by application.", nameof(HandleDisconnectAsync));
 
+                    SetClientTransportStatus(ClientTransportStatus.Closed);
                     connectionStatusInfo = new ConnectionStatusInfo(ConnectionStatus.Closed, ConnectionStatusChangeReason.ClientClosed);
                     _onConnectionStatusChanged(connectionStatusInfo);
+
                     return;
                 }
 
@@ -256,13 +258,6 @@ namespace Microsoft.Azure.Devices.Client.Pipeline
 
                     // This will recover to the status before the disconnect.
                     await OpenAsync(cancellationToken).ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    if (Logging.IsEnabled)
-                        Logging.Error(this, ex.ToString(), nameof(HandleDisconnectAsync));
-
-                    HandleConnectionStatusExceptions(ex, true);
                 }
                 finally
                 {
