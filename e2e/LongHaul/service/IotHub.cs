@@ -150,14 +150,14 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                 return Task.FromResult(AcknowledgementType.Complete);
             }
 
-            void OnC2dError(ErrorContext errorContext)
+            async Task OnC2dError(ErrorContext errorContext)
             {
                 Exception exToLog = errorContext.IotHubServiceException == null
                     ? errorContext.IOException
                     : errorContext.IotHubServiceException;
                 _logger.Trace($"Error processing C2D message.\n{exToLog}");
 
-                // TODO: call open async if needed, once this method is async
+                await s_serviceClient.MessageFeedback.OpenAsync(ct).ConfigureAwait(false);
             }
 
             s_serviceClient.MessageFeedback.MessageFeedbackProcessor = OnC2dMessageAck;
