@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client.Transport;
@@ -107,10 +108,12 @@ namespace Microsoft.Azure.Devices.Client.Pipeline
 
             try
             {
+                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
+
                 switch (GetClientTransportStatus())
                 {
                     case ClientTransportStatus.Opening:
-                        await _clientOpenSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+                        await _clientOpenSemaphore.WaitAsync(operationCts.Token).ConfigureAwait(false);
 
                         try
                         {
@@ -123,11 +126,11 @@ namespace Microsoft.Azure.Devices.Client.Pipeline
                         {
                             _clientOpenSemaphore?.Release();
                         }
-                        await base.SendTelemetryAsync(message, cancellationToken).ConfigureAwait(false);
+                        await base.SendTelemetryAsync(message, operationCts.Token).ConfigureAwait(false);
                         break;
 
                     case ClientTransportStatus.Open:
-                        await base.SendTelemetryAsync(message, cancellationToken).ConfigureAwait(false);
+                        await base.SendTelemetryAsync(message, operationCts.Token).ConfigureAwait(false);
                         break;
 
                     case ClientTransportStatus.Closing:
@@ -142,6 +145,35 @@ namespace Microsoft.Azure.Devices.Client.Pipeline
             {
                 if (Logging.IsEnabled)
                     Logging.Exit(this, message, cancellationToken, nameof(SendTelemetryAsync));
+            }
+        }
+
+        public override async Task CloseAsync(CancellationToken cancellationToken)
+        {
+            if (Logging.IsEnabled)
+                Logging.Enter(this, cancellationToken, nameof(CloseAsync));
+
+            if (GetClientTransportStatus() == ClientTransportStatus.Closed)
+            {
+                // Already closed so gracefully exit, instead of throw.
+                return;
+            }
+
+            SetClientTransportStatus(ClientTransportStatus.Closing);
+
+            try
+            {
+                _cancelPendingOperationsCts?.Cancel();
+                _handleDisconnectCts?.Cancel();
+
+                await base.CloseAsync(cancellationToken).ConfigureAwait(false);
+            }
+            finally
+            {
+                _cancelPendingOperationsCts?.Dispose();
+                _handleDisconnectCts?.Dispose();
+
+                SetClientTransportStatus(ClientTransportStatus.Closed);
             }
         }
 
@@ -335,6 +367,58 @@ namespace Microsoft.Azure.Devices.Client.Pipeline
         private void SetClientTransportStatus(ClientTransportStatus clientTransportStatus)
         {
             _ = Interlocked.Exchange(ref _clientTransportStatus, (int)clientTransportStatus);
+        }
+
+        protected private override void Dispose(bool disposing)
+        {
+            if (Logging.IsEnabled)
+                Logging.Enter(this, $"{nameof(DefaultDelegatingHandler)}.Disposed={_isDisposed}; disposing={disposing}", $"{nameof(RetryDelegatingHandler)}.{nameof(Dispose)}");
+
+            try
+            {
+                if (!_isDisposed)
+                {
+                    if (GetClientTransportStatus() != ClientTransportStatus.Closed)
+                    {
+                        SetClientTransportStatus(ClientTransportStatus.Closing);
+                    }
+                    base.Dispose(disposing);
+
+                    if (disposing)
+                    {
+                        _handleDisconnectCts?.Cancel();
+                        _cancelPendingOperationsCts?.Cancel();
+
+                        var disposables = new List<IDisposable>
+                        {
+                            _handleDisconnectCts,
+                            _cancelPendingOperationsCts,
+                        };
+
+                        foreach (IDisposable disposable in disposables)
+                        {
+                            try
+                            {
+                                disposable?.Dispose();
+                            }
+                            catch (ObjectDisposedException)
+                            {
+                                if (Logging.IsEnabled)
+                                    Logging.Error(this, $"Tried disposing the IDisposable {disposable} but it has already been disposed by client disposal on a separate thread." +
+                                        "Ignoring this exception and continuing with client cleanup.");
+                            }
+                        }
+                    }
+                    // the _disposed flag is inherited from the base class DefaultDelegatingHandler and is finally set to null there.
+                }
+            }
+            finally
+            {
+                SetClientTransportStatus(ClientTransportStatus.Closed);
+
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, $"{nameof(DefaultDelegatingHandler)}.Disposed={_isDisposed}; disposing={disposing}", $"{nameof(RetryDelegatingHandler)}.{nameof(Dispose)}");
+            }
         }
     }
 }
