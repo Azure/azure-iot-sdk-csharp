@@ -257,11 +257,12 @@ namespace Microsoft.Azure.Devices.Tests.Amqp
             var amqpException = new AmqpException(error);
 
             // act
-            ErrorContext act = AmqpClientHelper.GetErrorContextFromException(amqpException);
+            Exception act = AmqpClientHelper.GetIotHubExceptionFromAmqpException(amqpException);
 
             // assert
-            act.IotHubServiceException.Message.Should().Be(error.ToString());
-            act.IotHubServiceException.InnerException.Should().BeEquivalentTo(amqpException);
+            act.Should().BeOfType(typeof(IotHubServiceException));
+            ((IotHubServiceException)act).Message.Should().Be(error.ToString());
+            ((IotHubServiceException)act).InnerException.Should().BeEquivalentTo(amqpException);
         }
     }
 }
