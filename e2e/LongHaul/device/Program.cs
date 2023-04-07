@@ -53,10 +53,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
 
             s_logger.Event(StartingRun);
 
-            await using var iotHub = new IotHub(
-                s_logger,
-                parameters.ConnectionString,
-                GetTransportSettings(parameters));
+            await using var iotHub = new IotHub(s_logger, parameters);
             foreach (KeyValuePair<string, string> prop in s_commonProperties)
             {
                 iotHub.TelemetryUserProperties.Add(prop.Key, prop.Value);
@@ -122,7 +119,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
                 {
                     { Hub, helper.HostName },
                     { DeviceId, helper.DeviceId },
-                    { Transport, GetTransportSettings(parameters).ToString() },
+                    { Transport, parameters.GetTransportSettings().ToString() },
                 },
             };
             foreach (KeyValuePair<string, string> kvp in s_commonProperties)
@@ -147,16 +144,6 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
                     TransportType.Amqp => 5671,
                     _ => throw new NotSupportedException($"Unsupported transport type {parameters.Transport}/{parameters.TransportProtocol}"),
                 };
-        }
-
-        private static IotHubClientTransportSettings GetTransportSettings(Parameters parameters)
-        {
-            return parameters.Transport switch
-            {
-                TransportType.Mqtt => new IotHubClientMqttSettings(parameters.TransportProtocol),
-                TransportType.Amqp => new IotHubClientAmqpSettings(parameters.TransportProtocol),
-                _ => throw new NotSupportedException($"Unsupported transport type {parameters.Transport}/{parameters.TransportProtocol}"),
-            };
         }
     }
 }
