@@ -469,9 +469,12 @@ namespace Microsoft.Azure.Devices.Client
                 GC.SuppressFinalize(this);
                 _isDisposed = true;
             }
-            catch (Exception ex) when (Logging.IsEnabled)
+            catch (Exception ex)
             {
-                Logging.Error(this, ex, nameof(DisposeAsync));
+                if (Logging.IsEnabled)
+                    Logging.Error(this, ex, nameof(DisposeAsync));
+                    
+                // fail silently
             }
             finally
             {
