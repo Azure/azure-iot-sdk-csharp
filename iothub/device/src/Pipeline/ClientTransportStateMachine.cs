@@ -16,12 +16,12 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
     internal enum ClientStateAction
     {
-        Open_Start,
-        Open_Success,
-        Open_Failure,
-        Close_Start,
-        Close_Complete,
-        Connection_Lost,
+        OpenStart,
+        OpenSuccess,
+        OpenFailure,
+        CloseStart,
+        CloseComplete,
+        ConnectionLost,
     }
 
     internal class ClientTransportStateMachine
@@ -51,40 +51,46 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         private readonly Dictionary<StateTransition, ClientTransportState> _transitions;
         private readonly object _stateTransitionLock = new();
+        private ClientTransportState _currentState;
 
         internal ClientTransportStateMachine()
         {
-            CurrentState = ClientTransportState.Closed;
+            _currentState = ClientTransportState.Closed;
             _transitions = new Dictionary<StateTransition, ClientTransportState>
             {
-                { new StateTransition(ClientTransportState.Closed, ClientStateAction.Open_Start), ClientTransportState.Opening },
-                { new StateTransition(ClientTransportState.Opening, ClientStateAction.Open_Success), ClientTransportState.Open },
-                { new StateTransition(ClientTransportState.Opening, ClientStateAction.Open_Failure), ClientTransportState.Closed },
-                { new StateTransition(ClientTransportState.Opening, ClientStateAction.Close_Start), ClientTransportState.Closing },
-                { new StateTransition(ClientTransportState.Open, ClientStateAction.Close_Start), ClientTransportState.Closing },
-                { new StateTransition(ClientTransportState.Open, ClientStateAction.Connection_Lost), ClientTransportState.Closed },
-                { new StateTransition(ClientTransportState.Closing, ClientStateAction.Close_Complete), ClientTransportState.Closed },
+                { new StateTransition(ClientTransportState.Closed, ClientStateAction.OpenStart), ClientTransportState.Opening },
+                { new StateTransition(ClientTransportState.Opening, ClientStateAction.OpenSuccess), ClientTransportState.Open },
+                { new StateTransition(ClientTransportState.Opening, ClientStateAction.OpenFailure), ClientTransportState.Closed },
+                { new StateTransition(ClientTransportState.Opening, ClientStateAction.CloseStart), ClientTransportState.Closing },
+                { new StateTransition(ClientTransportState.Open, ClientStateAction.CloseStart), ClientTransportState.Closing },
+                { new StateTransition(ClientTransportState.Open, ClientStateAction.ConnectionLost), ClientTransportState.Closed },
+                { new StateTransition(ClientTransportState.Closing, ClientStateAction.CloseComplete), ClientTransportState.Closed },
             };
         }
 
-        internal ClientTransportState CurrentState { get; private set; }
-
-        private ClientTransportState GetNextState(ClientStateAction action)
-        {
-            var transition = new StateTransition(CurrentState, action);
-
-            return _transitions.TryGetValue(transition, out ClientTransportState nextState)
-                ? nextState
-                : throw new InvalidOperationException("Invalid transition: " + CurrentState + " -> " + action);
-        }
-
-        internal ClientTransportState MoveNext(ClientStateAction action)
+        internal ClientTransportState GetCurrentState()
         {
             lock (_stateTransitionLock)
             {
-                CurrentState = GetNextState(action);
-                return CurrentState;
+                return _currentState;
             }
+        }
+
+        internal void MoveNext(ClientStateAction action)
+        {
+            lock (_stateTransitionLock)
+            {
+                _currentState = GetNextState(action);
+            }
+        }
+
+        private ClientTransportState GetNextState(ClientStateAction action)
+        {
+            var transition = new StateTransition(_currentState, action);
+
+            return _transitions.TryGetValue(transition, out ClientTransportState nextState)
+                ? nextState
+                : throw new InvalidOperationException($"Invalid transition: {_currentState} -> {action}.");
         }
     }
 }
