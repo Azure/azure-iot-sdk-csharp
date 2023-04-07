@@ -253,7 +253,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             // assert for connection status
             connectionStatusInfo.Status.Should().Be(ConnectionStatus.Disconnected);
-            connectionStatusInfo.ChangeReason.Should().Be(ConnectionStatusChangeReason.DeviceDisabled);
+            connectionStatusInfo.ChangeReason.Should().Be(ConnectionStatusChangeReason.ClientClosed);
         }
 
         [TestMethod]

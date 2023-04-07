@@ -22,7 +22,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
     internal sealed class IotHub : IIotHub, IAsyncDisposable
     {
         private readonly string _deviceConnectionString;
-        private readonly IotHubClientTransportSettings _transportSettings;
+        private readonly IotHubClientOptions _clientOptions;
         private readonly Logger _logger;
 
         private SemaphoreSlim _lifetimeControl = new(1, 1);
@@ -46,17 +46,21 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
         private long _totalC2dMessagesCompleted = 0;
         private long _totalC2dMessagesRejected = 0;
 
-        public Dictionary<string, string> TelemetryUserProperties { get; } = new();
-
-        public IotHub(Logger logger, string deviceConnectionString, IotHubClientTransportSettings transportSettings)
+        public IotHub(Logger logger, Parameters parameters)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _deviceConnectionString = deviceConnectionString;
-            _transportSettings = transportSettings;
+            _deviceConnectionString = parameters.ConnectionString;
+            _clientOptions = new IotHubClientOptions(parameters.GetTransportSettings())
+            {
+                PayloadConvention = parameters.GetPayloadConvention(),
+                SdkAssignsMessageId = SdkAssignsMessageId.WhenUnset,
+            };
             _deviceClient = null;
         }
 
         public bool IsConnected => _deviceClient.ConnectionStatusInfo.Status == ConnectionStatus.Connected;
+
+        public Dictionary<string, string> TelemetryUserProperties { get; } = new();
 
         /// <summary>
         /// Initializes the connection to IoT Hub.
@@ -69,12 +73,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
             {
                 if (_deviceClient == null)
                 {
-                    _deviceClient = new IotHubDeviceClient(
-                        _deviceConnectionString,
-                        new IotHubClientOptions(_transportSettings)
-                        {
-                            PayloadConvention = SystemTextJsonPayloadConvention.Instance,
-                        })
+                    _deviceClient = new IotHubDeviceClient(_deviceConnectionString, _clientOptions)
                     {
                         ConnectionStatusChangeCallback = ConnectionStatusChangesHandlerAsync
                     };
@@ -101,7 +100,15 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
         /// <param name="ct">The cancellation token</param>
         public async Task SendTelemetryMessagesAsync(Logger logger, CancellationToken ct)
         {
-            TelemetryMessage pendingMessage = null;
+            // AMQP supports bulk telemetry sending, so we'll configure how many to send at a time.
+            int maxBulkMessages = _clientOptions.TransportSettings is IotHubClientAmqpSettings
+                ? 10
+                : 1;
+
+            // We want to test both paths for AMQP so we'll use a boolean to alternate between bulk and single.
+            bool sendSingle = true;
+
+            var pendingMessages = new List<TelemetryMessage>(maxBulkMessages);
             bool loggedDisconnection = false;
             logger.LoggerContext.Add(OperationName, LoggingConstants.TelemetryMessage);
             Stopwatch sw = new();
@@ -125,7 +132,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
                     }
                 }
 
-                // If not connected, skip the work below this round
+                // If not connected, skip the work below this round.
                 if (!IsConnected)
                 {
                     if (!loggedDisconnection)
@@ -136,23 +143,50 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
                     continue;
                 }
 
-                // Make get a message to send, unless we're retrying a previous message
-                if (pendingMessage == null)
+                // Get messages to send, unless we're retrying a previous set of messages.
+                if (!pendingMessages.Any())
                 {
-                    _messagesToSend.TryDequeue(out pendingMessage);
+                    // Pull some number of messages from the queue, or until empty.
+                    for (int i = 0; i < maxBulkMessages; ++i)
+                    {
+                        if (sendSingle && pendingMessages.Count == 1)
+                        {
+                            break;
+                        }
+
+                        _messagesToSend.TryDequeue(out TelemetryMessage pendingMessage);
+                        if (pendingMessage == null)
+                        {
+                            break;
+                        }
+
+                        pendingMessages.Add(pendingMessage);
+                    }
                 }
 
-                // Send any message prepped to send
-                if (pendingMessage != null)
+                // Send any message prepped to send.
+                if (pendingMessages.Any())
                 {
-                    sw.Restart();
-                    await _deviceClient.SendTelemetryAsync(pendingMessage, ct).ConfigureAwait(false);
+                    if (pendingMessages.Count > 1)
+                    {
+                        logger.Trace($"Sending {pendingMessages.Count} messages in bulk.");
+                        sw.Restart();
+                        await _deviceClient.SendTelemetryAsync(pendingMessages, ct).ConfigureAwait(false);
+                    }
+                    else
+                    {
+                        sw.Restart();
+                        await _deviceClient.SendTelemetryAsync(pendingMessages.First(), ct).ConfigureAwait(false);
+                    }
                     sw.Stop();
 
-                    _logger.Metric(TotalTelemetryMessagesSent, ++_totalTelemetryMessagesSent);
+                    _totalTelemetryMessagesSent += pendingMessages.Count;
+                    _logger.Metric(TotalTelemetryMessagesSent, _totalTelemetryMessagesSent);
                     _logger.Metric(TelemetryMessageDelaySeconds, sw.Elapsed.TotalSeconds);
+                    pendingMessages.Clear();
 
-                    pendingMessage = null;
+                    // Alternate sending between single and in bulk.
+                    sendSingle = !sendSingle;
                 }
             }
         }
@@ -197,16 +231,10 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
             Debug.Assert(_deviceClient != null);
             Debug.Assert(telemetryObject != null);
 
-            // Save off the event time, or use "now" if not specified
-            DateTime createdOnUtc = telemetryObject.EventDateTimeUtc ?? DateTime.UtcNow;
-            // Remove it so it does not get serialized in the message
-            telemetryObject.EventDateTimeUtc = null;
-
             var iotMessage = new TelemetryMessage(telemetryObject)
             {
-                MessageId = Guid.NewGuid().ToString(),
                 // Add the event time to the system property
-                CreatedOnUtc = createdOnUtc,
+                CreatedOnUtc = telemetryObject.EventDateTimeUtc ?? DateTime.UtcNow,
             };
 
             foreach (KeyValuePair<string, string> prop in TelemetryUserProperties)
@@ -451,7 +479,6 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
 
             if (receivedMessage.TryGetPayload(out CustomC2dMessagePayload customC2dMessagePayload))
             {
-                _logger.Trace("The message payload is received in an expected type.", TraceSeverity.Verbose);
                 _logger.Metric(TotalC2dMessagesCompleted, ++_totalC2dMessagesCompleted);
 
                 TimeSpan delay = DateTimeOffset.UtcNow - customC2dMessagePayload.CurrentTimeUtc;
