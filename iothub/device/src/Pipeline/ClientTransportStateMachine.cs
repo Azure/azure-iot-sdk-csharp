@@ -40,7 +40,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
             public override bool Equals(object obj)
             {
                 return obj is StateTransition other
-                    && other._currentState == _currentState && other._nextAction == _nextAction;
+                    && other._currentState == _currentState
+                    && other._nextAction == _nextAction;
             }
 
             public override int GetHashCode()
