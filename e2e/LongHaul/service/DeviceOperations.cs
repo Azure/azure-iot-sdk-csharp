@@ -7,6 +7,7 @@ using System.Threading;
 using Mash.Logging;
 using Newtonsoft.Json;
 using static Microsoft.Azure.Devices.LongHaul.Service.LoggingConstants;
+using System.Diagnostics;
 
 namespace Microsoft.Azure.Devices.LongHaul.Service
 {
@@ -59,10 +60,13 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                 {
                     try
                     {
+                        var sw = Stopwatch.StartNew();
                         // Invoke the direct method asynchronously and get the response from the simulated device.
                         DirectMethodClientResponse response = await _serviceClient.DirectMethods
                             .InvokeAsync(_deviceId, methodInvocation, ct)
                             .ConfigureAwait(false);
+                        sw.Stop();
+                        logger.Metric(DirectMethodElapsedTime, sw.Elapsed.TotalSeconds);
 
                         if (response.TryGetPayload(out CustomDirectMethodPayload responsePayload))
                         {
@@ -108,7 +112,10 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                     logger.Trace($"Updating the desired properties for device: {_deviceId}", TraceSeverity.Information);
                     logger.Metric(TotalDesiredPropertiesUpdatesCount, _totalDesiredPropertiesUpdatesCount);
 
+                    var sw = Stopwatch.StartNew();
                     await _serviceClient.Twins.UpdateAsync(_deviceId, twin, false, ct).ConfigureAwait(false);
+                    sw.Stop();
+                    logger.Metric(DesiredTwinUpdateElapsedTime, sw.Elapsed.TotalSeconds);
                 }
                 catch (Exception ex)
                 {
@@ -143,7 +150,11 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                     logger.Trace($"Sending message with Id {message.MessageId} to the device: {_deviceId}", TraceSeverity.Information);
                     logger.Metric(TotalC2dMessagesSentCount, _totalC2dMessagesSentCount);
 
+                    var sw = Stopwatch.StartNew();
                     await _serviceClient.Messages.SendAsync(_deviceId, message, ct).ConfigureAwait(false);
+                    sw.Stop();
+                    logger.Metric(C2dMessageElapsedTime, sw.Elapsed.TotalSeconds);
+
                 }
                 catch (Exception ex)
                 {

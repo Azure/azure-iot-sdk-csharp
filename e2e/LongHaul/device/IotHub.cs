@@ -169,10 +169,13 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
                     {
                         { "TotalTelemetryMessagesSent", _totalTelemetryMessagesSent },
                     };
+                    var sw = Stopwatch.StartNew();
                     await _deviceClient.UpdateReportedPropertiesAsync(reported, ct).ConfigureAwait(false);
+                    sw.Stop();
 
                     ++_totalTwinUpdatesReported;
                     logger.Metric(TotalTwinUpdatesReported, _totalTwinUpdatesReported);
+                    logger.Metric(ReportedTwinUpdateDelaySeconds, sw.Elapsed.TotalSeconds);
                 }
                 else if (!loggedDisconnection)
                 {
@@ -282,7 +285,10 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
                     StatusCode = 200,
                 };
 
+                var sw = Stopwatch.StartNew();
                 await _deviceClient.CompleteFileUploadAsync(successfulFileUploadCompletionNotification, ct).ConfigureAwait(false);
+                sw.Stop();
+                logger.Metric(FileUploadDelaySeconds, sw.Elapsed.Seconds);
                 await Task.Delay(s_fileUploadInterval, ct).ConfigureAwait(false);
             }
         }

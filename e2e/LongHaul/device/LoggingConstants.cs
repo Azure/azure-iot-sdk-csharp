@@ -18,6 +18,8 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
         public const string TotalC2dMessagesCompleted = "TotalC2dMessagesCompleted";
         public const string TotalC2dMessagesRejected = "TotalC2dMessagesRejected";
         public const string C2dMessageDelaySeconds = "C2dMessageDelaySeconds";
+        public const string ReportedTwinUpdateDelaySeconds = "ReportedTwinUpdateDelaySeconds";
+        public const string FileUploadDelaySeconds = "FileUploadDelaySeconds";
 
         // Events
 
