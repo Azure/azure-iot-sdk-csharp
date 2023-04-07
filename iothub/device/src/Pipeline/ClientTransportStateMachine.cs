@@ -49,7 +49,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 return ShiftAndWrap(_currentState.GetHashCode(), 2) ^ _nextAction.GetHashCode();
             }
 
-            // Hashcode evalution example: https://learn.microsoft.com/dotnet/api/system.object.gethashcode?view=net-8.0#examples
+            // Hashcode evaluation example: https://learn.microsoft.com/dotnet/api/system.object.gethashcode?view=net-8.0#examples
             private static int ShiftAndWrap(int value, int positions)
             {
                 positions &= 0x1F;
