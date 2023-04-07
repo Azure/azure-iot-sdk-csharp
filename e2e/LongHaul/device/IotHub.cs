@@ -111,8 +111,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
             var pendingMessages = new List<TelemetryMessage>(maxBulkMessages);
             bool loggedDisconnection = false;
             logger.LoggerContext.Add(OperationName, LoggingConstants.TelemetryMessage);
-            var sw = new Stopwatch();
-
+            Stopwatch sw = new();
             while (!ct.IsCancellationRequested)
             {
                 logger.Metric(MessageBacklog, _messagesToSend.Count);
@@ -196,6 +195,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
         {
             bool loggedDisconnection = false;
             logger.LoggerContext.Add(OperationName, ReportTwinProperties);
+            Stopwatch sw = new();
             while (!ct.IsCancellationRequested)
             {
                 // If not connected, skip the work below this round
@@ -205,10 +205,14 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
                     {
                         { "TotalTelemetryMessagesSent", _totalTelemetryMessagesSent },
                     };
+
+                    sw.Restart();
                     await _deviceClient.UpdateReportedPropertiesAsync(reported, ct).ConfigureAwait(false);
+                    sw.Stop();
 
                     ++_totalTwinUpdatesReported;
                     logger.Metric(TotalTwinUpdatesReported, _totalTwinUpdatesReported);
+                    logger.Metric(ReportedTwinUpdateOperationSeconds, sw.Elapsed.TotalSeconds);
                 }
                 else if (!loggedDisconnection)
                 {
@@ -276,6 +280,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
         public async Task UploadFilesAsync(Logger logger, CancellationToken ct)
         {
             logger.LoggerContext.Add(OperationName, UploadFiles);
+            Stopwatch sw = new();
             while (!ct.IsCancellationRequested)
             {
                 string fileName = $"TestPayload-{Guid.NewGuid()}.txt";
@@ -312,7 +317,10 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
                     StatusCode = 200,
                 };
 
+                sw.Restart();
                 await _deviceClient.CompleteFileUploadAsync(successfulFileUploadCompletionNotification, ct).ConfigureAwait(false);
+                sw.Stop();
+                logger.Metric(FileUploadOperationSeconds, sw.Elapsed.Seconds);
                 await Task.Delay(s_fileUploadInterval, ct).ConfigureAwait(false);
             }
         }
@@ -474,7 +482,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
                 _logger.Metric(TotalC2dMessagesCompleted, ++_totalC2dMessagesCompleted);
 
                 TimeSpan delay = DateTimeOffset.UtcNow - customC2dMessagePayload.CurrentTimeUtc;
-                _logger.Metric(C2dMessageDelaySeconds, delay.TotalSeconds);
+                _logger.Metric(C2dMessageOperationSeconds, delay.TotalSeconds);
 
                 return Task.FromResult(MessageAcknowledgement.Complete);
             }
