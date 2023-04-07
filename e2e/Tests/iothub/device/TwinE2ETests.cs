@@ -190,14 +190,14 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
 
         // This operation behaves the same irrespective of if the client is initialized over tcp or websocket.
         [TestMethod]
-        public async Task Twin_ServiceSetsDesiredPropertyArrayAndDeviceReceivesEvent_MqttWs()
+        public async Task Twin_ServiceSetsDesiredPropertyArrayAndDeviceReceivesEvent_Mqtt()
         {
             // Setting up one cancellation token for the complete test flow
             using var cts = new CancellationTokenSource(s_testTimeout);
             CancellationToken ct = cts.Token;
 
             await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEventAsync(
-                    new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket),
+                    new IotHubClientMqttSettings(),
                     s_listOfPropertyValues,
                     ct)
                 .ConfigureAwait(false);
@@ -205,14 +205,14 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
 
         // This operation behaves the same irrespective of if the client is initialized over tcp or websocket.
         [TestMethod]
-        public async Task Twin_ServiceSetsDesiredPropertyArrayAndDeviceReceivesEvent_AmqpWs()
+        public async Task Twin_ServiceSetsDesiredPropertyArrayAndDeviceReceivesEvent_Amqp()
         {
             // Setting up one cancellation token for the complete test flow
             using var cts = new CancellationTokenSource(s_testTimeout);
             CancellationToken ct = cts.Token;
 
             await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEventAsync(
-                    new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket),
+                    new IotHubClientAmqpSettings(),
                     s_listOfPropertyValues,
                     ct)
                 .ConfigureAwait(false);
