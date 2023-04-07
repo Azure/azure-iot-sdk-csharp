@@ -135,7 +135,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
             // It is important to note that receiver only gets feedback messages when the device is actively running and acting on messages.
             _logger.Trace("Starting to listen to cloud-to-device feedback messages...", TraceSeverity.Verbose);
 
-            Task<AcknowledgementType> OnC2dMessageAck(FeedbackBatch feedbackMessages)
+            Task<AcknowledgementType> OnC2dFeedback(FeedbackBatch feedbackMessages)
             {
                 foreach (FeedbackRecord feedbackRecord in feedbackMessages.Records)
                 {
@@ -150,18 +150,18 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                 return Task.FromResult(AcknowledgementType.Complete);
             }
 
-            async Task OnC2dError(ErrorContext errorContext)
+            async Task OnC2dFeedbackError(ErrorContext errorContext)
             {
                 Exception exToLog = errorContext.IotHubServiceException == null
                     ? errorContext.IOException
                     : errorContext.IotHubServiceException;
-                _logger.Trace($"Error processing C2D message.\n{exToLog}");
+                _logger.Trace($"Error processing C2D feedback messages.\n{exToLog}");
 
                 await s_serviceClient.MessageFeedback.OpenAsync(ct).ConfigureAwait(false);
             }
 
-            s_serviceClient.MessageFeedback.MessageFeedbackProcessor = OnC2dMessageAck;
-            s_serviceClient.MessageFeedback.ErrorProcessor = OnC2dError;
+            s_serviceClient.MessageFeedback.MessageFeedbackProcessor = OnC2dFeedback;
+            s_serviceClient.MessageFeedback.ErrorProcessor = OnC2dFeedbackError;
 
             try
             {
