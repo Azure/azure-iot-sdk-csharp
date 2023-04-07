@@ -39,7 +39,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 switch (_clientTransportStateMachine.GetCurrentState())
                 {
-                    case ClientTransportState.Opening:
                     case ClientTransportState.Open:
                         return;
 
@@ -47,9 +46,13 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         throw new InvalidOperationException($"The client is currently closing. To reopen the client wait until {nameof(CloseAsync)} completes" +
                             $" and then invoke {nameof(OpenAsync)}.");
 
+                    case ClientTransportState.Opening:
                     case ClientTransportState.Closed:
                         {
-                            _clientTransportStateMachine.MoveNext(ClientStateAction.OpenStart);
+                            if (_clientTransportStateMachine.GetCurrentState() == ClientTransportState.Closed)
+                            {
+                                _clientTransportStateMachine.MoveNext(ClientStateAction.OpenStart);
+                            }
                             //SetClientTransportStatus(ClientTransportState.Opening);
 
                             // Create a new cancellation token source that will be signaled by any subsequently invoked CloseAsync() for cancellation.
@@ -224,8 +227,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     if (Logging.IsEnabled)
                         Logging.Info(this, "Transport disconnected: closed by application.", nameof(HandleDisconnectAsync));
 
-                    _clientTransportStateMachine.MoveNext(ClientStateAction.ConnectionLost);
-                    //SetClientTransportStatus(ClientTransportState.Closed);
                     connectionStatusInfo = new ConnectionStatusInfo(ConnectionStatus.Closed, ConnectionStatusChangeReason.ClientClosed);
                     _onConnectionStatusChanged(connectionStatusInfo);
 
@@ -240,8 +241,12 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     if (Logging.IsEnabled)
                         Logging.Info(this, "Transport disconnected: closed by application.", nameof(HandleDisconnectAsync));
 
+                    _clientTransportStateMachine.MoveNext(ClientStateAction.CloseStart);
+                    _clientTransportStateMachine.MoveNext(ClientStateAction.CloseComplete);
+
                     connectionStatusInfo = new ConnectionStatusInfo(ConnectionStatus.Disconnected, ConnectionStatusChangeReason.RetryExpired);
                     _onConnectionStatusChanged(connectionStatusInfo);
+
                     return;
                 }
 

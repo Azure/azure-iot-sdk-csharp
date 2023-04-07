@@ -63,7 +63,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 { new StateTransition(ClientTransportState.Opening, ClientStateAction.OpenFailure), ClientTransportState.Closed },
                 { new StateTransition(ClientTransportState.Opening, ClientStateAction.CloseStart), ClientTransportState.Closing },
                 { new StateTransition(ClientTransportState.Open, ClientStateAction.CloseStart), ClientTransportState.Closing },
-                { new StateTransition(ClientTransportState.Open, ClientStateAction.ConnectionLost), ClientTransportState.Closed },
+                { new StateTransition(ClientTransportState.Open, ClientStateAction.ConnectionLost), ClientTransportState.Opening },
                 { new StateTransition(ClientTransportState.Closing, ClientStateAction.CloseComplete), ClientTransportState.Closed },
             };
         }
