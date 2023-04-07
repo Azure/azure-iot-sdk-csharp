@@ -77,7 +77,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
             {
                 e.Cancel = true;
                 cancellationTokenSource.Cancel();
-                Console.WriteLine("Exiting ...");
+                Console.WriteLine("Exiting...");
             };
 
             var systemHealthMonitor = new SystemHealthMonitor(s_port, s_logger.Clone());
@@ -104,6 +104,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
             // Log system health after disposing hub
             SystemHealthMonitor.BuildAndLogSystemHealth(s_logger);
 
+            s_logger.Event(EndingRun);
             s_logger.Flush();
             s_aiLoggingProvider.Dispose();
         }

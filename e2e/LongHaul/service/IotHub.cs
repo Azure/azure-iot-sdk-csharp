@@ -11,6 +11,7 @@ using Azure;
 using Mash.Logging;
 using Azure.Storage.Blobs;
 using static Microsoft.Azure.Devices.LongHaul.Service.LoggingConstants;
+using System.Collections.Generic;
 
 namespace Microsoft.Azure.Devices.LongHaul.Service
 {
@@ -102,9 +103,9 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                             {
                                 await Task
                                 .WhenAll(
-                                    deviceOperations.InvokeDirectMethodAsync(token),
-                                    deviceOperations.SetDesiredPropertiesAsync("guidValue", Guid.NewGuid().ToString(), token),
-                                    deviceOperations.SendC2dMessagesAsync(token))
+                                    deviceOperations.InvokeDirectMethodAsync(_logger.Clone(), token),
+                                    deviceOperations.SetDesiredPropertiesAsync("guidValue", Guid.NewGuid().ToString(), _logger.Clone(), token),
+                                    deviceOperations.SendC2dMessagesAsync(_logger.Clone(), token))
                                 .ConfigureAwait(false);
                             }
                             catch (OperationCanceledException)
@@ -149,7 +150,18 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                 return Task.FromResult(AcknowledgementType.Complete);
             }
 
+            async Task OnC2dError(ErrorContext errorContext)
+            {
+                Exception exToLog = errorContext.IotHubServiceException == null
+                    ? errorContext.IOException
+                    : errorContext.IotHubServiceException;
+                _logger.Trace($"Error processing C2D message.\n{exToLog}");
+
+                await s_serviceClient.MessageFeedback.OpenAsync(ct).ConfigureAwait(false);
+            }
+
             s_serviceClient.MessageFeedback.MessageFeedbackProcessor = OnC2dMessageAck;
+            s_serviceClient.MessageFeedback.ErrorProcessor = OnC2dError;
 
             try
             {
@@ -171,25 +183,42 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
         {
             _logger.Trace("Starting to listen to file upload notifications...", TraceSeverity.Verbose);
 
-            Task<AcknowledgementType> FileUploadNotificationCallback(FileUploadNotification fileUploadNotification)
+            async Task<AcknowledgementType> FileUploadNotificationCallback(FileUploadNotification fileUploadNotification)
             {
-                AcknowledgementType ackType = AcknowledgementType.Complete;
                 ++_totalFileUploadNotificationsReceived;
                 _logger.Metric(TotalFileUploadNotificiationsReceivedCount, _totalFileUploadNotificationsReceived);
 
-                var sb = new StringBuilder();
-                sb.Append($"Received file upload notification.");
-                sb.Append($"\n\tDeviceId: {fileUploadNotification.DeviceId ?? "N/A"}.");
-                sb.Append($"\n\tFileName: {fileUploadNotification.BlobName ?? "N/A"}.");
-                sb.Append($"\n\tEnqueueTimeUTC: {fileUploadNotification.EnqueuedOnUtc}.");
+                var sb = new StringBuilder("Received file upload notification.");
+                if (!string.IsNullOrWhiteSpace(fileUploadNotification.DeviceId))
+                {
+                    sb.Append($"\n\tDeviceId: {fileUploadNotification.DeviceId}.");
+                }
+                if (!string.IsNullOrWhiteSpace(fileUploadNotification.BlobName))
+                {
+                    sb.Append($"\n\tFileName: {fileUploadNotification.BlobName}.");
+                }
+                sb.Append($"\n\tEnqueuedOnUtc: {fileUploadNotification.EnqueuedOnUtc}.");
                 sb.Append($"\n\tBlobSizeInBytes: {fileUploadNotification.BlobSizeInBytes}.");
                 _logger.Trace(sb.ToString(), TraceSeverity.Information);
 
-                s_blobContainerClient.DeleteBlobIfExists(fileUploadNotification.BlobName);
-                return Task.FromResult(ackType);
+                await s_blobContainerClient.DeleteBlobIfExistsAsync(fileUploadNotification.BlobName).ConfigureAwait(false);
+                return AcknowledgementType.Complete;
+            }
+
+            async Task FileUploadNotificationErrors(ErrorContext errorContext)
+            {
+                Exception exToLog = errorContext.IotHubServiceException == null
+                    ? errorContext.IOException
+                    : errorContext.IotHubServiceException;
+                _logger.Trace($"Error processing FileUploadNotification.\n{exToLog}");
+
+                _logger.Trace("Attempting reconnect for FileUploadNotifications...");
+                await s_serviceClient.FileUploadNotifications.OpenAsync(ct).ConfigureAwait(false);
+                _logger.Trace("Reconnected for FileUploadNotifications.");
             }
 
             s_serviceClient.FileUploadNotifications.FileUploadNotificationProcessor = FileUploadNotificationCallback;
+            s_serviceClient.FileUploadNotifications.ErrorProcessor = FileUploadNotificationErrors;
 
             try
             {
@@ -209,11 +238,9 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
 
         public void Dispose()
         {
-            _logger.Trace("Disposing", TraceSeverity.Verbose);
-
+            _logger.Trace("Disposing IotHub instance...", TraceSeverity.Verbose);
             s_serviceClient?.Dispose();
-
-            _logger.Trace($"IoT Hub instance disposed", TraceSeverity.Verbose);
+            _logger.Trace("IotHub instance disposed.", TraceSeverity.Verbose);
         }
     }
 }
