@@ -85,7 +85,7 @@ namespace Microsoft.Azure.Devices.Tests.Exceptions
             var exception = new IotHubServiceException(
                 Message,
                 statusCode,
-                IotHubServiceErrorCode.GenericRequestTimeout);
+                IotHubServiceErrorCode.RequestTimeout);
             var sctx = new StreamingContext();
 
             // act
@@ -104,7 +104,7 @@ namespace Microsoft.Azure.Devices.Tests.Exceptions
             var exception = new IotHubServiceException(
                 Message,
                 statusCode,
-                IotHubServiceErrorCode.GenericRequestTimeout);
+                IotHubServiceErrorCode.RequestTimeout);
             var sInfo = new SerializationInfo(GetType(), new FormatterConverter());
             var sctx = new StreamingContext();
 

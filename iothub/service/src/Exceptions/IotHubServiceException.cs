@@ -126,7 +126,7 @@ namespace Microsoft.Azure.Devices
                     or IotHubServiceErrorCode.ThrottlingBacklogTimeout
                     or IotHubServiceErrorCode.ServerError
                     or IotHubServiceErrorCode.ServiceUnavailable
-                    or IotHubServiceErrorCode.GenericRequestTimeout
+                    or IotHubServiceErrorCode.RequestTimeout
                     => true,
                 IotHubServiceErrorCode.Unknown
                     => statusCode == (HttpStatusCode)429,

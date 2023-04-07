@@ -164,7 +164,10 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// The client did not send a request within the time the server was expecting the request.
         /// </summary>
-        GenericRequestTimeout = 408000,
+        /// <remarks>
+        /// We define this error code ourselves as the client wouldn't actually receive response from the service.
+        /// </remarks>
+        RequestTimeout = 408000,
 
         // Conflict - 409
 
