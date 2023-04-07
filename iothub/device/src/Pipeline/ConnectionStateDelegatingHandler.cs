@@ -52,7 +52,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
                             {
                                 _clientTransportStateMachine.MoveNext(ClientStateAction.OpenStart);
                             }
-                            //SetClientTransportStatus(ClientTransportState.Opening);
 
                             // Create a new cancellation token source that will be signaled by any subsequently invoked CloseAsync() for cancellation.
                             _cancelPendingOperationsCts = new CancellationTokenSource();
@@ -66,14 +65,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
                                     if (Logging.IsEnabled)
                                         Logging.Info(this, "Opening connection", nameof(OpenAsync));
 
-                                    // This is to ensure that if OpenInternalAsync() fails on retry expiration with a custom retry policy,
-                                    // we are returning the corresponding connection status change event => disconnected: retry_expired.
                                     try
                                     {
                                         await base.OpenAsync(operationCts.Token).ConfigureAwait(false);
 
                                         _clientTransportStateMachine.MoveNext(ClientStateAction.OpenSuccess);
-                                        //SetClientTransportStatus(ClientTransportState.Open);
                                         var connectionStatusInfo = new ConnectionStatusInfo(ConnectionStatus.Connected, ConnectionStatusChangeReason.ConnectionOk);
                                         _onConnectionStatusChanged(connectionStatusInfo);
 
@@ -90,7 +86,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
                                         HandleConnectionStatusExceptions(ex, true);
                                         _clientTransportStateMachine.MoveNext(ClientStateAction.OpenFailure);
-                                        //SetClientTransportStatus(ClientTransportState.Closed);
 
                                         throw;
                                     }
@@ -171,7 +166,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
 
             _clientTransportStateMachine.MoveNext(ClientStateAction.CloseStart);
-            //SetClientTransportStatus(ClientTransportState.Closing);
 
             try
             {
@@ -189,7 +183,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 _handleDisconnectCts = null;
 
                 _clientTransportStateMachine.MoveNext(ClientStateAction.CloseComplete);
-                //SetClientTransportStatus(ClientTransportState.Closed);
             }
         }
 
@@ -218,7 +211,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         Logging.Info(this, "Transport disconnected: unexpected.", nameof(HandleDisconnectAsync));
 
                     _clientTransportStateMachine.MoveNext(ClientStateAction.ConnectionLost);
-                    //SetClientTransportStatus(ClientTransportState.Closed);
                 }
                 catch (OperationCanceledException)
                 {
@@ -226,6 +218,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     if (Logging.IsEnabled)
                         Logging.Info(this, "Transport disconnected: closed by application.", nameof(HandleDisconnectAsync));
 
+                    // The internal transport layer state would have been set by the original CloseAsync() call.
                     connectionStatusInfo = new ConnectionStatusInfo(ConnectionStatus.Closed, ConnectionStatusChangeReason.ClientClosed);
                     _onConnectionStatusChanged(connectionStatusInfo);
 

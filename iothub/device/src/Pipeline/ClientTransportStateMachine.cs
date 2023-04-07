@@ -89,7 +89,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             lock (_stateTransitionLock)
             {
+                ClientTransportState previousState = _currentState;
                 _currentState = GetNextState(action);
+
+                if (Logging.IsEnabled)
+                    Logging.Info(this, $"Client transport state changed from {previousState} -> {_currentState} via {action}.", nameof(MoveNext));
             }
         }
 
