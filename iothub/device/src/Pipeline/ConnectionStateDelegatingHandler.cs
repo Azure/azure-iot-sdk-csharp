@@ -107,53 +107,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
-        public override async Task SendTelemetryAsync(TelemetryMessage message, CancellationToken cancellationToken)
-        {
-            if (Logging.IsEnabled)
-                Logging.Enter(this, message, cancellationToken, nameof(SendTelemetryAsync));
-
-            try
-            {
-                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
-
-                switch (_clientTransportStateMachine.GetCurrentState())
-                {
-                    case ClientTransportState.Opening:
-                        await _clientOpenSemaphore.WaitAsync(operationCts.Token).ConfigureAwait(false);
-
-                        try
-                        {
-                            if (_clientTransportStateMachine.GetCurrentState() != ClientTransportState.Open)
-                            {
-                                throw new InvalidOperationException($"The client connection must be opened before operations can begin. Call '{nameof(OpenAsync)}' and try again.");
-                            }
-                        }
-                        finally
-                        {
-                            _clientOpenSemaphore?.Release();
-                        }
-                        await base.SendTelemetryAsync(message, operationCts.Token).ConfigureAwait(false);
-                        break;
-
-                    case ClientTransportState.Open:
-                        await base.SendTelemetryAsync(message, operationCts.Token).ConfigureAwait(false);
-                        break;
-
-                    case ClientTransportState.Closing:
-                        throw new InvalidOperationException($"The client is currently closing. Wait until {nameof(CloseAsync)} completes" +
-                            $" and then invoke {nameof(OpenAsync)} and try the operation again.");
-
-                    case ClientTransportState.Closed:
-                        throw new InvalidOperationException($"The client is currently closed. Reopen the client using {nameof(OpenAsync)} and try the operation again.");
-                }
-            }
-            finally
-            {
-                if (Logging.IsEnabled)
-                    Logging.Exit(this, message, cancellationToken, nameof(SendTelemetryAsync));
-            }
-        }
-
         public override async Task CloseAsync(CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
@@ -183,6 +136,304 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 _handleDisconnectCts = null;
 
                 _clientTransportStateMachine.MoveNext(ClientStateAction.CloseComplete);
+            }
+        }
+
+        public override async Task SendTelemetryAsync(TelemetryMessage message, CancellationToken cancellationToken)
+        {
+            if (Logging.IsEnabled)
+                Logging.Enter(this, message, cancellationToken, nameof(SendTelemetryAsync));
+
+            try
+            {
+                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
+                await ValidateStateAndPerformOperationAsync(
+                    () => base.SendTelemetryAsync(message, operationCts.Token),
+                    nameof(SendTelemetryAsync),
+                    operationCts.Token);
+            }
+            finally
+            {
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, message, cancellationToken, nameof(SendTelemetryAsync));
+            }
+        }
+
+        public override async Task SendTelemetryAsync(IEnumerable<TelemetryMessage> messages, CancellationToken cancellationToken)
+        {
+            if (Logging.IsEnabled)
+                Logging.Enter(this, messages, cancellationToken, nameof(SendTelemetryAsync));
+
+            try
+            {
+                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
+                await ValidateStateAndPerformOperationAsync(
+                    () => base.SendTelemetryAsync(messages, operationCts.Token),
+                    nameof(SendTelemetryAsync),
+                    operationCts.Token);
+            }
+            finally
+            {
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, messages, cancellationToken, nameof(SendTelemetryAsync));
+            }
+        }
+        public override async Task EnableReceiveMessageAsync(CancellationToken cancellationToken)
+        {
+            if (Logging.IsEnabled)
+                Logging.Enter(this, cancellationToken, nameof(EnableReceiveMessageAsync));
+
+            try
+            {
+                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
+                await ValidateStateAndPerformOperationAsync(
+                    () => base.EnableReceiveMessageAsync(operationCts.Token),
+                    nameof(EnableReceiveMessageAsync),
+                    operationCts.Token);
+            }
+            finally
+            {
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, cancellationToken, nameof(EnableReceiveMessageAsync));
+            }
+        }
+
+        public override async Task DisableReceiveMessageAsync(CancellationToken cancellationToken)
+        {
+            if (Logging.IsEnabled)
+                Logging.Enter(this, cancellationToken, nameof(DisableReceiveMessageAsync));
+
+            try
+            {
+                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
+                await ValidateStateAndPerformOperationAsync(
+                    () => base.DisableReceiveMessageAsync(operationCts.Token),
+                    nameof(DisableReceiveMessageAsync),
+                    operationCts.Token);
+            }
+            finally
+            {
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, cancellationToken, nameof(DisableReceiveMessageAsync));
+            }
+        }
+
+        public override async Task EnableMethodsAsync(CancellationToken cancellationToken)
+        {
+            if (Logging.IsEnabled)
+                Logging.Enter(this, cancellationToken, nameof(EnableMethodsAsync));
+
+            try
+            {
+                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
+                await ValidateStateAndPerformOperationAsync(
+                    () => base.EnableMethodsAsync(operationCts.Token),
+                    nameof(EnableMethodsAsync),
+                    operationCts.Token);
+            }
+            finally
+            {
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, cancellationToken, nameof(EnableMethodsAsync));
+            }
+        }
+
+        public override async Task DisableMethodsAsync(CancellationToken cancellationToken)
+        {
+            if (Logging.IsEnabled)
+                Logging.Enter(this, cancellationToken, nameof(DisableMethodsAsync));
+
+            try
+            {
+                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
+                await ValidateStateAndPerformOperationAsync(
+                    () => base.DisableMethodsAsync(operationCts.Token),
+                    nameof(DisableMethodsAsync),
+                    operationCts.Token);
+            }
+            finally
+            {
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, cancellationToken, nameof(DisableMethodsAsync));
+            }
+        }
+
+        public override async Task SendMethodResponseAsync(DirectMethodResponse method, CancellationToken cancellationToken)
+        {
+            if (Logging.IsEnabled)
+                Logging.Enter(this, method, cancellationToken, nameof(SendMethodResponseAsync));
+
+            try
+            {
+                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
+                await ValidateStateAndPerformOperationAsync(
+                    () => base.SendMethodResponseAsync(method, operationCts.Token),
+                    nameof(SendMethodResponseAsync),
+                    operationCts.Token);
+            }
+            finally
+            {
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, method, cancellationToken, nameof(SendMethodResponseAsync));
+            }
+        }
+
+        public override async Task EnableTwinPatchAsync(CancellationToken cancellationToken)
+        {
+            if (Logging.IsEnabled)
+                Logging.Enter(this, cancellationToken, nameof(EnableTwinPatchAsync));
+
+            try
+            {
+                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
+                await ValidateStateAndPerformOperationAsync(
+                    () => base.EnableTwinPatchAsync(operationCts.Token),
+                    nameof(EnableTwinPatchAsync),
+                    operationCts.Token);
+            }
+            finally
+            {
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, cancellationToken, nameof(EnableTwinPatchAsync));
+            }
+        }
+
+        public override async Task DisableTwinPatchAsync(CancellationToken cancellationToken)
+        {
+            if (Logging.IsEnabled)
+                Logging.Enter(this, cancellationToken, nameof(DisableTwinPatchAsync));
+
+            try
+            {
+                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
+                await ValidateStateAndPerformOperationAsync(
+                    () => base.DisableTwinPatchAsync(operationCts.Token),
+                    nameof(DisableTwinPatchAsync),
+                    operationCts.Token);
+            }
+            finally
+            {
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, cancellationToken, nameof(DisableTwinPatchAsync));
+            }
+        }
+
+        public override async Task<TwinProperties> GetTwinAsync(CancellationToken cancellationToken)
+        {
+            if (Logging.IsEnabled)
+                Logging.Enter(this, cancellationToken, nameof(GetTwinAsync));
+
+            try
+            {
+                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
+                return await ValidateStateAndPerformOperationAsync(
+                    () => base.GetTwinAsync(operationCts.Token),
+                    nameof(GetTwinAsync),
+                    operationCts.Token);
+            }
+            finally
+            {
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, cancellationToken, nameof(GetTwinAsync));
+            }
+        }
+
+        public override async Task<long> UpdateReportedPropertiesAsync(ReportedProperties reportedProperties, CancellationToken cancellationToken)
+        {
+            if (Logging.IsEnabled)
+                Logging.Enter(this, reportedProperties, cancellationToken, nameof(UpdateReportedPropertiesAsync));
+
+            try
+            {
+                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
+                return await ValidateStateAndPerformOperationAsync(
+                    () => base.UpdateReportedPropertiesAsync(reportedProperties, operationCts.Token),
+                    nameof(UpdateReportedPropertiesAsync),
+                    operationCts.Token);
+            }
+            finally
+            {
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, reportedProperties, cancellationToken, nameof(UpdateReportedPropertiesAsync));
+            }
+        }
+
+        public override async Task<DateTime> RefreshSasTokenAsync(CancellationToken cancellationToken)
+        {
+            if (Logging.IsEnabled)
+                Logging.Enter(this, cancellationToken, nameof(RefreshSasTokenAsync));
+
+            try
+            {
+                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
+                return await ValidateStateAndPerformOperationAsync(
+                    () => base.RefreshSasTokenAsync(operationCts.Token),
+                    nameof(RefreshSasTokenAsync),
+                    operationCts.Token);
+            }
+            finally
+            {
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, cancellationToken, nameof(RefreshSasTokenAsync));
+            }
+        }
+
+        private Task ValidateStateAndPerformOperationAsync(Func<Task> asyncOperation, string operationName, CancellationToken cancellationToken)
+        {
+            return ValidateStateAndPerformOperationAsync(async () =>
+            {
+                await asyncOperation().ConfigureAwait(false);
+                return false;
+            },
+            operationName,
+            cancellationToken);
+
+        }
+
+        private async Task<T> ValidateStateAndPerformOperationAsync<T>(Func<Task<T>> asyncOperation, string operationName, CancellationToken cancellationToken)
+        {
+            if (Logging.IsEnabled)
+                Logging.Enter(this, operationName, cancellationToken, nameof(ValidateStateAndPerformOperationAsync));
+
+            try
+            {
+                switch (_clientTransportStateMachine.GetCurrentState())
+                {
+                    case ClientTransportState.Opening:
+                        await _clientOpenSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+                        try
+                        {
+                            if (_clientTransportStateMachine.GetCurrentState() != ClientTransportState.Open)
+                            {
+                                throw new InvalidOperationException($"The client connection must be opened before operations can begin. Call '{nameof(OpenAsync)}' and try again.");
+                            }
+                        }
+                        finally
+                        {
+                            _clientOpenSemaphore?.Release();
+                        }
+                        return await asyncOperation().ConfigureAwait(false);
+
+                    case ClientTransportState.Open:
+                        return await asyncOperation().ConfigureAwait(false);
+
+                    case ClientTransportState.Closing:
+                        throw new InvalidOperationException($"The client is currently closing. Wait until {nameof(CloseAsync)} completes" +
+                            $" and then invoke {nameof(OpenAsync)} and try the operation again.");
+
+                    case ClientTransportState.Closed:
+                        throw new InvalidOperationException($"The client is currently closed. Reopen the client using {nameof(OpenAsync)} and try the operation again.");
+
+                    default:
+                        throw new InvalidOperationException($"Unknown client transport state {_clientTransportStateMachine.GetCurrentState()}." +
+                            $"Reach out to the library owners with the logs to determine how this state was reached.");
+                }
+            }
+            finally
+            {
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, operationName, cancellationToken, nameof(ValidateStateAndPerformOperationAsync));
             }
         }
 
