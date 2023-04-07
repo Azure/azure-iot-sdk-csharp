@@ -49,7 +49,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             // assert
             var error = await act.Should().ThrowAsync<IotHubServiceException>();
             error.And.StatusCode.Should().Be(HttpStatusCode.RequestTimeout);
-            error.And.ErrorCode.Should().Be(IotHubServiceErrorCode.Unknown);
+            error.And.ErrorCode.Should().Be(IotHubServiceErrorCode.RequestTimeout);
             error.And.IsTransient.Should().BeTrue();
         }
 
