@@ -45,7 +45,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             public override int GetHashCode()
             {
-                throw new NotImplementedException();
+                return _currentState.GetHashCode() + _nextAction.GetHashCode();
             }
         }
 
