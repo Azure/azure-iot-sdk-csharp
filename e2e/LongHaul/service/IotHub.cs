@@ -96,16 +96,19 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
 
                         async Task Operations()
                         {
-                            var deviceOperations = new DeviceOperations(s_serviceClient, deviceId, _logger.Clone());
+                            var deviceOperations = new DeviceOperations(s_serviceClient, deviceId);
                             _logger.Trace($"Creating {nameof(DeviceOperations)} on the device [{deviceId}]", TraceSeverity.Verbose);
+
+                            Logger loggerPerDevice = _logger.Clone();
+                            loggerPerDevice.LoggerContext.Add("DeviceId", deviceId);
 
                             try
                             {
                                 await Task
                                 .WhenAll(
-                                    deviceOperations.InvokeDirectMethodAsync(_logger.Clone(), token),
-                                    deviceOperations.SetDesiredPropertiesAsync("guidValue", Guid.NewGuid().ToString(), _logger.Clone(), token),
-                                    deviceOperations.SendC2dMessagesAsync(_logger.Clone(), token))
+                                    deviceOperations.InvokeDirectMethodAsync(loggerPerDevice.Clone(), token),
+                                    deviceOperations.SetDesiredPropertiesAsync("guidValue", Guid.NewGuid().ToString(), loggerPerDevice.Clone(), token),
+                                    deviceOperations.SendC2dMessagesAsync(loggerPerDevice.Clone(), token))
                                 .ConfigureAwait(false);
                             }
                             catch (OperationCanceledException)
