@@ -107,7 +107,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             // arrange
             using var sender = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
             bool connectionLossEventExecuted = false;
-            Func<ErrorContext, Task> OnConnectionLost = delegate
+            Func<MessageFeedbackProcessorError, Task> OnConnectionLost = delegate
             {
                 // There is a small chance that this test's connection is interrupted by an actual
                 // network failure (when this callback should be executed), but the operations

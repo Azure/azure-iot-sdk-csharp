@@ -153,11 +153,9 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
             }
 
             async Task OnC2dFeedbackError(ErrorContext errorContext)
+            async Task OnC2dError(MessageFeedbackProcessorError error)
             {
-                Exception exToLog = errorContext.IotHubServiceException == null
-                    ? errorContext.IOException
-                    : errorContext.IotHubServiceException;
-                _logger.Trace($"Error processing C2D feedback messages.\n{exToLog}");
+                _logger.Trace($"Error processing C2D message.\n{error.Exception}");
 
                 await s_serviceClient.MessageFeedback.OpenAsync(ct).ConfigureAwait(false);
             }
@@ -207,12 +205,9 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                 return AcknowledgementType.Complete;
             }
 
-            async Task FileUploadNotificationErrors(ErrorContext errorContext)
+            async Task FileUploadNotificationErrors(FileUploadNotificationProcessorError error)
             {
-                Exception exToLog = errorContext.IotHubServiceException == null
-                    ? errorContext.IOException
-                    : errorContext.IotHubServiceException;
-                _logger.Trace($"Error processing FileUploadNotification.\n{exToLog}");
+                _logger.Trace($"Error processing FileUploadNotification.\n{error.Exception}");
 
                 _logger.Trace("Attempting reconnect for FileUploadNotifications...");
                 await s_serviceClient.FileUploadNotifications.OpenAsync(ct).ConfigureAwait(false);

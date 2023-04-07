@@ -2,8 +2,9 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Threading.Tasks;
+using System.Diagnostics;
 using System.Threading;
+using System.Threading.Tasks;
 using Mash.Logging;
 using Newtonsoft.Json;
 using static Microsoft.Azure.Devices.LongHaul.Service.LoggingConstants;
@@ -34,6 +35,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
         public async Task InvokeDirectMethodAsync(Logger logger, CancellationToken ct)
         {
             logger.LoggerContext.Add(OperationName, DirectMethod);
+            Stopwatch sw = new();
             while (!ct.IsCancellationRequested)
             {
                 var payload = new CustomDirectMethodPayload
@@ -58,10 +60,13 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                 {
                     try
                     {
+                        sw.Restart();
                         // Invoke the direct method asynchronously and get the response from the simulated device.
                         DirectMethodClientResponse response = await _serviceClient.DirectMethods
                             .InvokeAsync(_deviceId, methodInvocation, ct)
                             .ConfigureAwait(false);
+                        sw.Stop();
+                        logger.Metric(DirectMethodRoundTripSeconds, sw.Elapsed.TotalSeconds);
 
                         if (response.TryGetPayload(out CustomDirectMethodPayload responsePayload))
                         {
@@ -102,6 +107,8 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
         public async Task SetDesiredPropertiesAsync(string keyName, string properties, Logger logger, CancellationToken ct)
         {
             logger.LoggerContext.Add(OperationName, SetDesiredProperties);
+            Stopwatch sw = new();
+
             while (!ct.IsCancellationRequested)
             {
                 try
@@ -115,7 +122,10 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                         TraceSeverity.Information);
                     logger.Metric(TotalDesiredPropertiesUpdatesCount, _totalDesiredPropertiesUpdatesCount);
 
+                    sw.Restart();
                     await _serviceClient.Twins.UpdateAsync(_deviceId, twin, false, ct).ConfigureAwait(false);
+                    sw.Stop();
+                    logger.Metric(DesiredTwinUpdateRoundTripSeconds, sw.Elapsed.TotalSeconds);
                 }
                 catch (IotHubServiceException ex) when (ex.IsTransient)
                 {
@@ -139,6 +149,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
         {
             await _serviceClient.Messages.OpenAsync(ct).ConfigureAwait(false);
             logger.LoggerContext.Add(OperationName, C2DMessage);
+            Stopwatch sw = new();
             while (!ct.IsCancellationRequested)
             {
                 try
@@ -161,7 +172,11 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                         TraceSeverity.Information);
                     logger.Metric(TotalC2dMessagesSentCount, _totalC2dMessagesSentCount);
 
+                    sw.Restart();
                     await _serviceClient.Messages.SendAsync(_deviceId, message, ct).ConfigureAwait(false);
+                    sw.Stop();
+                    logger.Metric(C2dMessageRoundTripSeconds, sw.Elapsed.TotalSeconds);
+
                 }
                 catch (IotHubServiceException ex) when (ex.IsTransient)
                 {

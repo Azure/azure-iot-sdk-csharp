@@ -363,7 +363,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                             // https://docs.oasis-open.org/mqtt/mqtt/v3.1.1/os/mqtt-v3.1.1-os.html
                             // MQTT 5 supports a larger set of connect codes. See the MQTT 5.0 specification section "3.2.2.2 Connect Reason Code"
                             // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901074
-                            throw new IotHubClientException("Failed to open the MQTT connection", innerException: ex);
+                            throw new IotHubClientException("Failed to open the MQTT connection", IotHubClientErrorCode.NetworkErrors, ex);
                     }
                 }
                 catch (MqttCommunicationTimedOutException ex)
