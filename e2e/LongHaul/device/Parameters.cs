@@ -40,7 +40,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
             "Transport",
             Default = TransportType.Mqtt,
             Required = false,
-            HelpText = "The transport to use for the connection (i.e. Mqtt, Amqp).")]
+            HelpText = "The transport to use for the connection (i.e., Mqtt, Amqp).")]
         public TransportType Transport { get; set; }
 
         [Option(
