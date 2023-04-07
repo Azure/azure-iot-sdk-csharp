@@ -49,15 +49,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
-        private readonly Dictionary<StateTransition, ClientTransportState> _transitions;
-        private readonly object _stateTransitionLock = new();
-        private ClientTransportState _currentState;
-
-        internal ClientTransportStateMachine()
+        private static readonly Dictionary<StateTransition, ClientTransportState> s_transitions = new()
         {
-            _currentState = ClientTransportState.Closed;
-            _transitions = new Dictionary<StateTransition, ClientTransportState>
-            {
                 { new StateTransition(ClientTransportState.Closed, ClientStateAction.OpenStart), ClientTransportState.Opening },
                 { new StateTransition(ClientTransportState.Opening, ClientStateAction.OpenSuccess), ClientTransportState.Open },
                 { new StateTransition(ClientTransportState.Opening, ClientStateAction.OpenFailure), ClientTransportState.Closed },
@@ -66,7 +59,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 { new StateTransition(ClientTransportState.Open, ClientStateAction.ConnectionLost), ClientTransportState.Opening },
                 { new StateTransition(ClientTransportState.Closing, ClientStateAction.CloseComplete), ClientTransportState.Closed },
             };
-        }
+
+        private readonly object _stateTransitionLock = new();
+        private ClientTransportState _currentState = ClientTransportState.Closed;
 
         internal ClientTransportState GetCurrentState()
         {
@@ -88,7 +83,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             var transition = new StateTransition(_currentState, action);
 
-            return _transitions.TryGetValue(transition, out ClientTransportState nextState)
+            return s_transitions.TryGetValue(transition, out ClientTransportState nextState)
                 ? nextState
                 : throw new InvalidOperationException($"Invalid transition: {_currentState} -> {action}.");
         }

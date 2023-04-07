@@ -10,7 +10,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
 {
     internal sealed class ConnectionStateDelegatingHandler : DefaultDelegatingHandler
     {
-
         private readonly SemaphoreSlim _clientOpenSemaphore = new(1, 1);
 
         private readonly Action<ConnectionStatusInfo> _onConnectionStatusChanged;

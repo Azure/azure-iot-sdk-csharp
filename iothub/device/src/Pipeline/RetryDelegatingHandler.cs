@@ -68,7 +68,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
                                 if (_recoverSubscriptions)
                                 {
-
                                     if (Logging.IsEnabled)
                                         Logging.Info(this, "Attempting to recover subscriptions.", nameof(OpenAsync));
 
