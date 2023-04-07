@@ -152,8 +152,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                 return Task.FromResult(AcknowledgementType.Complete);
             }
 
-            async Task OnC2dFeedbackError(ErrorContext errorContext)
-            async Task OnC2dError(MessageFeedbackProcessorError error)
+            async Task OnC2dFeedbackError(MessageFeedbackProcessorError error)
             {
                 _logger.Trace($"Error processing C2D message.\n{error.Exception}");
 
