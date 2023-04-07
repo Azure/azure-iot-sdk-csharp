@@ -457,9 +457,12 @@ namespace Microsoft.Azure.Devices.Client
                 {
                     await CloseAsync(CancellationToken.None).ConfigureAwait(false);
                 }
-                catch (Exception ex) when (Logging.IsEnabled)
+                catch (Exception ex)
                 {
-                    Logging.Error(this, $"Exception observed while closing the client: {ex}", nameof(DisposeAsync));
+                    if (Logging.IsEnabled)
+                        Logging.Error(this, $"Exception observed while closing the client: {ex}", nameof(DisposeAsync));
+                        
+                    // fail silently
                 }
 
                 Dispose(true);
