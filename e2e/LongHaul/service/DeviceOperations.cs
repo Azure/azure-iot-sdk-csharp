@@ -75,7 +75,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                             TraceSeverity.Information);
                         break;
                     }
-                    catch (IotHubServiceException ex) when (ex.IsTransient is true)
+                    catch (IotHubServiceException ex) when (ex.IsTransient)
                     {
                         logger.Trace(
                             $"Caught transient exception while invoking direct method.\n{ex}\nRetrying...",
@@ -117,7 +117,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
 
                     await _serviceClient.Twins.UpdateAsync(_deviceId, twin, false, ct).ConfigureAwait(false);
                 }
-                catch (IotHubServiceException ex) when (ex.IsTransient is true)
+                catch (IotHubServiceException ex) when (ex.IsTransient)
                 {
                     logger.Trace(
                         $"Caught transient exception while requesting twin property update.\n{ex}\nRetrying...",
@@ -163,20 +163,20 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
 
                     await _serviceClient.Messages.SendAsync(_deviceId, message, ct).ConfigureAwait(false);
                 }
-                catch (IotHubServiceException ex) when (ex.IsTransient is true)
+                catch (IotHubServiceException ex) when (ex.IsTransient)
                 {
                     logger.Trace(
                         $"Caught transient exception while sending a C2D message.\n{ex}\nRetrying...",
                         TraceSeverity.Warning);
                     // retry
                 }
-                catch (InvalidOperationException ex) when (ex.Message.Contains("Must open client"))
+                /*catch (InvalidOperationException ex) when (ex.Message.Contains("Must open client"))
                 {
                     logger.Trace(
                         $"{ex.Message}\nOpening client to send C2D messsage...",
                         TraceSeverity.Warning);
                     await _serviceClient.Messages.OpenAsync(ct).ConfigureAwait(false);
-                }
+                }*/
                 catch (Exception ex)
                 {
                     logger.Trace(

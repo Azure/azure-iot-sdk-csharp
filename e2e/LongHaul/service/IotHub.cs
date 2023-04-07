@@ -11,7 +11,6 @@ using Azure;
 using Mash.Logging;
 using Azure.Storage.Blobs;
 using static Microsoft.Azure.Devices.LongHaul.Service.LoggingConstants;
-using System.Collections.Generic;
 
 namespace Microsoft.Azure.Devices.LongHaul.Service
 {
@@ -100,7 +99,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                             _logger.Trace($"Creating {nameof(DeviceOperations)} on the device [{deviceId}]", TraceSeverity.Verbose);
 
                             Logger loggerPerDevice = _logger.Clone();
-                            loggerPerDevice.LoggerContext.Add("DeviceId", deviceId);
+                            loggerPerDevice.LoggerContext.Add(DeviceId, deviceId);
 
                             try
                             {
