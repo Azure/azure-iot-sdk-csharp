@@ -416,7 +416,6 @@ namespace Microsoft.Azure.Devices.Client.Test
             retryPolicy.Counter.Should().Be(2);
         }
 
-        [Ignore]
         [TestMethod]
         public async Task RetryDelegatingHandler_CloseAsync_CancelsPendingOpenAsync()
         {
@@ -451,7 +450,6 @@ namespace Microsoft.Azure.Devices.Client.Test
                 Times.Once);
         }
 
-        [Ignore]
         [TestMethod]
         public async Task RetryDelegatingHandler_CloseAsync_CancelsPendingSendTelemetryAsync()
         {
@@ -571,7 +569,6 @@ namespace Microsoft.Azure.Devices.Client.Test
             await open.Should().ThrowAsync<ObjectDisposedException>().ConfigureAwait(false);
         }
 
-        [Ignore]
         [TestMethod]
         public async Task RetryDelegatingHandler_SendTelemetryAsyncAfterDispose_Throws()
         {
