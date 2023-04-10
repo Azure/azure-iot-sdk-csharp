@@ -20,7 +20,6 @@ namespace Microsoft.Azure.Devices.Amqp
         private readonly IotHubConnectionProperties _credential;
 
         private AmqpCbsLink _cbsLink;
-        private readonly EventHandler _connectionLossHandler;
 
         private static readonly TimeSpan s_refreshTokenBuffer = TimeSpan.FromMinutes(2);
         private static readonly TimeSpan s_refreshTokenRetryInterval = TimeSpan.FromSeconds(30);
@@ -29,10 +28,9 @@ namespace Microsoft.Azure.Devices.Amqp
 
         protected AmqpCbsSessionHandler() { }
 
-        public AmqpCbsSessionHandler(IotHubConnectionProperties credential, EventHandler connectionLossHandler)
+        public AmqpCbsSessionHandler(IotHubConnectionProperties credential)
         {
             _credential = credential;
-            _connectionLossHandler = connectionLossHandler;
             _refreshTokenTimer = new IOThreadTimerSlim(s => ((AmqpCbsSessionHandler)s).OnRefreshTokenAsync(), this);
         }
 

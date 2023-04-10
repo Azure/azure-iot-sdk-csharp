@@ -81,12 +81,12 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         /// <example>
         /// <code language="csharp">
-        /// serviceClient.Messaging.ErrorProcessor = OnConnectionLost;
+        /// serviceClient.Messaging.ErrorProcessor = OnConnectionLostAsync;
         /// serviceClient.Messaging.OpenAsync();
         ///
         /// //...
         ///
-        /// public async Task OnConnectionLost(MessagingError error)
+        /// public async Task OnConnectionLostAsync(MessagingError error)
         /// {
         ///    Console.WriteLine($"Messaging client connection lost. Error: {error.Exception.Message}")
         ///

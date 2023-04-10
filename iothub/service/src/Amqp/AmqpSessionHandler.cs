@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Data.Common;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Amqp;
@@ -19,7 +20,7 @@ namespace Microsoft.Azure.Devices.Amqp
     {
         private readonly AmqpSendingLinkHandler _sendingLinkHandler;
         private readonly AmqpReceivingLinkHandler _receivingLinkHandler;
-        private readonly EventHandler _connectionLossHandler;
+        private readonly EventHandler _sessionLossHandler;
         private readonly string _linkAddress;
 
         private AmqpSession _session;
@@ -35,25 +36,25 @@ namespace Microsoft.Azure.Devices.Amqp
         /// upload notifications or receiving feedback messages.
         /// </summary>
         /// <param name="linkAddress">The link address to receive from/send to.</param>
-        /// <param name="connectionLossHandler">The handler to invoke if this session or its links are dropped.</param>
+        /// <param name="sessionLossHandler">The handler to invoke if this session or its links are dropped.</param>
         /// <param name="messageHandler">
         /// The handler for received feedback messages or file upload notifications. If this session is used
         /// for sending cloud to device messages, then this argument is ignored.
         /// </param>
-        internal AmqpSessionHandler(string linkAddress, EventHandler connectionLossHandler, Action<AmqpMessage> messageHandler = null)
+        internal AmqpSessionHandler(string linkAddress, EventHandler sessionLossHandler, Action<AmqpMessage> messageHandler = null)
         {
             _linkAddress = linkAddress;
 
-            _connectionLossHandler = connectionLossHandler;
+            _sessionLossHandler = sessionLossHandler;
 
             if (_linkAddress == AmqpsConstants.FeedbackMessageAddress
                 || _linkAddress == AmqpsConstants.FileUploadNotificationsAddress)
             {
-                _receivingLinkHandler = new AmqpReceivingLinkHandler(_linkAddress, messageHandler, _connectionLossHandler);
+                _receivingLinkHandler = new AmqpReceivingLinkHandler(_linkAddress, messageHandler, OnLinkClosed);
             }
             else if (_linkAddress == AmqpsConstants.CloudToDeviceMessageAddress)
             {
-                _sendingLinkHandler = new AmqpSendingLinkHandler(_linkAddress, _connectionLossHandler);
+                _sendingLinkHandler = new AmqpSendingLinkHandler(_linkAddress, OnLinkClosed);
             }
             else
             {
@@ -100,7 +101,7 @@ namespace Microsoft.Azure.Devices.Amqp
                 };
 
                 _session = connection.CreateSession(sessionSettings);
-                _session.Closed += _connectionLossHandler;
+                _session.Closed += _sessionLossHandler;
                 await _session.OpenAsync(cancellationToken).ConfigureAwait(false);
 
                 if (_sendingLinkHandler != null)
@@ -131,7 +132,7 @@ namespace Microsoft.Azure.Devices.Amqp
 
             try
             {
-                _session.Closed -= _connectionLossHandler;
+                _session.Closed -= _sessionLossHandler;
 
                 if (_sendingLinkHandler != null)
                 {
@@ -190,6 +191,12 @@ namespace Microsoft.Azure.Devices.Amqp
             }
 
             await _receivingLinkHandler.AcknowledgeMessageAsync(deliveryTag, outcome, cancellationToken).ConfigureAwait(false);
+        }
+
+        private void OnLinkClosed(object sender, EventArgs e)
+        {
+            // If the link was closed (unexpectedly or expectedly), close the session as well.
+            _session.SafeClose();
         }
     }
 }
