@@ -25,7 +25,7 @@ namespace Microsoft.Azure.Devices.Tests.Amqp
             var mockCredential = new Mock<TokenCredential>();
             var tokenCredentialProperties = new IotHubTokenCredentialProperties(HostName, mockCredential.Object);
 
-            using var cbsSessionHandler = new MockableAmqpCbsSessionHandler(tokenCredentialProperties, ConnectionLossHandler);
+            using var cbsSessionHandler = new MockableAmqpCbsSessionHandler(tokenCredentialProperties);
             var mockAmqpCbsLink = new Mock<MockableAmqpCbsLink>();
 
             mockAmqpCbsLink
@@ -47,7 +47,7 @@ namespace Microsoft.Azure.Devices.Tests.Amqp
             var mockCredential = new Mock<TokenCredential>();
             var tokenCredentialProperties = new IotHubTokenCredentialProperties(HostName, mockCredential.Object);
 
-            using var cbsSessionHandler = new MockableAmqpCbsSessionHandler(tokenCredentialProperties, ConnectionLossHandler);
+            using var cbsSessionHandler = new MockableAmqpCbsSessionHandler(tokenCredentialProperties);
             var mockAmqpCbsLink = new Mock<MockableAmqpCbsLink>();
 
             var ct = new CancellationToken(true);

@@ -16,13 +16,11 @@ namespace Microsoft.Azure.Devices.Tests.Amqp
     {
         private readonly IotHubConnectionProperties _credential;
         private MockableAmqpCbsLink _cbsLink;
-        private readonly EventHandler _connectionLossHandler;
 
-        public MockableAmqpCbsSessionHandler(IotHubConnectionProperties credential, EventHandler connectionLossHandler)
-            : base(credential, connectionLossHandler)
+        public MockableAmqpCbsSessionHandler(IotHubConnectionProperties credential)
+            : base(credential)
         {
             _credential = credential;
-            _connectionLossHandler = connectionLossHandler;
         }
 
         public async Task OpenAsync(MockableAmqpCbsLink cbsLink, CancellationToken cancellationToken)
