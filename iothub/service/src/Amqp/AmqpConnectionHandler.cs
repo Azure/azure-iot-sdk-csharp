@@ -198,7 +198,7 @@ namespace Microsoft.Azure.Devices.Amqp
             }
             catch (SocketException socketException)
             {
-                throw new IotHubServiceException(socketException.Message, HttpStatusCode.RequestTimeout, IotHubServiceErrorCode.Unknown, null, socketException);
+                throw new IotHubServiceException(socketException.Message, HttpStatusCode.RequestTimeout, IotHubServiceErrorCode.RequestTimeout, null, socketException);
             }
             catch (WebSocketException webSocketException)
             {
@@ -206,7 +206,7 @@ namespace Microsoft.Azure.Devices.Amqp
                 {
                     throw new IotHubServiceException(webSocketException.Message, HttpStatusCode.Unauthorized, IotHubServiceErrorCode.IotHubUnauthorizedAccess, null, webSocketException);
                 }
-                throw new IotHubServiceException(webSocketException.Message, HttpStatusCode.RequestTimeout, IotHubServiceErrorCode.Unknown, null, webSocketException);
+                throw new IotHubServiceException(webSocketException.Message, HttpStatusCode.RequestTimeout, IotHubServiceErrorCode.RequestTimeout, null, webSocketException);
             }
             finally
             {
@@ -230,6 +230,8 @@ namespace Microsoft.Azure.Devices.Amqp
 
             try
             {
+                _connection.Closed -= _connectionLossHandler;
+
                 _cbsSession?.Close(); // not async because the cbs link type only has a sync close API
 
                 if (_workerSession != null)
@@ -244,7 +246,7 @@ namespace Microsoft.Azure.Devices.Amqp
             }
             catch (SocketException socketException)
             {
-                throw new IotHubServiceException(socketException.Message, HttpStatusCode.RequestTimeout, IotHubServiceErrorCode.Unknown, null, socketException);
+                throw new IotHubServiceException(socketException.Message, HttpStatusCode.RequestTimeout, IotHubServiceErrorCode.RequestTimeout, null, socketException);
             }
             catch (WebSocketException webSocketException)
             {
@@ -252,7 +254,7 @@ namespace Microsoft.Azure.Devices.Amqp
                 {
                     throw new IotHubServiceException(webSocketException.Message, HttpStatusCode.Unauthorized, IotHubServiceErrorCode.IotHubUnauthorizedAccess, null, webSocketException);
                 }
-                throw new IotHubServiceException(webSocketException.Message, HttpStatusCode.RequestTimeout, IotHubServiceErrorCode.Unknown, null, webSocketException);
+                throw new IotHubServiceException(webSocketException.Message, HttpStatusCode.RequestTimeout, IotHubServiceErrorCode.RequestTimeout, null, webSocketException);
             }
             finally
             {

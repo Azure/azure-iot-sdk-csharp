@@ -17,13 +17,16 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
         public const string TotalDesiredPropertiesHandled = "TotalDesiredPropertiesHandled";
         public const string TotalC2dMessagesCompleted = "TotalC2dMessagesCompleted";
         public const string TotalC2dMessagesRejected = "TotalC2dMessagesRejected";
-        public const string C2dMessageDelaySeconds = "C2dMessageDelaySeconds";
+        public const string C2dMessageOperationSeconds = "C2dMessageOperationSeconds";
+        public const string ReportedTwinUpdateOperationSeconds = "ReportedTwinUpdateOperationSeconds";
+        public const string FileUploadOperationSeconds = "FileUploadOperationSeconds";
 
         // Events
 
         public const string StartingRun = "StartingRun";
         public const string ConnectedEvent = "Connected";
         public const string DiscconnectedEvent = "Disconnected";
+        public const string EndingRun = "EndingRun";
 
         // Logging properties
 
@@ -31,6 +34,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
         public const string RunId = "runId";
         public const string SdkLanguage = "sdkLanguage";
         public const string SdkVersion = "sdkVersion";
+        public const string OperationName = "OperationName";
 
         public const string Hub = "hub";
         public const string DeviceId = "deviceId";
@@ -43,5 +47,11 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
         public const string DisconnectedReason = "disconnectedReason";
         public const string DisconnectedRecommendedAction = "disconnectedRecommendedAction";
         public const string ConnectionStatusChangeCount = "connectionStatusChangeCount";
+
+        // Operations
+
+        public const string TelemetryMessage = "TelemetryMessage";
+        public const string ReportTwinProperties = "ReportTwinProperties";
+        public const string UploadFiles = "UploadFiles";
     }
 }

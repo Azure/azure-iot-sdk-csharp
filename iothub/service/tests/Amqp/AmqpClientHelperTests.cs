@@ -35,7 +35,7 @@ namespace Microsoft.Azure.Devices.Tests.Amqp
             returnedException.Message.Should().Be(timeoutExceptionMessage);
             returnedException.IsTransient.Should().BeTrue();
             returnedException.StatusCode.Should().Be(HttpStatusCode.RequestTimeout);
-            returnedException.ErrorCode.Should().Be(IotHubServiceErrorCode.Unknown);
+            returnedException.ErrorCode.Should().Be(IotHubServiceErrorCode.RequestTimeout);
         }
 
         [TestMethod]
@@ -55,7 +55,7 @@ namespace Microsoft.Azure.Devices.Tests.Amqp
 
         [TestMethod]
         [DataRow("amqp:not-found", HttpStatusCode.NotFound, IotHubServiceErrorCode.DeviceNotFound)]
-        [DataRow(AmqpConstants.Vendor + ":timeout", HttpStatusCode.RequestTimeout, IotHubServiceErrorCode.Unknown)]
+        [DataRow(AmqpConstants.Vendor + ":timeout", HttpStatusCode.RequestTimeout, IotHubServiceErrorCode.RequestTimeout)]
         [DataRow("amqp:unauthorized-access", HttpStatusCode.Unauthorized, IotHubServiceErrorCode.IotHubUnauthorizedAccess)]
         [DataRow("amqp:link:message-size-exceeded", HttpStatusCode.RequestEntityTooLarge, IotHubServiceErrorCode.MessageTooLarge)]
         [DataRow("amqp:resource-limit-exceeded", HttpStatusCode.Forbidden, IotHubServiceErrorCode.DeviceMaximumQueueDepthExceeded)]
@@ -257,11 +257,12 @@ namespace Microsoft.Azure.Devices.Tests.Amqp
             var amqpException = new AmqpException(error);
 
             // act
-            ErrorContext act = AmqpClientHelper.GetErrorContextFromException(amqpException);
+            Exception act = AmqpClientHelper.GetIotHubExceptionFromAmqpException(amqpException);
 
             // assert
-            act.IotHubServiceException.Message.Should().Be(error.ToString());
-            act.IotHubServiceException.InnerException.Should().BeEquivalentTo(amqpException);
+            act.Should().BeOfType(typeof(IotHubServiceException));
+            ((IotHubServiceException)act).Message.Should().Be(error.ToString());
+            ((IotHubServiceException)act).InnerException.Should().BeEquivalentTo(amqpException);
         }
     }
 }

@@ -417,5 +417,31 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             // assert
             actualPayloadString.Should().Be(payload);
         }
+
+        [TestMethod]
+        public async Task MessagingClient_CloseGracefully_DoesNotExecuteConnectionLoss()
+        {
+            // arrange
+            using var sender = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
+            bool connectionLossEventExecuted = false;
+            Func<MessagesClientError, Task> OnConnectionLost = delegate
+            {
+                // There is a small chance that this test's connection is interrupted by an actual
+                // network failure (when this callback should be executed), but the operations
+                // tested here are so quick that it should be safe to ignore that possibility.
+                connectionLossEventExecuted = true;
+                return Task.CompletedTask;
+            };
+            sender.Messages.ErrorProcessor = OnConnectionLost;
+
+            await sender.Messages.OpenAsync().ConfigureAwait(false);
+
+            // act
+            await sender.Messages.CloseAsync().ConfigureAwait(false);
+
+            // assert
+            connectionLossEventExecuted.Should().BeFalse(
+                "One or more connection lost events were reported by the error processor unexpectedly");
+        }
     }
 }

@@ -53,10 +53,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
 
             s_logger.Event(StartingRun);
 
-            await using var iotHub = new IotHub(
-                s_logger,
-                parameters.ConnectionString,
-                GetTransportSettings(parameters));
+            await using var iotHub = new IotHub(s_logger, parameters);
             foreach (KeyValuePair<string, string> prop in s_commonProperties)
             {
                 iotHub.TelemetryUserProperties.Add(prop.Key, prop.Value);
@@ -80,7 +77,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
             {
                 e.Cancel = true;
                 cancellationTokenSource.Cancel();
-                Console.WriteLine("Exiting ...");
+                Console.WriteLine("Exiting...");
             };
 
             await iotHub.SetPropertiesAsync(RunId, _runId, cancellationTokenSource.Token).ConfigureAwait(false);
@@ -92,9 +89,9 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
                 await Task
                     .WhenAll(
                         systemHealthMonitor.RunAsync(cancellationTokenSource.Token),
-                        iotHub.SendTelemetryMessagesAsync(cancellationTokenSource.Token),
-                        iotHub.ReportReadOnlyPropertiesAsync(cancellationTokenSource.Token),
-                        iotHub.UploadFilesAsync(cancellationTokenSource.Token))
+                        iotHub.SendTelemetryMessagesAsync(s_logger.Clone(), cancellationTokenSource.Token),
+                        iotHub.ReportReadOnlyPropertiesAsync(s_logger.Clone(), cancellationTokenSource.Token),
+                        iotHub.UploadFilesAsync(s_logger.Clone(), cancellationTokenSource.Token))
                     .ConfigureAwait(false);
             }
             catch (TaskCanceledException) { } // user signalled an exit
@@ -108,6 +105,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
             // Log system health after disposing hub
             SystemHealthMonitor.BuildAndLogSystemHealth(s_logger);
 
+            s_logger.Event(EndingRun);
             s_logger.Flush();
             s_aiLoggingProvider.Dispose();
         }
@@ -121,7 +119,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
                 {
                     { Hub, helper.HostName },
                     { DeviceId, helper.DeviceId },
-                    { Transport, GetTransportSettings(parameters).ToString() },
+                    { Transport, parameters.GetTransportSettings().ToString() },
                 },
             };
             foreach (KeyValuePair<string, string> kvp in s_commonProperties)
@@ -146,16 +144,6 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
                     TransportType.Amqp => 5671,
                     _ => throw new NotSupportedException($"Unsupported transport type {parameters.Transport}/{parameters.TransportProtocol}"),
                 };
-        }
-
-        private static IotHubClientTransportSettings GetTransportSettings(Parameters parameters)
-        {
-            return parameters.Transport switch
-            {
-                TransportType.Mqtt => new IotHubClientMqttSettings(parameters.TransportProtocol),
-                TransportType.Amqp => new IotHubClientAmqpSettings(parameters.TransportProtocol),
-                _ => throw new NotSupportedException($"Unsupported transport type {parameters.Transport}/{parameters.TransportProtocol}"),
-            };
         }
     }
 }

@@ -87,7 +87,7 @@ namespace Microsoft.Azure.Devices
         /// }
         /// </code>
         /// </example>
-        public Func<FeedbackBatch, AcknowledgementType> MessageFeedbackProcessor { get; set; }
+        public Func<FeedbackBatch, Task<AcknowledgementType>> MessageFeedbackProcessor { get; set; }
 
         /// <summary>
         /// The callback to be executed when the connection is lost.
@@ -99,14 +99,21 @@ namespace Microsoft.Azure.Devices
         ///
         /// //...
         ///
-        /// public void OnConnectionLost(ErrorContext errorContext)
+        /// public async Task OnConnectionLost(FeedbackMessagingError error)
         /// {
-        ///    // Add reconnection logic as needed
-        ///    Console.WriteLine("Feedback message processor connection lost")
+        ///    Console.WriteLine("Feedback message processor connection lost. Error: {error.Exception.Message}")
+        ///
+        ///    // Add reconnection logic as needed, for example:
+        ///    await serviceClient.MessageFeedbackProcessor.OpenAsync();
         /// }
         /// </code>
         /// </example>
-        public Action<ErrorContext> ErrorProcessor { get; set; }
+        /// <remarks>
+        /// This callback will not receive events once <see cref="CloseAsync(CancellationToken)"/> is called. 
+        /// This callback will start receiving events again once <see cref="OpenAsync(CancellationToken)"/> is called.
+        /// This callback will persist across any number of open/close/open calls, so it does not need to be set before each open call.
+        /// </remarks>
+        public Func<MessageFeedbackProcessorError, Task> ErrorProcessor { get; set; }
 
         /// <summary>
         /// Open the connection and start receiving acknowledgements for messages sent.
@@ -223,7 +230,7 @@ namespace Microsoft.Azure.Devices
                                 amqpMessage.Properties.UserId.Count)
                         };
 
-                        AcknowledgementType ack = MessageFeedbackProcessor.Invoke(feedbackBatch);
+                        AcknowledgementType ack = await MessageFeedbackProcessor.Invoke(feedbackBatch);
                         if (ack == AcknowledgementType.Complete)
                         {
                             await _amqpConnection.CompleteMessageAsync(amqpMessage.DeliveryTag).ConfigureAwait(false);
@@ -242,14 +249,7 @@ namespace Microsoft.Azure.Devices
 
                 try
                 {
-                    if (ex is IotHubServiceException hubEx)
-                    {
-                        ErrorProcessor?.Invoke(new ErrorContext(hubEx));
-                    }
-                    else if (ex is IOException ioEx)
-                    {
-                        ErrorProcessor?.Invoke(new ErrorContext(ioEx));
-                    }
+                    ErrorProcessor?.Invoke(new MessageFeedbackProcessorError(ex));
 
                     await _amqpConnection.AbandonMessageAsync(amqpMessage.DeliveryTag).ConfigureAwait(false);
                 }
@@ -269,18 +269,17 @@ namespace Microsoft.Azure.Devices
         {
             if (((AmqpObject)sender).TerminalException is AmqpException exception)
             {
-                ErrorContext errorContext = AmqpClientHelper.GetErrorContextFromException(exception);
-                ErrorProcessor?.Invoke(errorContext);
-                Exception exceptionToLog = errorContext.IotHubServiceException;
+                IotHubServiceException mappedException = AmqpClientHelper.GetIotHubExceptionFromAmqpException(exception);
+                ErrorProcessor?.Invoke(new MessageFeedbackProcessorError(mappedException));
 
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"{nameof(sender)}.{nameof(OnConnectionClosed)} threw an exception: {exceptionToLog}", nameof(OnConnectionClosed));
+                    Logging.Error(this, $"{nameof(sender)}.{nameof(OnConnectionClosed)} threw an exception: {mappedException}", nameof(OnConnectionClosed));
             }
             else
             {
                 var defaultException = new IotHubServiceException("AMQP connection was lost.", ((AmqpObject)sender).TerminalException);
-                var errorContext = new ErrorContext(defaultException);
-                ErrorProcessor?.Invoke(errorContext);
+                var error = new MessageFeedbackProcessorError(defaultException);
+                ErrorProcessor?.Invoke(error);
 
                 if (Logging.IsEnabled)
                     Logging.Error(this, $"{nameof(sender)}.{nameof(OnConnectionClosed)} threw an exception: {defaultException}", nameof(OnConnectionClosed));

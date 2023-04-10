@@ -13,6 +13,12 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
         Amqp,
     };
 
+    public enum JsonSerializingLibrary
+    {
+        SystemTextJson,
+        NewtonsoftJson,
+    };
+
     internal class Parameters
     {
         [Option(
@@ -34,7 +40,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
             "Transport",
             Default = TransportType.Mqtt,
             Required = false,
-            HelpText = "The transport to use for the connection.")]
+            HelpText = "The transport to use for the connection (i.e., Mqtt, Amqp).")]
         public TransportType Transport { get; set; }
 
         [Option(
@@ -44,5 +50,33 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
             Required = false,
             HelpText = "The protocol over which a transport (i.e., MQTT, AMQP) communicates.")]
         public IotHubClientTransportProtocol TransportProtocol { get; set; }
+
+        [Option(
+            'j',
+            "JsonSerializer",
+            Default = JsonSerializingLibrary.SystemTextJson,
+            Required = false,
+            HelpText = "Which JSON serialization library for the device app to use (i.e., SystemTextJson, NewtonsoftJson)")]
+        public JsonSerializingLibrary JsonSerializer { get; set; }
+
+        internal PayloadConvention GetPayloadConvention()
+        {
+            return JsonSerializer switch
+            {
+                JsonSerializingLibrary.SystemTextJson => SystemTextJsonPayloadConvention.Instance,
+                JsonSerializingLibrary.NewtonsoftJson => DefaultPayloadConvention.Instance,
+                _ => throw new InvalidOperationException($"Unexpected value for {JsonSerializer}."),
+            };
+        }
+
+        internal IotHubClientTransportSettings GetTransportSettings()
+        {
+            return Transport switch
+            {
+                TransportType.Mqtt => new IotHubClientMqttSettings(TransportProtocol),
+                TransportType.Amqp => new IotHubClientAmqpSettings(TransportProtocol),
+                _ => throw new InvalidOperationException($"Unsupported transport type {Transport}/{TransportProtocol}"),
+            };
+        }
     }
 }

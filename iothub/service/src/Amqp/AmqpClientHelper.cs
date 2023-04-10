@@ -26,7 +26,7 @@ namespace Microsoft.Azure.Devices.Amqp
                 TimeoutException => new IotHubServiceException(
                     exception.Message,
                     HttpStatusCode.RequestTimeout,
-                    IotHubServiceErrorCode.Unknown),
+                    IotHubServiceErrorCode.RequestTimeout),
                 UnauthorizedAccessException => new IotHubServiceException(
                     exception.Message,
                     HttpStatusCode.Unauthorized,
@@ -96,7 +96,7 @@ namespace Microsoft.Azure.Devices.Amqp
 
             if (error.Condition.Equals(IotHubAmqpErrorCode.TimeoutError))
             {
-                retException = new IotHubServiceException(message, HttpStatusCode.RequestTimeout, IotHubServiceErrorCode.Unknown, null, innerException);
+                retException = new IotHubServiceException(message, HttpStatusCode.RequestTimeout, IotHubServiceErrorCode.RequestTimeout, null, innerException);
             }
             else if (error.Condition.Equals(AmqpErrorCode.NotFound))
             {
@@ -147,9 +147,9 @@ namespace Microsoft.Azure.Devices.Amqp
             return retException;
         }
 
-        internal static ErrorContext GetErrorContextFromException(AmqpException exception)
+        internal static IotHubServiceException GetIotHubExceptionFromAmqpException(AmqpException exception)
         {
-            return new ErrorContext(new IotHubServiceException(exception.Error.ToString(), exception));
+            return new IotHubServiceException(exception.Error.ToString(), exception);
         }
     }
 }

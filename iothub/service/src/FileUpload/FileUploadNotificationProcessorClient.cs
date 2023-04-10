@@ -99,16 +99,21 @@ namespace Microsoft.Azure.Devices
         ///
         /// //...
         ///
-        /// public async Task OnConnectionLostAsync(ErrorContext errorContext)
+        /// public async Task OnConnectionLostAsync(FileUploadNotificationError error)
         /// {
-        ///    Console.WriteLine("File upload notification processor connection lost");
+        ///    Console.WriteLine("File upload notification processor connection lost. Error: {error.Exception.Message}");
         ///    
         ///    // Add reconnection logic as needed, for example:
         ///    await serviceClient.FileUploadNotificationProcessor.OpenAsync();
         /// }
         /// </code>
         /// </example>
-        public Func<ErrorContext, Task> ErrorProcessor { get; set; }
+        /// <remarks>
+        /// This callback will not receive events once <see cref="CloseAsync(CancellationToken)"/> is called. 
+        /// This callback will start receiving events again once <see cref="OpenAsync(CancellationToken)"/> is called.
+        /// This callback will persist across any number of open/close/open calls, so it does not need to be set before each open call.
+        /// </remarks>
+        public Func<FileUploadNotificationProcessorError, Task> ErrorProcessor { get; set; }
 
         /// <summary>
         /// Open the connection and start receiving file upload notifications.
@@ -234,14 +239,7 @@ namespace Microsoft.Azure.Devices
                 {
                     try
                     {
-                        if (ex is IotHubServiceException hubEx)
-                        {
-                            await ErrorProcessor.Invoke(new ErrorContext(hubEx)).ConfigureAwait(false);
-                        }
-                        else if (ex is IOException ioEx)
-                        {
-                            await ErrorProcessor.Invoke(new ErrorContext(ioEx)).ConfigureAwait(false);
-                        }
+                        await ErrorProcessor.Invoke(new FileUploadNotificationProcessorError(ex)).ConfigureAwait(false);
                     }
                     catch (Exception ex3)
                     {
@@ -275,20 +273,19 @@ namespace Microsoft.Azure.Devices
         {
             if (((AmqpObject)sender).TerminalException is AmqpException exception)
             {
-                ErrorContext errorContext = AmqpClientHelper.GetErrorContextFromException(exception);
-                ErrorProcessor?.Invoke(errorContext);
+                IotHubServiceException mappedException = AmqpClientHelper.GetIotHubExceptionFromAmqpException(exception);
+                ErrorProcessor?.Invoke(new FileUploadNotificationProcessorError(mappedException));
 
                 if (Logging.IsEnabled)
                 {
-                    Exception exceptionToLog = errorContext.IotHubServiceException;
-                    Logging.Error(this, $"{nameof(sender)}.{nameof(OnConnectionClosed)} threw an exception: {exceptionToLog}", nameof(OnConnectionClosed));
+                    Logging.Error(this, $"{nameof(sender)}.{nameof(OnConnectionClosed)} threw an exception: {mappedException}", nameof(OnConnectionClosed));
                 }
             }
             else
             {
-                var defaultException = new IotHubServiceException("AMQP connection was lost", ((AmqpObject)sender).TerminalException);
-                var errorContext = new ErrorContext(defaultException);
-                ErrorProcessor?.Invoke(errorContext);
+                var defaultException = new IOException("AMQP connection was lost", ((AmqpObject)sender).TerminalException);
+                var error = new FileUploadNotificationProcessorError(defaultException);
+                ErrorProcessor?.Invoke(error);
 
                 if (Logging.IsEnabled)
                     Logging.Error(this, $"{nameof(sender)}.{nameof(OnConnectionClosed)} threw an exception: {defaultException}", nameof(OnConnectionClosed));

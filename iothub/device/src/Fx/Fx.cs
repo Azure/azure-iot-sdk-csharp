@@ -27,7 +27,7 @@ namespace Microsoft.Azure.Devices.Client
 
             if (ex is IotHubClientException hex)
             {
-                return hex.IsTransient;
+                return !hex.IsTransient;
             }
 
             // These exceptions aren't themselves fatal, but since the CLR uses them to wrap other exceptions,
