@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -22,7 +22,10 @@
 
   <ItemGroup>
     <!--Condition="'$(Configuration)' == 'Debug'">-->
-    <ProjectReference Include="..\iothub\service\src\Microsoft.Azure.Devices.csproj" />
+    <ProjectReference Include="..\..\..\src\Microsoft.Azure.Devices.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\..\samples\helpers\ColorConsoleLogger\ColorConsoleLogger.csproj" />
+  </ItemGroup>
 </Project>

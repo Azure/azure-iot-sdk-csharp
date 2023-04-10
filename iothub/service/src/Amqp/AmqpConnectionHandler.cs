@@ -3,6 +3,7 @@
 
 using System;
 using System.Globalization;
+using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Net.WebSockets;
@@ -86,8 +87,8 @@ namespace Microsoft.Azure.Devices.Amqp
             _linkAddress = linkAddress;
             _options = options;
             _connectionLossHandler = connectionLossHandler;
-            _cbsSession = new AmqpCbsSessionHandler(_credential, connectionLossHandler);
-            _workerSession = new AmqpSessionHandler(linkAddress, connectionLossHandler, messageHandler);
+            _cbsSession = new AmqpCbsSessionHandler(_credential);
+            _workerSession = new AmqpSessionHandler(linkAddress, OnSessionClosed, messageHandler);
 
             _sendingDeliveryTag = 0;
         }
@@ -293,6 +294,12 @@ namespace Microsoft.Azure.Devices.Amqp
         internal async Task AbandonMessageAsync(ArraySegment<byte> deliveryTag, CancellationToken cancellationToken = default)
         {
             await _workerSession.AcknowledgeMessageAsync(deliveryTag, AmqpConstants.ReleasedOutcome, cancellationToken).ConfigureAwait(false);
+        }
+
+        private void OnSessionClosed(object sender, EventArgs e)
+        {
+            // If the session was closed (unexpectedly or expectedly), close the connection as well.
+            _connection.SafeClose();
         }
 
         private ArraySegment<byte> GetNextDeliveryTag()

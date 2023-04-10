@@ -53,7 +53,8 @@ namespace Microsoft.Azure.Devices.Samples
 
             var serviceClientOptions = new IotHubServiceClientOptions
             {
-                Protocol = IotHubTransportProtocol.Tcp
+                Protocol = IotHubTransportProtocol.Tcp,
+                RetryPolicy = new IotHubServiceExponentialBackoffRetryPolicy(uint.MaxValue, TimeSpan.MaxValue)
             };
 
             using var serviceClient = new IotHubServiceClient(parameters.IoTHubConnectionString, serviceClientOptions);
