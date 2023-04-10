@@ -146,11 +146,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             try
             {
-                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
                 await ValidateStateAndPerformOperationAsync(
-                    () => base.SendTelemetryAsync(message, operationCts.Token),
+                    (ct) => base.SendTelemetryAsync(message, ct),
                     nameof(SendTelemetryAsync),
-                    operationCts.Token);
+                    cancellationToken);
             }
             finally
             {
@@ -166,11 +165,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             try
             {
-                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
                 await ValidateStateAndPerformOperationAsync(
-                    () => base.SendTelemetryAsync(messages, operationCts.Token),
+                    (ct) => base.SendTelemetryAsync(messages, ct),
                     nameof(SendTelemetryAsync),
-                    operationCts.Token);
+                    cancellationToken);
             }
             finally
             {
@@ -185,11 +183,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             try
             {
-                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
                 await ValidateStateAndPerformOperationAsync(
-                    () => base.EnableReceiveMessageAsync(operationCts.Token),
+                    (ct) => base.EnableReceiveMessageAsync(ct),
                     nameof(EnableReceiveMessageAsync),
-                    operationCts.Token);
+                    cancellationToken);
             }
             finally
             {
@@ -205,11 +202,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             try
             {
-                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
                 await ValidateStateAndPerformOperationAsync(
-                    () => base.DisableReceiveMessageAsync(operationCts.Token),
+                    (ct) => base.DisableReceiveMessageAsync(ct),
                     nameof(DisableReceiveMessageAsync),
-                    operationCts.Token);
+                    cancellationToken);
             }
             finally
             {
@@ -225,11 +221,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             try
             {
-                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
                 await ValidateStateAndPerformOperationAsync(
-                    () => base.EnableMethodsAsync(operationCts.Token),
+                    (ct) => base.EnableMethodsAsync(ct),
                     nameof(EnableMethodsAsync),
-                    operationCts.Token);
+                    cancellationToken);
             }
             finally
             {
@@ -245,11 +240,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             try
             {
-                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
                 await ValidateStateAndPerformOperationAsync(
-                    () => base.DisableMethodsAsync(operationCts.Token),
+                    (ct) => base.DisableMethodsAsync(ct),
                     nameof(DisableMethodsAsync),
-                    operationCts.Token);
+                    cancellationToken);
             }
             finally
             {
@@ -265,11 +259,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             try
             {
-                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
                 await ValidateStateAndPerformOperationAsync(
-                    () => base.SendMethodResponseAsync(method, operationCts.Token),
+                    (ct) => base.SendMethodResponseAsync(method, ct),
                     nameof(SendMethodResponseAsync),
-                    operationCts.Token);
+                    cancellationToken);
             }
             finally
             {
@@ -285,11 +278,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             try
             {
-                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
                 await ValidateStateAndPerformOperationAsync(
-                    () => base.EnableTwinPatchAsync(operationCts.Token),
+                    (ct) => base.EnableTwinPatchAsync(ct),
                     nameof(EnableTwinPatchAsync),
-                    operationCts.Token);
+                    cancellationToken);
             }
             finally
             {
@@ -305,11 +297,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             try
             {
-                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
                 await ValidateStateAndPerformOperationAsync(
-                    () => base.DisableTwinPatchAsync(operationCts.Token),
+                    (ct) => base.DisableTwinPatchAsync(ct),
                     nameof(DisableTwinPatchAsync),
-                    operationCts.Token);
+                    cancellationToken);
             }
             finally
             {
@@ -325,11 +316,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             try
             {
-                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
                 return await ValidateStateAndPerformOperationAsync(
-                    () => base.GetTwinAsync(operationCts.Token),
+                    (ct) => base.GetTwinAsync(ct),
                     nameof(GetTwinAsync),
-                    operationCts.Token);
+                    cancellationToken);
             }
             finally
             {
@@ -345,11 +335,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             try
             {
-                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
                 return await ValidateStateAndPerformOperationAsync(
-                    () => base.UpdateReportedPropertiesAsync(reportedProperties, operationCts.Token),
+                    (ct) => base.UpdateReportedPropertiesAsync(reportedProperties, ct),
                     nameof(UpdateReportedPropertiesAsync),
-                    operationCts.Token);
+                    cancellationToken);
             }
             finally
             {
@@ -365,11 +354,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             try
             {
-                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
                 return await ValidateStateAndPerformOperationAsync(
-                    () => base.RefreshSasTokenAsync(operationCts.Token),
+                    (ct) => base.RefreshSasTokenAsync(ct),
                     nameof(RefreshSasTokenAsync),
-                    operationCts.Token);
+                    cancellationToken);
             }
             finally
             {
@@ -378,11 +366,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
-        private Task ValidateStateAndPerformOperationAsync(Func<Task> asyncOperation, string operationName, CancellationToken cancellationToken)
+        private Task ValidateStateAndPerformOperationAsync(Func<CancellationToken, Task> asyncOperation, string operationName, CancellationToken cancellationToken)
         {
-            return ValidateStateAndPerformOperationAsync(async () =>
+            return ValidateStateAndPerformOperationAsync(async (ct) =>
             {
-                await asyncOperation().ConfigureAwait(false);
+                await asyncOperation(ct).ConfigureAwait(false);
                 return false;
             },
             operationName,
@@ -390,7 +378,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         }
 
-        private async Task<T> ValidateStateAndPerformOperationAsync<T>(Func<Task<T>> asyncOperation, string operationName, CancellationToken cancellationToken)
+        private async Task<T> ValidateStateAndPerformOperationAsync<T>(Func<CancellationToken, Task<T>> asyncOperation, string operationName, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, operationName, cancellationToken, nameof(ValidateStateAndPerformOperationAsync));
@@ -400,23 +388,29 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 switch (_clientTransportStateMachine.GetCurrentState())
                 {
                     case ClientTransportState.Opening:
-                        await _clientOpenSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+                        {
+                            using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
+                            await _clientOpenSemaphore.WaitAsync(operationCts.Token).ConfigureAwait(false);
 
-                        try
-                        {
-                            if (_clientTransportStateMachine.GetCurrentState() != ClientTransportState.Open)
+                            try
                             {
-                                throw new InvalidOperationException($"The client connection must be opened before operations can begin. Call '{nameof(OpenAsync)}' and try again.");
+                                if (_clientTransportStateMachine.GetCurrentState() != ClientTransportState.Open)
+                                {
+                                    throw new InvalidOperationException($"The client connection must be opened before operations can begin. Call '{nameof(OpenAsync)}' and try again.");
+                                }
                             }
+                            finally
+                            {
+                                _clientOpenSemaphore?.Release();
+                            }
+                            return await asyncOperation(operationCts.Token).ConfigureAwait(false);
                         }
-                        finally
-                        {
-                            _clientOpenSemaphore?.Release();
-                        }
-                        return await asyncOperation().ConfigureAwait(false);
 
                     case ClientTransportState.Open:
-                        return await asyncOperation().ConfigureAwait(false);
+                        {
+                            using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
+                            return await asyncOperation(operationCts.Token).ConfigureAwait(false);
+                        }
 
                     case ClientTransportState.Closing:
                         throw new InvalidOperationException($"The client is currently closing. Wait until {nameof(CloseAsync)} completes" +
