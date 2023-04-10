@@ -14,7 +14,7 @@ namespace Microsoft.Azure.Devices.Samples
     public class Program
     {
         /// <summary>
-        /// A sample to illustrate bulk devices deletion.
+        /// A sample to demonstrate how to send cloud to device messages.
         /// </summary>
         /// <param name="args">
         /// Run with `--help` to see a list of required and optional parameters.
