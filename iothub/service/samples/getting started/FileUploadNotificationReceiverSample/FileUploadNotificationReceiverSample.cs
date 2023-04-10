@@ -73,7 +73,7 @@ namespace Microsoft.Azure.Devices.Samples
             _logger.LogInformation($"Listening for file upload notifications from the service.");
 
             s_serviceClient.FileUploadNotifications.FileUploadNotificationProcessor = FileUploadNotificationCallback;
-            s_serviceClient.FileUploadNotifications.ErrorProcessor = OnConnectionLost;
+            s_serviceClient.FileUploadNotifications.ErrorProcessor = OnConnectionLostAsync;
             await s_serviceClient.FileUploadNotifications.OpenAsync(cancellationToken);
 
             // Wait for cancellation and then print the summary
@@ -124,7 +124,7 @@ namespace Microsoft.Azure.Devices.Samples
             return Task.FromResult(ackType);
         }
 
-        private async Task OnConnectionLost(FileUploadNotificationProcessorError error)
+        private async Task OnConnectionLostAsync(FileUploadNotificationProcessorError error)
         {
             _logger.LogError($"Encountered an error while receiving file upload notifications. " +
                 $"Error message: {error.Exception.Message}");

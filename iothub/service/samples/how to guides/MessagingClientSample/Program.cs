@@ -43,10 +43,11 @@ namespace Microsoft.Azure.Devices.Samples
                 });
             ILogger<Program> logger = loggerFactory.CreateLogger<Program>();
 
-            IotHubServiceClientOptions clientOptions = new IotHubServiceClientOptions()
+            var clientOptions = new IotHubServiceClientOptions()
             {
                 RetryPolicy = new IotHubServiceExponentialBackoffRetryPolicy(uint.MaxValue, TimeSpan.MaxValue)
             };
+
             using var hubClient = new IotHubServiceClient(parameters.HubConnectionString, clientOptions);
 
             var sample = new MessagingClientSample(hubClient, parameters.DeviceId, logger);

@@ -124,7 +124,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             // arrange
             using var sender = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
             bool connectionLossEventExecuted = false;
-            Func<FileUploadNotificationProcessorError, Task> OnConnectionLost = delegate
+            Func<FileUploadNotificationProcessorError, Task> OnConnectionLostAsync = delegate
             {
                 // There is a small chance that this test's connection is interrupted by an actual
                 // network failure (when this callback should be executed), but the operations
@@ -132,7 +132,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 connectionLossEventExecuted = true;
                 return Task.CompletedTask;
             };
-            sender.FileUploadNotifications.ErrorProcessor = OnConnectionLost;
+            sender.FileUploadNotifications.ErrorProcessor = OnConnectionLostAsync;
 
             Task<AcknowledgementType> OnFileUploadNotificationReceivedAsync(FileUploadNotification fileUploadNotification) 
             { 

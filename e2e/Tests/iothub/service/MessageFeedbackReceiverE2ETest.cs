@@ -107,7 +107,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             // arrange
             using var sender = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
             bool connectionLossEventExecuted = false;
-            Func<MessageFeedbackProcessorError, Task> OnConnectionLost = delegate
+            Func<MessageFeedbackProcessorError, Task> OnConnectionLostAsync = delegate
             {
                 // There is a small chance that this test's connection is interrupted by an actual
                 // network failure (when this callback should be executed), but the operations
@@ -115,7 +115,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 connectionLossEventExecuted = true;
                 return Task.CompletedTask;
             };
-            sender.MessageFeedback.ErrorProcessor = OnConnectionLost;
+            sender.MessageFeedback.ErrorProcessor = OnConnectionLostAsync;
 
             Task<AcknowledgementType> OnFeedbackMessageReceivedAsync(FeedbackBatch feedbackBatch)
             {

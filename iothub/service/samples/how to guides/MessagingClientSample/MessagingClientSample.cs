@@ -30,7 +30,7 @@ namespace Microsoft.Azure.Devices.Samples
         public async Task SendMessagesAsync(CancellationToken cancellationToken)
         {
             // Set up the callback for handling any connection loss events
-            _hubClient.Messages.ErrorProcessor = OnConnectionLost;
+            _hubClient.Messages.ErrorProcessor = OnConnectionLostAsync;
 
             _logger.LogInformation($"Opening the messaging client...");
             await _hubClient.Messages.OpenAsync(cancellationToken);
@@ -50,13 +50,12 @@ namespace Microsoft.Azure.Devices.Samples
                     }
                     catch (IotHubServiceException e)
                     {
-                        // Likely because the connection was dropped. The "OnConnectionLost" handler will handle
-                        // re-establishing the connection
+                        // IoT hub rejected this particular message. Possibly because the target device does not exist, or the message was too large.
                         _logger.LogError($"Failed to send message with correlation Id {correlationId} due to error {e.Message} and error code {e.ErrorCode}");
                     }
                     catch (Exception e)
                     {
-                        // Likely because the connection was dropped. The "OnConnectionLost" handler will handle
+                        // Likely because the connection was dropped. The "OnConnectionLostAsync" handler will handle
                         // re-establishing the connection
                         _logger.LogError($"Failed to send message with correlation Id {correlationId} due to error {e.Message}");
                     }
@@ -74,12 +73,12 @@ namespace Microsoft.Azure.Devices.Samples
                 _logger.LogInformation($"Closing the messaging client...");
 
                 // Using a separate cancellation token here because the one provided to this function has already been cancelled
-                using CancellationTokenSource cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
                 await _hubClient.Messages.CloseAsync(cts.Token);
             }
         }
 
-        public async Task OnConnectionLost(MessagesClientError error)
+        public async Task OnConnectionLostAsync(MessagesClientError error)
         {
             _logger.LogError($"Encountered an error while sending messages. " +
                 $"Error message: {error.Exception.Message}");
