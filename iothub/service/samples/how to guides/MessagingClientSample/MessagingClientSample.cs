@@ -62,7 +62,7 @@ namespace Microsoft.Azure.Devices.Samples
                     }
 
                     _logger.LogInformation("Waiting a bit before sending the next message...");
-                    Task.Delay(1000, cancellationToken).Wait(cancellationToken);
+                    await Task.Delay(1000, cancellationToken);
                 }
             }
             catch (OperationCanceledException)
