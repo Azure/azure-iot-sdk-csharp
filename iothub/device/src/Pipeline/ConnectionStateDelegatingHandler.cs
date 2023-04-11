@@ -85,7 +85,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
                                             Logging.Error(this, ex, nameof(HandleDisconnectAsync));
 
                                         HandleConnectionStatusExceptions(ex, true);
-                                        _clientTransportStateMachine.MoveNext(ClientStateAction.OpenFailure, ClientTransportState.Closed);
+                                        if (_clientTransportStateMachine.GetCurrentState() != ClientTransportState.Closed)
+                                        {
+                                            _clientTransportStateMachine.MoveNext(ClientStateAction.OpenFailure, ClientTransportState.Closed);
+                                        }
 
                                         throw;
                                     }
@@ -114,9 +117,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             try
             {
-                if (_clientTransportStateMachine.GetCurrentState() == ClientTransportState.Closed)
+                if (_clientTransportStateMachine.GetCurrentState() == ClientTransportState.Closed
+                    || _clientTransportStateMachine.GetCurrentState() == ClientTransportState.Closing)
                 {
-                    // Already closed so gracefully exit.
+                    // Already closed or being closed by a parallel call so gracefully exit.
                     return;
                 }
 

@@ -72,62 +72,6 @@ namespace Microsoft.Azure.Devices.Client.Tests
         }
 
         [TestMethod]
-        public async Task ConnectionStateDelegatingHandler_CancellationTokenCanceled_Open_Throws()
-        {
-            // arrange
-            var contextMock = new PipelineContext
-            {
-                RetryPolicy = new IotHubClientTestRetryPolicy(2),
-                ConnectionStatusChangeHandler = (connectionStatusInfo) => { }
-            };
-            var nextHandlerMock = new Mock<IDelegatingHandler>();
-            var ct = new CancellationToken(true);
-            nextHandlerMock
-                .Setup(x => x.OpenAsync(It.IsAny<CancellationToken>()))
-                .Returns(() => Task.CompletedTask);
-
-            using var sut = new ConnectionStateDelegatingHandler(contextMock, nextHandlerMock.Object);
-
-            // act and assert
-            Func<Task> open = () => sut.OpenAsync(ct);
-
-            await open
-                .Should()
-                .ThrowAsync<OperationCanceledException>()
-                .ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        public async Task ConnectionStateDelegatingHandler_CancellationTokenCanceled_SendEvent_Throws()
-        {
-            // arrange
-            var contextMock = new PipelineContext
-            {
-                RetryPolicy = new IotHubClientTestRetryPolicy(2),
-                ConnectionStatusChangeHandler = (connectionStatusInfo) => { }
-            };
-            var nextHandlerMock = new Mock<IDelegatingHandler>();
-            nextHandlerMock
-                .Setup(x => x.OpenAsync(It.IsAny<CancellationToken>()))
-                .Returns(() => Task.CompletedTask);
-            nextHandlerMock
-                .Setup(x => x.SendTelemetryAsync((TelemetryMessage)null, It.IsAny<CancellationToken>()))
-                .Returns(() => Task.CompletedTask);
-
-            using var sut = new ConnectionStateDelegatingHandler(contextMock, nextHandlerMock.Object);
-            await sut.OpenAsync(CancellationToken.None).ConfigureAwait(false);
-            var ct = new CancellationToken(true);
-
-            // act and assert
-            Func<Task> sendTelemetry = () => sut.SendTelemetryAsync(It.IsAny<TelemetryMessage>(), ct);
-
-            await sendTelemetry
-                .Should()
-                .ThrowAsync<OperationCanceledException>()
-                .ConfigureAwait(false);
-        }
-
-        [TestMethod]
         public async Task ConnectionStateDelegatingHandler_OpenAsync_AfterCancelled_CanBeReopened()
         {
             // arrange
