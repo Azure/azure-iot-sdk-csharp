@@ -77,6 +77,18 @@ namespace Microsoft.Azure.Devices.Client.Transport
         private readonly object _stateTransitionLock = new();
         private ClientTransportState _currentState = ClientTransportState.Closed;
 
+        internal ClientTransportStateMachine()
+        {
+            _currentState = ClientTransportState.Closed;
+        }
+
+# if DEBUG
+        internal ClientTransportStateMachine(ClientTransportState initialState)
+        {
+            _currentState = initialState;
+        }
+#endif
+
         internal ClientTransportState GetCurrentState()
         {
             lock (_stateTransitionLock)
