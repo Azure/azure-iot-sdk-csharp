@@ -8,6 +8,10 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.Client.Transport
 {
+    /// <summary>
+    /// Handler to manage the state of the delegating handler pipeline.
+    /// This handler also validates if the pipeline is in a state to execute the requested operation.
+    /// </summary>
     internal sealed class ConnectionStateDelegatingHandler : DefaultDelegatingHandler
     {
         private readonly SemaphoreSlim _clientOpenSemaphore = new(1, 1);
@@ -38,13 +42,17 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 switch (_clientTransportStateMachine.GetCurrentState())
                 {
+                    // If the pipeline is already open then no action is needed.
                     case ClientTransportState.Open:
                         return;
 
+                    // If the pipeline is currently closing then the user needs to wait until it is closed before reopening it.
                     case ClientTransportState.Closing:
                         throw new InvalidOperationException($"The client is currently closing. To reopen the client wait until {nameof(CloseAsync)} completes" +
                             $" and then invoke {nameof(OpenAsync)}.");
 
+                    // If the pipeline is opening then we continu with the operations to complete the open process. This state is reached when the client was previously connected but then lost connection.
+                    // If the pipeline is closed then we proceed with opening the client.
                     case ClientTransportState.Opening:
                     case ClientTransportState.Closed:
                         {
@@ -57,6 +65,12 @@ namespace Microsoft.Azure.Devices.Client.Transport
                             _cancelPendingOperationsCts = new CancellationTokenSource();
                             using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
 
+                            // This semaphore is used to ensure two things - 
+                            // 1. Only one thread tries to open the client at any given time.
+                            // 2. Before executing an operation the pipeline will verify if it is open.
+                            //    If the state is "opening" then it will wait on this semaphore. This will ensure that if any parallel thread is currently trying to open the connection then we wait until
+                            //    it completes and then try the requested operation. This is helpful if the client is trying to execute an operation during a disconnection event.
+                            //    If there is a parallel thread trying to reopen the client, the client will wait until that thread completes before checking if the requested operation can be carried out.
                             await _clientOpenSemaphore.WaitAsync(operationCts.Token).ConfigureAwait(false);
                             try
                             {
@@ -124,6 +138,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     return;
                 }
 
+                // Transition to "closing" state before starting the work.
                 _clientTransportStateMachine.MoveNext(ClientStateAction.CloseStart, ClientTransportState.Closing);
 
                 try
@@ -141,6 +156,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     _handleDisconnectCts?.Dispose();
                     _handleDisconnectCts = null;
 
+                    // Once the work has been completed transition to "closed" state.
                     _clientTransportStateMachine.MoveNext(ClientStateAction.CloseComplete, ClientTransportState.Closed);
                 }
             }
@@ -401,6 +417,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 {
                     case ClientTransportState.Opening:
                         {
+                            // If the state is "opening" then we will wait until there is no other parallel thread trying to open the connection.
+                            // We will wait on this semaphore using a linked cancellation token that will be canceled if CloseAsync() is called or if the client is disposed.
                             using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
                             await _clientOpenSemaphore.WaitAsync(operationCts.Token).ConfigureAwait(false);
 
@@ -420,6 +438,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
                     case ClientTransportState.Open:
                         {
+                            // If the state is "open" then we will create a linked cancellation token that will be canceled if CloseAsync() is called or if the client is disposed.
                             using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
                             return await asyncOperation(operationCts.Token).ConfigureAwait(false);
                         }
@@ -467,6 +486,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     if (Logging.IsEnabled)
                         Logging.Info(this, "Transport disconnected: unexpected.", nameof(HandleDisconnectAsync));
 
+                    // This transitions the state to "opening" so that a subsequent OpenAsync() call can do the work to open it.
                     _clientTransportStateMachine.MoveNext(ClientStateAction.ConnectionLost, ClientTransportState.Opening);
                 }
                 catch (OperationCanceledException)
@@ -490,6 +510,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     if (Logging.IsEnabled)
                         Logging.Info(this, "Transport disconnected: closed by application.", nameof(HandleDisconnectAsync));
 
+                    // This state transition is to ensure that the pipeline state matches the client's state.
                     _clientTransportStateMachine.MoveNext(ClientStateAction.CloseStart, ClientTransportState.Closing);
                     _clientTransportStateMachine.MoveNext(ClientStateAction.CloseComplete, ClientTransportState.Closed);
 

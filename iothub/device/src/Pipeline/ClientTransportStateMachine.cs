@@ -6,6 +6,9 @@ using System.Collections.Generic;
 
 namespace Microsoft.Azure.Devices.Client.Transport
 {
+    /// <summary>
+    /// The different client transport states that are used for the delegating pipeline state management.
+    /// </summary>
     internal enum ClientTransportState
     {
         Closed,
@@ -14,6 +17,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
         Closing,
     }
 
+    /// <summary>
+    /// The different actions that are executed on the delegating pipeline.
+    /// </summary>
     internal enum ClientStateAction
     {
         OpenStart,
@@ -24,8 +30,15 @@ namespace Microsoft.Azure.Devices.Client.Transport
         ConnectionLost,
     }
 
+    /// <summary>
+    /// This state machine stores the current state of the delegating pipeline and evalautes if the requested state transition is possible.
+    /// </summary>
     internal class ClientTransportStateMachine
     {
+        /// <summary>
+        /// This internal class is created for the purpose of evaluating if the proposed state transition is acceptable.
+        /// Objects of this class are maintained in a dictionary of "acceptable" state transitions.
+        /// </summary>
         internal class StateTransition
         {
             private readonly ClientTransportState _currentState;
@@ -44,12 +57,12 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     && other._nextAction == _nextAction;
             }
 
+            // Hashcode evaluation example: https://learn.microsoft.com/dotnet/api/system.object.gethashcode?view=net-8.0#examples
             public override int GetHashCode()
             {
                 return ShiftAndWrap(_currentState.GetHashCode(), 2) ^ _nextAction.GetHashCode();
             }
 
-            // Hashcode evaluation example: https://learn.microsoft.com/dotnet/api/system.object.gethashcode?view=net-8.0#examples
             private static int ShiftAndWrap(int value, int positions)
             {
                 positions &= 0x1F;
@@ -63,6 +76,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
+        // Acceptable state transitions
         private static readonly Dictionary<StateTransition, ClientTransportState> s_transitions = new()
         {
                 { new StateTransition(ClientTransportState.Closed, ClientStateAction.OpenStart), ClientTransportState.Opening },
@@ -83,12 +97,15 @@ namespace Microsoft.Azure.Devices.Client.Transport
         }
 
 # if DEBUG
+        // This is added only for the purpose of unit-testing.
+        // SDK code shouldn't be relying on this constructor, hence this is inside a debug block.
         internal ClientTransportStateMachine(ClientTransportState initialState)
         {
             _currentState = initialState;
         }
 #endif
 
+        // Return the current state, managed by a lock
         internal ClientTransportState GetCurrentState()
         {
             lock (_stateTransitionLock)
@@ -97,6 +114,13 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
+        /// <summary>
+        /// Transition to the desired state, if possible.
+        /// This operation is performed under a lock to ensure state is not changed while the operation is in progress.
+        /// </summary>
+        /// <param name="action">The action executed on the delegating pipeline.</param>
+        /// <param name="desiredState">The desired state to transition the delegating pipeline to.</param>
+        /// <exception cref="InvalidOperationException">Thrown if the requested state transition is not a valid transition.</exception>
         internal void MoveNext(ClientStateAction action, ClientTransportState desiredState)
         {
             lock (_stateTransitionLock)
