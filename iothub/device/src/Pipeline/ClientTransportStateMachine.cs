@@ -85,24 +85,27 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
-        internal void MoveNext(ClientStateAction action)
+        internal void MoveNext(ClientStateAction action, ClientTransportState desiredState)
         {
             lock (_stateTransitionLock)
             {
                 ClientTransportState previousState = _currentState;
-                _currentState = GetNextState(action);
+                _currentState = GetNextState(action, desiredState);
 
                 if (Logging.IsEnabled)
                     Logging.Info(this, $"Client transport state changed from {previousState} -> {_currentState} because {action}.", nameof(MoveNext));
             }
         }
 
-        private ClientTransportState GetNextState(ClientStateAction action)
+        private ClientTransportState GetNextState(ClientStateAction action, ClientTransportState desiredState)
         {
             var transition = new StateTransition(_currentState, action);
+            bool transitionPossible = s_transitions.TryGetValue(transition, out ClientTransportState nextState);
 
-            return s_transitions.TryGetValue(transition, out ClientTransportState nextState)
-                ? nextState
+            return transitionPossible
+                ? nextState == desiredState
+                    ? nextState
+                    : throw new InvalidOperationException($"Invalid transition requested. {_currentState} -> {action} results in {nextState} and not {desiredState}.")
                 : throw new InvalidOperationException($"Invalid transition: {_currentState} -> {action}.");
         }
     }
