@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client.Exceptions;
+using Microsoft.Azure.Devices.Client.Transport.Mqtt;
 using Microsoft.Azure.Devices.Shared;
 using Microsoft.Extensions.Logging;
 
@@ -18,9 +19,11 @@ namespace Microsoft.Azure.Devices.Client.Samples
         private static readonly Random s_randomGenerator = new();
         private static readonly TimeSpan s_sleepDuration = TimeSpan.FromSeconds(15);
 
+        private static readonly TimeSpan s_connectionOpenTimeout = TimeSpan.FromSeconds(30);
+
         private static readonly SemaphoreSlim s_initSemaphore = new(1, 1);
-        private readonly List<string> _deviceConnectionStrings;
-        private readonly TransportType _transportType;
+        private readonly Queue<string> _deviceConnectionStrings;
+        private readonly Queue<ITransportSettings> _transportSettings;
         private static readonly ClientOptions s_clientOptions = new() { SdkAssignsMessageId = SdkAssignsMessageId.WhenUnset };
 
         private readonly ILogger _logger;
@@ -33,14 +36,16 @@ namespace Microsoft.Azure.Devices.Client.Samples
             // to reconnect indefinitely, so don't give up on an operation that sees this exception.
             typeof(UnauthorizedException),
         };
-        private readonly IRetryPolicy _customRetryPolicy;
 
+        private readonly IRetryPolicy _customRetryPolicy;
 
         // Mark these fields as volatile so that their latest values are referenced.
         private static volatile DeviceClient s_deviceClient;
+
         private static volatile ConnectionStatus s_connectionStatus = ConnectionStatus.Disconnected;
 
         private static CancellationTokenSource s_appCancellation;
+        private static bool s_transportTypeSelected;
 
         // A safe initial value for caching the twin desired properties version is 1, so the client
         // will process all previous property change requests and initialize the device application
@@ -48,7 +53,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
         // has been processed.
         private static long s_localDesiredPropertyVersion = 1;
 
-        public DeviceReconnectionSample(List<string> deviceConnectionStrings, TransportType transportType, ILogger logger)
+        public DeviceReconnectionSample(Queue<string> deviceConnectionStrings, TransportType transportType, ILogger logger)
         {
             _logger = logger;
             _customRetryPolicy = new CustomRetryPolicy(s_exceptionsToBeRetried, _logger);
@@ -66,8 +71,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             _deviceConnectionStrings = deviceConnectionStrings;
             _logger.LogInformation($"Supplied with {_deviceConnectionStrings.Count} connection string(s).");
 
-            _transportType = transportType;
-            _logger.LogInformation($"Using {_transportType} transport.");
+            _transportSettings = GetTransportSettings(transportType);
         }
 
         private static bool IsDeviceConnected => s_connectionStatus == ConnectionStatus.Connected;
@@ -125,9 +129,11 @@ namespace Microsoft.Azure.Devices.Client.Samples
                             s_deviceClient.Dispose();
                         }
 
-                        s_deviceClient = DeviceClient.CreateFromConnectionString(_deviceConnectionStrings.First(), _transportType, s_clientOptions);
+                        ITransportSettings transportSettingsToUse = _transportSettings.Peek();
+                        s_deviceClient = DeviceClient.CreateFromConnectionString(_deviceConnectionStrings.Peek(), new ITransportSettings[] { transportSettingsToUse }, s_clientOptions);
                         s_deviceClient.SetConnectionStatusChangesHandler(ConnectionStatusChangeHandlerAsync);
-                        s_deviceClient.SetRetryPolicy(_customRetryPolicy);
+                        // s_deviceClient.SetRetryPolicy(_customRetryPolicy);
+                        s_deviceClient.OperationTimeoutInMilliseconds = (uint)TimeSpan.FromSeconds(60).TotalMilliseconds;
                         _logger.LogDebug("Initialized the client instance.");
 
                         // Force connection now.
@@ -159,6 +165,11 @@ namespace Microsoft.Azure.Devices.Client.Samples
             switch (status)
             {
                 case ConnectionStatus.Connected:
+                    if (!s_transportTypeSelected)
+                    {
+                        _logger.LogInformation($"Using {_transportSettings.Peek().GetTransportType()} transport.");
+                        s_transportTypeSelected = true;
+                    }
                     _logger.LogDebug("### The DeviceClient is CONNECTED; all operations will be carried out as normal.");
 
                     // Call GetTwinAndDetectChangesAsync() to retrieve twin values from the server once the connection status changes into Connected.
@@ -182,12 +193,24 @@ namespace Microsoft.Azure.Devices.Client.Samples
                     break;
 
                 case ConnectionStatus.Disconnected:
+                    // If initial connect then try with a different transport setting.
+                    if (!s_transportTypeSelected)
+                    {
+                        // Remove the current transport type that was tried from the queue
+                        _ = _transportSettings.Dequeue();
+                        if (!_transportSettings.Any())
+                        {
+                            _logger.LogWarning("### The supplied transport settings were unable to establish the connection. Update the parameters and run again.");
+                            s_appCancellation.Cancel();
+                            break;
+                        }
+                    }
                     switch (reason)
                     {
                         case ConnectionStatusChangeReason.Bad_Credential:
                             // When getting this reason, the current connection string being used is not valid.
                             // If we had a backup, we can try using that.
-                            _deviceConnectionStrings.RemoveAt(0);
+                            _ = _deviceConnectionStrings.Dequeue();
                             if (_deviceConnectionStrings.Any())
                             {
                                 _logger.LogWarning($"The current connection string is invalid. Trying another.");
@@ -319,7 +342,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                     await Task.Delay(s_sleepDuration, cancellationToken);
                     continue;
                 }
-                else if (_transportType == TransportType.Http1)
+                else if (_transportSettings.Peek().GetTransportType() == TransportType.Http1)
                 {
                     // The call to ReceiveAsync over HTTP completes immediately, rather than waiting up to the specified
                     // time or when a cancellation token is signaled, so if we want it to poll at the same rate, we need
@@ -402,6 +425,64 @@ namespace Microsoft.Azure.Devices.Client.Samples
         {
             return (connectionStatus == ConnectionStatus.Disconnected || connectionStatus == ConnectionStatus.Disabled)
                 && _deviceConnectionStrings.Any();
+        }
+
+        private Queue<ITransportSettings> GetTransportSettings(TransportType transportType)
+        {
+            var transportSettings = new Queue<ITransportSettings>();
+            switch (transportType)
+            {
+                case TransportType.Mqtt:
+                    var mqttTcpSettings = new MqttTransportSettings(TransportType.Mqtt_Tcp_Only)
+                    {
+                        ConnectArrivalTimeout = s_connectionOpenTimeout,
+                    };
+                    var mqttWsSettings = new MqttTransportSettings(TransportType.Mqtt_WebSocket_Only)
+                    {
+                        ConnectArrivalTimeout = s_connectionOpenTimeout,
+                    };
+                    transportSettings.Enqueue(mqttTcpSettings);
+                    transportSettings.Enqueue(mqttWsSettings);
+                    break;
+
+                case TransportType.Mqtt_Tcp_Only:
+                case TransportType.Mqtt_WebSocket_Only:
+                    var mqttSettings = new MqttTransportSettings(transportType)
+                    {
+                        ConnectArrivalTimeout = s_connectionOpenTimeout,
+                    };
+                    transportSettings.Enqueue(mqttSettings);
+                    break;
+
+                case TransportType.Amqp:
+                    var amqpTcpSettings = new AmqpTransportSettings(TransportType.Amqp_Tcp_Only)
+                    {
+                        OpenTimeout = s_connectionOpenTimeout,
+                    };
+                    var amqpWsSettings = new AmqpTransportSettings(TransportType.Amqp_WebSocket_Only)
+                    {
+                        OpenTimeout = s_connectionOpenTimeout,
+                    };
+                    transportSettings.Enqueue(amqpTcpSettings);
+                    transportSettings.Enqueue(amqpWsSettings);
+                    break;
+
+                case TransportType.Amqp_Tcp_Only:
+                case TransportType.Amqp_WebSocket_Only:
+                    var amqpSettings = new AmqpTransportSettings(transportType)
+                    {
+                        OpenTimeout = s_connectionOpenTimeout,
+                    };
+                    transportSettings.Enqueue(amqpSettings);
+                    break;
+
+                case TransportType.Http1:
+                    var httpSettings = new Http1TransportSettings();
+                    transportSettings.Enqueue(httpSettings);
+                    break;
+            }
+
+            return transportSettings;
         }
     }
 }

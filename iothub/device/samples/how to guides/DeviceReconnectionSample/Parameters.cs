@@ -1,4 +1,7 @@
-﻿using CommandLine;
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using CommandLine;
 using System.Collections.Generic;
 
 namespace Microsoft.Azure.Devices.Client.Samples
@@ -36,16 +39,14 @@ namespace Microsoft.Azure.Devices.Client.Samples
             HelpText = "The running time for this console application. Leave it unassigned to run the application until it is explicitly canceled using Control+C.")]
         public double? ApplicationRunningTime { get; set; }
 
-        public List<string> GetConnectionStrings()
+        public Queue<string> GetConnectionStrings()
         {
-            var cs = new List<string>(2)
-            {
-                PrimaryConnectionString,
-            };
+            var cs = new Queue<string>(2);
+            cs.Enqueue(PrimaryConnectionString);
 
             if (!string.IsNullOrWhiteSpace(SecondaryConnectionString))
             {
-                cs.Add(SecondaryConnectionString);
+                cs.Enqueue(SecondaryConnectionString);
             }
 
             return cs;
