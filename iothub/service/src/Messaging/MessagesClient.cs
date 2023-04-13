@@ -412,7 +412,7 @@ namespace Microsoft.Azure.Devices
 
         private async Task CheckConnectionIsOpenAsync(CancellationToken cancellationToken = default)
         {
-            // To make sure the client was opened earlier but got disconnected afterwards.
+            // This is to internally re-open Amqp connection if the client gets disconnected after the user already made the OpenAsync() call before. 
             if (_opened && !_amqpConnection.IsOpen)
             {
                 await OpenAsync(cancellationToken).ConfigureAwait(false);

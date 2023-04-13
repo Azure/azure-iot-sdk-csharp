@@ -185,13 +185,6 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                         TraceSeverity.Warning);
                     // retry
                 }
-                /*catch (InvalidOperationException ex) when (ex.Message.Contains("Must open client"))
-                {
-                    logger.Trace(
-                        $"{ex.Message}\nOpening client to send C2D messsage...",
-                        TraceSeverity.Warning);
-                    await _serviceClient.Messages.OpenAsync(ct).ConfigureAwait(false);
-                }*/
                 catch (Exception ex)
                 {
                     logger.Trace(
