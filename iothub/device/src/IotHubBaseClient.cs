@@ -453,15 +453,28 @@ namespace Microsoft.Azure.Devices.Client
                     return;
                 }
 
-                await CloseAsync(CancellationToken.None).ConfigureAwait(false);
+                try
+                {
+                    await CloseAsync(CancellationToken.None).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    if (Logging.IsEnabled)
+                        Logging.Error(this, $"Exception observed while closing the client: {ex}", nameof(DisposeAsync));
+                        
+                    // fail silently
+                }
+
                 Dispose(true);
                 GC.SuppressFinalize(this);
                 _isDisposed = true;
             }
-            catch (Exception ex) when (Logging.IsEnabled)
+            catch (Exception ex)
             {
-                Logging.Error(this, ex, nameof(DisposeAsync));
-                throw;
+                if (Logging.IsEnabled)
+                    Logging.Error(this, ex, nameof(DisposeAsync));
+                    
+                // fail silently
             }
             finally
             {
@@ -601,6 +614,7 @@ namespace Microsoft.Azure.Devices.Client
             var transporthandlerFactory = new TransportHandlerFactory();
             ClientPipelineBuilder pipelineBuilder = new ClientPipelineBuilder()
                 .With((ctx, innerHandler) => new DefaultDelegatingHandler(ctx, innerHandler))
+                .With((ctx, innerHandler) => new ConnectionStateDelegatingHandler(ctx, innerHandler))
                 .With((ctx, innerHandler) => new RetryDelegatingHandler(ctx, innerHandler))
                 .With((ctx, innerHandler) => new ExceptionRemappingHandler(ctx, innerHandler))
                 .With((ctx, innerHandler) => new TransportDelegatingHandler(ctx, innerHandler))
