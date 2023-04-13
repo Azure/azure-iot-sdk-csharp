@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.Azure.Devices.Client.Test
+namespace Microsoft.Azure.Devices.Client.Tests
 {
     internal class IotHubClientTestRetryPolicy : IotHubClientRetryPolicyBase
     {

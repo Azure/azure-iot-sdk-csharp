@@ -10,6 +10,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Microsoft.Azure.Devices.Client.Tests
 {
     [TestClass]
+    [TestCategory("Unit")]
     /// <summary>
     /// Ensure that any calls to a disposed device client result in an ObjectDisposedException.
     /// </summary>

@@ -210,7 +210,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 try
                 {
                     string payload = await response.Content.ReadAsStringAsync();
-                    ResponseBody responseBody = JsonConvert.DeserializeObject<ResponseBody>(payload);
+                    ErrorResponse responseBody = JsonConvert.DeserializeObject<ErrorResponse>(payload);
 
                     if (response.StatusCode >= HttpStatusCode.Ambiguous)
                     {
