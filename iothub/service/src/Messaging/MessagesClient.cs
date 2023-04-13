@@ -412,25 +412,12 @@ namespace Microsoft.Azure.Devices
 
         private async Task CheckConnectionIsOpenAsync(CancellationToken cancellationToken = default)
         {
-            if (_opened)
+            // To make sure the client was opened earlier but got disconnected afterwards.
+            if (_opened && !_amqpConnection.IsOpen)
             {
-                try
-                {
-                    await _internalRetryHandler
-                        .RunWithRetryAsync(
-                            async () =>
-                            {
-                                await _amqpConnection.OpenAsync(cancellationToken).ConfigureAwait(false);
-                            },
-                            cancellationToken)
-                        .ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    throw new IotHubServiceException(ex.Message, ex);
-                }
+                await OpenAsync(cancellationToken).ConfigureAwait(false);
             }
-            else
+            else if(!_opened)
             {
                 throw new InvalidOperationException("Must open client before sending messages.");
             }
