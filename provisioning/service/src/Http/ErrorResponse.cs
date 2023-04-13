@@ -3,9 +3,9 @@
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
     /// <summary>
-    /// A class used as a model to deserialize response body object received from DPS.
+    /// A class used as a model to deserialize response body object received from DPS in error cases.
     /// </summary>
-    internal sealed class ResponseBody
+    internal sealed class ErrorResponse
     {
         [JsonProperty("errorCode")]
         internal int ErrorCode { get; set; }
