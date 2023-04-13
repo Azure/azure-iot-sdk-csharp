@@ -16,6 +16,37 @@ namespace Microsoft.Azure.Devices.Client.Tests
     public class ConnectionStateDelegatingHandlerTests
     {
         [TestMethod]
+        public async Task ConnectionStateDelegatingHandler_OpenAsync_OpenedClient_DoesNotOpenAgain()
+        {
+            // arrange
+            var nextHandlerMock = new Mock<IDelegatingHandler>();
+            var contextMock = new PipelineContext
+            {
+                RetryPolicy = new IotHubClientTestRetryPolicy(1),
+                ConnectionStatusChangeHandler = (connectionStatusInfo) => { }
+            };
+            using var sut = new ConnectionStateDelegatingHandler(contextMock, nextHandlerMock.Object);
+
+            nextHandlerMock
+                .Setup(x => x.OpenAsync(It.IsAny<CancellationToken>()))
+                .Returns(Task.FromResult(true));
+            // Artificial wait to simulate the transport protocol level async operations.
+            // Without this, the transport layer will immediately transition to Closed, which will cause the "Open" flow to be executed again.
+            nextHandlerMock
+                .Setup(x => x.WaitForTransportClosedAsync())
+                .Returns(() => Task.Delay(TimeSpan.FromSeconds(5)));
+
+            await sut.OpenAsync(CancellationToken.None).ConfigureAwait(false);
+
+            // act
+            await sut.OpenAsync(CancellationToken.None).ConfigureAwait(false);
+
+            // assert
+            nextHandlerMock
+                .Verify(x => x.OpenAsync(It.IsAny<CancellationToken>()), Times.Exactly(1));
+        }
+
+        [TestMethod]
         public async Task ConnectionStateDelegatingHandler_CloseAsyncBeforeOpen_Ok()
         {
             // arrange
