@@ -15,9 +15,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     internal class QueryBuilder
     {
         private const string ContinuationTokenHeaderKey = "x-ms-continuation";
-        private const string ItemTypeHeaderKey = "x-ms-item-type";
         private const string PageSizeHeaderKey = "x-ms-max-item-count";
-        private const string QueryUriFormat = "{0}/query";
 
         internal static async Task<Page<T>> BuildAndSendRequestAsync<T>(
             ContractApiHttp contractApiHttp,
