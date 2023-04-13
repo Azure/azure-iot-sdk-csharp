@@ -11,7 +11,6 @@ using System.Threading.Tasks;
 using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Amqp.Framing;
 using Microsoft.Azure.Devices.Amqp;
-using static System.Net.WebRequestMethods;
 
 namespace Microsoft.Azure.Devices
 {
@@ -31,6 +30,8 @@ namespace Microsoft.Azure.Devices
         private readonly HttpClient _httpClient;
         private readonly HttpRequestMessageFactory _httpRequestMessageFactory;
         private readonly RetryHandler _internalRetryHandler;
+
+        private bool _opened;
 
         /// <summary>
         /// Creates an instance of this class. Provided for unit testing purposes only.
@@ -125,6 +126,7 @@ namespace Microsoft.Azure.Devices
                         },
                         cancellationToken)
                     .ConfigureAwait(false);
+                _opened = true;
             }
             catch (Exception ex) when (Logging.IsEnabled)
             {
@@ -164,6 +166,7 @@ namespace Microsoft.Azure.Devices
                         },
                         cancellationToken)
                     .ConfigureAwait(false);
+                _opened = false;
             }
             catch (Exception ex) when (Logging.IsEnabled)
             {
@@ -203,7 +206,7 @@ namespace Microsoft.Azure.Devices
             Argument.AssertNotNullOrWhiteSpace(deviceId, nameof(deviceId));
             Argument.AssertNotNull(message, nameof(message));
 
-            CheckConnectionIsOpen();
+            await CheckConnectionIsOpenAsync(cancellationToken).ConfigureAwait(false);
 
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -270,7 +273,7 @@ namespace Microsoft.Azure.Devices
             Argument.AssertNotNullOrWhiteSpace(moduleId, nameof(moduleId));
             Argument.AssertNotNull(message, nameof(message));
 
-            CheckConnectionIsOpen();
+            await CheckConnectionIsOpenAsync(cancellationToken).ConfigureAwait(false);
 
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -407,9 +410,28 @@ namespace Microsoft.Azure.Devices
             }
         }
 
-        private void CheckConnectionIsOpen()
+        private async Task CheckConnectionIsOpenAsync(CancellationToken cancellationToken = default)
         {
-            if (!_amqpConnection.IsOpen)
+            if (_opened)
+            {
+                try
+                {
+                    await _internalRetryHandler
+                        .RunWithRetryAsync(
+                            async () =>
+                            {
+                                await _amqpConnection.OpenAsync(cancellationToken).ConfigureAwait(false);
+                            },
+                            cancellationToken)
+                        .ConfigureAwait(false);
+                    _opened = true;
+                }
+                catch (Exception ex)
+                {
+                    throw new IotHubServiceException(ex.Message, ex);
+                }
+            }
+            else
             {
                 throw new InvalidOperationException("Must open client before sending messages.");
             }
