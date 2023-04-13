@@ -1,21 +1,20 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using CommandLine;
-using Microsoft.Azure.Devices.Logging;
-using Microsoft.Extensions.Logging;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using CommandLine;
+using Microsoft.Azure.Devices.Client.Samples;
+using Microsoft.Azure.Devices.Logging;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Azure.Devices.Samples
 {
     public class Program
     {
-        private const string SdkEventProviderPrefix = "Microsoft-Azure-";
-
         /// <summary>
-        /// A sample to illustrate how to recieve and complete file upload notifications.
+        /// A sample to demonstrate how to send cloud to device messages.
         /// </summary>
         /// <param name="args">
         /// Run with `--help` to see a list of required and optional parameters.
@@ -44,22 +43,25 @@ namespace Microsoft.Azure.Devices.Samples
                 });
             ILogger<Program> logger = loggerFactory.CreateLogger<Program>();
 
-            // Instantiating this seems to do all we need for outputting SDK events to our console log.
-            using var sdkLogs = new ConsoleEventListener(SdkEventProviderPrefix, logger);
-
-            TimeSpan runningTime = parameters.ApplicationRunningTime != null
-                ? TimeSpan.FromSeconds((double)parameters.ApplicationRunningTime)
-                : Timeout.InfiniteTimeSpan;
-
-            var serviceClientOptions = new IotHubServiceClientOptions
+            var clientOptions = new IotHubServiceClientOptions()
             {
-                Protocol = IotHubTransportProtocol.Tcp,
                 RetryPolicy = new IotHubServiceExponentialBackoffRetryPolicy(uint.MaxValue, TimeSpan.MaxValue)
             };
 
-            using var serviceClient = new IotHubServiceClient(parameters.IoTHubConnectionString, serviceClientOptions);
-            var sample = new FileUploadNotificationReceiverSample(serviceClient, logger);
-            await sample.RunSampleAsync(parameters.DeviceId, runningTime);
+            using var hubClient = new IotHubServiceClient(parameters.HubConnectionString, clientOptions);
+
+            var sample = new MessagingClientSample(hubClient, parameters.DeviceId, logger);
+
+            // Set up a way for the user to gracefully shutdown
+            using var cts = new CancellationTokenSource();
+            Console.CancelKeyPress += (sender, eventArgs) =>
+            {
+                eventArgs.Cancel = true;
+                cts.Cancel();
+                Console.WriteLine("Exiting...");
+            };
+
+            await sample.SendMessagesAsync(cts.Token);
 
             Console.WriteLine("Done.");
             return 0;

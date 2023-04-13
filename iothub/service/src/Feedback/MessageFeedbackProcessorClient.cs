@@ -94,12 +94,12 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         /// <example>
         /// <code language="csharp">
-        /// serviceClient.MessageFeedbackProcessor.ErrorProcessor = OnConnectionLost;
+        /// serviceClient.MessageFeedbackProcessor.ErrorProcessor = OnConnectionLostAsync;
         /// serviceClient.MessageFeedbackProcessor.OpenAsync();
         ///
         /// //...
         ///
-        /// public async Task OnConnectionLost(FeedbackMessagingError error)
+        /// public async Task OnConnectionLostAsync(FeedbackMessagingError error)
         /// {
         ///    Console.WriteLine("Feedback message processor connection lost. Error: {error.Exception.Message}")
         ///
