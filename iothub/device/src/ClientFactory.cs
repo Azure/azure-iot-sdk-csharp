@@ -535,6 +535,7 @@ namespace Microsoft.Azure.Devices.Client
         {
             var transporthandlerFactory = new TransportHandlerFactory();
             IDeviceClientPipelineBuilder pipelineBuilder = new DeviceClientPipelineBuilder()
+                .With((ctx, innerHandler) => new DefaultDelegatingHandler(ctx, innerHandler))
                 .With((ctx, innerHandler) => new RetryDelegatingHandler(ctx, innerHandler))
                 .With((ctx, innerHandler) => new ErrorDelegatingHandler(ctx, innerHandler))
                 .With((ctx, innerHandler) => new ProtocolRoutingDelegatingHandler(ctx, innerHandler))

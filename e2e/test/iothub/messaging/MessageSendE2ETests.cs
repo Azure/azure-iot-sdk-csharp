@@ -7,6 +7,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using FluentAssertions;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Devices.Client.Transport.Mqtt;
@@ -102,7 +103,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         [TestCategory("LongRunning")]
         public async Task Message_DeviceSendSingleMessage_Http_WithProxy()
         {
-            var httpTransportSettings = new Client.Http1TransportSettings
+            var httpTransportSettings = new Http1TransportSettings
             {
                 Proxy = new WebProxy(s_proxyServerAddress)
             };
@@ -173,13 +174,40 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         [TestCategory("Proxy")]
         public async Task Message_ModuleSendSingleMessage_MqttWs_WithProxy()
         {
-            var mqttTransportSettings = new Client.Transport.Mqtt.MqttTransportSettings(Client.TransportType.Mqtt_WebSocket_Only)
+            var mqttTransportSettings = new MqttTransportSettings(Client.TransportType.Mqtt_WebSocket_Only)
             {
                 Proxy = new WebProxy(s_proxyServerAddress)
             };
             var transportSettings = new ITransportSettings[] { mqttTransportSettings };
 
             await SendSingleMessageModule(transportSettings).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
+        public async Task Message_ModuleSendsMessageToRouteTwice()
+        {
+            // arrange
+
+            TestModule testModule = await TestModule.GetTestModuleAsync(nameof(Message_ModuleSendsMessageToRouteTwice), "module").ConfigureAwait(false);
+
+            try
+            {
+                using var moduleClient = ModuleClient.CreateFromConnectionString(testModule.ConnectionString);
+                using var message = new Client.Message(new byte[10]);
+                await moduleClient.SendEventAsync("output1", message).ConfigureAwait(false);
+
+                // act
+                Func<Task> secondSend = async () => await moduleClient.SendEventAsync("output2", message).ConfigureAwait(false);
+
+                // assert
+                await secondSend.Should().NotThrowAsync();
+            }
+            finally
+            {
+                using RegistryManager rm = RegistryManager.CreateFromConnectionString(TestConfiguration.IotHub.ConnectionString);
+                await rm.RemoveDeviceAsync(testModule.DeviceId).ConfigureAwait(false);
+            }
         }
 
         [TestMethod]
@@ -424,7 +452,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             using var moduleClient = ModuleClient.CreateFromConnectionString(testModule.ConnectionString, transportSettings);
 
             await moduleClient.OpenAsync().ConfigureAwait(false);
-            await SendSingleMessageModuleAsync(moduleClient).ConfigureAwait(false);
+            await MessageSendE2ETests.SendSingleMessageModuleAsync(moduleClient).ConfigureAwait(false);
             await moduleClient.CloseAsync().ConfigureAwait(false);
         }
 
@@ -462,7 +490,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             }
         }
 
-        private async Task SendSingleMessageModuleAsync(ModuleClient moduleClient)
+        private static async Task SendSingleMessageModuleAsync(ModuleClient moduleClient)
         {
             using Client.Message testMessage = ComposeD2cTestMessage(out string _, out string _);
 

@@ -189,7 +189,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 buffer,
                 transport);
 
-            using var deviceClient = DeviceClient.Create(testDevice.IotHubHostName, refresher, transport);
+            using var deviceClient = DeviceClient.Create(TestDevice.IotHubHostName, refresher, transport);
             VerboseTestLogger.WriteLine($"Created {nameof(DeviceClient)}");
 
             if (transport == Client.TransportType.Mqtt)

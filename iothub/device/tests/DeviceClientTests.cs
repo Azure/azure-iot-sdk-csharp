@@ -154,8 +154,6 @@ namespace Microsoft.Azure.Devices.Client.Test
             act.Should().Throw<ArgumentException>();
         }
 
-        /* Tests_SRS_DEVICECLIENT_28_002: [This property shall be defaulted to 240000 (4 minutes).] */
-
         [TestMethod]
         public void DeviceClient_OperationTimeoutInMilliseconds_Property_DefaultValue()
         {
@@ -312,7 +310,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        // Tests_SRS_DEVICECLIENT_10_012: [** If the given methodRequestInternal argument is null, fail silently **]**
         public async Task DeviceClient_OnMethodCalled_NullMethodRequest()
         {
             using var deviceClient = DeviceClient.CreateFromConnectionString(FakeConnectionString);
@@ -353,7 +350,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        // Tests_SRS_DEVICECLIENT_28_020: [** If the given methodRequestInternal data is not valid json, respond with status code 400 (BAD REQUEST) **]**
         public async Task DeviceClient_OnMethodCalled_MethodRequestHasInvalidJson()
         {
             using var deviceClient = DeviceClient.CreateFromConnectionString(FakeConnectionString);
@@ -374,7 +370,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        // Tests_SRS_DEVICECLIENT_10_011: [ The OnMethodCalled shall invoke the specified delegate. ]
         public async Task DeviceClient_OnMethodCalled_MethodRequestHasValidJson()
         {
             using var deviceClient = DeviceClient.CreateFromConnectionString(FakeConnectionString);
@@ -395,7 +390,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        // Tests_SRS_DEVICECLIENT_28_021: [** If the MethodResponse from the MethodHandler is not valid json, respond with status code 500 (USER CODE EXCEPTION) **]**
         public async Task DeviceClient_OnMethodCalled_MethodResponseHasInvalidJson()
         {
             using var deviceClient = DeviceClient.CreateFromConnectionString(FakeConnectionString);
@@ -416,7 +410,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        // Tests_SRS_DEVICECLIENT_10_012: [** If the given methodRequestInternal argument is null, fail silently **]**
         public async Task DeviceClient_OnMethodCalled_NullMethodRequest_With_SetMethodHandler()
         {
             using var deviceClient = DeviceClient.CreateFromConnectionString(FakeConnectionString);
@@ -461,8 +454,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        // Tests_SRS_DEVICECLIENT_10_011: [ The OnMethodCalled shall invoke the specified delegate. ]
-        // Tests_SRS_DEVICECLIENT_03_013: [Otherwise, the MethodResponseInternal constructor shall be invoked with the result supplied.]
         public async Task DeviceClient_OnMethodCalled_MethodRequestHasValidJson_With_SetMethodHandler()
         {
             using var deviceClient = DeviceClient.CreateFromConnectionString(FakeConnectionString);
@@ -485,8 +476,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        // Tests_SRS_DEVICECLIENT_24_002: [ The OnMethodCalled shall invoke the default delegate if there is no specified delegate for that method. ]
-        // Tests_SRS_DEVICECLIENT_03_013: [Otherwise, the MethodResponseInternal constructor shall be invoked with the result supplied.]
         public async Task DeviceClient_OnMethodCalled_MethodRequestHasValidJson_With_SetMethodDefaultHandler()
         {
             using var deviceClient = DeviceClient.CreateFromConnectionString(FakeConnectionString);
@@ -507,8 +496,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        // Tests_SRS_DEVICECLIENT_24_002: [ The OnMethodCalled shall invoke the default delegate if there is no specified delegate for that method. ]
-        // Tests_SRS_DEVICECLIENT_03_013: [Otherwise, the MethodResponseInternal constructor shall be invoked with the result supplied.]
         public async Task DeviceClient_OnMethodCalled_MethodRequestHasValidJson_With_SetMethodHandlerNotMatchedAndDefaultHandler()
         {
             using var deviceClient = DeviceClient.CreateFromConnectionString(FakeConnectionString);
@@ -536,8 +523,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        // Tests_SRS_DEVICECLIENT_10_011: [ The OnMethodCalled shall invoke the specified delegate. ]
-        // Tests_SRS_DEVICECLIENT_03_013: [Otherwise, the MethodResponseInternal constructor shall be invoked with the result supplied.]
         public async Task DeviceClient_OnMethodCalled_MethodRequestHasValidJson_With_SetMethodHandlerAndDefaultHandler()
         {
             using var deviceClient = DeviceClient.CreateFromConnectionString(FakeConnectionString);
@@ -565,8 +550,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        // Tests_SRS_DEVICECLIENT_10_011: [ The OnMethodCalled shall invoke the specified delegate. ]
-        // Tests_SRS_DEVICECLIENT_03_012: [If the MethodResponse does not contain result, the MethodResponseInternal constructor shall be invoked with no results.]
         public async Task DeviceClient_OnMethodCalled_MethodRequestHasValidJson_With_SetMethodHandler_With_No_Result()
         {
             using var deviceClient = DeviceClient.CreateFromConnectionString(FakeConnectionString);
@@ -589,7 +572,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        // Tests_SRS_DEVICECLIENT_28_021: [** If the MethodResponse from the MethodHandler is not valid json, respond with status code 500 (USER CODE EXCEPTION) **]**
         public async Task DeviceClientOnMethodCalledMethodResponseHasInvalidJsonWithSetMethodHandler()
         {
             using var deviceClient = DeviceClient.CreateFromConnectionString(FakeConnectionString);
@@ -612,7 +594,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        // Tests_SRS_DEVICECLIENT_10_013: [** If the given method does not have an associated delegate and no default delegate was registered, respond with status code 501 (METHOD NOT IMPLEMENTED) **]**
         public async Task DeviceClientOnMethodCalledNoMethodHandler()
         {
             using var deviceClient = DeviceClient.CreateFromConnectionString(FakeConnectionString);
@@ -627,8 +608,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        // Tests_SRS_DEVICECLIENT_10_001: [ It shall lazy-initialize the deviceMethods property. ]
-        // Tests_SRS_DEVICECLIENT_10_003: [ The given delegate will only be added if it is not null. ]
         public async Task DeviceClientSetMethodHandlerSetFirstMethodHandler()
         {
             string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;SharedAccessKey=dGVzdFN0cmluZzE=";
@@ -675,8 +654,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        // Tests_SRS_DEVICECLIENT_10_001: [ It shall lazy-initialize the deviceMethods property. ]
-        // Tests_SRS_DEVICECLIENT_10_003: [ The given delegate will only be added if it is not null. ]
         public async Task DeviceClientSetMethodHandlerSetFirstMethodDefaultHandler()
         {
             string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;SharedAccessKey=dGVzdFN0cmluZzE=";
@@ -723,7 +700,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        // Tests_SRS_DEVICECLIENT_10_002: [ If the given methodName already has an associated delegate, the existing delegate shall be removed. ]
         public async Task DeviceClientSetMethodHandlerOverwriteExistingDelegate()
         {
             string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;SharedAccessKey=dGVzdFN0cmluZzE=";
@@ -783,7 +759,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        // Tests_SRS_DEVICECLIENT_24_001: [ If the default callback has already been set, it is replaced with the new callback. ]
         public async Task DeviceClientSetMethodHandlerOverwriteExistingDefaultDelegate()
         {
             string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;SharedAccessKey=dGVzdFN0cmluZzE=";
@@ -843,8 +818,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        // Tests_SRS_DEVICECLIENT_10_004: [ The deviceMethods property shall be deleted if the last delegate has been removed. ]
-        // Tests_SRS_DEVICECLIENT_10_006: [ It shall DisableMethodsAsync when the last delegate has been removed. ]
         public async Task DeviceClientSetMethodHandlerUnsetLastMethodHandler()
         {
             string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;SharedAccessKey=dGVzdFN0cmluZzE=";
@@ -887,8 +860,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        // Tests_SRS_DEVICECLIENT_10_004: [ The deviceMethods property shall be deleted if the last delegate has been removed. ]
-        // Tests_SRS_DEVICECLIENT_10_006: [ It shall DisableMethodsAsync when the last delegate has been removed. ]
         public async Task DeviceClientSetMethodHandlerUnsetLastMethodHandlerWithDefaultHandlerSet()
         {
             string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;SharedAccessKey=dGVzdFN0cmluZzE=";
@@ -948,8 +919,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        // Tests_SRS_DEVICECLIENT_10_004: [ The deviceMethods property shall be deleted if the last delegate has been removed. ]
-        // Tests_SRS_DEVICECLIENT_10_006: [ It shall DisableMethodsAsync when the last delegate has been removed. ]
         public async Task DeviceClientSetMethodHandlerUnsetDefaultHandlerSet()
         {
             string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;SharedAccessKey=dGVzdFN0cmluZzE=";
@@ -1022,8 +991,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        // Tests_SRS_DEVICECLIENT_10_001: [ It shall lazy-initialize the deviceMethods property. ]
-        // Tests_SRS_DEVICECLIENT_10_003: [ The given delegate will only be added if it is not null. ]
         public async Task DeviceClientSetMethodHandlerSetFirstMethodHandlerWithSetMethodHandler()
         {
             string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;SharedAccessKey=dGVzdFN0cmluZzE=";
@@ -1061,7 +1028,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        // Tests_SRS_DEVICECLIENT_10_002: [ If the given methodName already has an associated delegate, the existing delegate shall be removed. ]
         public async Task DeviceClientSetMethodHandlerOverwriteExistingDelegateWithSetMethodHandler()
         {
             string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;SharedAccessKey=dGVzdFN0cmluZzE=";
@@ -1123,8 +1089,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        // Tests_SRS_DEVICECLIENT_10_004: [ The deviceMethods property shall be deleted if the last delegate has been removed. ]
-        // Tests_SRS_DEVICECLIENT_10_006: [ It shall DisableMethodsAsync when the last delegate has been removed. ]
         public async Task DeviceClientSetMethodHandlerUnsetLastMethodHandlerWithSetMethodHandler()
         {
             string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;SharedAccessKey=dGVzdFN0cmluZzE=";
@@ -1184,9 +1148,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        // Tests_SRS_DEVICECLIENT_28_024: [** `OnConnectionOpened` shall invoke the connectionStatusChangesHandler if ConnectionStatus is changed **]**
-        // Tests_SRS_DEVICECLIENT_28_025: [** `SetConnectionStatusChangesHandler` shall set connectionStatusChangesHandler **]**
-        // Tests_SRS_DEVICECLIENT_28_026: [** `SetConnectionStatusChangesHandler` shall unset connectionStatusChangesHandler if `statusChangesHandler` is null **]**
         public void DeviceClientOnConnectionOpenedInvokeHandlerForStatusChange()
         {
             using var deviceClient = DeviceClient.CreateFromConnectionString(FakeConnectionString);
@@ -1210,7 +1171,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        // Tests_SRS_DEVICECLIENT_28_026: [** `SetConnectionStatusChangesHandler` shall unset connectionStatusChangesHandler if `statusChangesHandler` is null **]**
         public void DeviceClientOnConnectionOpenedWithNullHandler()
         {
             using var deviceClient = DeviceClient.CreateFromConnectionString(FakeConnectionString);
@@ -1233,7 +1193,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        // Tests_SRS_DEVICECLIENT_28_024: [** `OnConnectionOpened` shall invoke the connectionStatusChangesHandler if ConnectionStatus is changed **]**
         public void DeviceClientOnConnectionOpenedNotInvokeHandlerWithoutStatusChange()
         {
             using var deviceClient = DeviceClient.CreateFromConnectionString(FakeConnectionString);
@@ -1263,8 +1222,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        // Tests_SRS_DEVICECLIENT_28_022: [** `OnConnectionClosed` shall invoke the RecoverConnections process. **]**
-        // Tests_SRS_DEVICECLIENT_28_023: [** `OnConnectionClosed` shall invoke the connectionStatusChangesHandler if ConnectionStatus is changed. **]**
         public void DeviceClientOnConnectionClosedInvokeHandlerAndRecoveryForStatusChange()
         {
             using var deviceClient = DeviceClient.CreateFromConnectionString(FakeConnectionString);
@@ -2125,7 +2082,6 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             act.Should().Throw<TaskCanceledException>();
         }
-
 
         private class TestDeviceAuthenticationWithTokenRefresh : DeviceAuthenticationWithTokenRefresh
         {

@@ -86,7 +86,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        // Tests_SRS_DEVICECLIENT_33_003: [** It shall EnableEventReceiveAsync when called for the first time. **]**
         public async Task ModuleClient_SetReceiveCallbackAsync_SetCallback_Mqtt()
         {
             var transportType = TransportType.Mqtt_Tcp_Only;
@@ -103,7 +102,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        // Tests_SRS_DEVICECLIENT_33_004: [** It shall call DisableEventReceiveAsync when the last delegate has been removed. **]**
         public async Task ModuleClient_SetReceiveCallbackAsync_RemoveCallback_Mqtt()
         {
             var transportType = TransportType.Mqtt_Tcp_Only;

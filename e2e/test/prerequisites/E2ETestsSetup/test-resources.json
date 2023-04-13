@@ -1,6 +1,13 @@
 {
   "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.15.31.15270",
+      "templateHash": "3831266858947033411"
+    }
+  },
   "parameters": {
     "StorageAccountName": {
       "type": "string",
@@ -109,7 +116,6 @@
       }
     }
   },
-  "functions": [],
   "variables": {
     "hubKeysId": "[resourceId('Microsoft.Devices/IotHubs/Iothubkeys', parameters('HubName'), 'iothubowner')]",
     "dpsKeysId": "[resourceId('Microsoft.Devices/ProvisioningServices/keys', parameters('DpsName'), 'provisioningserviceowner')]"
@@ -220,7 +226,7 @@
       "identity": {
         "type": "SystemAssigned, UserAssigned",
         "userAssignedIdentities": {
-          "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', parameters('UserAssignedManagedIdentityName'))]": {}
+          "[format('{0}', resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', parameters('UserAssignedManagedIdentityName')))]": {}
         }
       },
       "properties": {
@@ -246,7 +252,7 @@
             "maxDeliveryCount": 100
           }
         },
-        "StorageEndPoints": {
+        "StorageEndpoints": {
           "$default": {
             "sasTtlAsIso8601": "PT1H",
             "connectionString": "[format('DefaultEndpointsProtocol=https;AccountName={0};AccountKey={1}', parameters('StorageAccountName'), listkeys(resourceId('Microsoft.Storage/storageAccounts', parameters('StorageAccountName')), '2019-06-01').keys[0].value)]",
@@ -352,18 +358,11 @@
     },
     "workspaceId": {
       "type": "string",
-      "value": "[if(parameters('EnableIotHubSecuritySolution'), reference(resourceId('Microsoft.OperationalInsights/workspaces', parameters('OperationalInsightsName')), '2017-03-15-preview').customerId, '')]"
+      "value": "[if(parameters('EnableIotHubSecuritySolution'), format('{0}', reference(resourceId('Microsoft.OperationalInsights/workspaces', parameters('OperationalInsightsName')), '2017-03-15-preview').customerId), '')]"
     },
     "keyVaultName": {
       "type": "string",
       "value": "[parameters('KeyVaultName')]"
-    }
-  },
-  "metadata": {
-    "_generator": {
-      "name": "bicep",
-      "version": "0.3.1.62928",
-      "templateHash": "129270437041242196"
     }
   }
 }

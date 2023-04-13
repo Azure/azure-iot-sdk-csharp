@@ -79,7 +79,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                             ImportMode = ConfigurationImportMode.CreateOrUpdateIfMatchETag,
                             Priority = 3,
                             Labels = { { "labelName", "labelValue" } },
-                            TargetCondition = "*",
+                            TargetCondition = "deviceId='fakeDevice'",
                             Content =
                             {
                                 DeviceContent = { { "properties.desired.x", 5L } },

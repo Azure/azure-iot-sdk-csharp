@@ -27,9 +27,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
     public class TestDevice : IDisposable
     {
         private const int MaxRetryCount = 5;
-        private static readonly HashSet<Type> s_throttlingExceptions = new HashSet<Type> { typeof(ThrottlingException), };
-        private static readonly HashSet<Type> s_getRetryableExceptions = new HashSet<Type>(s_throttlingExceptions) { typeof(DeviceNotFoundException) };
-        private static readonly SemaphoreSlim s_semaphore = new SemaphoreSlim(1, 1);
+        private static readonly HashSet<Type> s_throttlingExceptions = new() { typeof(ThrottlingException), };
+        private static readonly HashSet<Type> s_getRetryableExceptions = new(s_throttlingExceptions) { typeof(DeviceNotFoundException) };
+        private static readonly SemaphoreSlim s_semaphore = new(1, 1);
 
         private static readonly IRetryPolicy s_exponentialBackoffRetryStrategy = new ExponentialBackoff(
             retryCount: MaxRetryCount,
@@ -148,7 +148,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
         /// <summary>
         /// Used in conjunction with DeviceClient.Create()
         /// </summary>
-        public string IotHubHostName => GetHostName(TestConfiguration.IotHub.ConnectionString);
+        public static string IotHubHostName { get; } = GetHostName(TestConfiguration.IotHub.ConnectionString);
 
         /// <summary>
         /// Device Id
@@ -173,7 +173,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
             }
             else
             {
-                deviceClient = DeviceClient.Create(IotHubHostName, AuthenticationMethod, transport, options);
+                deviceClient = DeviceClient.Create(TestDevice.IotHubHostName, AuthenticationMethod, transport, options);
                 VerboseTestLogger.WriteLine($"{nameof(CreateDeviceClient)}: Created {nameof(DeviceClient)} {Device.Id} from IAuthenticationMethod");
             }
 

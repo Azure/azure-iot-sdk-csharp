@@ -1,5 +1,3 @@
-@description('The name of application insights.')
-
 @minLength(3)
 @maxLength(24)
 @description('The name of the storage account used by the IoT hub.')
@@ -100,7 +98,7 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2021-02-01' = {
     name: 'Standard_LRS'
     tier: 'Standard'
   }
-  kind: 'Storage'
+  kind: 'StorageV2'
   properties: {
     supportsHttpsTrafficOnly: true
     encryption: {
@@ -172,7 +170,7 @@ resource iotHub 'Microsoft.Devices/IotHubs@2021-03-03-preview' = {
         maxDeliveryCount: 100
       }
     }
-    StorageEndPoints: {
+    StorageEndpoints: {
       '$default': {
         sasTtlAsIso8601: 'PT1H'
         connectionString: 'DefaultEndpointsProtocol=https;AccountName=${storageAccount.name};AccountKey=${listkeys(storageAccount.id, '2019-06-01').keys[0].value}'
