@@ -424,7 +424,6 @@ namespace Microsoft.Azure.Devices
                             },
                             cancellationToken)
                         .ConfigureAwait(false);
-                    _opened = true;
                 }
                 catch (Exception ex)
                 {
