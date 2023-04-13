@@ -48,7 +48,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
             }
 
             using var provisioningServiceClient = new ProvisioningServiceClient(parameters.ProvisioningConnectionString);
-            var sample = new EnrollmentGroupSample(provisioningServiceClient);
+            var sample = new EnrollmentGroupSample(provisioningServiceClient, logger);
             await sample.RunSampleAsync();
 
             Console.WriteLine("Done.\n");
