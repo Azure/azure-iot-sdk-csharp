@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Azure;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
@@ -13,6 +14,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
     internal class CleanupEnrollmentsSample
     {
         private readonly ProvisioningServiceClient _provisioningServiceClient;
+        private readonly ILogger _logger;
         private static int s_individualEnrollmentsDeleted;
         private static int s_enrollmentGroupsDeleted;
 
@@ -28,33 +30,34 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
             "Save_Group1"
         };
 
-        public CleanupEnrollmentsSample(ProvisioningServiceClient provisioningServiceClient)
+        public CleanupEnrollmentsSample(ProvisioningServiceClient provisioningServiceClient, ILogger logger)
         {
             _provisioningServiceClient = provisioningServiceClient;
             s_individualEnrollmentsDeleted = 0;
             s_enrollmentGroupsDeleted = 0;
+            _logger = logger;
         }
 
         public async Task RunSampleAsync()
         {
             await QueryAndDeleteIndividualEnrollmentsAsync();
-            Console.WriteLine($"Individual enrollments deleted: {s_individualEnrollmentsDeleted}");
+            _logger.LogInformation($"Individual enrollments deleted: {s_individualEnrollmentsDeleted}");
             await QueryAndDeleteEnrollmentGroupsAsync();
-            Console.WriteLine($"Enrollment groups deleted: {s_enrollmentGroupsDeleted}");
+            _logger.LogInformation($"Enrollment groups deleted: {s_enrollmentGroupsDeleted}");
         }
 
         private async Task QueryAndDeleteIndividualEnrollmentsAsync()
         {
-            Console.WriteLine("Creating a query for enrollments...");
+            _logger.LogInformation("Creating a query for enrollments...");
             AsyncPageable<IndividualEnrollment> query = _provisioningServiceClient.IndividualEnrollments.CreateQuery("SELECT * FROM enrollments");
             var individualEnrollments = new List<IndividualEnrollment>();
             await foreach (IndividualEnrollment enrollment in query)
             {
-                Console.WriteLine("Querying the next enrollments...");
+                _logger.LogInformation("Querying the next enrollments...");
                 if (!_individualEnrollmentsToBeRetained.Contains(enrollment.RegistrationId, StringComparer.OrdinalIgnoreCase))
                 {
                     individualEnrollments.Add(enrollment);
-                    Console.WriteLine($"Individual enrollment to be deleted: {enrollment.RegistrationId}");
+                    _logger.LogInformation($"Individual enrollment to be deleted: {enrollment.RegistrationId}");
                     s_individualEnrollmentsDeleted++;
                 }
 
@@ -69,14 +72,14 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
 
         private async Task QueryAndDeleteEnrollmentGroupsAsync()
         {
-            Console.WriteLine("Creating a query for enrollment groups...");
+            _logger.LogInformation("Creating a query for enrollment groups...");
             AsyncPageable<EnrollmentGroup> query = _provisioningServiceClient.EnrollmentGroups.CreateQuery("SELECT * FROM enrollmentGroups");
             await foreach (EnrollmentGroup enrollment in query)
             {
-                Console.WriteLine("Querying the next enrollment groups...");
+                _logger.LogInformation("Querying the next enrollment groups...");
                 if (!_groupEnrollmentsToBeRetained.Contains(enrollment.Id, StringComparer.OrdinalIgnoreCase))
                 {
-                    Console.WriteLine($"Enrollment group to be deleted: {enrollment.Id}");
+                    _logger.LogInformation($"Enrollment group to be deleted: {enrollment.Id}");
                     s_enrollmentGroupsDeleted++;
                     await _provisioningServiceClient.EnrollmentGroups.DeleteAsync(enrollment.Id);
                 }
@@ -85,11 +88,23 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
 
         private async Task DeleteBulkIndividualEnrollmentsAsync(List<IndividualEnrollment> individualEnrollments)
         {
-            Console.WriteLine("Deleting the set of individualEnrollments...");
+            _logger.LogInformation("Deleting the set of individualEnrollments...");
             BulkEnrollmentOperationResult bulkEnrollmentOperationResult = await _provisioningServiceClient
                 .IndividualEnrollments
                 .RunBulkOperationAsync(BulkOperationMode.Delete, individualEnrollments);
-            Console.WriteLine(JsonConvert.SerializeObject(bulkEnrollmentOperationResult));
+
+            if (!bulkEnrollmentOperationResult.IsSuccessful)
+            {
+                foreach (BulkEnrollmentOperationError error in bulkEnrollmentOperationResult.Errors)
+                {
+                    _logger.LogError($"Registration with Id {error.RegistrationId} failed with " +
+                        $"error code {error.ErrorCode} and status {error.ErrorStatus}");
+                }
+            }
+            else 
+            {
+                _logger.LogInformation("Bulk operation succeeded.");
+            }
         }
     }
 }
