@@ -7,20 +7,20 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
     {
         // Metrics
 
-        public const string DisconnectedDurationSeconds = "DisconnectedDurationSeconds";
-        public const string TotalTelemetryMessagesSent = "TotalTelemetryMessagesSent";
-        public const string TelemetryMessageDelaySeconds = "TelemetryMessageDelaySeconds";
-        public const string MessageBacklog = "MessageBacklog";
+        public const string ModuleDisconnectedDurationSeconds = "ModuleDisconnectedDurationSeconds";
+        public const string TotalTelemetryMessagesToModuleSent = "TotalTelemetryMessagesToModuleSent";
+        public const string TelemetryMessageToModuleDelaySeconds = "TelemetryMessageToModuleDelaySeconds";
+        public const string ModuleMessageBacklog = "ModuleMessageBacklog";
         public const string C2mDirectMethodDelaySeconds = "C2mDirectMethodDelaySeconds";
-        public const string TotalTwinUpdatesReported = "TotalTwinUpdatesReported";
-        public const string TotalTwinCallbacksHandled = "TotalTwinCallbacksHandled";
-        public const string TotalDesiredPropertiesHandled = "TotalDesiredPropertiesHandled";
+        public const string TotalTwinUpdatesToModuleReported = "TotalTwinUpdatesToModuleReported";
+        public const string TotalTwinCallbacksToModuleHandled = "TotalTwinCallbacksToModuleHandled";
+        public const string TotalDesiredPropertiesToModuleHandled = "TotalDesiredPropertiesToModuleHandled";
         public const string TotalM2mMessagesCompleted = "TotalM2mMessagesCompleted";
         public const string TotalM2mMessagesRejected = "TotalM2mMessagesRejected";
         public const string M2mMessageOperationSeconds = "C2dMessageOperationSeconds";
-        public const string ReportedTwinUpdateOperationSeconds = "ReportedTwinUpdateOperationSeconds";
-        public const string DirectMethodRoundTripSeconds = "DirectMethodRoundTripSeconds";
-        public const string TotalDirectMethodCallsCount = "TotalDirectMethodCallsCount";
+        public const string ReportedTwinUpdateToModuleOperationSeconds = "ReportedTwinUpdateToModuleOperationSeconds";
+        public const string DirectMethodToModuleRoundTripSeconds = "DirectMethodToModuleRoundTripSeconds";
+        public const string TotalDirectMethodCallsToModuleCount = "TotalDirectMethodCallsToModuleCount";
 
         // Events
 
@@ -35,7 +35,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
         public const string RunId = "runId";
         public const string SdkLanguage = "sdkLanguage";
         public const string SdkVersion = "sdkVersion";
-        public const string OperationName = "OperationName";
+        public const string OperationName = "operationName";
 
         public const string Hub = "hub";
         public const string DeviceId = "deviceId";

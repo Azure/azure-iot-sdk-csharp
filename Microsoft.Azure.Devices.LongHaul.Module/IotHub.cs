@@ -32,13 +32,13 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
         private static readonly TimeSpan s_retryInterval = TimeSpan.FromSeconds(1);
         private readonly ConcurrentQueue<TelemetryMessage> _messagesToSend = new();
 
-        private long _totalTelemetryMessagesSent = 0;
-        private long _totalTwinUpdatesReported = 0;
-        private long _totalTwinCallbacksHandled = 0;
-        private long _totalDesiredPropertiesHandled = 0;
+        private long _totalTelemetryMessagesToModuleSent = 0;
+        private long _totalTwinUpdatesToModuleReported = 0;
+        private long _totalTwinCallbacksToModuleHandled = 0;
+        private long _totalDesiredPropertiesToModuleHandled = 0;
         private long _totalM2mMessagesCompleted = 0;
         private long _totalM2mMessagesRejected = 0;
-        private long _totalMethodCallsCount = 0;
+        private long _totalMethodCallsToModuleCount = 0;
 
         public IotHub(Logger logger, Parameters parameters)
         {
@@ -101,7 +101,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
                 };
 
                 logger.Trace($"Invoking direct method for device: {helper.DeviceId}, module: {helper.ModuleId}", TraceSeverity.Information);
-                logger.Metric(TotalDirectMethodCallsCount, _totalMethodCallsCount);
+                logger.Metric(TotalTwinCallbacksToModuleHandled, _totalTwinCallbacksToModuleHandled);
 
                 while (!ct.IsCancellationRequested)
                 {
@@ -113,7 +113,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
                             .InvokeMethodAsync(helper.DeviceId, helper.ModuleId, methodInvocation, ct)
                             .ConfigureAwait(false);
                         sw.Stop();
-                        logger.Metric(DirectMethodRoundTripSeconds, sw.Elapsed.TotalSeconds);
+                        logger.Metric(DirectMethodToModuleRoundTripSeconds, sw.Elapsed.TotalSeconds);
                         break;
                     }
                     catch (IotHubClientException ex) when (ex.ErrorCode == IotHubClientErrorCode.DeviceNotFound)
@@ -156,7 +156,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
             Stopwatch sw = new();
             while (!ct.IsCancellationRequested)
             {
-                logger.Metric(MessageBacklog, _messagesToSend.Count);
+                logger.Metric(ModuleMessageBacklog, _messagesToSend.Count);
 
                 // Wait when there are no messages to send, or if not connected
                 if (!IsConnected
@@ -222,9 +222,9 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
                     }
                     sw.Stop();
 
-                    _totalTelemetryMessagesSent += pendingMessages.Count;
-                    _logger.Metric(TotalTelemetryMessagesSent, _totalTelemetryMessagesSent);
-                    _logger.Metric(TelemetryMessageDelaySeconds, sw.Elapsed.TotalSeconds);
+                    _totalTelemetryMessagesToModuleSent += pendingMessages.Count;
+                    _logger.Metric(TotalTwinCallbacksToModuleHandled, _totalTwinCallbacksToModuleHandled);
+                    _logger.Metric(TelemetryMessageToModuleDelaySeconds, sw.Elapsed.TotalSeconds);
                     pendingMessages.Clear();
 
                     // Alternate sending between single and in bulk.
@@ -245,16 +245,16 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
                 {
                     var reported = new ReportedProperties
                     {
-                        { "TotalTelemetryMessagesSent", _totalTelemetryMessagesSent },
+                        { "TotalTelemetryMessagesSent", _totalTelemetryMessagesToModuleSent },
                     };
 
                     sw.Restart();
                     await _moduleClient.UpdateReportedPropertiesAsync(reported, ct).ConfigureAwait(false);
                     sw.Stop();
 
-                    ++_totalTwinUpdatesReported;
-                    logger.Metric(TotalTwinUpdatesReported, _totalTwinUpdatesReported);
-                    logger.Metric(ReportedTwinUpdateOperationSeconds, sw.Elapsed.TotalSeconds);
+                    ++_totalTwinUpdatesToModuleReported;
+                    logger.Metric(TotalTwinUpdatesToModuleReported, _totalTwinUpdatesToModuleReported);
+                    logger.Metric(ReportedTwinUpdateToModuleOperationSeconds, sw.Elapsed.TotalSeconds);
                 }
                 else if (!loggedDisconnection)
                 {
@@ -364,7 +364,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
                 {
                     _disconnectedTimer.Stop();
                     _logger.Metric(
-                        DisconnectedDurationSeconds,
+                        ModuleDisconnectedDurationSeconds,
                         _disconnectedTimer.Elapsed.TotalSeconds,
                         new Dictionary<string, string>
                         {
@@ -459,12 +459,12 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
             {
                 await _moduleClient.UpdateReportedPropertiesAsync(reported).ConfigureAwait(false);
 
-                _totalDesiredPropertiesHandled += reported.Count();
-                _logger.Metric(TotalDesiredPropertiesHandled, _totalDesiredPropertiesHandled);
+                _totalDesiredPropertiesToModuleHandled += reported.Count();
+                _logger.Metric(TotalDesiredPropertiesToModuleHandled, _totalDesiredPropertiesToModuleHandled);
             }
 
-            ++_totalTwinCallbacksHandled;
-            _logger.Metric(TotalTwinCallbacksHandled, _totalTwinCallbacksHandled);
+            ++_totalTwinCallbacksToModuleHandled;
+            _logger.Metric(TotalTwinCallbacksToModuleHandled, _totalTwinCallbacksToModuleHandled);
         }
 
         private Task<MessageAcknowledgement> OnM2mMessageReceivedAsync(IncomingMessage receivedMessage)

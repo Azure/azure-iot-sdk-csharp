@@ -136,12 +136,12 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                         && module.ConnectionState is ClientConnectionState.Disconnected)
                     {
                         CancellationTokenSource source = s_onlineModuleOperations[moduleId].Item2;
-                        // Signal cancellation to all tasks on the particular device.
+                        // Signal cancellation to all tasks on the particular module.
                         source.Cancel();
                         // Dispose the cancellation token source.
                         source.Dispose();
-                        // Remove the correlated device operations and cancellation token source of the particular device from the dictionary.
-                        s_onlineDeviceOperations.TryRemove(moduleId, out _);
+                        // Remove the correlated module operations and cancellation token source of the particular module from the dictionary.
+                        s_onlineModuleOperations.TryRemove(moduleId, out _);
                     }
                     else if (!s_onlineModuleOperations.ContainsKey(moduleId)
                         && module.ConnectionState is ClientConnectionState.Connected)
@@ -176,7 +176,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
 
                         // Passing in "Operations()" as Task so we don't need to manually call "Invoke()" on it.
                         var operationsTuple = new Tuple<Task, CancellationTokenSource>(Operations(), source);
-                        s_onlineDeviceOperations.TryAdd(moduleId, operationsTuple);
+                        s_onlineModuleOperations.TryAdd(moduleId, operationsTuple);
                     }
                 }
 

@@ -24,7 +24,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
             'c',
             "ConnectionString",
             Required = false,
-            HelpText = "The connection string for the device to simulate.")]
+            HelpText = "The connection string for the module to simulate.")]
         public string ConnectionString { get; set; } = Environment.GetEnvironmentVariable("IOTHUB_LONG_HAUL_MODULE_CONNECTION_STRING");
 
         [Option(
@@ -55,7 +55,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
             "JsonSerializer",
             Default = JsonSerializingLibrary.SystemTextJson,
             Required = false,
-            HelpText = "Which JSON serialization library for the device app to use (i.e., SystemTextJson, NewtonsoftJson)")]
+            HelpText = "Which JSON serialization library for the module app to use (i.e., SystemTextJson, NewtonsoftJson)")]
         public JsonSerializingLibrary JsonSerializer { get; set; }
 
         internal PayloadConvention GetPayloadConvention()

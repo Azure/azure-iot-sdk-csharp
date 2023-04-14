@@ -29,8 +29,11 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
         // Metrics
 
         public const string D2cDirectMethodDelaySeconds = "D2cDirectMethodDelaySeconds";
+        public const string M2cDirectMethodDelaySeconds = "M2cDirectMethodDelaySeconds";
         public const string TotalDirectMethodCallsCount = "TotalDirectMethodCallsCount";
+        public const string TotalDirectMethodCallsToModuleCount = "TotalDirectMethodCallsToModuleCount";
         public const string TotalDesiredPropertiesUpdatesCount = "TotalDesiredPropertiesUpdatesCount";
+        public const string TotalDesiredPropertiesUpdatesToModuleCount = "TotalDesiredPropertiesUpdatesToModuleCount";
         public const string TotalC2dMessagesSentCount = "TotalC2dMessagesSentCount";
         public const string TotalFeedbackMessagesReceivedCount = "TotalFeedbackMessagesReceivedCount";
         public const string TotalOnlineDevicesCount = "TotalOnlineDevicesCount";
@@ -38,6 +41,8 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
         public const string TotalFileUploadNotificiationsReceivedCount = "TotalFileUploadNotificiationsReceivedCount";
         public const string C2dMessageRoundTripSeconds = "C2dMessageRoundTripSeconds";
         public const string DesiredTwinUpdateRoundTripSeconds = "DesiredTwinUpdateRoundTripSeconds";
+        public const string DesiredTwinUpdateToModuleRoundTripSeconds = "DesiredTwinUpdateToModuleRoundTripSeconds";
         public const string DirectMethodRoundTripSeconds = "DirectMethodRoundTripSeconds";
+        public const string DirectMethodToModuleRoundTripSeconds = "DirectMethodToModuleRoundTripSeconds";
     }
 }

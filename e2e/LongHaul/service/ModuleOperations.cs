@@ -33,6 +33,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
             _moduleId = moduleId;
             _logger = logger;
             _logger.LoggerContext.Add("DeviceId", deviceId);
+            _logger.LoggerContext.Add("ModuleId", moduleId);
         }
 
         public async Task InvokeDirectMethodAsync(Logger logger, CancellationToken ct)
@@ -55,7 +56,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                 };
 
                 logger.Trace($"Invoking direct method for device: {_deviceId}, module: {_moduleId}", TraceSeverity.Information);
-                logger.Metric(TotalDirectMethodCallsCount, _totalMethodCallsCount);
+                logger.Metric(TotalDirectMethodCallsToModuleCount, _totalMethodCallsCount);
 
                 while (!ct.IsCancellationRequested)
                 {
@@ -67,12 +68,12 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                             .InvokeAsync(_deviceId, _moduleId, methodInvocation, ct)
                             .ConfigureAwait(false);
                         sw.Stop();
-                        logger.Metric(DirectMethodRoundTripSeconds, sw.Elapsed.TotalSeconds);
+                        logger.Metric(DirectMethodToModuleRoundTripSeconds, sw.Elapsed.TotalSeconds);
 
                         if (response.TryGetPayload(out CustomDirectMethodPayload responsePayload))
                         {
                             logger.Metric(
-                                D2cDirectMethodDelaySeconds,
+                                M2cDirectMethodDelaySeconds,
                                 (DateTimeOffset.UtcNow - responsePayload.CurrentTimeUtc).TotalSeconds);
                         }
 
@@ -113,12 +114,12 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
 
                     ++_totalDesiredPropertiesUpdatesCount;
                     logger.Trace($"Updating the desired properties for device: {_deviceId}, module: {_moduleId}", TraceSeverity.Information);
-                    logger.Metric(TotalDesiredPropertiesUpdatesCount, _totalDesiredPropertiesUpdatesCount);
+                    logger.Metric(TotalDesiredPropertiesUpdatesToModuleCount, _totalDesiredPropertiesUpdatesCount);
 
                     sw.Restart();
                     await _serviceClient.Twins.UpdateAsync(_deviceId, _moduleId, twin, false, ct).ConfigureAwait(false);
                     sw.Stop();
-                    logger.Metric(DesiredTwinUpdateRoundTripSeconds, sw.Elapsed.TotalSeconds);
+                    logger.Metric(DesiredTwinUpdateToModuleRoundTripSeconds, sw.Elapsed.TotalSeconds);
                 }
                 catch (Exception ex)
                 {
