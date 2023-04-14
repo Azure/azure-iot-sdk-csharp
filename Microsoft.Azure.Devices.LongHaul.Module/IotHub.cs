@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Text;
 using Mash.Logging;
 using Microsoft.Azure.Devices.Client;
+using Newtonsoft.Json;
 using static Microsoft.Azure.Devices.LongHaul.Module.LoggingConstants;
 
 namespace Microsoft.Azure.Devices.LongHaul.Module
@@ -26,16 +27,18 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
         private volatile IotHubModuleClient _moduleClient;
 
         private static readonly TimeSpan s_messageLoopSleepTime = TimeSpan.FromSeconds(10);
+        private static readonly TimeSpan s_directMethodInvokeInterval = TimeSpan.FromSeconds(5);
         private static readonly TimeSpan s_deviceTwinUpdateInterval = TimeSpan.FromSeconds(3);
-        private static readonly TimeSpan s_fileUploadInterval = TimeSpan.FromSeconds(5);
+        private static readonly TimeSpan s_retryInterval = TimeSpan.FromSeconds(1);
         private readonly ConcurrentQueue<TelemetryMessage> _messagesToSend = new();
 
         private long _totalTelemetryMessagesSent = 0;
         private long _totalTwinUpdatesReported = 0;
         private long _totalTwinCallbacksHandled = 0;
         private long _totalDesiredPropertiesHandled = 0;
-        private long _totalC2mMessagesCompleted = 0;
-        private long _totalC2mMessagesRejected = 0;
+        private long _totalM2mMessagesCompleted = 0;
+        private long _totalM2mMessagesRejected = 0;
+        private long _totalMethodCallsCount = 0;
 
         public IotHub(Logger logger, Parameters parameters)
         {
@@ -77,11 +80,59 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
                 await _moduleClient.OpenAsync().ConfigureAwait(false);
                 await _moduleClient.SetDirectMethodCallbackAsync(DirectMethodCallback).ConfigureAwait(false);
                 await _moduleClient.SetDesiredPropertyUpdateCallbackAsync(DesiredPropertyUpdateCallbackAsync).ConfigureAwait(false);
-                await _moduleClient.SetIncomingMessageCallbackAsync(OnC2mMessageReceivedAsync).ConfigureAwait(false);
+                await _moduleClient.SetIncomingMessageCallbackAsync(OnM2mMessageReceivedAsync).ConfigureAwait(false);
             }
             finally
             {
                 _lifetimeControl.Release();
+            }
+        }
+
+        public async Task InvokeDirectMethodAsync(Logger logger, CancellationToken ct)
+        {
+            var helper = new IotHubConnectionStringHelper(_moduleConnectionString);
+            logger.LoggerContext.Add(OperationName, DirectMethod);
+            Stopwatch sw = new();
+            while (!ct.IsCancellationRequested)
+            {
+                var methodInvocation = new DirectMethodRequest("EchoPayload")
+                {
+                    ResponseTimeout = TimeSpan.FromSeconds(30),
+                };
+
+                logger.Trace($"Invoking direct method for device: {helper.DeviceId}, module: {helper.ModuleId}", TraceSeverity.Information);
+                logger.Metric(TotalDirectMethodCallsCount, _totalMethodCallsCount);
+
+                while (!ct.IsCancellationRequested)
+                {
+                    try
+                    {
+                        sw.Restart();
+                        // Invoke the direct method asynchronously and get the response from the simulated module.
+                        DirectMethodResponse response = await _moduleClient
+                            .InvokeMethodAsync(helper.DeviceId, helper.ModuleId, methodInvocation, ct)
+                            .ConfigureAwait(false);
+                        sw.Stop();
+                        logger.Metric(DirectMethodRoundTripSeconds, sw.Elapsed.TotalSeconds);
+                        break;
+                    }
+                    catch (IotHubClientException ex) when (ex.ErrorCode == IotHubClientErrorCode.DeviceNotFound)
+                    {
+                        logger.Trace($"Caught exception invoking direct method.\n{ex}", TraceSeverity.Warning);
+                        // retry
+                    }
+                    catch (Exception ex)
+                    {
+                        logger.Trace($"Unexpected exception observed while invoking direct method.\n{ex}");
+                        break;
+                    }
+
+                    // retry delay
+                    await Task.Delay(s_retryInterval, ct).ConfigureAwait(false);
+                }
+
+                // interval delay
+                await Task.Delay(s_directMethodInvokeInterval, ct).ConfigureAwait(false);
             }
         }
 
@@ -162,12 +213,12 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
                     {
                         logger.Trace($"Sending {pendingMessages.Count} messages in bulk.");
                         sw.Restart();
-                        await _moduleClient.SendTelemetryAsync(pendingMessages, ct).ConfigureAwait(false);
+                        await _moduleClient.SendMessagesToRouteAsync("*", pendingMessages, ct).ConfigureAwait(false);
                     }
                     else
                     {
                         sw.Restart();
-                        await _moduleClient.SendTelemetryAsync(pendingMessages.First(), ct).ConfigureAwait(false);
+                        await _moduleClient.SendMessageToRouteAsync("*", pendingMessages.First(), ct).ConfigureAwait(false);
                     }
                     sw.Stop();
 
@@ -416,22 +467,22 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
             _logger.Metric(TotalTwinCallbacksHandled, _totalTwinCallbacksHandled);
         }
 
-        private Task<MessageAcknowledgement> OnC2mMessageReceivedAsync(IncomingMessage receivedMessage)
+        private Task<MessageAcknowledgement> OnM2mMessageReceivedAsync(IncomingMessage receivedMessage)
         {
-            _logger.Trace($"Received the C2M message with Id {receivedMessage.MessageId}", TraceSeverity.Information);
+            _logger.Trace($"Received the M2M message with Id {receivedMessage.MessageId}", TraceSeverity.Information);
 
             if (receivedMessage.TryGetPayload(out CustomC2mMessagePayload customC2mMessagePayload))
             {
-                _logger.Metric(TotalC2mMessagesCompleted, ++_totalC2mMessagesCompleted);
+                _logger.Metric(TotalM2mMessagesCompleted, ++_totalM2mMessagesCompleted);
 
                 TimeSpan delay = DateTimeOffset.UtcNow - customC2mMessagePayload.CurrentTimeUtc;
-                _logger.Metric(C2mMessageOperationSeconds, delay.TotalSeconds);
+                _logger.Metric(M2mMessageOperationSeconds, delay.TotalSeconds);
 
                 return Task.FromResult(MessageAcknowledgement.Complete);
             }
 
             _logger.Trace("The message payload is received in an unknown type.", TraceSeverity.Verbose);
-            _logger.Metric(TotalC2mMessagesRejected, ++_totalC2mMessagesRejected);
+            _logger.Metric(TotalM2mMessagesRejected, ++_totalM2mMessagesRejected);
 
             return Task.FromResult(MessageAcknowledgement.Reject);
         }

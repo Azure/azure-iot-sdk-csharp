@@ -93,6 +93,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
                     .WhenAll(
                         systemHealthMonitor.RunAsync(cancellationTokenSource.Token),
                         iotHub.SendTelemetryMessagesAsync(s_logger.Clone(), cancellationTokenSource.Token),
+                        iotHub.InvokeDirectMethodAsync(s_logger.Clone(), cancellationTokenSource.Token),
                         iotHub.ReportReadOnlyPropertiesAsync(s_logger.Clone(), cancellationTokenSource.Token))
                     .ConfigureAwait(false);
             }

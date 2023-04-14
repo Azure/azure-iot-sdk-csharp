@@ -8,7 +8,7 @@ using Newtonsoft.Json;
 namespace Microsoft.Azure.Devices.LongHaul.Module
 {
     /// <summary>
-    /// Use a custom payload for cloud-to-device messaging to test object serialization using several data types.
+    /// Use a custom payload for cloud-to-module messaging to test object serialization using several data types.
     /// </summary>
     internal class CustomC2mMessagePayload
     {
