@@ -2,16 +2,15 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Collections.Concurrent;
 using Azure;
-using Mash.Logging;
 using Azure.Storage.Blobs;
+using Mash.Logging;
 using static Microsoft.Azure.Devices.LongHaul.Service.LoggingConstants;
-using System.Collections.Generic;
 
 namespace Microsoft.Azure.Devices.LongHaul.Service
 {
@@ -30,6 +29,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
 
         // Create a mapping between a device Id and a tuple of the correlated operations with the cancellation token source per online device.
         private static ConcurrentDictionary<string, Tuple<Task, CancellationTokenSource>> s_onlineDeviceOperations;
+        private static ConcurrentDictionary<string, Tuple<Task, CancellationTokenSource>> s_onlineModuleOperations;
 
         private long _totalFileUploadNotificationsReceived = 0;
         private long _totalFeedbackMessagesReceivedCount = 0;
@@ -55,6 +55,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
             _logger.Trace("Initialized a new service client instance.", TraceSeverity.Information);
 
             s_onlineDeviceOperations = new ConcurrentDictionary<string, Tuple<Task, CancellationTokenSource>>();
+            s_onlineModuleOperations = new ConcurrentDictionary<string, Tuple<Task, CancellationTokenSource>>();
             s_blobContainerClient = new BlobContainerClient(_storageConnectionString, "fileupload");
         }
 
@@ -68,7 +69,11 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
             while (!ct.IsCancellationRequested)
             {
                 AsyncPageable<ClientTwin> allDevices = s_serviceClient.Query.Create<ClientTwin>(
-                    "SELECT deviceId, connectionState, lastActivityTime FROM devices where is_defined(properties.reported.runId)",
+                    "SELECT deviceId, connectionState FROM devices where is_defined(properties.reported.runId)",
+                    ct);
+
+                AsyncPageable<ClientTwin> allModules = s_serviceClient.Query.Create<ClientTwin>(
+                    "SELECT deviceId, moduleId, connectionState FROM devices.modules where is_defined(properties.reported.runId)",
                     ct);
 
                 await foreach (ClientTwin device in allDevices)
@@ -123,8 +128,62 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                         s_onlineDeviceOperations.TryAdd(deviceId, operationsTuple);
                     }
                 }
+
+                await foreach (ClientTwin module in allModules)
+                {
+                    string moduleId = module.DeviceId + "_" + module.ModuleId;
+                    if (s_onlineModuleOperations.ContainsKey(moduleId)
+                        && module.ConnectionState is ClientConnectionState.Disconnected)
+                    {
+                        CancellationTokenSource source = s_onlineModuleOperations[moduleId].Item2;
+                        // Signal cancellation to all tasks on the particular device.
+                        source.Cancel();
+                        // Dispose the cancellation token source.
+                        source.Dispose();
+                        // Remove the correlated device operations and cancellation token source of the particular device from the dictionary.
+                        s_onlineDeviceOperations.TryRemove(moduleId, out _);
+                    }
+                    else if (!s_onlineModuleOperations.ContainsKey(moduleId)
+                        && module.ConnectionState is ClientConnectionState.Connected)
+                    {
+                        // For each online module, initiate a new cancellation token source.
+                        // Once the module goes offline, cancel all operations on this module.
+                        var source = new CancellationTokenSource();
+                        CancellationToken token = source.Token;
+
+                        async Task Operations()
+                        {
+                            var moduleOperations = new ModuleOperations(s_serviceClient, module.DeviceId, module.ModuleId, _logger.Clone());
+                            _logger.Trace($"Creating {nameof(ModuleOperations)} on the device: [{module.DeviceId}], module: [{module.ModuleId}]", TraceSeverity.Verbose);
+
+                            try
+                            {
+                                await Task
+                                .WhenAll(
+                                    moduleOperations.InvokeDirectMethodAsync(_logger.Clone(), token),
+                                    moduleOperations.SetDesiredPropertiesAsync("guidValue", Guid.NewGuid().ToString(), _logger.Clone(), token))
+                                .ConfigureAwait(false);
+                            }
+                            catch (OperationCanceledException)
+                            {
+                                _logger.Trace($"Operations on device: [{module.DeviceId}], module: [{module.ModuleId}] have been canceled as the device goes offline.", TraceSeverity.Information);
+                            }
+                            catch (Exception ex)
+                            {
+                                _logger.Trace($"Service app failed with exception {ex}", TraceSeverity.Error);
+                            }
+                        }
+
+                        // Passing in "Operations()" as Task so we don't need to manually call "Invoke()" on it.
+                        var operationsTuple = new Tuple<Task, CancellationTokenSource>(Operations(), source);
+                        s_onlineDeviceOperations.TryAdd(moduleId, operationsTuple);
+                    }
+                }
+
                 _logger.Trace($"Total number of connected devices: {s_onlineDeviceOperations.Count}", TraceSeverity.Information);
+                _logger.Trace($"Total number of connected modules: {s_onlineModuleOperations.Count}", TraceSeverity.Information);
                 _logger.Metric(TotalOnlineDevicesCount, s_onlineDeviceOperations.Count);
+                _logger.Metric(TotalOnlineModulesCount, s_onlineModuleOperations.Count);
 
                 await Task.Delay(s_deviceCountMonitorInterval, ct).ConfigureAwait(false);
             }
