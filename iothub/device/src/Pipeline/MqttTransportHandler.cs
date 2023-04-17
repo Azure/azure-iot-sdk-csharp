@@ -439,9 +439,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
                 if (message.Properties.ContainsKey("AzIoTHub_FaultOperationType"))
                 {
-                    // When fualt injection causes this operation to fail, the MQTT layer throws a TaskCanceledException.
+                    // When fault injection causes this operation to fail, the MQTT layer throws a MqttClientDisconnectedException.
                     // Normally, we don't want that to get to the device app, but for fault injection tests we prefer
-                    // an exception that is not retryable so we'll let this exception slip through.
+                    // an exception that is NOT retryable so we'll let this exception slip through.
                     throw;
                 }
 
