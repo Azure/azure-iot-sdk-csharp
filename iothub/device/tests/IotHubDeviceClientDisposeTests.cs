@@ -19,10 +19,10 @@ namespace Microsoft.Azure.Devices.Client.Tests
         private static IotHubDeviceClient s_client;
 
         [ClassInitialize]
-        public static async Task ClassInitializeAsync(TestContext context)
+        public static async Task ClassInitializeAsync(TestContext _)
         {
             // Create a disposed device client for the tests in this class
-            var rndBytes = new byte[32];
+            byte[] rndBytes = new byte[32];
             new Random().NextBytes(rndBytes);
             string testSharedAccessKey = Convert.ToBase64String(rndBytes);
             var csBuilder = new IotHubConnectionString(
