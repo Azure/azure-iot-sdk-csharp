@@ -19,7 +19,7 @@ namespace Microsoft.Azure.Devices.Client
 
         bool IsUsable { get; }
 
-        // Telemetry uplink.
+        // Telemetry.
         Task SendTelemetryAsync(TelemetryMessage message, CancellationToken cancellationToken);
 
         Task SendTelemetryAsync(IEnumerable<TelemetryMessage> messages, CancellationToken cancellationToken);
@@ -35,14 +35,6 @@ namespace Microsoft.Azure.Devices.Client
 
         Task SendMethodResponseAsync(DirectMethodResponse methodResponse, CancellationToken cancellationToken);
 
-        Task<DateTime> RefreshSasTokenAsync(CancellationToken cancellationToken);
-
-        DateTime GetSasTokenRefreshesOn();
-
-        void SetSasTokenRefreshesOn();
-
-        Task StopSasTokenLoopAsync();
-
         // Twin.
         Task<TwinProperties> GetTwinAsync(CancellationToken cancellationToken);
 
@@ -51,5 +43,16 @@ namespace Microsoft.Azure.Devices.Client
         Task EnableTwinPatchAsync(CancellationToken cancellationToken);
 
         Task DisableTwinPatchAsync(CancellationToken cancellationToken);
+
+        // Sas token validity
+        Task<DateTime> RefreshSasTokenAsync(CancellationToken cancellationToken);
+
+        DateTime GetSasTokenRefreshesOn();
+
+        void SetSasTokenRefreshesOn();
+
+        Task StopSasTokenLoopAsync();
+
+
     }
 }
