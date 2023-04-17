@@ -80,10 +80,10 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                             TraceSeverity.Information);
                         break;
                     }
-                    catch (IotHubServiceException ex) when (ex.IsTransient)
+                    catch (IotHubServiceException ex) when (ex.ErrorCode == IotHubServiceErrorCode.DeviceNotOnline)
                     {
                         logger.Trace(
-                            $"Caught transient exception while invoking direct method.\n{ex}\nRetrying...",
+                            $"Caught exception invoking direct method.\n{ex}",
                             TraceSeverity.Warning);
                         // retry
                     }
@@ -126,13 +126,6 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                     await _serviceClient.Twins.UpdateAsync(_deviceId, twin, false, ct).ConfigureAwait(false);
                     sw.Stop();
                     logger.Metric(DesiredTwinUpdateRoundTripSeconds, sw.Elapsed.TotalSeconds);
-                }
-                catch (IotHubServiceException ex) when (ex.IsTransient)
-                {
-                    logger.Trace(
-                        $"Caught transient exception while requesting twin property update.\n{ex}\nRetrying...",
-                        TraceSeverity.Warning);
-                    // retry
                 }
                 catch (Exception ex)
                 {
@@ -177,13 +170,6 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                     sw.Stop();
                     logger.Metric(C2dMessageRoundTripSeconds, sw.Elapsed.TotalSeconds);
 
-                }
-                catch (IotHubServiceException ex) when (ex.IsTransient)
-                {
-                    logger.Trace(
-                        $"Caught transient exception while sending a C2D message.\n{ex}\nRetrying...",
-                        TraceSeverity.Warning);
-                    // retry
                 }
                 catch (Exception ex)
                 {
