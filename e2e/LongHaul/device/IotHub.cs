@@ -111,7 +111,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
             var pendingMessages = new List<TelemetryMessage>(maxBulkMessages);
             bool loggedDisconnection = false;
             logger.LoggerContext.Add(OperationName, LoggingConstants.TelemetryMessage);
-            Stopwatch sw = new();
+            var sw = new Stopwatch();
             while (!ct.IsCancellationRequested)
             {
                 logger.Metric(MessageBacklog, _messagesToSend.Count);
@@ -195,12 +195,13 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
         {
             bool loggedDisconnection = false;
             logger.LoggerContext.Add(OperationName, ReportTwinProperties);
-            Stopwatch sw = new();
+            var sw = new Stopwatch();
             while (!ct.IsCancellationRequested)
             {
                 // If not connected, skip the work below this round
                 if (IsConnected)
                 {
+                    loggedDisconnection = false;
                     var reported = new ReportedProperties
                     {
                         { "TotalTelemetryMessagesSent", _totalTelemetryMessagesSent },
@@ -280,7 +281,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
         public async Task UploadFilesAsync(Logger logger, CancellationToken ct)
         {
             logger.LoggerContext.Add(OperationName, UploadFiles);
-            Stopwatch sw = new();
+            var sw = new Stopwatch();
             while (!ct.IsCancellationRequested)
             {
                 string fileName = $"TestPayload-{Guid.NewGuid()}.txt";

@@ -19,7 +19,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
 {
     internal class Program
     {
-        private static readonly IDictionary<string, string> s_commonProperties = new Dictionary<string, string>();
+        private static readonly Dictionary<string, string> s_commonProperties = new();
         private static Logger s_logger;
         private static int s_port;
         private static ApplicationInsightsLoggingProvider s_aiLoggingProvider;
@@ -93,7 +93,6 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
                     .WhenAll(
                         systemHealthMonitor.RunAsync(cancellationTokenSource.Token),
                         iotHub.SendTelemetryMessagesAsync(s_logger.Clone(), cancellationTokenSource.Token),
-                        iotHub.InvokeDirectMethodAsync(s_logger.Clone(), cancellationTokenSource.Token),
                         iotHub.ReportReadOnlyPropertiesAsync(s_logger.Clone(), cancellationTokenSource.Token))
                     .ConfigureAwait(false);
             }

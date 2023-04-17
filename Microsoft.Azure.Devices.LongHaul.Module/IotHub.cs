@@ -27,9 +27,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
         private volatile IotHubModuleClient _moduleClient;
 
         private static readonly TimeSpan s_messageLoopSleepTime = TimeSpan.FromSeconds(10);
-        private static readonly TimeSpan s_directMethodInvokeInterval = TimeSpan.FromSeconds(5);
         private static readonly TimeSpan s_deviceTwinUpdateInterval = TimeSpan.FromSeconds(3);
-        private static readonly TimeSpan s_retryInterval = TimeSpan.FromSeconds(1);
         private readonly ConcurrentQueue<TelemetryMessage> _messagesToSend = new();
 
         private long _totalTelemetryMessagesToModuleSent = 0;
@@ -62,6 +60,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
         public async Task InitializeAsync()
         {
             await _lifetimeControl.WaitAsync().ConfigureAwait(false);
+            var sw = new Stopwatch();
 
             try
             {
@@ -74,10 +73,16 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
                 }
                 else
                 {
+                    sw.Restart();
                     await _moduleClient.CloseAsync().ConfigureAwait(false);
+                    sw.Stop();
+                    _logger.Metric(ModuleClientCloseDelaySeconds, sw.Elapsed.TotalSeconds);
                 }
 
+                sw.Restart();
                 await _moduleClient.OpenAsync().ConfigureAwait(false);
+                sw.Stop();
+                _logger.Metric(ModuleClientOpenDelaySeconds, sw.Elapsed.TotalSeconds);
                 await _moduleClient.SetDirectMethodCallbackAsync(DirectMethodCallback).ConfigureAwait(false);
                 await _moduleClient.SetDesiredPropertyUpdateCallbackAsync(DesiredPropertyUpdateCallbackAsync).ConfigureAwait(false);
                 await _moduleClient.SetIncomingMessageCallbackAsync(OnM2mMessageReceivedAsync).ConfigureAwait(false);
@@ -85,54 +90,6 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
             finally
             {
                 _lifetimeControl.Release();
-            }
-        }
-
-        public async Task InvokeDirectMethodAsync(Logger logger, CancellationToken ct)
-        {
-            var helper = new IotHubConnectionStringHelper(_moduleConnectionString);
-            logger.LoggerContext.Add(OperationName, DirectMethod);
-            Stopwatch sw = new();
-            while (!ct.IsCancellationRequested)
-            {
-                var methodInvocation = new DirectMethodRequest("EchoPayload")
-                {
-                    ResponseTimeout = TimeSpan.FromSeconds(30),
-                };
-
-                logger.Trace($"Invoking direct method for device: {helper.DeviceId}, module: {helper.ModuleId}", TraceSeverity.Information);
-                logger.Metric(TotalTwinCallbacksToModuleHandled, _totalTwinCallbacksToModuleHandled);
-
-                while (!ct.IsCancellationRequested)
-                {
-                    try
-                    {
-                        sw.Restart();
-                        // Invoke the direct method asynchronously and get the response from the simulated module.
-                        DirectMethodResponse response = await _moduleClient
-                            .InvokeMethodAsync(helper.DeviceId, helper.ModuleId, methodInvocation, ct)
-                            .ConfigureAwait(false);
-                        sw.Stop();
-                        logger.Metric(DirectMethodToModuleRoundTripSeconds, sw.Elapsed.TotalSeconds);
-                        break;
-                    }
-                    catch (IotHubClientException ex) when (ex.ErrorCode == IotHubClientErrorCode.DeviceNotFound)
-                    {
-                        logger.Trace($"Caught exception invoking direct method.\n{ex}", TraceSeverity.Warning);
-                        // retry
-                    }
-                    catch (Exception ex)
-                    {
-                        logger.Trace($"Unexpected exception observed while invoking direct method.\n{ex}");
-                        break;
-                    }
-
-                    // retry delay
-                    await Task.Delay(s_retryInterval, ct).ConfigureAwait(false);
-                }
-
-                // interval delay
-                await Task.Delay(s_directMethodInvokeInterval, ct).ConfigureAwait(false);
             }
         }
 
@@ -153,7 +110,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
             var pendingMessages = new List<TelemetryMessage>(maxBulkMessages);
             bool loggedDisconnection = false;
             logger.LoggerContext.Add(OperationName, LoggingConstants.TelemetryMessage);
-            Stopwatch sw = new();
+            var sw = new Stopwatch();
             while (!ct.IsCancellationRequested)
             {
                 logger.Metric(ModuleMessageBacklog, _messagesToSend.Count);
@@ -237,12 +194,13 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
         {
             bool loggedDisconnection = false;
             logger.LoggerContext.Add(OperationName, ReportTwinProperties);
-            Stopwatch sw = new();
+            var sw = new Stopwatch();
             while (!ct.IsCancellationRequested)
             {
                 // If not connected, skip the work below this round
                 if (IsConnected)
                 {
+                    loggedDisconnection = false;
                     var reported = new ReportedProperties
                     {
                         { "TotalTelemetryMessagesSent", _totalTelemetryMessagesToModuleSent },
@@ -420,6 +378,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
                             _logger.Metric(
                                 C2mDirectMethodDelaySeconds,
                                 (DateTimeOffset.UtcNow - methodPayload.CurrentTimeUtc).TotalSeconds);
+                            _logger.Metric(TotalDirectMethodCallsToModuleCount, ++_totalMethodCallsToModuleCount);
 
                             // Log the current time again and send the response back to the service app.
                             methodPayload.CurrentTimeUtc = DateTimeOffset.UtcNow;

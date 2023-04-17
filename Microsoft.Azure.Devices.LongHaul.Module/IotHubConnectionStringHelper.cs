@@ -38,6 +38,5 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
         public string DeviceId { get; private set; }
 
         public string ModuleId { get; private set; }
-
     }
 }

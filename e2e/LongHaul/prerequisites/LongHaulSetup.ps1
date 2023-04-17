@@ -255,7 +255,7 @@ $longhaulModuleConnectionString = az iot hub module-identity connection-string s
 $keyvaultKvps = @{
     # Environment variables for IoT Hub E2E tests
     "IOTHUB-LONG-HAUL-DEVICE-CONNECTION-STRING" = $longhaulDeviceConnectionString;
-    "IOTHUB-LONG-HAUL-MODULE-CONNECTION-STRING" = $longhaulDeviceConnectionString;
+    "IOTHUB-LONG-HAUL-MODULE-CONNECTION-STRING" = $longhaulModuleConnectionString;
     "APPLICATION-INSIGHTS-INSTRUMENTATION-KEY" = $instrumentationKey;
     "STORAGE-ACCOUNT-CONNECTION-STRING" = $storageAccountConnectionString;
     "IOTHUB-CONNECTION-STRING" = $iotHubConnectionString;

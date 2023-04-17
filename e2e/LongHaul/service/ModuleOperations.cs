@@ -39,7 +39,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
         public async Task InvokeDirectMethodAsync(Logger logger, CancellationToken ct)
         {
             logger.LoggerContext.Add(OperationName, DirectMethod);
-            Stopwatch sw = new();
+            var sw = new Stopwatch();
             while (!ct.IsCancellationRequested)
             {
                 var payload = new CustomDirectMethodPayload
@@ -103,7 +103,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
         public async Task SetDesiredPropertiesAsync(string keyName, string properties, Logger logger, CancellationToken ct)
         {
             logger.LoggerContext.Add(OperationName, SetDesiredProperties);
-            Stopwatch sw = new();
+            var sw = new Stopwatch();
 
             while (!ct.IsCancellationRequested)
             {
