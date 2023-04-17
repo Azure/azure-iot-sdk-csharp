@@ -69,6 +69,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
             actual.Should().Throw<InvalidOperationException>();
         }
 
+        [DataTestMethod]
         [DataRow(ClientTransportState.Opening, ClientStateAction.OpenStart, ClientTransportState.Opening)]
         [DataRow(ClientTransportState.Opening, ClientStateAction.OpenStart, ClientTransportState.Open)]
         [DataRow(ClientTransportState.Opening, ClientStateAction.OpenStart, ClientTransportState.Closing)]
@@ -102,6 +103,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
             actual.Should().Throw<InvalidOperationException>();
         }
 
+        [DataTestMethod]
         [DataRow(ClientTransportState.Open, ClientStateAction.OpenStart, ClientTransportState.Opening)]
         [DataRow(ClientTransportState.Open, ClientStateAction.OpenStart, ClientTransportState.Open)]
         [DataRow(ClientTransportState.Open, ClientStateAction.OpenStart, ClientTransportState.Closing)]
@@ -136,6 +138,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
             actual.Should().Throw<InvalidOperationException>();
         }
 
+        [DataTestMethod]
         [DataRow(ClientTransportState.Closing, ClientStateAction.OpenStart, ClientTransportState.Opening)]
         [DataRow(ClientTransportState.Closing, ClientStateAction.OpenStart, ClientTransportState.Open)]
         [DataRow(ClientTransportState.Closing, ClientStateAction.OpenStart, ClientTransportState.Closing)]
