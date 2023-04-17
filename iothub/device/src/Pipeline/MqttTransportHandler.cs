@@ -25,7 +25,7 @@ using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Client.Transport
 {
-    internal sealed class MqttTransportHandler : TransportHandler, IDisposable
+    internal sealed class MqttTransportHandler : TransportHandlerBase, IDisposable
     {
         private const int ProtocolGatewayPort = 8883;
 
