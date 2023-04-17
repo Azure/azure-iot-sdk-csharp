@@ -31,7 +31,7 @@ namespace Microsoft.Azure.Devices
         private readonly HttpRequestMessageFactory _httpRequestMessageFactory;
         private readonly RetryHandler _internalRetryHandler;
 
-        private bool _opened;
+        private bool _isOpened;
 
         /// <summary>
         /// Creates an instance of this class. Provided for unit testing purposes only.
@@ -126,7 +126,7 @@ namespace Microsoft.Azure.Devices
                         },
                         cancellationToken)
                     .ConfigureAwait(false);
-                _opened = true;
+                _isOpened = true;
             }
             catch (Exception ex) when (Logging.IsEnabled)
             {
@@ -166,7 +166,7 @@ namespace Microsoft.Azure.Devices
                         },
                         cancellationToken)
                     .ConfigureAwait(false);
-                _opened = false;
+                _isOpened = false;
             }
             catch (Exception ex) when (Logging.IsEnabled)
             {
@@ -413,11 +413,11 @@ namespace Microsoft.Azure.Devices
         private async Task CheckConnectionIsOpenAsync(CancellationToken cancellationToken = default)
         {
             // This is to internally re-open Amqp connection if the client gets disconnected after the user already made the OpenAsync() call before. 
-            if (_opened && !_amqpConnection.IsOpen)
+            if (_isOpened && !_amqpConnection.IsOpen)
             {
                 await OpenAsync(cancellationToken).ConfigureAwait(false);
             }
-            else if(!_opened)
+            else if(!_isOpened)
             {
                 throw new InvalidOperationException("Must open client before sending messages.");
             }
