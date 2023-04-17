@@ -57,6 +57,19 @@ namespace Microsoft.Azure.Devices.Client.Tests
         [DataRow(ClientTransportState.Closed, ClientStateAction.ConnectionLost, ClientTransportState.Open)]
         [DataRow(ClientTransportState.Closed, ClientStateAction.ConnectionLost, ClientTransportState.Closing)]
         [DataRow(ClientTransportState.Closed, ClientStateAction.ConnectionLost, ClientTransportState.Closed)]
+        public void ClientTransportStateMachine_InvalidStateTransition_FromClosed(object initialState, object action, object nextState)
+        {
+            // arrange
+            var sut = new ClientTransportStateMachine((ClientTransportState)initialState);
+
+            // act
+            Action actual = () => sut.MoveNext((ClientStateAction)action, (ClientTransportState)nextState);
+
+            //assert
+            actual.Should().Throw<InvalidOperationException>();
+        }
+
+        [DataTestMethod]
         [DataRow(ClientTransportState.Opening, ClientStateAction.OpenStart, ClientTransportState.Opening)]
         [DataRow(ClientTransportState.Opening, ClientStateAction.OpenStart, ClientTransportState.Open)]
         [DataRow(ClientTransportState.Opening, ClientStateAction.OpenStart, ClientTransportState.Closing)]
@@ -78,6 +91,19 @@ namespace Microsoft.Azure.Devices.Client.Tests
         [DataRow(ClientTransportState.Opening, ClientStateAction.ConnectionLost, ClientTransportState.Open)]
         [DataRow(ClientTransportState.Opening, ClientStateAction.ConnectionLost, ClientTransportState.Closing)]
         [DataRow(ClientTransportState.Opening, ClientStateAction.ConnectionLost, ClientTransportState.Closed)]
+        public void ClientTransportStateMachine_InvalidStateTransition_FromOpening(object initialState, object action, object nextState)
+        {
+            // arrange
+            var sut = new ClientTransportStateMachine((ClientTransportState)initialState);
+
+            // act
+            Action actual = () => sut.MoveNext((ClientStateAction)action, (ClientTransportState)nextState);
+
+            //assert
+            actual.Should().Throw<InvalidOperationException>();
+        }
+
+        [DataTestMethod]
         [DataRow(ClientTransportState.Open, ClientStateAction.OpenStart, ClientTransportState.Opening)]
         [DataRow(ClientTransportState.Open, ClientStateAction.OpenStart, ClientTransportState.Open)]
         [DataRow(ClientTransportState.Open, ClientStateAction.OpenStart, ClientTransportState.Closing)]
@@ -100,6 +126,19 @@ namespace Microsoft.Azure.Devices.Client.Tests
         [DataRow(ClientTransportState.Open, ClientStateAction.ConnectionLost, ClientTransportState.Open)]
         [DataRow(ClientTransportState.Open, ClientStateAction.ConnectionLost, ClientTransportState.Closing)]
         [DataRow(ClientTransportState.Open, ClientStateAction.ConnectionLost, ClientTransportState.Closed)]
+        public void ClientTransportStateMachine_InvalidStateTransition_FromOpen(object initialState, object action, object nextState)
+        {
+            // arrange
+            var sut = new ClientTransportStateMachine((ClientTransportState)initialState);
+
+            // act
+            Action actual = () => sut.MoveNext((ClientStateAction)action, (ClientTransportState)nextState);
+
+            //assert
+            actual.Should().Throw<InvalidOperationException>();
+        }
+
+        [DataTestMethod]
         [DataRow(ClientTransportState.Closing, ClientStateAction.OpenStart, ClientTransportState.Opening)]
         [DataRow(ClientTransportState.Closing, ClientStateAction.OpenStart, ClientTransportState.Open)]
         [DataRow(ClientTransportState.Closing, ClientStateAction.OpenStart, ClientTransportState.Closing)]
@@ -123,7 +162,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
         [DataRow(ClientTransportState.Closing, ClientStateAction.ConnectionLost, ClientTransportState.Open)]
         [DataRow(ClientTransportState.Closing, ClientStateAction.ConnectionLost, ClientTransportState.Closing)]
         [DataRow(ClientTransportState.Closing, ClientStateAction.ConnectionLost, ClientTransportState.Closed)]
-        public void ClientTransportStateMachine_InvalidStateTransition(object initialState, object action, object nextState)
+        public void ClientTransportStateMachine_InvalidStateTransition_FromClosing(object initialState, object action, object nextState)
         {
             // arrange
             var sut = new ClientTransportStateMachine((ClientTransportState)initialState);
