@@ -94,7 +94,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
                         iotHub.UploadFilesAsync(s_logger.Clone(), cancellationTokenSource.Token))
                     .ConfigureAwait(false);
             }
-            catch (TaskCanceledException) { } // user signalled an exit
+            catch (OperationCanceledException) { } // user signalled an exit
             catch (Exception ex)
             {
                 s_logger.Trace($"Device app failed with exception {ex}", TraceSeverity.Error);

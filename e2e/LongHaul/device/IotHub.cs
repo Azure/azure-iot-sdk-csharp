@@ -124,7 +124,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
                     {
                         await Task.Delay(s_messageLoopSleepTime, ct).ConfigureAwait(false);
                     }
-                    catch (TaskCanceledException)
+                    catch (OperationCanceledException)
                     {
                         // App is signalled to exit
                         _logger.Trace($"Exit signal encountered. Terminating telemetry message pump.", TraceSeverity.Verbose);
@@ -169,12 +169,13 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
                 {
                     if (pendingMessages.Count > 1)
                     {
-                        logger.Trace($"Sending {pendingMessages.Count} messages in bulk.");
+                        logger.Trace($"Sending {pendingMessages.Count} telemetry messages in bulk.", TraceSeverity.Information);
                         sw.Restart();
                         await _deviceClient.SendTelemetryAsync(pendingMessages, ct).ConfigureAwait(false);
                     }
                     else
                     {
+                        logger.Trace("Sending a telemetry message.", TraceSeverity.Information);
                         sw.Restart();
                         await _deviceClient.SendTelemetryAsync(pendingMessages.First(), ct).ConfigureAwait(false);
                     }
@@ -206,6 +207,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
                         { "TotalTelemetryMessagesSent", _totalTelemetryMessagesSent },
                     };
 
+                    logger.Trace($"Updating reported properties.", TraceSeverity.Information);
                     sw.Restart();
                     await _deviceClient.UpdateReportedPropertiesAsync(reported, ct).ConfigureAwait(false);
                     sw.Stop();
