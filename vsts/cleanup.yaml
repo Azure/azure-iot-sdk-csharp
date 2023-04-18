@@ -9,7 +9,6 @@ jobs:
       - powershell: ./vsts/cleanup.ps1
         displayName: build
         env:
-          # Environment variables for IoT Hub E2E tests
           IOTHUB_CONNECTION_STRING: $(IOTHUB-CONNECTION-STRING)
           PROVISIONING_CONNECTION_STRING: $(PROVISIONING-CONNECTION-STRING)
           STORAGE_ACCOUNT_CONNECTION_STRING: $(STORAGE-ACCOUNT-CONNECTION-STRING)
