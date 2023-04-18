@@ -25,7 +25,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
     [TestCategory("DPS")]
     public class ProvisioningE2ETests : E2EMsTestBase
     {
-        private const int PassingTimeoutMilliseconds = 10 * 60 * 1000;
+        private const int PassingTimeoutMilliseconds = 60 * 1000;
         private const int FailingTimeoutMilliseconds = 10 * 1000;
         private const int MaxTryCount = 10;
         private const string InvalidIdScope = "0neFFFFFFFF";
@@ -702,6 +702,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     catch (ProvisioningClientException ex) when (++tryCount < MaxTryCount)
                     {
                         VerboseTestLogger.WriteLine($"ProvisioningDeviceClient.RegisterAsync failed because: {ex.Message}");
+                        await Task.Delay(TimeSpan.FromSeconds(2)).ConfigureAwait(false);
+                    }
+                    catch (TaskCanceledException tce) when (cts.IsCancellationRequested && ++tryCount < MaxTryCount)
+                    {
+                        // This catch statement shouldn't execute when the test itself is cancelled, but will
+                        // execute when the registerAsync(cts) call times out 
+                        VerboseTestLogger.WriteLine($"ProvisioningDeviceClient.RegisterAsync timed out because: {tce.Message}");
                         await Task.Delay(TimeSpan.FromSeconds(2)).ConfigureAwait(false);
                     }
                 }
