@@ -1,18 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System;
-using System.Collections.Generic;
 using System.Reflection;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using CommandLine;
 using Mash.Logging;
 using Mash.Logging.ApplicationInsights;
 using Microsoft.Azure.Devices.Client;
-using Microsoft.Azure.Devices.LongHaul.Module;
-using Microsoft.Extensions.Logging;
 using static Microsoft.Azure.Devices.LongHaul.Module.LoggingConstants;
 
 namespace Microsoft.Azure.Devices.LongHaul.Module

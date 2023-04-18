@@ -15,7 +15,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\iothub\device\src\Microsoft.Azure.Devices.Client.csproj" />
+    <ProjectReference Include="..\..\..\iothub\device\src\Microsoft.Azure.Devices.Client.csproj" />
   </ItemGroup>
+
 
 </Project>
