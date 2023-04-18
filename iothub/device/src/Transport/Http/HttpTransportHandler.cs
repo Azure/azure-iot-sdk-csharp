@@ -44,7 +44,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 ClientExceptionHandlingHelper.GetDefaultErrorMapping(),
                 s_defaultOperationTimeout,
                 httpClientHandler,
-                context.FileUploadTransportSettings);
+                context.HttpOperationTransportSettings);
         }
 
         internal async Task<FileUploadSasUriResponse> GetFileUploadSasUriAsync(FileUploadSasUriRequest request, CancellationToken cancellationToken)

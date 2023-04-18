@@ -266,19 +266,20 @@ namespace Microsoft.Azure.Devices.Client
 
             try
             {
+                var pipelineContext = new PipelineContext
+                {
+                    IotHubConnectionCredentials = IotHubConnectionCredentials,
+                    HttpOperationTransportSettings = new IotHubClientHttpSettings(),
+                };
+
                 if (customCertificateValidation != null)
                 {
                     httpClientHandler = new HttpClientHandler
                     {
                         ServerCertificateCustomValidationCallback = customCertificateValidation,
-                        SslProtocols = SslProtocols.None,
+                        SslProtocols = pipelineContext.HttpOperationTransportSettings.SslProtocols,
                     };
                 }
-
-                var pipelineContext = new PipelineContext
-                {
-                    IotHubConnectionCredentials = IotHubConnectionCredentials,
-                };
 
                 using var httpTransport = new HttpTransportHandler(pipelineContext, httpClientHandler);
                 methodRequest.PayloadConvention = _clientOptions.PayloadConvention;

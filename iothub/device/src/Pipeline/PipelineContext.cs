@@ -18,7 +18,7 @@ namespace Microsoft.Azure.Devices.Client
 
         internal IotHubClientTransportSettings IotHubClientTransportSettings { get; set; }
 
-        internal IotHubClientHttpSettings FileUploadTransportSettings { get; set; }
+        internal IotHubClientHttpSettings HttpOperationTransportSettings { get; set; }
 
         internal Action<ConnectionStatusInfo> ConnectionStatusChangeHandler { get; set; }
 
