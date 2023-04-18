@@ -75,9 +75,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
             _authenticationHeaderProvider = authenticationHeaderProvider;
             _defaultErrorMapping = new ReadOnlyDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>(defaultErrorMapping);
 
-            ServicePoint servicePoint = ServicePointManager.FindServicePoint(_baseAddress);
-            servicePoint.ConnectionLeaseTimeout = s_defaultConnectionLeaseTimeout.Milliseconds;
-
 #if NET451
             TlsVersions.Instance.SetLegacyAcceptableVersions();
 
@@ -104,8 +101,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 _httpClientHandler.UseProxy = (proxy != null);
                 _httpClientHandler.Proxy = proxy;
             }
-
-            _httpClientObj = _httpClientHandler != null ? new HttpClient(_httpClientHandler) : new HttpClient();
 #else
 
             _httpClientHandler = httpClientHandler ?? new HttpClientHandler();
@@ -123,11 +118,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 _httpClientHandler.UseProxy = proxy != null;
                 _httpClientHandler.Proxy = proxy;
             }
-
-            _httpClientHandler.MaxConnectionsPerServer = DefaultMaxConnectionsPerServer;
-
-            _httpClientObj = new HttpClient(_httpClientHandler);
 #endif
+
+            ServicePointHelpers.SetLimits(_httpClientHandler, _baseAddress);
+
+            _httpClientObj = _httpClientHandler != null ? new HttpClient(_httpClientHandler) : new HttpClient();
 
             _httpClientObj.BaseAddress = _baseAddress;
             _httpClientObj.Timeout = timeout;
