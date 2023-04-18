@@ -16,12 +16,12 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
         [JsonPropertyName("randomId")]
         public Guid RandomId { get; set; }
 
+        [JsonProperty("sentTimeUtc")]
+        [JsonPropertyName("sentTimeUtc")]
+        public DateTimeOffset SentOnUtc { get; set; } = DateTimeOffset.UtcNow;
+
         [JsonProperty("methodCallsCount")]
         [JsonPropertyName("methodCallsCount")]
         public long MethodCallsCount { get; set; }
-
-        [JsonProperty("currentTimeUtc")]
-        [JsonPropertyName("currentTimeUtc")]
-        public DateTimeOffset CurrentTimeUtc { get; set; } = DateTimeOffset.UtcNow;
     }
 }

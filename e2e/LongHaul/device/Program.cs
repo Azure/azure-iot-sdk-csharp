@@ -16,11 +16,13 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
 {
     internal class Program
     {
-        private static readonly IDictionary<string, string> s_commonProperties = new Dictionary<string, string>();
+        private static readonly Dictionary<string, string> s_commonProperties = new();
+        private static readonly string s_runId = Guid.NewGuid().ToString();
+        private static readonly TimeSpan s_retryInterval = TimeSpan.FromSeconds(1);
+
         private static Logger s_logger;
         private static int s_port;
         private static ApplicationInsightsLoggingProvider s_aiLoggingProvider;
-        internal static readonly string _runId = Guid.NewGuid().ToString();
 
         private static async Task Main(string[] args)
         {
@@ -28,8 +30,8 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
                 .GetCustomAttribute<AssemblyInformationalVersionAttribute>()
                 .InformationalVersion;
 
-            s_commonProperties.Add(TestClient, "IotHubDeviceClient");
-            s_commonProperties.Add(RunId, _runId);
+            s_commonProperties.Add(TestClient, nameof(IotHubDeviceClient));
+            s_commonProperties.Add(RunId, s_runId);
             s_commonProperties.Add(SdkLanguage, ".NET");
             s_commonProperties.Add(SdkVersion, sdkVersionInfo);
 
@@ -54,6 +56,9 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
             s_logger.Event(StartingRun);
 
             await using var iotHub = new IotHub(s_logger, parameters);
+            // Log system health after initializing hub
+            SystemHealthMonitor.BuildAndLogSystemHealth(s_logger);
+
             foreach (KeyValuePair<string, string> prop in s_commonProperties)
             {
                 iotHub.TelemetryUserProperties.Add(prop.Key, prop.Value);
@@ -63,24 +68,34 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
                 $"The transport protocol [{parameters.Transport}/{parameters.TransportProtocol}] is applied into the device app.",
                 TraceSeverity.Verbose);
 
-            // Log system health after initializing hub
-            SystemHealthMonitor.BuildAndLogSystemHealth(s_logger);
-            await iotHub.InitializeAsync().ConfigureAwait(false);
+            // Set up a condition to quit the sample
+            Console.WriteLine("Press CTRL+C to exit");
+            using var cts = new CancellationTokenSource();
+            Console.CancelKeyPress += (s, e) =>
+            {
+                e.Cancel = true;
+                cts.Cancel();
+                Console.WriteLine("Exiting...");
+            };
+
+            while (!cts.IsCancellationRequested)
+            {
+                try
+                {
+                    await iotHub.InitializeAsync().ConfigureAwait(false);
+                    break;
+                }
+                catch (Exception ex)
+                {
+                    s_logger.Trace($"Exception initializing client\n{ex}", TraceSeverity.Warning);
+                    await Task.Delay(s_retryInterval, cts.Token).ConfigureAwait(false);
+                }
+            }
 
             // Log system health after opening connection to hub
             SystemHealthMonitor.BuildAndLogSystemHealth(s_logger);
 
-            // Set up a condition to quit the sample
-            Console.WriteLine("Press CTRL+C to exit");
-            using var cancellationTokenSource = new CancellationTokenSource();
-            Console.CancelKeyPress += (s, e) =>
-            {
-                e.Cancel = true;
-                cancellationTokenSource.Cancel();
-                Console.WriteLine("Exiting...");
-            };
-
-            await iotHub.SetPropertiesAsync(RunId, _runId, cancellationTokenSource.Token).ConfigureAwait(false);
+            await iotHub.SetPropertiesAsync(RunId, s_runId, s_logger, cts.Token).ConfigureAwait(false);
 
             var systemHealthMonitor = new SystemHealthMonitor(iotHub, s_port, s_logger.Clone());
 
@@ -88,10 +103,10 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
             {
                 await Task
                     .WhenAll(
-                        systemHealthMonitor.RunAsync(cancellationTokenSource.Token),
-                        iotHub.SendTelemetryMessagesAsync(s_logger.Clone(), cancellationTokenSource.Token),
-                        iotHub.ReportReadOnlyPropertiesAsync(s_logger.Clone(), cancellationTokenSource.Token),
-                        iotHub.UploadFilesAsync(s_logger.Clone(), cancellationTokenSource.Token))
+                        systemHealthMonitor.RunAsync(cts.Token),
+                        iotHub.SendTelemetryMessagesAsync(s_logger.Clone(), cts.Token),
+                        iotHub.ReportReadOnlyPropertiesAsync(s_logger.Clone(), cts.Token),
+                        iotHub.UploadFilesAsync(s_logger.Clone(), cts.Token))
                     .ConfigureAwait(false);
             }
             catch (OperationCanceledException) { } // user signalled an exit

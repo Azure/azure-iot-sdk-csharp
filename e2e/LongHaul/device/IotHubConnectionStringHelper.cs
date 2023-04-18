@@ -16,7 +16,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
 
             string[] fields = connectionString.Split(';', StringSplitOptions.RemoveEmptyEntries);
 
-            foreach (var field in fields)
+            foreach (string field in fields)
             {
                 string[] element = field.Split('=', StringSplitOptions.TrimEntries);
 
