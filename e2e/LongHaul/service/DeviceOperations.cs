@@ -15,7 +15,6 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
     {
         private readonly IotHubServiceClient _serviceClient;
         private readonly string _deviceId;
-        private readonly Logger _logger;
 
         private long _totalMethodCallsCount = 0;
         private long _totalDesiredPropertiesUpdatesCount = 0;
@@ -54,7 +53,9 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                     ResponseTimeout = TimeSpan.FromSeconds(30),
                 };
 
-                logger.Trace($"Invoking direct method for device: {_deviceId}", TraceSeverity.Information);
+                logger.Trace(
+                    $"Invoking direct method for device: {_deviceId}",
+                    TraceSeverity.Information);
                 logger.Metric(TotalDirectMethodCallsCount, _totalMethodCallsCount);
 
                 while (!ct.IsCancellationRequested)
@@ -76,17 +77,23 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                                 (DateTimeOffset.UtcNow - responsePayload.CurrentTimeUtc).TotalSeconds);
                         }
 
-                        logger.Trace($"Response status: {response.Status}, payload:\n\t{JsonConvert.SerializeObject(response.PayloadAsString)}", TraceSeverity.Information);
+                        logger.Trace(
+                            $"Response status: {response.Status}, payload:\n\t{JsonConvert.SerializeObject(response.PayloadAsString)}",
+                            TraceSeverity.Information);
                         break;
                     }
                     catch (IotHubServiceException ex) when (ex.ErrorCode == IotHubServiceErrorCode.DeviceNotOnline)
                     {
-                        logger.Trace($"Caught exception invoking direct method.\n{ex}", TraceSeverity.Warning);
+                        logger.Trace(
+                            $"Caught exception invoking direct method.\n{ex}",
+                            TraceSeverity.Warning);
                         // retry
                     }
                     catch (Exception ex)
                     {
-                        logger.Trace($"Unexpected exception observed while invoking direct method.\n{ex}");
+                        logger.Trace(
+                            $"Unexpected exception observed while invoking direct method.\n{ex}",
+                            TraceSeverity.Error);
                         break;
                     }
 
@@ -112,7 +119,9 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                     twin.Properties.Desired[keyName] = properties;
 
                     ++_totalDesiredPropertiesUpdatesCount;
-                    logger.Trace($"Updating the desired properties for device: {_deviceId}", TraceSeverity.Information);
+                    logger.Trace(
+                        $"Updating the desired properties for device: {_deviceId}",
+                        TraceSeverity.Information);
                     logger.Metric(TotalDesiredPropertiesUpdatesCount, _totalDesiredPropertiesUpdatesCount);
 
                     sw.Restart();
@@ -122,7 +131,9 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                 }
                 catch (Exception ex)
                 {
-                    _logger.Trace($"Unexpected exception observed while requesting twin property update.\n{ex}");
+                    logger.Trace(
+                        $"Unexpected exception observed while requesting twin property update.\n{ex}",
+                        TraceSeverity.Error);
                 }
 
                 await Task.Delay(s_desiredPropertiesSetInterval, ct).ConfigureAwait(false);
@@ -151,7 +162,9 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                         MessageId = payload.RandomId.ToString(),
                     };
 
-                    logger.Trace($"Sending message with Id {message.MessageId} to the device: {_deviceId}", TraceSeverity.Information);
+                    logger.Trace(
+                        $"Sending message with Id {message.MessageId} to the device: {_deviceId}",
+                        TraceSeverity.Information);
                     logger.Metric(TotalC2dMessagesSentCount, _totalC2dMessagesSentCount);
 
                     sw.Restart();
@@ -162,7 +175,9 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                 }
                 catch (Exception ex)
                 {
-                    _logger.Trace($"Unexpected exception observed while sending a C2D message.\n{ex}");
+                    logger.Trace(
+                        $"Unexpected exception observed while sending a C2D message.\n{ex}",
+                        TraceSeverity.Error);
                 }
 
                 await Task.Delay(s_c2dMessagesSentInterval, ct).ConfigureAwait(false);

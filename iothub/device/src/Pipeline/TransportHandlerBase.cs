@@ -8,12 +8,12 @@ namespace Microsoft.Azure.Devices.Client.Transport
     /// <summary>
     /// Base class for transport-specific handlers, i.e. MQTT and AMQP.
     /// </summary>
-    internal abstract class TransportHandler : DefaultDelegatingHandler
+    internal abstract class TransportHandlerBase : DefaultDelegatingHandler
     {
         private TaskCompletionSource<bool> _transportShouldRetry;
         protected readonly IotHubClientTransportSettings _transportSettings;
 
-        protected TransportHandler(PipelineContext context, IotHubClientTransportSettings transportSettings)
+        protected TransportHandlerBase(PipelineContext context, IotHubClientTransportSettings transportSettings)
             : base(context, nextHandler: null)
         {
             _transportSettings = transportSettings;
@@ -28,7 +28,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         protected private override void Dispose(bool disposing)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"{nameof(DefaultDelegatingHandler)}.Disposed={_isDisposed}; disposing={disposing}", $"{nameof(TransportHandler)}.{nameof(Dispose)}");
+                Logging.Enter(this, $"{nameof(DefaultDelegatingHandler)}.Disposed={_isDisposed}; disposing={disposing}", $"{nameof(TransportHandlerBase)}.{nameof(Dispose)}");
 
             try
             {
@@ -44,7 +44,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, $"{nameof(DefaultDelegatingHandler)}.Disposed={_isDisposed}; disposing={disposing}", $"{nameof(TransportHandler)}.{nameof(Dispose)}");
+                    Logging.Exit(this, $"{nameof(DefaultDelegatingHandler)}.Disposed={_isDisposed}; disposing={disposing}", $"{nameof(TransportHandlerBase)}.{nameof(Dispose)}");
             }
         }
 
