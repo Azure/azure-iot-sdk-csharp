@@ -26,6 +26,12 @@ namespace Microsoft.Azure.Devices.Client
         // messageHandler passed in is an HttpClientHandler for .NET Framework and .NET standard, and a SocketsHttpHandler for .NET core
         public static void SetLimits(HttpMessageHandler messageHandler, Uri baseUri, int connectionLeaseTimeoutMilliseconds = DefaultConnectionLeaseTimeout)
         {
+            if (messageHandler == null)
+            {
+                // no limits can be set if no handler is provided
+                return;
+            }
+
             switch (messageHandler)
             {
                 case HttpClientHandler httpClientHandler:
