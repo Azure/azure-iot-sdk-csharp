@@ -83,7 +83,7 @@ namespace Microsoft.Azure.Devices.Client
                 }
             }
 
-            _fileUploadHttpTransportHandler = new HttpTransportHandler(PipelineContext, _clientOptions.FileUploadTransportSettings);
+            _fileUploadHttpTransportHandler = new HttpTransportHandler(PipelineContext);
 
             if (Logging.IsEnabled)
                 Logging.CreateClient(

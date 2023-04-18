@@ -38,6 +38,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
+        public virtual bool IsUsable => NextHandler?.IsUsable ?? true;
+
         public virtual Task OpenAsync(CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
@@ -150,8 +152,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
             ThrowIfDisposed();
             return NextHandler?.StopSasTokenLoopAsync() ?? Task.CompletedTask;
         }
-
-        public virtual bool IsUsable => NextHandler?.IsUsable ?? true;
 
         public virtual void Dispose()
         {

@@ -70,9 +70,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
                 IotHubClientTransportSettings = transportSettings1,
             };
 
-            using var amqpTransportHandler1 = new AmqpTransportHandler(
-                pipelineContext1,
-                transportSettings1);
+            using var amqpTransportHandler1 = new AmqpTransportHandler(pipelineContext1);
 
             try
             {
@@ -91,9 +89,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
                     IotHubClientTransportSettings = transportSettings2,
                 };
 
-                using var amqpTransportHandler2 = new AmqpTransportHandler(
-                    pipelineContext2,
-                    transportSettings2);
+                using var amqpTransportHandler2 = new AmqpTransportHandler(pipelineContext2);
             }
             catch (ArgumentException ex)
             {
@@ -122,9 +118,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
                 IotHubClientTransportSettings = new IotHubClientAmqpSettings(),
             };
 
-            return new AmqpTransportHandler(
-                pipelineContext,
-                new IotHubClientAmqpSettings());
+            return new AmqpTransportHandler(pipelineContext);
         }
     }
 }

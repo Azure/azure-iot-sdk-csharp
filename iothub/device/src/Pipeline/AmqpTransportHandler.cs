@@ -49,10 +49,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
-        internal AmqpTransportHandler(
-            PipelineContext context,
-            IotHubClientAmqpSettings transportSettings)
-            : base(context, transportSettings)
+        internal AmqpTransportHandler(PipelineContext context)
+            : base(context)
         {
             _onDesiredStatePatchListener = context.DesiredPropertyUpdateCallback;
 
@@ -68,7 +66,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             _amqpUnit = AmqpUnitManager.GetInstance().CreateAmqpUnit(
                 _connectionCredentials,
                 additionalClientInformation,
-                transportSettings,
+                (IotHubClientAmqpSettings)context.IotHubClientTransportSettings,
                 context.MethodCallback,
                 TwinMessageListener,
                 context.MessageEventCallback,

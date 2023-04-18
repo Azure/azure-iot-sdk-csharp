@@ -43,7 +43,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                 var payload = new CustomDirectMethodPayload
                 {
                     RandomId = Guid.NewGuid(),
-                    CurrentTimeUtc = DateTimeOffset.UtcNow,
+                    SentOnUtc = DateTimeOffset.UtcNow,
                     MethodCallsCount = ++_totalMethodCallsCount,
                 };
 
@@ -74,7 +74,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                         {
                             logger.Metric(
                                 D2cDirectMethodDelaySeconds,
-                                (DateTimeOffset.UtcNow - responsePayload.CurrentTimeUtc).TotalSeconds);
+                                (DateTimeOffset.UtcNow - responsePayload.SentOnUtc).TotalSeconds);
                         }
 
                         logger.Trace(
@@ -152,7 +152,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                     var payload = new CustomC2dMessagePayload
                     {
                         RandomId = Guid.NewGuid(),
-                        CurrentTimeUtc = DateTime.UtcNow,
+                        SentOnUtc = DateTime.UtcNow,
                         MessagesSentCount = ++_totalC2dMessagesSentCount,
                     };
                     var message = new OutgoingMessage(payload)

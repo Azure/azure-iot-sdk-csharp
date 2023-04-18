@@ -52,7 +52,5 @@ namespace Microsoft.Azure.Devices.Client
         void SetSasTokenRefreshesOn();
 
         Task StopSasTokenLoopAsync();
-
-
     }
 }

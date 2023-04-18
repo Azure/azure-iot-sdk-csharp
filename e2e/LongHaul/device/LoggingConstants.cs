@@ -5,7 +5,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
 {
     internal static class LoggingConstants
     {
-        // Metrics
+        // Metric names
 
         public const string DisconnectedDurationSeconds = "DisconnectedDurationSeconds";
         public const string TotalTelemetryMessagesSent = "TotalTelemetryMessagesSent";
@@ -21,7 +21,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
         public const string ReportedTwinUpdateOperationSeconds = "ReportedTwinUpdateOperationSeconds";
         public const string FileUploadOperationSeconds = "FileUploadOperationSeconds";
 
-        // Events
+        // Event names
 
         public const string StartingRun = "StartingRun";
         public const string ConnectedEvent = "Connected";
@@ -36,6 +36,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
         public const string SdkVersion = "sdkVersion";
         public const string OperationName = "operationName";
         public const string Component = "component";
+
 
         public const string Hub = "hub";
         public const string DeviceId = "deviceId";

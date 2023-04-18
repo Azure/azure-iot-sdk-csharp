@@ -155,10 +155,9 @@ namespace Microsoft.Azure.Devices
                 }
                 throw new IotHubServiceException(ex.Message, HttpStatusCode.RequestTimeout, IotHubServiceErrorCode.RequestTimeout, null, ex);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (Logging.IsEnabled)
             {
-                if (Logging.IsEnabled)
-                    Logging.Error(this, $"Getting configuration {configurationId} threw an exception: {ex}", nameof(GetAsync));
+                Logging.Error(this, $"Getting configuration {configurationId} threw an exception: {ex}", nameof(GetAsync));
                 throw;
             }
             finally
