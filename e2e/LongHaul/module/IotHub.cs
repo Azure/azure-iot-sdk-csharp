@@ -47,9 +47,10 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
                 PayloadConvention = parameters.GetPayloadConvention(),
                 SdkAssignsMessageId = SdkAssignsMessageId.WhenUnset,
             };
+            _moduleClient = null;
         }
 
-        public bool IsConnected => _moduleClient?.ConnectionStatusInfo.Status == ConnectionStatus.Connected;
+        public bool IsConnected => _moduleClient.ConnectionStatusInfo.Status == ConnectionStatus.Connected;
 
         public Dictionary<string, string> TelemetryUserProperties { get; } = new();
 
@@ -152,7 +153,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
                             break;
                         }
 
-                        _messagesToSend.TryDequeue(out TelemetryMessage? pendingMessage);
+                        _messagesToSend.TryDequeue(out TelemetryMessage pendingMessage);
                         if (pendingMessage == null)
                         {
                             break;
@@ -226,7 +227,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
 
         public void AddTelemetry(
             TelemetryBase telemetryObject,
-            IDictionary<string, string>? extraProperties = null)
+            IDictionary<string, string> extraProperties = null)
         {
             Debug.Assert(_moduleClient != null);
             Debug.Assert(telemetryObject != null);
@@ -284,6 +285,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
             if (_lifetimeControl != null)
             {
                 _lifetimeControl.Dispose();
+                _lifetimeControl = null;
             }
 
             await _moduleClient.DisposeAsync().ConfigureAwait(false);

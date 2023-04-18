@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
     {
         private static readonly Process s_currentProcess = Process.GetCurrentProcess();
         private static DateTime? s_previousCpuStartTime;
-        private static TimeSpan s_previousTotalProcessorTime = TimeSpan.Zero;
+        private static TimeSpan? s_previousTotalProcessorTime = null;
         // always include HTTPS port.
         public static HashSet<int> TcpPortFilter = new() { 443 };
 
@@ -54,7 +54,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
                 s_previousTotalProcessorTime = currentCpuUsage;
             }
 
-            double cpuUsedMs = (currentCpuUsage - s_previousTotalProcessorTime).TotalMilliseconds;
+            double cpuUsedMs = (currentCpuUsage - s_previousTotalProcessorTime.Value).TotalMilliseconds;
             double totalMsPassed = (currentCpuStartTime - s_previousCpuStartTime.Value).TotalMilliseconds;
             double cpuUsageTotal = cpuUsedMs / (Environment.ProcessorCount * totalMsPassed);
 
