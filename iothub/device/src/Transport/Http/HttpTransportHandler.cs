@@ -47,7 +47,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 context.HttpOperationTransportSettings);
         }
 
-        internal async Task<FileUploadSasUriResponse> GetFileUploadSasUriAsync(FileUploadSasUriRequest request, CancellationToken cancellationToken)
+        public override async Task<FileUploadSasUriResponse> GetFileUploadSasUriAsync(FileUploadSasUriRequest request, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -60,7 +60,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 .ConfigureAwait(false);
         }
 
-        internal async Task CompleteFileUploadAsync(FileUploadCompletionNotification notification, CancellationToken cancellationToken)
+        public override async Task CompleteFileUploadAsync(FileUploadCompletionNotification notification, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
