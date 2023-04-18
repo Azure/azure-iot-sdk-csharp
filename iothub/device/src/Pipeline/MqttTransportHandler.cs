@@ -159,10 +159,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         private MqttClientOptions _mqttClientOptions;
 
-        internal MqttTransportHandler(PipelineContext context, IotHubClientMqttSettings settings)
-            : base(context, settings)
+        internal MqttTransportHandler(PipelineContext context)
+            : base(context)
         {
-            _mqttTransportSettings = settings;
+            _mqttTransportSettings = (IotHubClientMqttSettings)context.IotHubClientTransportSettings;
             _deviceId = context.IotHubConnectionCredentials.DeviceId;
             _moduleId = context.IotHubConnectionCredentials.ModuleId;
 
@@ -197,11 +197,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 string uri = $"wss://{_hostName}/$iothub/websocket";
                 _mqttClientOptionsBuilder.WithWebSocketServer(uri);
 
-                IWebProxy proxy = _transportSettings.Proxy;
+                IWebProxy proxy = _mqttTransportSettings.Proxy;
                 if (proxy != null)
                 {
                     Uri serviceUri = new(uri);
-                    Uri proxyUri = _transportSettings.Proxy.GetProxy(serviceUri);
+                    Uri proxyUri = _mqttTransportSettings.Proxy.GetProxy(serviceUri);
 
                     if (proxy.Credentials != null)
                     {
@@ -223,7 +223,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 : new List<X509Certificate> { _connectionCredentials.ClientCertificate };
 
             tlsParameters.Certificates = certs;
-            tlsParameters.IgnoreCertificateRevocationErrors = !settings.CertificateRevocationCheck;
+            tlsParameters.IgnoreCertificateRevocationErrors = !_mqttTransportSettings.CertificateRevocationCheck;
 
             if (_mqttTransportSettings?.RemoteCertificateValidationCallback != null)
             {
