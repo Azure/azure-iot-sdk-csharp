@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
     {
         private static readonly Process s_currentProcess = Process.GetCurrentProcess();
         private static DateTime? s_previousCpuStartTime;
-        private static TimeSpan? s_previousTotalProcessorTime = null;
+        private static TimeSpan? s_previousTotalProcessorTime;
         // always include HTTPS port.
         public static HashSet<int> TcpPortFilter = new() { 443 };
 
