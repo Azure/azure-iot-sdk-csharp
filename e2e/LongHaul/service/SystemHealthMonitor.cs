@@ -5,6 +5,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Mash.Logging;
+using static Microsoft.Azure.Devices.LongHaul.Service.LoggingConstants;
 
 namespace Microsoft.Azure.Devices.LongHaul.Service
 {
@@ -23,7 +24,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
         {
             s_port = port;
             _logger = logger;
-            _logger.LoggerContext.Add("Component", nameof(SystemHealthMonitor));
+            _logger.LoggerContext.Add(Component, nameof(SystemHealthMonitor));
         }
 
         public async Task RunAsync(CancellationToken ct)

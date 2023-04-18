@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Mash.Logging;
+using static Microsoft.Azure.Devices.LongHaul.Device.LoggingConstants;
 
 namespace Microsoft.Azure.Devices.LongHaul.Device
 {
@@ -26,7 +27,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
             _iotHub = iotHub;
             s_port = portFilter;
             _logger = logger;
-            _logger.LoggerContext.Add("component", nameof(SystemHealthMonitor));
+            _logger.LoggerContext.Add(Component, nameof(SystemHealthMonitor));
         }
 
         public async Task RunAsync(CancellationToken ct)
