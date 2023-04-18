@@ -1,0 +1,31 @@
+name: $(BuildID)_$(BuildDefinitionName)_$(SourceBranchName)_$(Date:yyyyMMdd)$(Rev:.r)
+
+jobs:
+  - job: WINDOWS
+    displayName: Windows
+    condition: succeeded()
+    pool:
+      vmImage: windows-2022
+    steps:
+      - powershell: ./vsts/gatedBuild.ps1
+        displayName: build
+        condition: eq(variables.SHOULD_RUN, 'True')
+        env:
+          # Environment variables for IoT Hub E2E tests
+          IOTHUB_CONNECTION_STRING: $(IOTHUB-CONNECTION-STRING)
+          PROVISIONING_CONNECTION_STRING: $(PROVISIONING-CONNECTION-STRING)
+
+          # Environment variable for running samples/cleanups
+          PATH_TO_DEVICE_PREFIX_FOR_DELETION_FILE: $(PATH-TO-DEVICE-PREFIX-FOR-DELETION-FILE)
+          PNP_TC_DEVICE_CONN_STRING: $(PNP-TC-DEVICE-CONN-STRING)
+          PNP_THERMOSTAT_DEVICE_CONN_STRING: $(PNP-THERMOSTAT-DEVICE-CONN-STRING)
+          DPS_SYMMETRIC_KEY_INDIVIDUAL_ENROLLMENT_REGISTRATION_ID: $(DPS-SYMMETRIC-KEY-INDIVIDUAL-ENROLLMENT-REGISTRATION-ID)
+          DPS_SYMMETRIC_KEY_INDIVIDUAL_ENROLLEMNT_PRIMARY_KEY: $(DPS-SYMMETRIC-KEY-INDIVIDUAL-ENROLLEMNT-PRIMARY-KEY)
+
+      - task: ComponentGovernanceComponentDetection@0
+        displayName: Component Governance Detection
+        condition: eq(variables.SHOULD_RUN, 'True')
+        inputs:
+          scanType: 'Register'
+          verbosity: 'Verbose'
+          alertWarningLevel: 'Low' # The task will present a warning, but will not cause the build to fail
