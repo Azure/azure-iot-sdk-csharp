@@ -48,7 +48,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
             "TransportProtocol",
             Default = IotHubClientTransportProtocol.Tcp,
             Required = false,
-            HelpText = "The protocol over which a transport (i.e., MQTT, AMQP) communicates.")]
+            HelpText = "The protocol over which a transport communicates (i.e., Tcp, WebSocket).")]
         public IotHubClientTransportProtocol TransportProtocol { get; set; }
 
         [Option(
