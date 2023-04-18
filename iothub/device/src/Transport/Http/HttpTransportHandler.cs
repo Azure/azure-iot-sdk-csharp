@@ -25,9 +25,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         internal HttpTransportHandler(
             PipelineContext context,
-            IotHubClientHttpSettings transportSettings,
             HttpClientHandler httpClientHandler = null)
-            : base(context, transportSettings)
+            : base(context)
         {
             var additionalClientInformation = new AdditionalClientInformation
             {
@@ -45,12 +44,13 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 ClientExceptionHandlingHelper.GetDefaultErrorMapping(),
                 s_defaultOperationTimeout,
                 httpClientHandler,
-                transportSettings);
+                context.FileUploadTransportSettings);
         }
 
         internal async Task<FileUploadSasUriResponse> GetFileUploadSasUriAsync(FileUploadSasUriRequest request, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
+
             return await _httpClientHelper
                 .PostAsync<FileUploadSasUriRequest, FileUploadSasUriResponse>(
                     GetRequestUri(_deviceId, CommonConstants.BlobUploadPathTemplate, null),

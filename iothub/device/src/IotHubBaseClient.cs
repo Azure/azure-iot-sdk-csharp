@@ -60,6 +60,7 @@ namespace Microsoft.Azure.Devices.Client
                 ModelId = _clientOptions.ModelId,
                 PayloadConvention = _clientOptions.PayloadConvention,
                 IotHubClientTransportSettings = _clientOptions.TransportSettings,
+                FileUploadTransportSettings = _clientOptions.FileUploadTransportSettings,
                 MethodCallback = OnMethodCalledAsync,
                 DesiredPropertyUpdateCallback = OnDesiredStatePatchReceived,
                 ConnectionStatusChangeHandler = OnConnectionStatusChanged,

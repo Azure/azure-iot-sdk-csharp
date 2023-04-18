@@ -13,17 +13,12 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
                 {
                     IotHubConnectionCredentials = new IotHubConnectionCredentials(AmqpTransportHandlerTests.TestConnectionString),
                     IotHubClientTransportSettings = new IotHubClientAmqpSettings(),
-                },
-                new IotHubClientAmqpSettings())
+                })
         {
         }
 
-        internal MockableAmqpTransportHandler(
-            PipelineContext context,
-            IotHubClientAmqpSettings transportSettings)
-            : base(
-                context,
-                transportSettings)
+        internal MockableAmqpTransportHandler(PipelineContext context)
+            : base(context)
         {
             _amqpUnit = new MockableAmqpUnit();
         }

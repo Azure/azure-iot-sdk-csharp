@@ -11,12 +11,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
     internal abstract class TransportHandlerBase : DefaultDelegatingHandler
     {
         private TaskCompletionSource<bool> _transportShouldRetry;
-        protected readonly IotHubClientTransportSettings _transportSettings;
 
-        protected TransportHandlerBase(PipelineContext context, IotHubClientTransportSettings transportSettings)
+        protected TransportHandlerBase(PipelineContext context)
             : base(context, nextHandler: null)
         {
-            _transportSettings = transportSettings;
         }
 
         public override Task WaitForTransportClosedAsync()

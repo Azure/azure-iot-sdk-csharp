@@ -28,13 +28,12 @@ namespace Microsoft.Azure.Devices.Client.Tests.Transport.Mqtt
         {
             var pipelineContext = new PipelineContext();
             var clientConfigurationMock = new IotHubConnectionCredentials();
-            //clientConfigurationMock.SetupGet(x => x.ClientOptions).Returns(clientOptionsMock.Object);
             pipelineContext.IotHubConnectionCredentials = clientConfigurationMock;
             pipelineContext.ProductInfo = new ProductInfo();
+            pipelineContext.IotHubClientTransportSettings = new IotHubClientMqttSettings();
 
-            var transportHandler = new MqttTransportHandler(
-                pipelineContext,
-                new IotHubClientMqttSettings())
+
+            var transportHandler = new MqttTransportHandler(pipelineContext)
             {
                 // make the mqtt client used by the handler mocked so no network calls are actually made
                 _mqttClient = mockMqttClient

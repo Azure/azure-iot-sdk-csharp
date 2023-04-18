@@ -8,8 +8,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Security;
-using System.Net.Sockets;
-using System.Net.WebSockets;
+using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
@@ -267,14 +266,12 @@ namespace Microsoft.Azure.Devices.Client
 
             try
             {
-                var transportSettings = new IotHubClientHttpSettings();
-
                 if (customCertificateValidation != null)
                 {
                     httpClientHandler = new HttpClientHandler
                     {
                         ServerCertificateCustomValidationCallback = customCertificateValidation,
-                        SslProtocols = transportSettings.SslProtocols,
+                        SslProtocols = SslProtocols.None,
                     };
                 }
 
@@ -283,7 +280,7 @@ namespace Microsoft.Azure.Devices.Client
                     IotHubConnectionCredentials = IotHubConnectionCredentials,
                 };
 
-                using var httpTransport = new HttpTransportHandler(pipelineContext, transportSettings, httpClientHandler);
+                using var httpTransport = new HttpTransportHandler(pipelineContext, httpClientHandler);
                 methodRequest.PayloadConvention = _clientOptions.PayloadConvention;
 
                 DirectMethodResponse result = await httpTransport.InvokeMethodAsync(methodRequest, uri, cancellationToken).ConfigureAwait(false);
