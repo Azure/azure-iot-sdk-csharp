@@ -14,6 +14,9 @@ namespace Microsoft.Azure.Devices.Client
     /// <threadsafety static="true" instance="true" />
     public class IotHubDeviceClient : IotHubBaseClient
     {
+        // File upload operation
+        private readonly HttpTransportHandler _fileUploadHttpTransportHandler;
+
         /// <summary>
         /// Creates a disposable client from the specified connection string.
         /// </summary>
