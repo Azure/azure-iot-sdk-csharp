@@ -33,10 +33,10 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
             }
         }
 
-        public string HostName { get; private set; }
+        public string? HostName { get; private set; }
 
-        public string DeviceId { get; private set; }
+        public string? DeviceId { get; private set; }
 
-        public string ModuleId { get; private set; }
+        public string? ModuleId { get; private set; }
     }
 }

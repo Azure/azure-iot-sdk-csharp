@@ -27,9 +27,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
 
         private static async Task Main(string[] args)
         {
-            string sdkVersionInfo = typeof(IotHubDeviceClient).Assembly
-                .GetCustomAttribute<AssemblyInformationalVersionAttribute>()
-                .InformationalVersion;
+            string sdkVersionInfo = typeof(IotHubDeviceClient).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
 
             s_commonProperties.Add(TestClient, "IotHubModuleClient");
             s_commonProperties.Add(RunId, _runId);

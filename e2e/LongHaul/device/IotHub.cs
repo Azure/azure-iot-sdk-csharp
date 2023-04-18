@@ -185,7 +185,6 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
             {
                 try
                 {
-                    loggedDisconnection = false;
                     var reported = new ReportedProperties
                     {
                         { "TotalTelemetryMessagesSent", _totalTelemetryMessagesSent },
