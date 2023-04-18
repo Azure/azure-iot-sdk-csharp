@@ -372,7 +372,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 {
                     // The response here is deserialized into an SDK-defined type based on service-defined NewtonSoft.Json-based json property name.
                     // For this reason, we use NewtonSoft Json serializer for this deserialization.
-                    TwinDocument clientTwinProperties = DefaultPayloadConvention.Instance.GetObject<TwinDocument>(responseFromService.BodyStream);
+                    TwinDocument clientTwinProperties = DefaultPayloadConvention.GetObject<TwinDocument>(responseFromService.BodyStream);
 
                     var twinDesiredProperties = new DesiredProperties(clientTwinProperties.Desired)
                     {
@@ -475,7 +475,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             if (correlationId == null)
             {
                 // This is desired property updates, so call the callback with DesiredPropertyCollection.
-                Dictionary<string, object> desiredPropertyPatchDictionary = _payloadConvention.GetObject<Dictionary<string, object>>(responseFromService.BodyStream);
+                Dictionary<string, object> desiredPropertyPatchDictionary = DefaultPayloadConvention.GetObject<Dictionary<string, object>>(responseFromService.BodyStream);
                 var desiredPropertyPatch = new DesiredProperties(desiredPropertyPatchDictionary)
                 {
                     PayloadConvention = _payloadConvention,

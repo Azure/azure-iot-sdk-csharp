@@ -2,14 +2,16 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.IO;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
-    /// The payload convention class.
+    /// The payload convention class intended for serializing and deserializing JSON payloads.
     /// </summary>
+    /// <remarks>
+    /// For binary payloads for operations that support them, the client app should instead use
+    /// <see cref="IncomingMessage.GetPayloadAsBytes"/> and <see cref="DirectMethodRequest.GetPayloadAsBytes"/>.
+    /// </remarks>
     public abstract class PayloadConvention
     {
         /// <summary>
@@ -30,34 +32,26 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Returns the byte array for the convention-based serialized/encoded message.
         /// </summary>
+        /// <remarks>
+        /// Used by the client to take an object provided by the user and serialize to bytes for transport for operations like telemetry,
+        /// direct method response, and reported properties.
+        /// </remarks>
         /// <returns>The correctly encoded object for this convention.</returns>
         public abstract byte[] GetObjectBytes(object objectToSendWithConvention);
 
         /// <summary>
         /// Returns the object as the specified type.
         /// </summary>
+        /// <remarks>
+        /// Used by the client to deserialize the payload bytes from transport for operations like C2D messaging,
+        /// direct method requests, and twin properties.
+        /// <para>
+        /// Used by the client to parse the entire twin document over MQTT; required only for <see cref="DefaultPayloadConvention"/>.
+        /// </para>
+        /// </remarks>
         /// <typeparam name="T">The type to convert to.</typeparam>
         /// <param name="objectToConvert">The object to convert.</param>
         /// <returns>The converted object.</returns>
         public abstract T GetObject<T>(byte[] objectToConvert);
-
-        /// <summary>
-        /// Returns the object as the specified type.
-        /// </summary>
-        /// <typeparam name="T">The type to convert to.</typeparam>
-        /// <param name="streamToConvert">The stream to convert.</param>
-        /// <returns>The converted object.</returns>
-        public abstract T GetObject<T>(Stream streamToConvert);
-
-        /// <summary>
-        /// Returns the object as the specified type.
-        /// </summary>
-        /// <remarks>
-        /// Used to deserialize a twin property value.
-        /// </remarks>
-        /// <typeparam name="T">The type to convert to.</typeparam>
-        /// <param name="jsonObjectAsText">The serialized object as text to convert.</param>
-        /// <returns>The converted object.</returns>
-        public abstract T GetObject<T>(string jsonObjectAsText);
     }
 }

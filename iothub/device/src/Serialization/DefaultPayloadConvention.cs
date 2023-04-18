@@ -40,7 +40,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// A static instance of this class.
         /// </summary>
-        public static DefaultPayloadConvention Instance { get; } = new DefaultPayloadConvention();
+        public static DefaultPayloadConvention Instance { get; } = new();
 
         /// <inheritdoc/>
         public override string ContentType => "application/json";
@@ -67,8 +67,7 @@ namespace Microsoft.Azure.Devices.Client
             return GetObject<T>(payloadString);
         }
 
-        /// <inheritdoc/>
-        public override T GetObject<T>(Stream streamToConvert)
+        internal static T GetObject<T>(Stream streamToConvert)
         {
             using var sw = new StreamReader(streamToConvert, s_encoding);
             string body = sw.ReadToEnd();
@@ -76,8 +75,7 @@ namespace Microsoft.Azure.Devices.Client
             return GetObject<T>(body);
         }
 
-        /// <inheritdoc/>
-        public override T GetObject<T>(string jsonObjectAsText)
+        internal static T GetObject<T>(string jsonObjectAsText)
         {
             return JsonConvert.DeserializeObject<T>(jsonObjectAsText);
         }

@@ -38,7 +38,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
             string jsonStr = $@"{{""time"":""{s_dateTimeString}""}}";
 
             // act
-            JObject payload = DefaultPayloadConvention.Instance.GetObject<JObject>(jsonStr);
+            JObject payload = DefaultPayloadConvention.GetObject<JObject>(jsonStr);
 
             //assert
             payload.ToString(Formatting.None).Should().Be(s_serializedPayloadString);
