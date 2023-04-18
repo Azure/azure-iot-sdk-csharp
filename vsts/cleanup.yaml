@@ -1,12 +1,13 @@
 name: $(BuildID)_$(BuildDefinitionName)_$(SourceBranchName)_$(Date:yyyyMMdd)$(Rev:.r)
 
 jobs:
-  - job: WINDOWS
-    displayName: Windows
+  - job: LINUX
+    displayName: Linux
     pool:
-      vmImage: windows-2022
+      vmImage: ubuntu-20.04
     steps:
       - task: PowerShell@2
+        name: 'Cleanup IoT hub and DPS'
         inputs:
           targetType: 'inline'
           script: '.\build.ps1 -runCleanupSamples'
