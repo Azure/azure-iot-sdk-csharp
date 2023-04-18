@@ -32,8 +32,8 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
             _deviceId = deviceId;
             _moduleId = moduleId;
             _logger = logger;
-            _logger.LoggerContext.Add("DeviceId", deviceId);
-            _logger.LoggerContext.Add("ModuleId", moduleId);
+            _logger.LoggerContext.Add("deviceId", deviceId);
+            _logger.LoggerContext.Add("moduleId", moduleId);
         }
 
         public async Task InvokeDirectMethodAsync(Logger logger, CancellationToken ct)

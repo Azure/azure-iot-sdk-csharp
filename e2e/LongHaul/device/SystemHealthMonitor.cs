@@ -26,7 +26,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
             _iotHub = iotHub;
             s_port = portFilter;
             _logger = logger;
-            _logger.LoggerContext.Add("Component", nameof(SystemHealthMonitor));
+            _logger.LoggerContext.Add("component", nameof(SystemHealthMonitor));
         }
 
         public async Task RunAsync(CancellationToken ct)

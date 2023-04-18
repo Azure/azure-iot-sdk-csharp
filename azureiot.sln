@@ -215,10 +215,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MessagingClientSample", "io
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Azure.Devices.LongHaul.Module", "Microsoft.Azure.Devices.LongHaul.Module\Microsoft.Azure.Devices.LongHaul.Module.csproj", "{FB04160E-C633-407A-B581-88E9771B36AC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "send", "send\send.csproj", "{AA1BB033-F012-4561-8C40-58BA02F0F7B8}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "rece", "rece\rece.csproj", "{85A9C62A-7800-4352-BDC4-131624033FFF}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -429,14 +425,6 @@ Global
 		{FB04160E-C633-407A-B581-88E9771B36AC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FB04160E-C633-407A-B581-88E9771B36AC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FB04160E-C633-407A-B581-88E9771B36AC}.Release|Any CPU.Build.0 = Release|Any CPU
-		{AA1BB033-F012-4561-8C40-58BA02F0F7B8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{AA1BB033-F012-4561-8C40-58BA02F0F7B8}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{AA1BB033-F012-4561-8C40-58BA02F0F7B8}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{AA1BB033-F012-4561-8C40-58BA02F0F7B8}.Release|Any CPU.Build.0 = Release|Any CPU
-		{85A9C62A-7800-4352-BDC4-131624033FFF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{85A9C62A-7800-4352-BDC4-131624033FFF}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{85A9C62A-7800-4352-BDC4-131624033FFF}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{85A9C62A-7800-4352-BDC4-131624033FFF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -519,8 +507,6 @@ Global
 		{73AC4FF1-87EF-4A82-B139-89E8547EFEE3} = {F27C6BDA-1756-4B90-AD83-65DB54166FEA}
 		{E67F39EA-56FD-4234-93B2-053AA65EA542} = {73EFBF28-CA06-4A08-88BC-CCDA2C498C76}
 		{FB04160E-C633-407A-B581-88E9771B36AC} = {F27C6BDA-1756-4B90-AD83-65DB54166FEA}
-		{AA1BB033-F012-4561-8C40-58BA02F0F7B8} = {A48437BA-3C5B-431E-9B2F-96C850E9E1A5}
-		{85A9C62A-7800-4352-BDC4-131624033FFF} = {A48437BA-3C5B-431E-9B2F-96C850E9E1A5}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {AF61665D-340A-494B-9705-571456BDC752}

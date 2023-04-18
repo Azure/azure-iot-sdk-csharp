@@ -186,6 +186,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
 
                     // Alternate sending between single and in bulk.
                     sendSingle = !sendSingle;
+                    loggedDisconnection = false;
                 }
             }
         }
