@@ -619,8 +619,8 @@ namespace Microsoft.Azure.Devices.Client
                 .With((ctx, innerHandler) => new RetryDelegatingHandler(ctx, innerHandler))
                 .With((ctx, innerHandler) => new ExceptionRemappingHandler(ctx, innerHandler))
                 .With((ctx, innerHandler) => new TransportDelegatingHandler(ctx, innerHandler))
-                .With((ctx, innerHandler) => transporthandlerFactory.Create(ctx))
-                ;//.With((ctx, innerHandler) => new LimitedOperationsHttpTransportDelegatingHandler(ctx, innerHandler));
+                .With((ctx, innerHandler) => new LimitedOperationsHttpTransportDelegatingHandler(ctx, innerHandler))
+                .With((ctx, innerHandler) => transporthandlerFactory.Create(ctx));
 
             return pipelineBuilder;
         }

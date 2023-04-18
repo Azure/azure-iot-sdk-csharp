@@ -4,7 +4,6 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Azure.Devices.Client.Transport;
 
 namespace Microsoft.Azure.Devices.Client
 {
@@ -14,9 +13,6 @@ namespace Microsoft.Azure.Devices.Client
     /// <threadsafety static="true" instance="true" />
     public class IotHubDeviceClient : IotHubBaseClient
     {
-        // File upload operation
-        private readonly HttpTransportHandler _fileUploadHttpTransportHandler;
-
         /// <summary>
         /// Creates a disposable client from the specified connection string.
         /// </summary>
@@ -83,8 +79,6 @@ namespace Microsoft.Azure.Devices.Client
                 }
             }
 
-            _fileUploadHttpTransportHandler = new HttpTransportHandler(PipelineContext);
-
             if (Logging.IsEnabled)
                 Logging.CreateClient(
                     this,
@@ -109,12 +103,7 @@ namespace Microsoft.Azure.Devices.Client
             CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNull(request, nameof(request));
-            if (_isDisposed)
-            {
-                throw new ObjectDisposedException(nameof(IotHubDeviceClient));
-            }
-
-            return _fileUploadHttpTransportHandler.GetFileUploadSasUriAsync(request, cancellationToken);
+            return InnerHandler.GetFileUploadSasUriAsync(request, cancellationToken);
         }
 
         /// <summary>
@@ -129,24 +118,7 @@ namespace Microsoft.Azure.Devices.Client
         public Task CompleteFileUploadAsync(FileUploadCompletionNotification notification, CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNull(notification, nameof(notification));
-            if (_isDisposed)
-            {
-                throw new ObjectDisposedException(nameof(IotHubDeviceClient));
-            }
-
-            return _fileUploadHttpTransportHandler.CompleteFileUploadAsync(notification, cancellationToken);
-        }
-
-        /// <inheritdoc/>
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                _fileUploadHttpTransportHandler?.Dispose();
-            }
-
-            // Call the base class implementation.
-            base.Dispose(disposing);
+            return InnerHandler.CompleteFileUploadAsync(notification, cancellationToken);
         }
     }
 }

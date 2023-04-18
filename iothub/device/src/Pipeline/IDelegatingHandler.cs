@@ -44,6 +44,11 @@ namespace Microsoft.Azure.Devices.Client
 
         Task DisableTwinPatchAsync(CancellationToken cancellationToken);
 
+        // HTTP specific operations
+        Task<FileUploadSasUriResponse> GetFileUploadSasUriAsync(FileUploadSasUriRequest request, CancellationToken cancellationToken);
+
+        Task CompleteFileUploadAsync(FileUploadCompletionNotification notification, CancellationToken cancellationToken);
+
         // Sas token validity
         Task<DateTime> RefreshSasTokenAsync(CancellationToken cancellationToken);
 
@@ -52,10 +57,5 @@ namespace Microsoft.Azure.Devices.Client
         void SetSasTokenRefreshesOn();
 
         Task StopSasTokenLoopAsync();
-
-        // File upload - over HTTP (IotHubDeviceClient only)
-        Task<FileUploadSasUriResponse> GetFileUploadSasUriAsync(FileUploadSasUriRequest request, CancellationToken cancellationToken);
-
-        Task CompleteFileUploadAsync(FileUploadCompletionNotification notification, CancellationToken cancellationToken);
     }
 }

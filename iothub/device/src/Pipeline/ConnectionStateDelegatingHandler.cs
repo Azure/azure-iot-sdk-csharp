@@ -375,6 +375,44 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
+        public override async Task<FileUploadSasUriResponse> GetFileUploadSasUriAsync(FileUploadSasUriRequest request, CancellationToken cancellationToken)
+        {
+            if (Logging.IsEnabled)
+                Logging.Enter(this, request.BlobName, cancellationToken, nameof(GetFileUploadSasUriAsync));
+
+            try
+            {
+                return await ValidateStateAndPerformOperationAsync(
+                    (ct) => base.GetFileUploadSasUriAsync(request, ct),
+                    nameof(GetFileUploadSasUriAsync),
+                    cancellationToken);
+            }
+            finally
+            {
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, request.BlobName, cancellationToken, nameof(GetFileUploadSasUriAsync));
+            }
+        }
+
+        public override async Task CompleteFileUploadAsync(FileUploadCompletionNotification notification, CancellationToken cancellationToken)
+        {
+            if (Logging.IsEnabled)
+                Logging.Enter(this, notification.CorrelationId, cancellationToken, nameof(CompleteFileUploadAsync));
+
+            try
+            {
+                await ValidateStateAndPerformOperationAsync(
+                    (ct) => base.CompleteFileUploadAsync(notification, ct),
+                    nameof(CompleteFileUploadAsync),
+                    cancellationToken);
+            }
+            finally
+            {
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, notification.CorrelationId, cancellationToken, nameof(CompleteFileUploadAsync));
+            }
+        }
+
         public override async Task<DateTime> RefreshSasTokenAsync(CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
