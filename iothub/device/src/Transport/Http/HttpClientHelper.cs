@@ -55,9 +55,24 @@ namespace Microsoft.Azure.Devices.Client.Transport
             _baseAddress = baseAddress;
             _connectionCredentials = connectionCredentials;
             _defaultErrorMapping = new ReadOnlyDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>(defaultErrorMapping);
-            _httpClientHandler = httpClientHandler ?? new HttpClientHandler();
-            _httpClientHandler.SslProtocols = iotHubClientHttpSettings.SslProtocols;
-            _httpClientHandler.CheckCertificateRevocationList = iotHubClientHttpSettings.CertificateRevocationCheck;
+
+#if NETCOREAPP
+            _httpClientHandler = new SocketsHttpHandler();
+            httpMessageHandler.SslOptions.EnabledSslProtocols = iotHubClientHttpSettings.SslProtocols;
+            if (!iotHubClientHttpSettings.CertificateRevocationCheck)
+            {
+                httpMessageHandler.SslOptions.CertificateRevocationCheckMode = X509RevocationMode.NoCheck;
+            }
+#else
+            // This handler is used within the returned HttpClient, so it cannot be disposed within this scope.
+            _httpClientHandler = new HttpClientHandler
+            {
+                SslProtocols = iotHubClientHttpSettings.SslProtocols,
+                CheckCertificateRevocationList = iotHubClientHttpSettings.CertificateRevocationCheck,
+            };
+#endif
+
+            ServicePointHelpers.SetLimits(_httpClientHandler, _baseAddress);
 
             X509Certificate2 clientCert = _connectionCredentials.ClientCertificate;
             IWebProxy proxy = iotHubClientHttpSettings.Proxy;
@@ -73,10 +88,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 _httpClientHandler.UseProxy = true;
                 _httpClientHandler.Proxy = proxy;
             }
-
-            _httpClientHandler.MaxConnectionsPerServer = DefaultMaxConnectionsPerServer;
-            ServicePoint servicePoint = ServicePointManager.FindServicePoint(_baseAddress);
-            servicePoint.ConnectionLeaseTimeout = DefaultConnectionLeaseTimeout.Milliseconds;
 
             _httpClientObj = new HttpClient(_httpClientHandler)
             {
