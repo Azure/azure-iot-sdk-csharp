@@ -6,16 +6,11 @@ jobs:
     pool:
       vmImage: windows-2022
     steps:
-      - powershell: ./vsts/cleanup.ps1
-        displayName: build
+      - task: PowerShell@2
+        inputs:
+          targetType: 'inline'
+          script: '.\build.ps1 -runCleanupSamples'
         env:
           IOTHUB_CONNECTION_STRING: $(IOTHUB-CONNECTION-STRING)
           PROVISIONING_CONNECTION_STRING: $(PROVISIONING-CONNECTION-STRING)
           STORAGE_ACCOUNT_CONNECTION_STRING: $(STORAGE-ACCOUNT-CONNECTION-STRING)
-
-      - task: ComponentGovernanceComponentDetection@0
-        displayName: Component Governance Detection
-        inputs:
-          scanType: 'Register'
-          verbosity: 'Verbose'
-          alertWarningLevel: 'Low' # The task will present a warning, but will not cause the build to fail
