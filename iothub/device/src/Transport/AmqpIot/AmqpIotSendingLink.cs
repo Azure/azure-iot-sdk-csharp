@@ -130,16 +130,18 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                         cancellationToken)
                     .ConfigureAwait(false);
             }
-            catch (OperationCanceledException oce) when (!cancellationToken.IsCancellationRequested)
-            {
-                // OperationCanceledException may be thrown here when there is networking disconnect
-                // even if cancellation has not been requested yet. This case is treated as a transient
-                // network error rather than an OperationCanceledException.
-                throw new IotHubClientException(oce.Message, IotHubClientErrorCode.NetworkErrors, oce);
-            }
             catch (Exception ex) when (!Fx.IsFatal(ex))
             {
                 Exception iotEx = AmqpIotExceptionAdapter.ConvertToIotHubException(ex, _sendingAmqpLink);
+
+                if (iotEx is OperationCanceledException && !cancellationToken.IsCancellationRequested)
+                {
+                    // OperationCanceledException may be thrown here when there is networking disconnect
+                    // even if cancellation has not been requested yet. This case is treated as a transient
+                    // network error rather than an OperationCanceledException.
+                    throw new IotHubClientException(iotEx.Message, IotHubClientErrorCode.NetworkErrors, iotEx);
+                }
+
                 if (ReferenceEquals(ex, iotEx))
                 {
                     throw;
