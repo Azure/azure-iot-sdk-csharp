@@ -16,7 +16,7 @@ using Newtonsoft.Json;
 namespace Microsoft.Azure.Devices.Client.Transport
 {
 #pragma warning disable CA1852 // used in debug for unit test mocking
-    internal class AmqpTransportHandler : TransportHandler
+    internal class AmqpTransportHandler : TransportHandlerBase
 #pragma warning restore CA1852
     {
         protected AmqpUnit _amqpUnit;

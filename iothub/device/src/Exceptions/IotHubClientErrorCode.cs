@@ -153,17 +153,5 @@ namespace Microsoft.Azure.Devices.Client
         /// is invalid.
         /// </summary>
         IotHubFormatError = 400006,
-
-        /// <summary>
-        /// Used for fault injection, end-to-end testing in the SDK only.
-        /// </summary>
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        ConnectionForcefullyClosedOnFaultInjection = 400029,
-
-        /// <summary>
-        /// Used for fault injection, end-to-end testing in the SDK only.
-        /// </summary>
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        ConnectionRejectedOnFaultInjection = 400030,
     }
 }

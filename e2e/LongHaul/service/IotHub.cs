@@ -101,16 +101,19 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
 
                         async Task Operations()
                         {
-                            var deviceOperations = new DeviceOperations(s_serviceClient, deviceId, _logger.Clone());
+                            var deviceOperations = new DeviceOperations(s_serviceClient, deviceId);
                             _logger.Trace($"Creating {nameof(DeviceOperations)} on the device [{deviceId}]", TraceSeverity.Verbose);
+
+                            Logger loggerPerDevice = _logger.Clone();
+                            loggerPerDevice.LoggerContext.Add(DeviceId, deviceId);
 
                             try
                             {
                                 await Task
                                 .WhenAll(
-                                    deviceOperations.InvokeDirectMethodAsync(_logger.Clone(), token),
-                                    deviceOperations.SetDesiredPropertiesAsync("guidValue", Guid.NewGuid().ToString(), _logger.Clone(), token),
-                                    deviceOperations.SendC2dMessagesAsync(_logger.Clone(), token))
+                                    deviceOperations.InvokeDirectMethodAsync(loggerPerDevice.Clone(), token),
+                                    deviceOperations.SetDesiredPropertiesAsync("guidValue", Guid.NewGuid().ToString(), loggerPerDevice.Clone(), token),
+                                    deviceOperations.SendC2dMessagesAsync(loggerPerDevice.Clone(), token))
                                 .ConfigureAwait(false);
                             }
                             catch (OperationCanceledException)
@@ -194,7 +197,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
             // It is important to note that receiver only gets feedback messages when the device is actively running and acting on messages.
             _logger.Trace("Starting to listen to cloud-to-device feedback messages...", TraceSeverity.Verbose);
 
-            Task<AcknowledgementType> OnC2dMessageAck(FeedbackBatch feedbackMessages)
+            Task<AcknowledgementType> OnC2dFeedback(FeedbackBatch feedbackMessages)
             {
                 foreach (FeedbackRecord feedbackRecord in feedbackMessages.Records)
                 {
@@ -209,15 +212,15 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                 return Task.FromResult(AcknowledgementType.Complete);
             }
 
-            async Task OnC2dError(MessageFeedbackProcessorError error)
+            async Task OnC2dFeedbackError(MessageFeedbackProcessorError error)
             {
                 _logger.Trace($"Error processing C2D message.\n{error.Exception}");
 
                 await s_serviceClient.MessageFeedback.OpenAsync(ct).ConfigureAwait(false);
             }
 
-            s_serviceClient.MessageFeedback.MessageFeedbackProcessor = OnC2dMessageAck;
-            s_serviceClient.MessageFeedback.ErrorProcessor = OnC2dError;
+            s_serviceClient.MessageFeedback.MessageFeedbackProcessor = OnC2dFeedback;
+            s_serviceClient.MessageFeedback.ErrorProcessor = OnC2dFeedbackError;
 
             try
             {

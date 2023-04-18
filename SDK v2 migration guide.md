@@ -91,12 +91,12 @@ The v2 strategy can be grouped into 3 categories.
     - For example, when calling device client operations before explicility calling `IotHubDeviceClient.OpenAsync()` first.
     - When some runtime validated user input is invalid in some other way, for example, importing or exporting devices where there is a null value in the list.
     - `ObjectDisposedException` when the client has been disposed but an operation has been issued.
-1. Handle canceled operations.
+2. Handle canceled operations.
   - `OperationCanceledException` when a user's cancelation token was signaled and the operation was stopped prematurely.
     > All async operations accept an optional `CancellationToken` parameter.
     > It is recommended to use cancelation tokens with a timed expiration as the SDK no longer has a default operation timeout.
     > Without that, an operation could continue indefinitely, depending on retry policy.
-1. When an operation fails due to a service error or network issues prevent issuance.
+3. When an operation fails due to a service error or network issues prevent issuance.
   - `IotHubClientException` for device client and `IotHubServiceException` for service client for any exceptions arising from communication attempts with IoT hub.
     - Review the `IsTransient` property to determine if an exception is transient.
     - Review the `ErrorCode` property for specific, structured error details.

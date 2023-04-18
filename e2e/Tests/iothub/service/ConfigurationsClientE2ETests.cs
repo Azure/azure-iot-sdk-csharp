@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Azure;
 using FluentAssertions;
 using FluentAssertions.Specialized;
+using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
@@ -31,7 +32,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
             bool configCreated = false;
             string configurationId = (_idPrefix + Guid.NewGuid()).ToLower(); // Configuration Id characters must be all lower-case.
-            using var sc = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
+            IotHubServiceClient sc = TestDevice.ServiceClient;
 
             try
             {
@@ -99,7 +100,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         [Timeout(TestTimeoutMilliseconds)]
         public async Task ConfigurationsClient_SetETag_Works()
         {
-            using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
+            IotHubServiceClient serviceClient = TestDevice.ServiceClient;
             string configurationId = (_idPrefix + Guid.NewGuid()).ToLower(); // Configuration Id characters must be all lower-case.
             try
             {
@@ -161,7 +162,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         [Timeout(TestTimeoutMilliseconds)]
         public async Task ConfigurationsClient_DeleteETag_Works()
         {
-            using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
+            IotHubServiceClient serviceClient = TestDevice.ServiceClient;
             string configurationId = (_idPrefix + Guid.NewGuid()).ToLower(); // Configuration Id characters must be all lower-case.
             try
             {
@@ -202,7 +203,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                     await serviceClient.Configurations.DeleteAsync(configurationId).ConfigureAwait(false);
                 }
                 catch (IotHubServiceException ex)
-                    when (ex.StatusCode is HttpStatusCode.NotFound && ex.ErrorCode is IotHubServiceErrorCode.DeviceNotFound)
+                    when (ex.StatusCode is HttpStatusCode.NotFound && ex.ErrorCode is IotHubServiceErrorCode.ConfigurationNotFound)
                 {
                     // configuration was already deleted during the normal test flow
                 }
@@ -221,7 +222,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
             bool configCreated = false;
             string configurationId = (_idPrefix + Guid.NewGuid()).ToLower(); // Configuration Id characters must be all lower-case.
-            using var sc = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
+            IotHubServiceClient sc = TestDevice.ServiceClient;
 
             try
             {
@@ -263,7 +264,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
             bool configCreated = false;
             string configurationId = (_idPrefix + Guid.NewGuid()).ToLower(); // Configuration Id characters must be all lower-case.
-            using var sc = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
+            IotHubServiceClient sc = TestDevice.ServiceClient;
 
             try
             {

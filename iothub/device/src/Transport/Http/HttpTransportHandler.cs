@@ -14,7 +14,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
     /// <summary>
     /// The final node in the handler chain, running operations on the HTTP transport.
     /// </summary>
-    internal sealed class HttpTransportHandler : TransportHandler
+    internal sealed class HttpTransportHandler : TransportHandlerBase
     {
         public const string ModuleId = "x-ms-edge-moduleId";
         private static readonly TimeSpan s_defaultOperationTimeout = TimeSpan.FromSeconds(60);

@@ -299,6 +299,9 @@ namespace Microsoft.Azure.Devices.Tests.Messaging
                 s_retryHandler,
                 mockAmqpConnectionHandler.Object);
 
+            await messagesClient.OpenAsync().ConfigureAwait(false);
+
+            // act
             Func<Task> act = async () => await messagesClient.SendAsync("deviceId123", msg).ConfigureAwait(false);
 
             // assert
@@ -339,6 +342,9 @@ namespace Microsoft.Azure.Devices.Tests.Messaging
                 s_retryHandler,
                 mockAmqpConnectionHandler.Object);
 
+            await messagesClient.OpenAsync().ConfigureAwait(false);
+
+            // act
             Func<Task> act = async () => await messagesClient.SendAsync("deviceId123", msg).ConfigureAwait(false);
 
             // assert

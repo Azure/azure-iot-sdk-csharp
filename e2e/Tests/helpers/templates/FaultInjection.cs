@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Azure.Devices.Client;
+using MQTTnet.Client;
 
 // If you see intermittent failures on devices that are created by this file, check to see if you have multiple suites
 // running at the same time because one test run could be accidentally destroying devices created by a different test run.
@@ -78,15 +79,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
 
                 await deviceClient.SendTelemetryAsync(faultInjectionMessage, linkedCts.Token).ConfigureAwait(false);
             }
-            catch (IotHubClientException ex) when (ex.IsTransient || ex.ErrorCode == IotHubClientErrorCode.ConnectionForcefullyClosedOnFaultInjection)
+            catch (IotHubClientException ex) when (ex.IsTransient || ex.InnerException is MqttClientDisconnectedException)
             {
                 VerboseTestLogger.WriteLine($"{nameof(ActivateFaultInjectionAsync)}: {ex}");
-
-                // For quota injection, the fault is only seen for the original HTTP request.
-                if (transportSettings is IotHubClientHttpSettings)
-                {
-                    throw;
-                }
             }
             catch (OperationCanceledException ex) when (transportSettings is IotHubClientMqttSettings)
             {

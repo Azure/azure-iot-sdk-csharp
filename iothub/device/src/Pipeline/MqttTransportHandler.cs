@@ -25,7 +25,7 @@ using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Client.Transport
 {
-    internal sealed class MqttTransportHandler : TransportHandler, IDisposable
+    internal sealed class MqttTransportHandler : TransportHandlerBase, IDisposable
     {
         private const int ProtocolGatewayPort = 8883;
 
@@ -439,9 +439,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
                 if (message.Properties.ContainsKey("AzIoTHub_FaultOperationType"))
                 {
-                    // When fualt injection causes this operation to fail, the MQTT layer throws a TaskCanceledException.
+                    // When fault injection causes this operation to fail, the MQTT layer throws a MqttClientDisconnectedException.
                     // Normally, we don't want that to get to the device app, but for fault injection tests we prefer
-                    // an exception that is not retryable so we'll let this exception slip through.
+                    // an exception that is NOT retryable so we'll let this exception slip through.
                     throw;
                 }
 
@@ -910,13 +910,14 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 _mqttClient.ApplicationMessageReceivedAsync -= HandleReceivedMessageAsync;
                 await _mqttClient.DisconnectAsync(new MqttClientDisconnectOptions(), cancellationToken).ConfigureAwait(false);
             }
-            catch (Exception ex) when (Logging.IsEnabled)
+            catch (Exception ex)
             {
                 // Deliberately not rethrowing the exception because this is a "best effort" close.
                 // The service may not have acknowledged that the client closed the connection, but
                 // all local resources have been closed. The service will eventually realize the
                 // connection is closed in cases like these.
-                Logging.Error(this, $"Failed to gracefully close the MQTT client {ex}");
+                if (Logging.IsEnabled)
+                    Logging.Error(this, $"Failed to gracefully close the MQTT client {ex}");
             }
             finally
             {
@@ -1118,11 +1119,12 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 {
                     await receivedEventArgs.AcknowledgeAsync(CancellationToken.None).ConfigureAwait(false);
                 }
-                catch (Exception ex) when (Logging.IsEnabled)
+                catch (Exception ex)
                 {
                     // This likely happened because the connection was lost. The service will re-send this message so the user
                     // can acknowledge it on the new connection.
-                    Logging.Error(this, $"Failed to send the acknowledgement for a received cloud to device message {ex}"); ;
+                    if (Logging.IsEnabled)
+                        Logging.Error(this, $"Failed to send the acknowledgement for a received cloud to device message {ex}"); ;
                 }
             }
             else if (Logging.IsEnabled)

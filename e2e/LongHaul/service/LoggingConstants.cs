@@ -15,6 +15,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
         public const string Transport = "transport";
         public const string OperationName = "operationName";
         public const string Component = "component";
+        public const string DeviceId = "deviceId";
 
         // Operations
 
