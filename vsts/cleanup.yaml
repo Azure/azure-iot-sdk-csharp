@@ -3,13 +3,11 @@ name: $(BuildID)_$(BuildDefinitionName)_$(SourceBranchName)_$(Date:yyyyMMdd)$(Re
 jobs:
   - job: WINDOWS
     displayName: Windows
-    condition: succeeded()
     pool:
       vmImage: windows-2022
     steps:
       - powershell: ./vsts/gatedBuild.ps1
         displayName: build
-        condition: eq(variables.SHOULD_RUN, 'True')
         env:
           # Environment variables for IoT Hub E2E tests
           IOTHUB_CONNECTION_STRING: $(IOTHUB-CONNECTION-STRING)
@@ -24,7 +22,6 @@ jobs:
 
       - task: ComponentGovernanceComponentDetection@0
         displayName: Component Governance Detection
-        condition: eq(variables.SHOULD_RUN, 'True')
         inputs:
           scanType: 'Register'
           verbosity: 'Verbose'
