@@ -23,8 +23,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
         private readonly IConnectionCredentials _connectionCredentials;
         private readonly IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> _defaultErrorMapping;
         private readonly bool _usingX509ClientCert;
-        private HttpClient _httpClientObj;
-        private HttpClientHandler _httpClientHandler;
+        private readonly HttpClient _httpClientObj;
+        private readonly HttpClientHandler _httpClientHandler;
         private readonly AdditionalClientInformation _additionalClientInformation;
 
         // These default values are consistent with Azure.Core default values:
@@ -119,94 +119,105 @@ namespace Microsoft.Azure.Devices.Client.Transport
              IDictionary<string, string> customHeaders,
              CancellationToken cancellationToken)
         {
+            if (Logging.IsEnabled)
+                Logging.Enter(this, requestUri, nameof(PostAsync));
+
             T2 result = default;
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            using var msg = new HttpRequestMessage(HttpMethod.Post, new Uri(_baseAddress, requestUri));
-            if (!_usingX509ClientCert)
-            {
-                string authHeader = await _connectionCredentials.GetPasswordAsync().ConfigureAwait(false);
-                if (!string.IsNullOrWhiteSpace(authHeader))
-                {
-                    msg.Headers.Add(HttpRequestHeader.Authorization.ToString(), authHeader);
-                }
-            }
-
-            if (_additionalClientInformation.ProductInfo != null)
-            {
-                msg.Headers.UserAgent.ParseAdd(_additionalClientInformation.ProductInfo.ToString(UserAgentFormats.Http));
-            }
-
-            AddCustomHeaders(msg, customHeaders);
-            if (entity != null)
-            {
-                if (typeof(T1) == typeof(byte[]))
-                {
-                    msg.Content = new ByteArrayContent((byte[])(object)entity);
-                }
-                else if (typeof(T1) == typeof(string))
-                {
-                    // only used to send batched messages on Http runtime
-                    msg.Content = new StringContent((string)(object)entity);
-                    msg.Content.Headers.ContentType = new MediaTypeHeaderValue(CommonConstants.BatchedMessageContentType);
-                }
-                else
-                {
-                    msg.Content = CreateContent(entity);
-                }
-            }
-
-            HttpResponseMessage responseMsg;
             try
             {
-                responseMsg = await _httpClientObj.SendAsync(msg, cancellationToken).ConfigureAwait(false);
-                if (responseMsg == null)
+                using var msg = new HttpRequestMessage(HttpMethod.Post, new Uri(_baseAddress, requestUri));
+                if (!_usingX509ClientCert)
                 {
-                    throw new InvalidOperationException(
-                        $"The response message was null when executing operation {HttpMethod.Post}.");
-                }
-                if (responseMsg.IsSuccessStatusCode)
-                {
-                    result = await ReadResponseMessageAsync<T2>(responseMsg, cancellationToken).ConfigureAwait(false);
-                }
-            }
-            catch (AggregateException ex)
-            {
-                ReadOnlyCollection<Exception> innerExceptions = ex.Flatten().InnerExceptions;
-                if (innerExceptions.Any(Fx.IsFatal))
-                {
-                    throw;
+                    string authHeader = await _connectionCredentials.GetPasswordAsync().ConfigureAwait(false);
+                    if (!string.IsNullOrWhiteSpace(authHeader))
+                    {
+                        msg.Headers.Add(HttpRequestHeader.Authorization.ToString(), authHeader);
+                    }
                 }
 
-                // Apparently HttpClient throws AggregateException when a timeout occurs.
-                // TODO: pradeepc - need to confirm this with ASP.NET team
-                if (innerExceptions.Any(e => e is TimeoutException))
+                if (_additionalClientInformation.ProductInfo != null)
                 {
-                    throw new IotHubClientException(ex.Message, IotHubClientErrorCode.NetworkErrors, ex);
+                    msg.Headers.UserAgent.ParseAdd(_additionalClientInformation.ProductInfo.ToString(UserAgentFormats.Http));
                 }
 
-                throw new IotHubClientException(ex.Message, innerException: ex);
-            }
-            catch (Exception ex) when (ex is TimeoutException || ex is IOException || ex is HttpRequestException)
-            {
-                throw new IotHubClientException(
-                    ex.Message,
-                    IotHubClientErrorCode.NetworkErrors,
-                    ex);
-            }
-            catch (Exception ex) when (!Fx.IsFatal(ex) && ex is not OperationCanceledException)
-            {
-                throw new IotHubClientException(ex.Message, innerException: ex);
-            }
+                AddCustomHeaders(msg, customHeaders);
+                if (entity != null)
+                {
+                    if (typeof(T1) == typeof(byte[]))
+                    {
+                        msg.Content = new ByteArrayContent((byte[])(object)entity);
+                    }
+                    else if (typeof(T1) == typeof(string))
+                    {
+                        // only used to send batched messages on Http runtime
+                        msg.Content = new StringContent((string)(object)entity);
+                        msg.Content.Headers.ContentType = new MediaTypeHeaderValue(CommonConstants.BatchedMessageContentType);
+                    }
+                    else
+                    {
+                        msg.Content = CreateContent(entity);
+                    }
+                }
 
-            if (!responseMsg.IsSuccessStatusCode)
-            {
-                Exception mappedEx = await MapToExceptionAsync(responseMsg, _defaultErrorMapping).ConfigureAwait(false);
-                throw mappedEx;
-            }
+                HttpResponseMessage responseMsg;
+                try
+                {
+                    responseMsg = await _httpClientObj.SendAsync(msg, cancellationToken).ConfigureAwait(false);
+                    if (responseMsg == null)
+                    {
+                        throw new InvalidOperationException(
+                            $"The response message was null when executing operation {HttpMethod.Post}.");
+                    }
+                    if (responseMsg.IsSuccessStatusCode)
+                    {
+                        result = await ReadResponseMessageAsync<T2>(responseMsg, cancellationToken).ConfigureAwait(false);
+                    }
+                }
+                catch (AggregateException ex)
+                {
+                    ReadOnlyCollection<Exception> innerExceptions = ex.Flatten().InnerExceptions;
+                    if (innerExceptions.Any(Fx.IsFatal))
+                    {
+                        throw;
+                    }
 
-            return result;
+                    // Apparently HttpClient throws AggregateException when a timeout occurs.
+                    // TODO: pradeepc - need to confirm this with ASP.NET team
+                    if (innerExceptions.Any(e => e is TimeoutException))
+                    {
+                        throw new IotHubClientException(ex.Message, IotHubClientErrorCode.NetworkErrors, ex);
+                    }
+
+                    throw new IotHubClientException(ex.Message, innerException: ex);
+                }
+                catch (Exception ex) when (ex is TimeoutException || ex is IOException || ex is HttpRequestException)
+                {
+                    throw new IotHubClientException(
+                        ex.Message,
+                        IotHubClientErrorCode.NetworkErrors,
+                        ex);
+                }
+                catch (Exception ex) when (!Fx.IsFatal(ex) && ex is not OperationCanceledException)
+                {
+                    throw new IotHubClientException(ex.Message, innerException: ex);
+                }
+
+                if (!responseMsg.IsSuccessStatusCode)
+                {
+                    Exception mappedEx = await MapToExceptionAsync(responseMsg, _defaultErrorMapping).ConfigureAwait(false);
+                    throw mappedEx;
+                }
+
+                return result;
+            }
+            finally
+            {
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, requestUri, nameof(PostAsync));
+            }
         }
 
         private static async Task<Exception> MapToExceptionAsync(
