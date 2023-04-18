@@ -16,12 +16,12 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
     /// </summary>
     internal class SystemHealthMonitor
     {
-        private readonly IIotHub _iotHub;
+        private readonly IotHub _iotHub;
         private readonly Logger _logger;
         private static int s_port;
         private static readonly TimeSpan s_interval = TimeSpan.FromSeconds(3);
 
-        public SystemHealthMonitor(IIotHub iotHub, int portFilter, Logger logger)
+        public SystemHealthMonitor(IotHub iotHub, int portFilter, Logger logger)
         {
             _iotHub = iotHub;
             s_port = portFilter;
@@ -41,7 +41,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
                     { nameof(properties.OsVersion), properties.OsVersion },
                     { nameof(properties.SystemArchitecture), properties.SystemArchitecture },
                 });
-            await _iotHub.SetPropertiesAsync("systemProperties", properties, ct).ConfigureAwait(false);
+            await _iotHub.SetPropertiesAsync("systemProperties", properties, _logger, ct).ConfigureAwait(false);
 
             while (!ct.IsCancellationRequested)
             {

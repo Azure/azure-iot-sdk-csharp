@@ -19,7 +19,7 @@ using static Microsoft.Azure.Devices.LongHaul.Device.LoggingConstants;
 
 namespace Microsoft.Azure.Devices.LongHaul.Device
 {
-    internal sealed class IotHub : IIotHub, IAsyncDisposable
+    internal sealed class IotHub : IAsyncDisposable
     {
         private readonly string _deviceConnectionString;
         private readonly IotHubClientOptions _clientOptions;
@@ -34,9 +34,10 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
         private RecommendedAction _disconnectedRecommendedAction;
         private volatile IotHubDeviceClient _deviceClient;
 
-        private static readonly TimeSpan s_messageLoopSleepTime = TimeSpan.FromSeconds(10);
-        private static readonly TimeSpan s_deviceTwinUpdateInterval = TimeSpan.FromSeconds(3);
-        private static readonly TimeSpan s_fileUploadInterval = TimeSpan.FromSeconds(5);
+        private static readonly TimeSpan s_messageLoopSleepTime = TimeSpan.FromSeconds(3);
+        private static readonly TimeSpan s_deviceTwinUpdateInterval = TimeSpan.FromSeconds(10);
+        private static readonly TimeSpan s_fileUploadInterval = TimeSpan.FromSeconds(30);
+        private static readonly TimeSpan s_retryInterval = TimeSpan.FromSeconds(1);
         private readonly ConcurrentQueue<TelemetryMessage> _messagesToSend = new();
 
         private long _totalTelemetryMessagesSent = 0;
@@ -111,7 +112,8 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
             var pendingMessages = new List<TelemetryMessage>(maxBulkMessages);
             bool loggedDisconnection = false;
             logger.LoggerContext.Add(OperationName, LoggingConstants.TelemetryMessage);
-            Stopwatch sw = new();
+            var sw = new Stopwatch();
+
             while (!ct.IsCancellationRequested)
             {
                 logger.Metric(MessageBacklog, _messagesToSend.Count);
@@ -120,16 +122,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
                 if (!IsConnected
                     || !_messagesToSend.Any())
                 {
-                    try
-                    {
-                        await Task.Delay(s_messageLoopSleepTime, ct).ConfigureAwait(false);
-                    }
-                    catch (OperationCanceledException)
-                    {
-                        // App is signalled to exit
-                        _logger.Trace($"Exit signal encountered. Terminating telemetry message pump.", TraceSeverity.Verbose);
-                        return;
-                    }
+                    await Task.Delay(s_messageLoopSleepTime, ct).ConfigureAwait(false);
                 }
 
                 // If not connected, skip the work below this round.
@@ -167,27 +160,35 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
                 // Send any message prepped to send.
                 if (pendingMessages.Any())
                 {
-                    if (pendingMessages.Count > 1)
+                    try
                     {
-                        logger.Trace($"Sending {pendingMessages.Count} telemetry messages in bulk.", TraceSeverity.Information);
-                        sw.Restart();
-                        await _deviceClient.SendTelemetryAsync(pendingMessages, ct).ConfigureAwait(false);
+                        if (pendingMessages.Count > 1)
+                        {
+                            logger.Trace($"Sending {pendingMessages.Count} telemetry messages in bulk.", TraceSeverity.Information);
+                            sw.Restart();
+                            await _deviceClient.SendTelemetryAsync(pendingMessages, ct).ConfigureAwait(false);
+                        }
+                        else
+                        {
+                            logger.Trace("Sending a telemetry message.", TraceSeverity.Information);
+                            sw.Restart();
+                            await _deviceClient.SendTelemetryAsync(pendingMessages.First(), ct).ConfigureAwait(false);
+                        }
+
+                        sw.Stop();
+
+                        _totalTelemetryMessagesSent += pendingMessages.Count;
+                        _logger.Metric(TotalTelemetryMessagesSent, _totalTelemetryMessagesSent);
+                        _logger.Metric(TelemetryMessageDelaySeconds, sw.Elapsed.TotalSeconds);
+                        pendingMessages.Clear();
+
+                        // Alternate sending between single and in bulk.
+                        sendSingle = !sendSingle;
                     }
-                    else
+                    catch (Exception ex)
                     {
-                        logger.Trace("Sending a telemetry message.", TraceSeverity.Information);
-                        sw.Restart();
-                        await _deviceClient.SendTelemetryAsync(pendingMessages.First(), ct).ConfigureAwait(false);
+                        _logger.Trace($"Exception when sending telemetry when connected is {IsConnected}\n{ex}", TraceSeverity.Warning);
                     }
-                    sw.Stop();
-
-                    _totalTelemetryMessagesSent += pendingMessages.Count;
-                    _logger.Metric(TotalTelemetryMessagesSent, _totalTelemetryMessagesSent);
-                    _logger.Metric(TelemetryMessageDelaySeconds, sw.Elapsed.TotalSeconds);
-                    pendingMessages.Clear();
-
-                    // Alternate sending between single and in bulk.
-                    sendSingle = !sendSingle;
                 }
             }
         }
@@ -196,25 +197,33 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
         {
             bool loggedDisconnection = false;
             logger.LoggerContext.Add(OperationName, ReportTwinProperties);
-            Stopwatch sw = new();
+            var sw = new Stopwatch();
+
             while (!ct.IsCancellationRequested)
             {
                 // If not connected, skip the work below this round
                 if (IsConnected)
                 {
-                    var reported = new ReportedProperties
+                    try
                     {
-                        { "TotalTelemetryMessagesSent", _totalTelemetryMessagesSent },
-                    };
+                        var reported = new ReportedProperties
+                        {
+                            { "TotalTelemetryMessagesSent", _totalTelemetryMessagesSent },
+                        };
 
-                    logger.Trace($"Updating reported properties.", TraceSeverity.Information);
-                    sw.Restart();
-                    await _deviceClient.UpdateReportedPropertiesAsync(reported, ct).ConfigureAwait(false);
-                    sw.Stop();
+                        logger.Trace($"Updating reported properties.", TraceSeverity.Information);
+                        sw.Restart();
+                        await _deviceClient.UpdateReportedPropertiesAsync(reported, ct).ConfigureAwait(false);
+                        sw.Stop();
 
-                    ++_totalTwinUpdatesReported;
-                    logger.Metric(TotalTwinUpdatesReported, _totalTwinUpdatesReported);
-                    logger.Metric(ReportedTwinUpdateOperationSeconds, sw.Elapsed.TotalSeconds);
+                        ++_totalTwinUpdatesReported;
+                        logger.Metric(TotalTwinUpdatesReported, _totalTwinUpdatesReported);
+                        logger.Metric(ReportedTwinUpdateOperationSeconds, sw.Elapsed.TotalSeconds);
+                    }
+                    catch (Exception ex)
+                    {
+                        logger.Trace($"Exception when reporting properties when connected is {IsConnected}\n{ex}");
+                    }
                 }
                 else if (!loggedDisconnection)
                 {
@@ -262,7 +271,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
             _messagesToSend.Enqueue(iotMessage);
         }
 
-        public async Task SetPropertiesAsync(string keyName, object properties, CancellationToken cancellationToken)
+        public async Task SetPropertiesAsync(string keyName, object properties, Logger logger, CancellationToken ct)
         {
             Debug.Assert(_deviceClient != null);
             Debug.Assert(properties != null);
@@ -271,59 +280,91 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
             {
                 { keyName, properties },
             };
+            while (!ct.IsCancellationRequested)
+            {
+                try
+                {
+                    await _deviceClient
+                        .UpdateReportedPropertiesAsync(reportedProperties, ct)
+                        .ConfigureAwait(false);
 
-            await _deviceClient
-                .UpdateReportedPropertiesAsync(reportedProperties, cancellationToken)
-                .ConfigureAwait(false);
-
-            _logger.Trace($"Set the reported property with name [{keyName}] in device twin.", TraceSeverity.Information);
+                    logger.Trace($"Set the reported property with name [{keyName}] in device twin.", TraceSeverity.Information);
+                    break;
+                }
+                catch (Exception ex)
+                {
+                    logger.Trace($"Exception reporting property\n{ex}", TraceSeverity.Warning);
+                    await Task.Delay(s_retryInterval, ct).ConfigureAwait(false);
+                }
+            }
         }
 
         public async Task UploadFilesAsync(Logger logger, CancellationToken ct)
         {
             logger.LoggerContext.Add(OperationName, UploadFiles);
-            Stopwatch sw = new();
+            var sw = new Stopwatch();
+
             while (!ct.IsCancellationRequested)
             {
+                await Task.Delay(s_fileUploadInterval, ct).ConfigureAwait(false);
+
                 string fileName = $"TestPayload-{Guid.NewGuid()}.txt";
                 using var ms = new MemoryStream(Encoding.UTF8.GetBytes("TestPayload"));
 
                 var fileUploadSasUriRequest = new FileUploadSasUriRequest(fileName);
-                FileUploadSasUriResponse sasUri = await _deviceClient
-                    .GetFileUploadSasUriAsync(fileUploadSasUriRequest, ct)
-                    .ConfigureAwait(false);
+                FileUploadSasUriResponse sasUri;
+
+                try
+                {
+                    sasUri = await _deviceClient
+                        .GetFileUploadSasUriAsync(fileUploadSasUriRequest, ct)
+                        .ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    logger.Trace($"Exception getting file upload SAS URI\n{ex}", TraceSeverity.Warning);
+                    continue;
+                }
 
                 Uri uploadUri = sasUri.GetBlobUri();
+                var fileUploadCompletionNotification = new FileUploadCompletionNotification(sasUri.CorrelationId, false)
+                {
+                    StatusCode = 500,
+                };
 
                 try
                 {
                     logger.Trace($"Attempting to upload {fileName}...", TraceSeverity.Information);
                     var blockBlobClient = new BlockBlobClient(uploadUri);
                     await blockBlobClient.UploadAsync(ms, new BlobUploadOptions(), ct).ConfigureAwait(false);
+
+                    logger.Trace("Succeeded uploading file to Azure Storage", TraceSeverity.Information);
+                    fileUploadCompletionNotification = new FileUploadCompletionNotification(sasUri.CorrelationId, true)
+                    {
+                        StatusCode = 200,
+                    };
                 }
                 catch (Exception ex)
                 {
-                    logger.Trace($"Exception occurred while using Azure Storage SDK to upload file: {ex}", TraceSeverity.Warning);
-                    var failedFileUploadCompletionNotification = new FileUploadCompletionNotification(sasUri.CorrelationId, false)
-                    {
-                        StatusCode = 500,
-                    };
-
-                    await _deviceClient.CompleteFileUploadAsync(failedFileUploadCompletionNotification, ct).ConfigureAwait(false);
-                    return;
+                    logger.Trace($"Exception uploading blob\n{ex}", TraceSeverity.Warning);
                 }
 
-                logger.Trace("File uploaded to Azure Storage was a success", TraceSeverity.Information);
-                var successfulFileUploadCompletionNotification = new FileUploadCompletionNotification(sasUri.CorrelationId, true)
+                while (!ct.IsCancellationRequested)
                 {
-                    StatusCode = 200,
-                };
-
-                sw.Restart();
-                await _deviceClient.CompleteFileUploadAsync(successfulFileUploadCompletionNotification, ct).ConfigureAwait(false);
-                sw.Stop();
-                logger.Metric(FileUploadOperationSeconds, sw.Elapsed.Seconds);
-                await Task.Delay(s_fileUploadInterval, ct).ConfigureAwait(false);
+                    try
+                    {
+                        sw.Restart();
+                        await _deviceClient.CompleteFileUploadAsync(fileUploadCompletionNotification, ct).ConfigureAwait(false);
+                        sw.Stop();
+                        logger.Metric(FileUploadOperationSeconds, sw.Elapsed.Seconds);
+                        break;
+                    }
+                    catch (Exception ex)
+                    {
+                        logger.Trace($"Exception completing file upload\n{ex}", TraceSeverity.Warning);
+                        await Task.Delay(s_retryInterval, ct).ConfigureAwait(false);
+                    }
+                }
             }
         }
 
@@ -427,10 +468,10 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
                             _logger.Trace($"Echoing back the payload of direct method.", TraceSeverity.Information);
                             _logger.Metric(
                                 C2dDirectMethodDelaySeconds,
-                                (DateTimeOffset.UtcNow - methodPayload.CurrentTimeUtc).TotalSeconds);
+                                (DateTimeOffset.UtcNow - methodPayload.SentOnUtc).TotalSeconds);
 
                             // Log the current time again and send the response back to the service app.
-                            methodPayload.CurrentTimeUtc = DateTimeOffset.UtcNow;
+                            methodPayload.SentOnUtc = DateTimeOffset.UtcNow;
                             return Task.FromResult(new DirectMethodResponse(200) { Payload = methodPayload });
                         }
                     }
@@ -483,7 +524,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
             {
                 _logger.Metric(TotalC2dMessagesCompleted, ++_totalC2dMessagesCompleted);
 
-                TimeSpan delay = DateTimeOffset.UtcNow - customC2dMessagePayload.CurrentTimeUtc;
+                TimeSpan delay = DateTimeOffset.UtcNow - customC2dMessagePayload.SentOnUtc;
                 _logger.Metric(C2dMessageOperationSeconds, delay.TotalSeconds);
 
                 return Task.FromResult(MessageAcknowledgement.Complete);
