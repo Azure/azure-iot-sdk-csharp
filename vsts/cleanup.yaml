@@ -6,7 +6,7 @@ jobs:
     pool:
       vmImage: windows-2022
     steps:
-      - powershell: ./vsts/gatedBuild.ps1
+      - powershell: ./vsts/cleanup.ps1
         displayName: build
         env:
           # Environment variables for IoT Hub E2E tests
