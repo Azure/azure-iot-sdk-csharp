@@ -5,7 +5,7 @@ using System;
 using System.Net;
 using System.Net.Http;
 
-namespace Microsoft.Azure.Devices
+namespace Microsoft.Azure.Devices.Client
 {
     // This type manages changing HttpClient defaults to more appropriate values
     // There are two limits we target:
