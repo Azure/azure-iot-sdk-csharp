@@ -211,7 +211,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
         }
 
-        internal static async Task<string> GetTestFileNameAsync(int fileSize)
+        private static async Task<string> GetTestFileNameAsync(int fileSize)
         {
             var rnd = new Random();
             byte[] buffer = new byte[fileSize];
