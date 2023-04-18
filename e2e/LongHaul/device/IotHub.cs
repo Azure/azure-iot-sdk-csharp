@@ -110,7 +110,6 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
             bool sendSingle = true;
 
             var pendingMessages = new List<TelemetryMessage>(maxBulkMessages);
-            bool loggedDisconnection = false;
             logger.LoggerContext.Add(OperationName, LoggingConstants.TelemetryMessage);
             var sw = new Stopwatch();
 
@@ -118,23 +117,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
             {
                 logger.Metric(MessageBacklog, _messagesToSend.Count);
 
-                // Wait when there are no messages to send, or if not connected
-                if (!IsConnected
-                    || !_messagesToSend.Any())
-                {
-                    await Task.Delay(s_messageLoopSleepTime, ct).ConfigureAwait(false);
-                }
-
-                // If not connected, skip the work below this round.
-                if (!IsConnected)
-                {
-                    if (!loggedDisconnection)
-                    {
-                        loggedDisconnection = true;
-                        logger.Trace($"Waiting for connection before sending telemetry", TraceSeverity.Warning);
-                    }
-                    continue;
-                }
+                await Task.Delay(s_messageLoopSleepTime, ct).ConfigureAwait(false);
 
                 // Get messages to send, unless we're retrying a previous set of messages.
                 if (!pendingMessages.Any())
@@ -195,40 +178,30 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
 
         public async Task ReportReadOnlyPropertiesAsync(Logger logger, CancellationToken ct)
         {
-            bool loggedDisconnection = false;
             logger.LoggerContext.Add(OperationName, ReportTwinProperties);
             var sw = new Stopwatch();
 
             while (!ct.IsCancellationRequested)
             {
-                // If not connected, skip the work below this round
-                if (IsConnected)
+                try
                 {
-                    try
+                    var reported = new ReportedProperties
                     {
-                        var reported = new ReportedProperties
-                        {
-                            { "TotalTelemetryMessagesSent", _totalTelemetryMessagesSent },
-                        };
+                        { "TotalTelemetryMessagesSent", _totalTelemetryMessagesSent },
+                    };
 
-                        logger.Trace($"Updating reported properties.", TraceSeverity.Information);
-                        sw.Restart();
-                        await _deviceClient.UpdateReportedPropertiesAsync(reported, ct).ConfigureAwait(false);
-                        sw.Stop();
+                    logger.Trace($"Updating reported properties.", TraceSeverity.Information);
+                    sw.Restart();
+                    await _deviceClient.UpdateReportedPropertiesAsync(reported, ct).ConfigureAwait(false);
+                    sw.Stop();
 
-                        ++_totalTwinUpdatesReported;
-                        logger.Metric(TotalTwinUpdatesReported, _totalTwinUpdatesReported);
-                        logger.Metric(ReportedTwinUpdateOperationSeconds, sw.Elapsed.TotalSeconds);
-                    }
-                    catch (Exception ex)
-                    {
-                        logger.Trace($"Exception when reporting properties when connected is {IsConnected}\n{ex}");
-                    }
+                    ++_totalTwinUpdatesReported;
+                    logger.Metric(TotalTwinUpdatesReported, _totalTwinUpdatesReported);
+                    logger.Metric(ReportedTwinUpdateOperationSeconds, sw.Elapsed.TotalSeconds);
                 }
-                else if (!loggedDisconnection)
+                catch (Exception ex)
                 {
-                    loggedDisconnection = true;
-                    logger.Trace($"Waiting for connection before any other operations.", TraceSeverity.Warning);
+                    logger.Trace($"Exception when reporting properties when connected is {IsConnected}\n{ex}");
                 }
 
                 await Task.Delay(s_deviceTwinUpdateInterval, ct).ConfigureAwait(false);
