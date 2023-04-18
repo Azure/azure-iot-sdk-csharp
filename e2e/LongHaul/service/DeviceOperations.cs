@@ -16,6 +16,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
         private readonly IotHubServiceClient _serviceClient;
         private readonly string _deviceId;
 
+
         private long _totalMethodCallsCount = 0;
         private long _totalDesiredPropertiesUpdatesCount = 0;
         private long _totalC2dMessagesSentCount = 0;
@@ -30,8 +31,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
         {
             _serviceClient = serviceClient;
             _deviceId = deviceId;
-            _logger = logger;
-            _logger.LoggerContext.Add("deviceId", deviceId);
+            logger.LoggerContext.Add("deviceId", deviceId);
         }
 
         public async Task InvokeDirectMethodAsync(Logger logger, CancellationToken ct)

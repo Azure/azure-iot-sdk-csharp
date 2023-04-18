@@ -16,7 +16,6 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
         private readonly IotHubServiceClient _serviceClient;
         private readonly string _deviceId;
         private readonly string _moduleId;
-        private readonly Logger _logger;
 
         private long _totalMethodCallsCount = 0;
         private long _totalDesiredPropertiesUpdatesCount = 0;
@@ -31,9 +30,8 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
             _serviceClient = serviceClient;
             _deviceId = deviceId;
             _moduleId = moduleId;
-            _logger = logger;
-            _logger.LoggerContext.Add("deviceId", deviceId);
-            _logger.LoggerContext.Add("moduleId", moduleId);
+            logger.LoggerContext.Add("deviceId", deviceId);
+            logger.LoggerContext.Add("moduleId", moduleId);
         }
 
         public async Task InvokeDirectMethodAsync(Logger logger, CancellationToken ct)
@@ -123,7 +121,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                 }
                 catch (Exception ex)
                 {
-                    _logger.Trace($"Unexpected exception observed while requesting twin property update.\n{ex}");
+                    logger.Trace($"Unexpected exception observed while requesting twin property update.\n{ex}");
                 }
 
                 await Task.Delay(s_desiredPropertiesSetInterval, ct).ConfigureAwait(false);

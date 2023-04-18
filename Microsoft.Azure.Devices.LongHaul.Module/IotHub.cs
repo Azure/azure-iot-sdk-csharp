@@ -19,7 +19,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
 
         private SemaphoreSlim _lifetimeControl = new(1, 1);
 
-        private volatile int _connectionStatusChangeCount = 0;
+        private volatile int _connectionStatusChangeCount;
         private readonly Stopwatch _disconnectedTimer = new();
         private ConnectionStatus _disconnectedStatus;
         private ConnectionStatusChangeReason _disconnectedReason;
@@ -30,13 +30,13 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
         private static readonly TimeSpan s_deviceTwinUpdateInterval = TimeSpan.FromSeconds(3);
         private readonly ConcurrentQueue<TelemetryMessage> _messagesToSend = new();
 
-        private long _totalTelemetryMessagesToModuleSent = 0;
-        private long _totalTwinUpdatesToModuleReported = 0;
-        private long _totalTwinCallbacksToModuleHandled = 0;
-        private long _totalDesiredPropertiesToModuleHandled = 0;
-        private long _totalM2mMessagesCompleted = 0;
-        private long _totalM2mMessagesRejected = 0;
-        private long _totalMethodCallsToModuleCount = 0;
+        private long _totalTelemetryMessagesToModuleSent;
+        private long _totalTwinUpdatesToModuleReported;
+        private long _totalTwinCallbacksToModuleHandled;
+        private long _totalDesiredPropertiesToModuleHandled;
+        private long _totalM2mMessagesCompleted;
+        private long _totalM2mMessagesRejected;
+        private long _totalMethodCallsToModuleCount;
 
         public IotHub(Logger logger, Parameters parameters)
         {

@@ -101,7 +101,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
 
                         async Task Operations()
                         {
-                            var deviceOperations = new DeviceOperations(s_serviceClient, deviceId);
+                            var deviceOperations = new DeviceOperations(s_serviceClient, deviceId, _logger.Clone());
                             _logger.Trace($"Creating {nameof(DeviceOperations)} on the device [{deviceId}]", TraceSeverity.Verbose);
 
                             Logger loggerPerDevice = _logger.Clone();
