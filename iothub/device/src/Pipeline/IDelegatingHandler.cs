@@ -53,6 +53,9 @@ namespace Microsoft.Azure.Devices.Client
 
         Task StopSasTokenLoopAsync();
 
+        // File upload - over HTTP (IotHubDeviceClient only)
+        Task<FileUploadSasUriResponse> GetFileUploadSasUriAsync(FileUploadSasUriRequest request, CancellationToken cancellationToken);
 
+        Task CompleteFileUploadAsync(FileUploadCompletionNotification notification, CancellationToken cancellationToken);
     }
 }

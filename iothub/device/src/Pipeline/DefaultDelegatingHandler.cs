@@ -38,6 +38,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
+        public virtual bool IsUsable => NextHandler?.IsUsable ?? true;
+
         public virtual Task OpenAsync(CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
@@ -151,7 +153,17 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return NextHandler?.StopSasTokenLoopAsync() ?? Task.CompletedTask;
         }
 
-        public virtual bool IsUsable => NextHandler?.IsUsable ?? true;
+        public virtual Task<FileUploadSasUriResponse> GetFileUploadSasUriAsync(FileUploadSasUriRequest request, CancellationToken cancellationToken)
+        {
+            ThrowIfDisposed();
+            return NextHandler?.GetFileUploadSasUriAsync(request, cancellationToken) ?? Task.FromResult<FileUploadSasUriResponse>(null);
+        }
+
+        public virtual Task CompleteFileUploadAsync(FileUploadCompletionNotification notification, CancellationToken cancellationToken)
+        {
+            ThrowIfDisposed();
+            return NextHandler?.CompleteFileUploadAsync(notification, cancellationToken) ?? Task.CompletedTask;
+        }
 
         public virtual void Dispose()
         {
