@@ -315,7 +315,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     _mqttClient.DisconnectedAsync += HandleDisconnectionAsync;
                     _mqttClient.ApplicationMessageReceivedAsync += HandleReceivedMessageAsync;
 
-                    // The timer would invoke callback after every hour.
+                    // The timer would invoke callback in an hour and every hour thereafter.
                     _twinTimeoutTimer.Change(s_twinResponseTimeout, s_twinResponseTimeout);
                 }
                 catch (MqttConnectingFailedException ex)
@@ -1054,6 +1054,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
             if (disconnectedEventArgs.ClientWasConnected)
             {
                 OnTransportDisconnected();
+
+                // During a disconnection, any pending twin updates won't be received, so we'll preemptively
+                // cancel these operations so the client can retry once reconnected.
+                RemoveOldOperations(TimeSpan.Zero);
             }
 
             return Task.CompletedTask;
@@ -1355,15 +1359,30 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return true;
         }
 
-        private void RemoveOldOperations(object _)
+        private void RemoveOldOperations(object state)
         {
+            if (state is not TimeSpan maxAge)
+            {
+                maxAge = s_twinResponseTimeout;
+            }
+
+            const string exceptionMessage = "Did not receive twin response from service.";
             _ = _twinResponseTimeouts
-                .Where(x => DateTimeOffset.UtcNow - x.Value > s_twinResponseTimeout)
+                .Where(x => DateTimeOffset.UtcNow - x.Value > maxAge)
                 .Select(x =>
                     {
-                        _getTwinResponseCompletions.TryRemove(x.Key, out TaskCompletionSource<GetTwinResponse> _);
-                        _reportedPropertyUpdateResponseCompletions.TryRemove(x.Key, out TaskCompletionSource<PatchTwinResponse> _);
+                        if (_getTwinResponseCompletions.TryRemove(x.Key, out TaskCompletionSource<GetTwinResponse> twinResponse))
+                        {
+                            twinResponse.TrySetException(new IotHubClientException(exceptionMessage, IotHubClientErrorCode.NetworkErrors));
+                        }
+
+                        if (_reportedPropertyUpdateResponseCompletions.TryRemove(x.Key, out TaskCompletionSource<PatchTwinResponse> reportedPropertyUpdateResponse))
+                        {
+                            twinResponse.TrySetException(new IotHubClientException(exceptionMessage, IotHubClientErrorCode.NetworkErrors));
+                        }
+
                         _twinResponseTimeouts.TryRemove(x.Key, out DateTimeOffset _);
+
                         return true;
                     });
         }
