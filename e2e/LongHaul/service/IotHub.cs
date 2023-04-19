@@ -68,63 +68,65 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
         {
             while (!ct.IsCancellationRequested)
             {
-                AsyncPageable<ClientTwin> allDevices = s_serviceClient.Query.Create<ClientTwin>(
-                    "SELECT deviceId, connectionState FROM devices where is_defined(properties.reported.runId)",
-                    ct);
+                try
+                {
+                    AsyncPageable<ClientTwin> allDevices = s_serviceClient.Query.Create<ClientTwin>(
+                        "SELECT deviceId, connectionState, lastActivityTime FROM devices where is_defined(properties.reported.runId)",
+                        ct);
 
-                AsyncPageable<ClientTwin> allModules = s_serviceClient.Query.Create<ClientTwin>(
-                    "SELECT deviceId, moduleId, connectionState FROM devices.modules where is_defined(properties.reported.runId)",
-                    ct);
+                    AsyncPageable<ClientTwin> allModules = s_serviceClient.Query.Create<ClientTwin>(
+                        "SELECT deviceId, moduleId, connectionState FROM devices.modules where is_defined(properties.reported.runId)",
+                        ct);
 
-                await foreach (ClientTwin device in allDevices)
+                    await foreach (ClientTwin device in allDevices)
                 {
                     string deviceId = device.DeviceId;
 
-                    if (s_onlineDeviceOperations.ContainsKey(deviceId)
-                        && device.ConnectionState is ClientConnectionState.Disconnected)
-                    {
-                        CancellationTokenSource source = s_onlineDeviceOperations[deviceId].Item2;
-                        // Signal cancellation to all tasks on the particular device.
-                        source.Cancel();
-                        // Dispose the cancellation token source.
-                        source.Dispose();
-                        // Remove the correlated device operations and cancellation token source of the particular device from the dictionary.
-                        s_onlineDeviceOperations.TryRemove(deviceId, out _);
-                    }
-                    else if (!s_onlineDeviceOperations.ContainsKey(deviceId)
-                        && device.ConnectionState is ClientConnectionState.Connected)
-                    {
-                        // For each online device, initiate a new cancellation token source.
-                        // Once the device goes offline, cancel all operations on this device.
-                        var source = new CancellationTokenSource();
-                        CancellationToken token = source.Token;
+                        if (s_onlineDeviceOperations.ContainsKey(deviceId)
+                            && device.ConnectionState is ClientConnectionState.Disconnected)
+                        {
+                            CancellationTokenSource source = s_onlineDeviceOperations[deviceId].Item2;
+                            // Signal cancellation to all tasks on the particular device.
+                            source.Cancel();
+                            // Dispose the cancellation token source.
+                            source.Dispose();
+                            // Remove the correlated device operations and cancellation token source of the particular device from the dictionary.
+                            s_onlineDeviceOperations.TryRemove(deviceId, out _);
+                        }
+                        else if (!s_onlineDeviceOperations.ContainsKey(deviceId)
+                            && device.ConnectionState is ClientConnectionState.Connected)
+                        {
+                            // For each online device, initiate a new cancellation token source.
+                            // Once the device goes offline, cancel all operations on this device.
+                            var source = new CancellationTokenSource();
+                            CancellationToken token = source.Token;
 
                         async Task Operations()
                         {
-                            var deviceOperations = new DeviceOperations(s_serviceClient, deviceId, _logger.Clone());
-                            _logger.Trace($"Creating {nameof(DeviceOperations)} on the device [{deviceId}]", TraceSeverity.Verbose);
-
                             Logger loggerPerDevice = _logger.Clone();
                             loggerPerDevice.LoggerContext.Add(DeviceId, deviceId);
+                            var deviceOperations = new DeviceOperations(s_serviceClient, deviceId, loggerPerDevice);
+                            _logger.Trace($"Creating {nameof(DeviceOperations)} on the device [{deviceId}]", TraceSeverity.Verbose);
 
-                            try
-                            {
-                                await Task
-                                .WhenAll(
-                                    deviceOperations.InvokeDirectMethodAsync(loggerPerDevice.Clone(), token),
-                                    deviceOperations.SetDesiredPropertiesAsync("guidValue", Guid.NewGuid().ToString(), loggerPerDevice.Clone(), token),
-                                    deviceOperations.SendC2dMessagesAsync(loggerPerDevice.Clone(), token))
-                                .ConfigureAwait(false);
+
+                                try
+                                {
+                                    await Task
+                                    .WhenAll(
+                                        deviceOperations.InvokeDirectMethodAsync(loggerPerDevice.Clone(), token),
+                                        deviceOperations.SetDesiredPropertiesAsync("guidValue", Guid.NewGuid().ToString(), loggerPerDevice.Clone(), token),
+                                        deviceOperations.SendC2dMessagesAsync(loggerPerDevice.Clone(), token))
+                                    .ConfigureAwait(false);
+                                }
+                                catch (OperationCanceledException)
+                                {
+                                    _logger.Trace($"Operations on [{deviceId}] have been canceled as the device goes offline.", TraceSeverity.Information);
+                                }
+                                catch (Exception ex)
+                                {
+                                    _logger.Trace($"Service app failed with exception {ex}", TraceSeverity.Error);
+                                }
                             }
-                            catch (OperationCanceledException)
-                            {
-                                _logger.Trace($"Operations on [{deviceId}] have been canceled as the device goes offline.", TraceSeverity.Information);
-                            }
-                            catch (Exception ex)
-                            {
-                                _logger.Trace($"Service app failed with exception {ex}", TraceSeverity.Error);
-                            }
-                        }
 
                         // Passing in "Operations()" as Task so we don't need to manually call "Invoke()" on it.
                         var operationsTuple = new Tuple<Task, CancellationTokenSource>(Operations(), source);
