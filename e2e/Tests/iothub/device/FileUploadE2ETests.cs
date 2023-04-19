@@ -134,6 +134,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             {
                 deviceClient = new IotHubDeviceClient(testDevice.ConnectionString, clientOptions);
             }
+            await deviceClient.OpenAsync(ct).ConfigureAwait(false);
 
             var fileUploadSasUriRequest = new FileUploadSasUriRequest(filename);
 
