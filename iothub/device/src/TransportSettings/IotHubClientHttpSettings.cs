@@ -21,6 +21,12 @@ namespace Microsoft.Azure.Devices.Client
             Protocol = IotHubClientTransportProtocol.WebSocket;
         }
 
+        /// <summary>
+        /// Gets or sets a callback method to validate the server certificate.
+        /// </summary>
+        /// <remarks>
+        /// This is used only for setting the certificate validator for module clients.
+        /// </remarks>
         internal Func<HttpRequestMessage, X509Certificate2, X509Chain, SslPolicyErrors, bool> ServerCertificateCustomValidationCallback { get; set; }
 
         internal override IotHubClientTransportSettings Clone()
