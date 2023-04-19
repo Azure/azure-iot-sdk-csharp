@@ -185,14 +185,8 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
             {
                 try
                 {
-                    var reported = new ReportedProperties
-                    {
-                        { "TotalTelemetryMessagesSent", _totalTelemetryMessagesSent },
-                    };
-
-                    logger.Trace($"Updating reported properties.", TraceSeverity.Information);
                     sw.Restart();
-                    await _deviceClient.UpdateReportedPropertiesAsync(reported, ct).ConfigureAwait(false);
+                    await SetPropertiesAsync("TotalTelemetryMessagesSent", _totalTelemetryMessagesSent, logger, ct).ConfigureAwait(false);
                     sw.Stop();
 
                     ++_totalTwinUpdatesReported;
@@ -257,11 +251,11 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
             {
                 try
                 {
-                    await _deviceClient
+                    long version = await _deviceClient
                         .UpdateReportedPropertiesAsync(reportedProperties, ct)
                         .ConfigureAwait(false);
 
-                    logger.Trace($"Set the reported property with name [{keyName}] in device twin.", TraceSeverity.Information);
+                    logger.Trace($"Set the reported property with key {keyName} and value {properties} in device twin; observed version {version}.", TraceSeverity.Information);
                     break;
                 }
                 catch (Exception ex)
@@ -479,7 +473,8 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
 
             if (reported.Any())
             {
-                await _deviceClient.UpdateReportedPropertiesAsync(reported).ConfigureAwait(false);
+                long version = await _deviceClient.UpdateReportedPropertiesAsync(reported).ConfigureAwait(false);
+                _logger.Trace($"Updated {reported.Count()} properties and observed new version {version}.", TraceSeverity.Information);
 
                 _totalDesiredPropertiesHandled += reported.Count();
                 _logger.Metric(TotalDesiredPropertiesHandled, _totalDesiredPropertiesHandled);
