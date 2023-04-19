@@ -35,6 +35,8 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
         public const string SdkLanguage = "sdkLanguage";
         public const string SdkVersion = "sdkVersion";
         public const string OperationName = "operationName";
+        public const string Component = "component";
+
 
         public const string Hub = "hub";
         public const string DeviceId = "deviceId";

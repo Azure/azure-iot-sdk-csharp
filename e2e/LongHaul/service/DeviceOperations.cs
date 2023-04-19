@@ -16,6 +16,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
         private readonly IotHubServiceClient _serviceClient;
         private readonly string _deviceId;
 
+
         private long _totalMethodCallsCount = 0;
         private long _totalDesiredPropertiesUpdatesCount = 0;
         private long _totalC2dMessagesSentCount = 0;
@@ -26,16 +27,17 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
 
         private static readonly TimeSpan s_retryInterval = TimeSpan.FromSeconds(1);
 
-        public DeviceOperations(IotHubServiceClient serviceClient, string deviceId)
+        public DeviceOperations(IotHubServiceClient serviceClient, string deviceId, Logger logger)
         {
             _serviceClient = serviceClient;
             _deviceId = deviceId;
+            logger.LoggerContext.Add("deviceId", deviceId);
         }
 
         public async Task InvokeDirectMethodAsync(Logger logger, CancellationToken ct)
         {
             logger.LoggerContext.Add(OperationName, DirectMethod);
-            Stopwatch sw = new();
+            var sw = new Stopwatch();
             while (!ct.IsCancellationRequested)
             {
                 var payload = new CustomDirectMethodPayload
@@ -107,7 +109,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
         public async Task SetDesiredPropertiesAsync(string keyName, string properties, Logger logger, CancellationToken ct)
         {
             logger.LoggerContext.Add(OperationName, SetDesiredProperties);
-            Stopwatch sw = new();
+            var sw = new Stopwatch();
 
             while (!ct.IsCancellationRequested)
             {
@@ -142,7 +144,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
         {
             await _serviceClient.Messages.OpenAsync(ct).ConfigureAwait(false);
             logger.LoggerContext.Add(OperationName, C2DMessage);
-            Stopwatch sw = new();
+            var sw = new Stopwatch();
             while (!ct.IsCancellationRequested)
             {
                 try

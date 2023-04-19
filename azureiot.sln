@@ -214,6 +214,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Azure.Devices.Lon
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MessagingClientSample", "iothub\service\samples\how to guides\MessagingClientSample\MessagingClientSample.csproj", "{E67F39EA-56FD-4234-93B2-053AA65EA542}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Azure.Devices.LongHaul.Module", "e2e\LongHaul\module\Microsoft.Azure.Devices.LongHaul.Module.csproj", "{6C880AEF-8BD9-42D8-8173-A52C328C304F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -420,6 +422,10 @@ Global
 		{E67F39EA-56FD-4234-93B2-053AA65EA542}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E67F39EA-56FD-4234-93B2-053AA65EA542}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E67F39EA-56FD-4234-93B2-053AA65EA542}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6C880AEF-8BD9-42D8-8173-A52C328C304F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6C880AEF-8BD9-42D8-8173-A52C328C304F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6C880AEF-8BD9-42D8-8173-A52C328C304F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6C880AEF-8BD9-42D8-8173-A52C328C304F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -501,6 +507,7 @@ Global
 		{0E64B205-813E-4AAD-97ED-AFA7F55CCD8E} = {F27C6BDA-1756-4B90-AD83-65DB54166FEA}
 		{73AC4FF1-87EF-4A82-B139-89E8547EFEE3} = {F27C6BDA-1756-4B90-AD83-65DB54166FEA}
 		{E67F39EA-56FD-4234-93B2-053AA65EA542} = {73EFBF28-CA06-4A08-88BC-CCDA2C498C76}
+		{6C880AEF-8BD9-42D8-8173-A52C328C304F} = {F27C6BDA-1756-4B90-AD83-65DB54166FEA}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {AF61665D-340A-494B-9705-571456BDC752}

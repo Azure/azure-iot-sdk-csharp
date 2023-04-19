@@ -228,7 +228,10 @@ $iothubownerSasPrimaryKey = az iot hub policy show --hub-name $iotHubName --name
 ##################################################################################################################################
 
 $longhaulDeviceId = "LongHaulDevice1"
+$longhaulModuleId = "LongHaulModule1"
 $longhaulDevice = az iot hub device-identity list -g $ResourceGroup --hub-name $iotHubName --query "[?deviceId=='$longhaulDeviceId'].deviceId" --output tsv
+$longhaulModule = az iot hub module-identity list -g $ResourceGroup --hub-name $iotHubName --query "[?moduleId=='$longhaulModuleId'].moduleId" --output tsv
+
 
 if (-not $longhaulDevice)
 {
@@ -236,7 +239,14 @@ if (-not $longhaulDevice)
     az iot hub device-identity create -g $ResourceGroup --hub-name $iotHubName --device-id $longhaulDeviceId --am shared_private_key
 }
 
+if (-not $longhaulModule)
+{
+    Write-Host "`nCreating SAK authenticated module $longhaulModuleId on IoT hub."
+    az iot hub module-identity create -g $ResourceGroup --hub-name $iotHubName --device-id $longhaulDeviceId --module-id $longhaulModuleId --am shared_private_key
+}
+
 $longhaulDeviceConnectionString = az iot hub device-identity connection-string show --device-id $longhaulDeviceId --hub-name $iotHubName --resource-group $ResourceGroup --output tsv
+$longhaulModuleConnectionString = az iot hub module-identity connection-string show --device-id $longhaulDeviceId --module-id $longhaulModuleId --hub-name $iotHubName --resource-group $ResourceGroup --output tsv
 
 ############################################################################################################################
 # Store all secrets in a KeyVault - Values will be pulled down from here to configure environment variables.
@@ -245,6 +255,7 @@ $longhaulDeviceConnectionString = az iot hub device-identity connection-string s
 $keyvaultKvps = @{
     # Environment variables for IoT Hub E2E tests
     "IOTHUB-LONG-HAUL-DEVICE-CONNECTION-STRING" = $longhaulDeviceConnectionString;
+    "IOTHUB-LONG-HAUL-MODULE-CONNECTION-STRING" = $longhaulModuleConnectionString;
     "APPLICATION-INSIGHTS-INSTRUMENTATION-KEY" = $instrumentationKey;
     "STORAGE-ACCOUNT-CONNECTION-STRING" = $storageAccountConnectionString;
     "IOTHUB-CONNECTION-STRING" = $iotHubConnectionString;
