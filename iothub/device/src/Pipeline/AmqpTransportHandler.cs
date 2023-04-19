@@ -475,7 +475,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             if (correlationId == null)
             {
                 // This is desired property updates, so call the callback with DesiredPropertyCollection.
-                Dictionary<string, object> desiredPropertyPatchDictionary = _payloadConvention.GetObject<Dictionary<string, object>>(responseFromService.BodyStream);
+                Dictionary<string, object> desiredPropertyPatchDictionary = DefaultPayloadConvention.Instance.GetObject<Dictionary<string, object>>(responseFromService.BodyStream);
                 var desiredPropertyPatch = new DesiredProperties(desiredPropertyPatchDictionary)
                 {
                     PayloadConvention = _payloadConvention,

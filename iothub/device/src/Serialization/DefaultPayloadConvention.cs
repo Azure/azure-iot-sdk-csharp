@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text;
 using Newtonsoft.Json;
@@ -15,9 +16,6 @@ namespace Microsoft.Azure.Devices.Client
     /// </remarks>
     public sealed class DefaultPayloadConvention : PayloadConvention
     {
-        private static readonly JsonSerializer s_jsonSerializer = new();
-        internal static readonly Encoding s_encoding = Encoding.UTF8;
-
         /// <summary>
         /// A static instance of JsonSerializerSettings which sets DateParseHandling to None.
         /// </summary>
@@ -37,22 +35,24 @@ namespace Microsoft.Azure.Devices.Client
             JsonConvert.DefaultSettings = () => s_settings;
         }
 
+        internal static Encoding Encoding { get; } = Encoding.UTF8;
+
         /// <summary>
         /// A static instance of this class.
         /// </summary>
-        public static DefaultPayloadConvention Instance { get; } = new DefaultPayloadConvention();
+        public static DefaultPayloadConvention Instance { get; } = new();
 
         /// <inheritdoc/>
         public override string ContentType => "application/json";
 
         /// <inheritdoc/>
-        public override string ContentEncoding => s_encoding.WebName;
+        public override string ContentEncoding => Encoding.WebName;
 
         /// <inheritdoc/>
         public override byte[] GetObjectBytes(object objectToSendWithConvention)
         {
             string payloadString = Serialize(objectToSendWithConvention);
-            return s_encoding.GetBytes(payloadString);
+            return Encoding.GetBytes(payloadString);
         }
 
         /// <inheritdoc/>
@@ -63,21 +63,20 @@ namespace Microsoft.Azure.Devices.Client
                 return default;
             }
 
-            string payloadString = s_encoding.GetString(objectToConvert);
+            string payloadString = Encoding.GetString(objectToConvert);
             return GetObject<T>(payloadString);
         }
 
-        /// <inheritdoc/>
-        public override T GetObject<T>(Stream streamToConvert)
+        internal T GetObject<T>(Stream streamToConvert)
         {
-            using var sw = new StreamReader(streamToConvert, s_encoding);
+            using var sw = new StreamReader(streamToConvert, Encoding);
             string body = sw.ReadToEnd();
 
             return GetObject<T>(body);
         }
 
-        /// <inheritdoc/>
-        public override T GetObject<T>(string jsonObjectAsText)
+        [SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "Method must be instance to benefit from s_settings.")]
+        internal T GetObject<T>(string jsonObjectAsText)
         {
             return JsonConvert.DeserializeObject<T>(jsonObjectAsText);
         }

@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System.IO;
 using System.Text;
 using System.Text.Json;
 
@@ -40,20 +39,6 @@ namespace Microsoft.Azure.Devices.Client
         public override T GetObject<T>(byte[] objectToConvert)
         {
             return JsonSerializer.Deserialize<T>(objectToConvert);
-        }
-
-        /// <inheritdoc/>
-        public override T GetObject<T>(Stream streamToConvert)
-        {
-            using var sw = new StreamReader(streamToConvert);
-            string jsonToConvert = sw.ReadToEnd();
-            return JsonSerializer.Deserialize<T>(jsonToConvert);
-        }
-
-        /// <inheritdoc/>
-        public override T GetObject<T>(string jsonObjectAsText)
-        {
-            return JsonSerializer.Deserialize<T>(jsonObjectAsText);
         }
     }
 }
