@@ -97,17 +97,14 @@ namespace Microsoft.Azure.Devices.Client.Transport
         private readonly Action<DesiredProperties> _onDesiredStatePatchListener;
         private readonly Func<IncomingMessage, Task<MessageAcknowledgement>> _messageReceivedListener;
 
-        private readonly ConcurrentDictionary<string, TaskCompletionSource<GetTwinResponse>> _getTwinResponseCompletions = new();
-        private readonly ConcurrentDictionary<string, TaskCompletionSource<PatchTwinResponse>> _reportedPropertyUpdateResponseCompletions = new();
-
-        private readonly ConcurrentDictionary<string, DateTimeOffset> _twinResponseTimeouts = new();
-
-        private bool _isSubscribedToTwinResponses;
+        private readonly ConcurrentDictionary<string, PendingMqttTwinOperation> _pendingTwinOperations = new();
 
         // Timer to check if any expired messages exist. The timer is executed after each hour of execution.
         private readonly Timer _twinTimeoutTimer;
 
-        private static TimeSpan s_twinResponseTimeout = TimeSpan.FromMinutes(60);
+        private static TimeSpan s_twinResponseTimeout = TimeSpan.FromMinutes(2);
+
+        private bool _isSubscribedToTwinResponses;
 
         private readonly string _deviceId;
         private readonly string _moduleId;
@@ -315,7 +312,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     _mqttClient.DisconnectedAsync += HandleDisconnectionAsync;
                     _mqttClient.ApplicationMessageReceivedAsync += HandleReceivedMessageAsync;
 
-                    // The timer would invoke callback in an hour and every hour thereafter.
+                    // The timer would invoke callback in the specified time and that duration thereafter.
                     _twinTimeoutTimer.Change(s_twinResponseTimeout, s_twinResponseTimeout);
                 }
                 catch (MqttConnectingFailedException ex)
@@ -707,8 +704,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     // Note the request as "in progress" before actually sending it so that no matter how quickly the service
                     // responds, this layer can correlate the request.
                     var taskCompletionSource = new TaskCompletionSource<GetTwinResponse>(TaskCreationOptions.RunContinuationsAsynchronously);
-                    _getTwinResponseCompletions[requestId] = taskCompletionSource;
-                    _twinResponseTimeouts[requestId] = DateTimeOffset.UtcNow;
+                    _pendingTwinOperations[requestId] = new PendingMqttTwinOperation(taskCompletionSource);
 
                     MqttClientPublishResult result = await _mqttClient.PublishAsync(mqttMessage, cancellationToken).ConfigureAwait(false);
 
@@ -776,8 +772,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 finally
                 {
                     // No matter what, remove the requestId from this dictionary since no thread will be waiting for it anymore
-                    _getTwinResponseCompletions.TryRemove(requestId, out _);
-                    _twinResponseTimeouts.TryRemove(requestId, out _);
+                    _pendingTwinOperations.TryRemove(requestId, out _);
                 }
             }
             finally
@@ -816,8 +811,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     // Note the request as "in progress" before actually sending it so that no matter how quickly the service
                     // responds, this layer can correlate the request.
                     var taskCompletionSource = new TaskCompletionSource<PatchTwinResponse>(TaskCreationOptions.RunContinuationsAsynchronously);
-                    _reportedPropertyUpdateResponseCompletions[requestId] = taskCompletionSource;
-                    _twinResponseTimeouts[requestId] = DateTimeOffset.UtcNow;
+                    _pendingTwinOperations[requestId] = new PendingMqttTwinOperation(taskCompletionSource);
 
                     MqttClientPublishResult result = await _mqttClient.PublishAsync(mqttMessage, cancellationToken).ConfigureAwait(false);
 
@@ -885,8 +879,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 finally
                 {
                     // No matter what, remove the requestId from this dictionary since no thread will be waiting for it anymore
-                    _reportedPropertyUpdateResponseCompletions.TryRemove(requestId, out TaskCompletionSource<PatchTwinResponse> _);
-                    _twinResponseTimeouts.TryRemove(requestId, out DateTimeOffset _);
+                    _pendingTwinOperations.TryRemove(requestId, out _);
                 }
             }
             finally
@@ -1185,7 +1178,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 byte[] payloadBytes = receivedEventArgs.ApplicationMessage.Payload ?? Array.Empty<byte>();
 
-                if (_getTwinResponseCompletions.TryRemove(receivedRequestId, out TaskCompletionSource<GetTwinResponse> getTwinCompletion))
+                if (_pendingTwinOperations.TryRemove(receivedRequestId, out PendingMqttTwinOperation getTwinOperation))
                 {
                     if (Logging.IsEnabled)
                         Logging.Info(this, $"Received response to get twin request with request id {receivedRequestId}.", nameof(HandleTwinResponse));
@@ -1221,7 +1214,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                             ErrorResponseMessage = errorResponse,
                         };
 
-                        getTwinCompletion.TrySetResult(getTwinResponse);
+                        getTwinOperation.TwinResponseTask.TrySetResult(getTwinResponse);
                     }
                     else
                     {
@@ -1232,34 +1225,32 @@ namespace Microsoft.Azure.Devices.Client.Transport
                             // For this reason, we use NewtonSoft Json serializer for this deserialization.
                             TwinDocument clientTwinProperties = DefaultPayloadConvention.Instance.GetObject<TwinDocument>(payloadBytes);
 
-                            var twinDesiredProperties = new DesiredProperties(clientTwinProperties.Desired)
-                            {
-                                PayloadConvention = _payloadConvention,
-                            };
-
-                            var twinReportedProperties = new ReportedProperties(clientTwinProperties.Reported, true)
-                            {
-                                PayloadConvention = _payloadConvention,
-                            };
-
                             var getTwinResponse = new GetTwinResponse
                             {
                                 Status = status,
-                                Twin = new TwinProperties(twinDesiredProperties, twinReportedProperties),
+                                Twin = new TwinProperties(
+                                    new DesiredProperties(clientTwinProperties.Desired)
+                                    {
+                                        PayloadConvention = _payloadConvention,
+                                    },
+                                    new ReportedProperties(clientTwinProperties.Reported, true)
+                                    {
+                                        PayloadConvention = _payloadConvention,
+                                    }),
                             };
 
-                            getTwinCompletion.TrySetResult(getTwinResponse);
+                            getTwinOperation.TwinResponseTask.TrySetResult(getTwinResponse);
                         }
                         catch (JsonReaderException ex)
                         {
                             if (Logging.IsEnabled)
                                 Logging.Error(this, $"Failed to parse Twin JSON.  Message body: '{Encoding.UTF8.GetString(payloadBytes)}'. Exception: {ex}.", nameof(HandleTwinResponse));
 
-                            getTwinCompletion.TrySetException(ex);
+                            getTwinOperation.TwinResponseTask.TrySetException(ex);
                         }
                     }
                 }
-                else if (_reportedPropertyUpdateResponseCompletions.TryRemove(receivedRequestId, out TaskCompletionSource<PatchTwinResponse> patchTwinCompletion))
+                else if (_pendingTwinOperations.TryRemove(receivedRequestId, out PendingMqttTwinOperation pendingPatchOperation))
                 {
                     if (Logging.IsEnabled)
                         Logging.Info(this, $"Received response to patch twin request with request id {receivedRequestId}.", nameof(HandleTwinResponse));
@@ -1294,7 +1285,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         ErrorResponseMessage = errorResponse,
                     };
 
-                    patchTwinCompletion.TrySetResult(patchTwinResponse);
+                    pendingPatchOperation.TwinPatchTask.TrySetResult(patchTwinResponse);
                 }
                 else if (Logging.IsEnabled)
                 {
@@ -1370,28 +1361,18 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 Logging.Info(this, $"Removing operations older than {maxAge}", nameof(RemoveOldOperations));
 
             const string exceptionMessage = "Did not receive twin response from service.";
-            _ = _twinResponseTimeouts
-                .Where(x => DateTimeOffset.UtcNow - x.Value > maxAge)
+            _ = _pendingTwinOperations
+                .Where(x => DateTimeOffset.UtcNow - x.Value.RequestSentOnUtc > maxAge)
                 .Select(x =>
                     {
-                        if (_getTwinResponseCompletions.TryRemove(x.Key, out TaskCompletionSource<GetTwinResponse> twinResponse))
+                        if (_pendingTwinOperations.TryRemove(x.Key, out PendingMqttTwinOperation pendingOperation))
                         {
                             if (Logging.IsEnabled)
                                 Logging.Info(this, $"Removing twin response for {x.Key}", nameof(RemoveOldOperations));
 
-                            twinResponse.TrySetException(new IotHubClientException(exceptionMessage, IotHubClientErrorCode.NetworkErrors));
+                            pendingOperation.TwinResponseTask?.TrySetException(new IotHubClientException(exceptionMessage, IotHubClientErrorCode.NetworkErrors));
+                            pendingOperation.TwinPatchTask?.TrySetException(new IotHubClientException(exceptionMessage, IotHubClientErrorCode.NetworkErrors));
                         }
-
-                        if (_reportedPropertyUpdateResponseCompletions.TryRemove(x.Key, out TaskCompletionSource<PatchTwinResponse> reportedPropertyUpdateResponse))
-                        {
-                            if (Logging.IsEnabled)
-                                Logging.Info(this, $"Removing twin response for {x.Key}", nameof(RemoveOldOperations));
-
-                            twinResponse.TrySetException(new IotHubClientException(exceptionMessage, IotHubClientErrorCode.NetworkErrors));
-                        }
-
-                        _twinResponseTimeouts.TryRemove(x.Key, out DateTimeOffset _);
-
                         return true;
                     });
         }
