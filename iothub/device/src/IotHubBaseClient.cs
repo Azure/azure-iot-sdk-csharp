@@ -193,6 +193,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <exception cref="InvalidOperationException">Thrown if the client instance is not opened already.</exception>
         /// <exception cref="InvalidOperationException">When this method is called when the client is configured to use MQTT.</exception>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
+        /// <exception cref="ObjectDisposedException">When the client has been disposed.</exception>
         public async Task SendTelemetryAsync(IEnumerable<TelemetryMessage> messages, CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNullOrEmpty(messages, nameof(messages));
@@ -232,7 +233,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </remarks>
         /// <param name="messageCallback">The callback to be invoked when a cloud-to-device message is received by the client.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <exception cref="InvalidOperationException">Thrown if instance is not opened already.</exception>
+        /// <exception cref="InvalidOperationException">Thrown if the client instance is not opened already.</exception>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         /// <exception cref="ObjectDisposedException">When the client has been disposed.</exception>
         public async Task SetIncomingMessageCallbackAsync(
@@ -288,6 +289,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </remarks>
         /// <param name="directMethodCallback">The callback to be invoked when any method is invoked by the cloud service.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
+        /// <exception cref="InvalidOperationException">Thrown if the client instance is not opened already.</exception>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         /// <exception cref="ObjectDisposedException">When the client has been disposed.</exception>
         public async Task SetDirectMethodCallbackAsync(
@@ -352,6 +354,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </remarks>
         /// <param name="reportedProperties">Reported properties to push</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
+        /// <exception cref="InvalidOperationException">Thrown if the client instance is not opened already.</exception>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         /// <exception cref="ObjectDisposedException">When the client has been disposed.</exception>
         /// <returns>The new version of the updated twin if the update was successful.</returns>
@@ -382,6 +385,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </remarks>
         /// <param name="callback">The callback to be invoked when a desired property update is received from the service.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
+        /// <exception cref="InvalidOperationException">Thrown if the client instance is not opened already.</exception>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         /// <exception cref="ObjectDisposedException">When the client has been disposed.</exception>
         public async Task SetDesiredPropertyUpdateCallbackAsync(
@@ -619,10 +623,9 @@ namespace Microsoft.Azure.Devices.Client
                 .With((ctx, innerHandler) => new RetryDelegatingHandler(ctx, innerHandler))
                 .With((ctx, innerHandler) => new ExceptionRemappingHandler(ctx, innerHandler))
                 .With((ctx, innerHandler) => new TransportDelegatingHandler(ctx, innerHandler))
-                .With((ctx, innerHandler) => transporthandlerFactory.Create(ctx, innerHandler)) // This layer initializes the transport layer based on the protocol that the client is initialized with
-                .With((ctx, innerHandler) => new HttpTransportHandler(ctx, innerHandler));  // This is added on top of the transport protocol selected for the client.
-                                                                                            // This layer performs HTTP-only operations such as file upload.
-                                                                                            // These operations are not performed over MQTT and AMQP.
+                .With((ctx, innerHandler) => transporthandlerFactory.Create(ctx, innerHandler))
+                // An HTTP layer is added for some operations that aren't available over MQTT or AMQP, including, e.g., file upload.
+                .With((ctx, innerHandler) => new HttpTransportHandler(ctx, innerHandler));
 
             return pipelineBuilder;
         }

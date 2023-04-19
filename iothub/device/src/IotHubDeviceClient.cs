@@ -96,6 +96,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The file upload details to be used with the Azure Storage SDK in order to upload a file from this device.</returns>
         /// <exception cref="ArgumentNullException">When <paramref name="request"/> is null.</exception>
+        /// <exception cref="InvalidOperationException">Thrown if the client instance is not opened already.</exception>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         /// <exception cref="ObjectDisposedException">When the client has been disposed.</exception>
         public Task<FileUploadSasUriResponse> GetFileUploadSasUriAsync(
@@ -113,6 +114,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="notification">The notification details, including if the file upload succeeded.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <exception cref="ArgumentNullException">When <paramref name="notification"/> is null.</exception>
+        /// <exception cref="InvalidOperationException">Thrown if the client instance is not opened already.</exception>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         /// <exception cref="ObjectDisposedException">When the client has been disposed.</exception>
         public Task CompleteFileUploadAsync(FileUploadCompletionNotification notification, CancellationToken cancellationToken = default)
