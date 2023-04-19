@@ -23,6 +23,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         private Task _transportClosedTask;
         private CancellationTokenSource _handleDisconnectCts;
         private CancellationTokenSource _cancelPendingOperationsCts;
+        private volatile bool _wasOpened;
 
         internal ConnectionStateDelegatingHandler(PipelineContext context, IDelegatingHandler innerHandler)
             : base(context, innerHandler)
@@ -86,6 +87,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                                         _clientTransportStateMachine.MoveNext(ClientStateAction.OpenSuccess, ClientTransportState.Open);
                                         var connectionStatusInfo = new ConnectionStatusInfo(ConnectionStatus.Connected, ConnectionStatusChangeReason.ConnectionOk);
                                         _onConnectionStatusChanged(connectionStatusInfo);
+                                        _wasOpened = true;
 
                                         // Create a new cancelaltion token source that will be used for reconnection recovery attempts.
                                         _handleDisconnectCts = new CancellationTokenSource();
@@ -99,7 +101,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                                             Logging.Error(this, ex, nameof(HandleDisconnectAsync));
 
                                         HandleConnectionStatusExceptions(ex, true);
-                                        if (_clientTransportStateMachine.GetCurrentState() == ClientTransportState.Opening)
+                                        if (!_wasOpened && _clientTransportStateMachine.GetCurrentState() == ClientTransportState.Opening)
                                         {
                                             _clientTransportStateMachine.MoveNext(ClientStateAction.OpenFailure, ClientTransportState.Closed);
                                         }
@@ -158,6 +160,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
                     // Once the work has been completed transition to "closed" state.
                     _clientTransportStateMachine.MoveNext(ClientStateAction.CloseComplete, ClientTransportState.Closed);
+                    _wasOpened = false;
                 }
             }
             finally
