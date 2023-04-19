@@ -619,8 +619,10 @@ namespace Microsoft.Azure.Devices.Client
                 .With((ctx, innerHandler) => new RetryDelegatingHandler(ctx, innerHandler))
                 .With((ctx, innerHandler) => new ExceptionRemappingHandler(ctx, innerHandler))
                 .With((ctx, innerHandler) => new TransportDelegatingHandler(ctx, innerHandler))
-                .With((ctx, innerHandler) => new LimitedOperationsHttpTransportDelegatingHandler(ctx, innerHandler))
-                .With((ctx, innerHandler) => transporthandlerFactory.Create(ctx));
+                .With((ctx, innerHandler) => transporthandlerFactory.Create(ctx, innerHandler)) // This layer initializes the transport layer based on the protocol that the client is initialized with
+                .With((ctx, innerHandler) => new HttpTransportHandler(ctx, innerHandler));  // This is added on top of the transport protocol selected for the client.
+                                                                                            // This layer performs HTTP-only operations such as file upload.
+                                                                                            // These operations are not performed over MQTT and AMQP.
 
             return pipelineBuilder;
         }

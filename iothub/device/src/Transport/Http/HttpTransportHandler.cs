@@ -25,8 +25,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         internal HttpTransportHandler(
             PipelineContext context,
+            IDelegatingHandler nextHandler = null,
             HttpClientHandler httpClientHandler = null)
-            : base(context)
+            : base(context, nextHandler)
         {
             var additionalClientInformation = new AdditionalClientInformation
             {

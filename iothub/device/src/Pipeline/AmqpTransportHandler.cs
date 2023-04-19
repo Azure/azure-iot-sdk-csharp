@@ -49,8 +49,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
-        internal AmqpTransportHandler(PipelineContext context)
-            : base(context)
+        internal AmqpTransportHandler(PipelineContext context, IDelegatingHandler nextHandler)
+            : base(context, nextHandler)
         {
             _onDesiredStatePatchListener = context.DesiredPropertyUpdateCallback;
 

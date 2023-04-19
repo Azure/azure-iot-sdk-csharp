@@ -281,7 +281,7 @@ namespace Microsoft.Azure.Devices.Client
                     };
                 }
 
-                using var httpTransport = new HttpTransportHandler(pipelineContext, httpClientHandler);
+                using var httpTransport = new HttpTransportHandler(pipelineContext, httpClientHandler: httpClientHandler);
                 methodRequest.PayloadConvention = _clientOptions.PayloadConvention;
 
                 DirectMethodResponse result = await httpTransport.InvokeMethodAsync(methodRequest, uri, cancellationToken).ConfigureAwait(false);
