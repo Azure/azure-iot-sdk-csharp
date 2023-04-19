@@ -720,13 +720,13 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     }
 
                     if (Logging.IsEnabled)
-                        Logging.Info($"Sent get twin request. Waiting on service response with request id {requestId}");
+                        Logging.Info(this, $"Sent get twin request. Waiting on service response with request id {requestId}", nameof(GetTwinAsync));
 
                     // Wait until IoT hub sends a message to this client with the response to this patch twin request.
                     GetTwinResponse getTwinResponse = await taskCompletionSource.WaitAsync(cancellationToken).ConfigureAwait(false);
 
                     if (Logging.IsEnabled)
-                        Logging.Info(this, $"Received get twin response for request id {requestId} with status {getTwinResponse.Status}.");
+                        Logging.Info(this, $"Received get twin response for request id {requestId} with status {getTwinResponse.Status}.", nameof(GetTwinAsync));
 
                     if (getTwinResponse.Status != 200)
                     {
@@ -829,13 +829,13 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     }
 
                     if (Logging.IsEnabled)
-                        Logging.Info(this, $"Sent twin patch request with request id {requestId}. Now waiting for the service response.");
+                        Logging.Info(this, $"Sent twin patch request with request id {requestId}. Now waiting for the service response.", nameof(UpdateReportedPropertiesAsync));
 
                     // Wait until IoT hub sends a message to this client with the response to this patch twin request.
                     PatchTwinResponse patchTwinResponse = await taskCompletionSource.WaitAsync(cancellationToken).ConfigureAwait(false);
 
                     if (Logging.IsEnabled)
-                        Logging.Info(this, $"Received twin patch response for request id {requestId} with status {patchTwinResponse.Status}.");
+                        Logging.Info(this, $"Received twin patch response for request id {requestId} with status {patchTwinResponse.Status}.", nameof(UpdateReportedPropertiesAsync));
 
                     if (patchTwinResponse.Status != 204)
                     {
@@ -1049,7 +1049,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         private Task HandleDisconnectionAsync(MqttClientDisconnectedEventArgs disconnectedEventArgs)
         {
             if (Logging.IsEnabled)
-                Logging.Info($"MQTT connection was lost {disconnectedEventArgs.Exception}");
+                Logging.Info(this, $"MQTT connection was lost {disconnectedEventArgs.Exception}", nameof(HandleDisconnectionAsync));
 
             if (disconnectedEventArgs.ClientWasConnected)
             {
@@ -1188,7 +1188,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 if (_getTwinResponseCompletions.TryRemove(receivedRequestId, out TaskCompletionSource<GetTwinResponse> getTwinCompletion))
                 {
                     if (Logging.IsEnabled)
-                        Logging.Info(this, $"Received response to get twin request with request id {receivedRequestId}.");
+                        Logging.Info(this, $"Received response to get twin request with request id {receivedRequestId}.", nameof(HandleTwinResponse));
 
                     if (status != 200)
                     {
@@ -1205,7 +1205,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                             catch (JsonException ex)
                             {
                                 if (Logging.IsEnabled)
-                                    Logging.Error(this, $"Failed to parse twin patch error response JSON. Message body: '{errorResponseString}'. Exception: {ex}. ");
+                                    Logging.Error(this, $"Failed to parse twin patch error response JSON. Message body: '{errorResponseString}'. Exception: {ex}. ", nameof(HandleTwinResponse));
 
                                 errorResponse = new IotHubClientErrorResponseMessage
                                 {
@@ -1253,7 +1253,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         catch (JsonReaderException ex)
                         {
                             if (Logging.IsEnabled)
-                                Logging.Error(this, $"Failed to parse Twin JSON.  Message body: '{Encoding.UTF8.GetString(payloadBytes)}'. Exception: {ex}.");
+                                Logging.Error(this, $"Failed to parse Twin JSON.  Message body: '{Encoding.UTF8.GetString(payloadBytes)}'. Exception: {ex}.", nameof(HandleTwinResponse));
 
                             getTwinCompletion.TrySetException(ex);
                         }
@@ -1262,7 +1262,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 else if (_reportedPropertyUpdateResponseCompletions.TryRemove(receivedRequestId, out TaskCompletionSource<PatchTwinResponse> patchTwinCompletion))
                 {
                     if (Logging.IsEnabled)
-                        Logging.Info(this, $"Received response to patch twin request with request id {receivedRequestId}.");
+                        Logging.Info(this, $"Received response to patch twin request with request id {receivedRequestId}.", nameof(HandleTwinResponse));
 
                     IotHubClientErrorResponseMessage errorResponse = null;
 
@@ -1277,7 +1277,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         catch (JsonException ex)
                         {
                             if (Logging.IsEnabled)
-                                Logging.Error(this, $"Failed to parse twin patch error response JSON. Message body: '{errorResponseString}'. Exception: {ex}. ");
+                                Logging.Error(this, $"Failed to parse twin patch error response JSON. Message body: '{errorResponseString}'. Exception: {ex}. ", nameof(HandleTwinResponse));
 
                             errorResponse = new IotHubClientErrorResponseMessage
                             {
@@ -1298,7 +1298,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 }
                 else if (Logging.IsEnabled)
                 {
-                    Logging.Info(this, $"Received response to an unknown twin request with request id {receivedRequestId}. Discarding it.");
+                    Logging.Info(this, $"Received response to an unknown twin request with request id {receivedRequestId}. Discarding it.", nameof(HandleTwinResponse));
                 }
             }
         }
@@ -1366,6 +1366,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 maxAge = s_twinResponseTimeout;
             }
 
+            if (Logging.IsEnabled)
+                Logging.Info(this, $"Removing operations older than {maxAge}", nameof(RemoveOldOperations));
+
             const string exceptionMessage = "Did not receive twin response from service.";
             _ = _twinResponseTimeouts
                 .Where(x => DateTimeOffset.UtcNow - x.Value > maxAge)
@@ -1373,11 +1376,17 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     {
                         if (_getTwinResponseCompletions.TryRemove(x.Key, out TaskCompletionSource<GetTwinResponse> twinResponse))
                         {
+                            if (Logging.IsEnabled)
+                                Logging.Info(this, $"Removing twin response for {x.Key}", nameof(RemoveOldOperations));
+
                             twinResponse.TrySetException(new IotHubClientException(exceptionMessage, IotHubClientErrorCode.NetworkErrors));
                         }
 
                         if (_reportedPropertyUpdateResponseCompletions.TryRemove(x.Key, out TaskCompletionSource<PatchTwinResponse> reportedPropertyUpdateResponse))
                         {
+                            if (Logging.IsEnabled)
+                                Logging.Info(this, $"Removing twin response for {x.Key}", nameof(RemoveOldOperations));
+
                             twinResponse.TrySetException(new IotHubClientException(exceptionMessage, IotHubClientErrorCode.NetworkErrors));
                         }
 

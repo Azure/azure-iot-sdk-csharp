@@ -82,7 +82,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         private void OnDisconnected()
         {
             if (Logging.IsEnabled)
-                Logging.Info($"AMQP connection was lost");
+                Logging.Info(this, $"AMQP connection was lost", nameof(OnDisconnected));
 
             if (!_closed)
             {
@@ -514,14 +514,14 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     {
                         // This can happen if we received a message from service with correlation Id that was not set by SDK or does not exist in dictionary.
                         if (Logging.IsEnabled)
-                            Logging.Info("Could not remove correlation Id to complete the task awaiter for a twin operation.", nameof(TwinMessageListener));
+                            Logging.Info(this, "Could not remove correlation Id to complete the task awaiter for a twin operation.", nameof(TwinMessageListener));
                     }
                 }
                 else if (correlationId.StartsWith(AmqpTwinMessageType.Put.ToString(), StringComparison.OrdinalIgnoreCase))
                 {
                     // This is an acknowledgement received from service for subscribing to desired property updates
                     if (Logging.IsEnabled)
-                        Logging.Info("Subscribed for twin desired property updates successfully", nameof(TwinMessageListener));
+                        Logging.Info(this, "Subscribed for twin desired property updates successfully", nameof(TwinMessageListener));
                 }
             }
         }
@@ -533,12 +533,18 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 maxAge = s_twinResponseTimeout;
             }
 
+            if (Logging.IsEnabled)
+                Logging.Info(this, $"Removing operations older than {maxAge}", nameof(RemoveOldOperations));
+
             _ = _twinResponseTimeouts
                 .Where(x => DateTimeOffset.UtcNow - x.Value > s_twinResponseTimeout)
                 .Select(x =>
                     {
                         if (_twinResponseCompletions.TryRemove(x.Key, out TaskCompletionSource<AmqpMessage> twinResponse))
                         {
+                            if (Logging.IsEnabled)
+                                Logging.Info(this, $"Removing twin response for {x.Key}", nameof(RemoveOldOperations));
+
                             twinResponse.TrySetException(new IotHubClientException("Did not receive twin response from service.", IotHubClientErrorCode.NetworkErrors));
                         }
 
