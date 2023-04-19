@@ -35,7 +35,7 @@ namespace Microsoft.Azure.Devices.Client
             JsonConvert.DefaultSettings = () => s_settings;
         }
 
-        internal static Encoding Encoding { get; } = Encoding.UTF8;
+        internal static Encoding Encoding => Encoding.UTF8;
 
         /// <summary>
         /// A static instance of this class.

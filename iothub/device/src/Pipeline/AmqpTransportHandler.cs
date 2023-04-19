@@ -81,6 +81,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         private void OnDisconnected()
         {
+            if (Logging.IsEnabled)
+                Logging.Info($"AMQP connection was lost");
+
             if (!_closed)
             {
                 lock (_lock)
@@ -88,6 +91,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     if (!_closed)
                     {
                         OnTransportDisconnected();
+
+                        // During a disconnection, any pending twin updates won't be received, so we'll preemptively
+                        // cancel these operations so the client can retry once reconnected.
+                        RemoveOldOperations(TimeSpan.Zero);
                     }
                 }
             }
@@ -138,7 +145,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 await _amqpUnit.OpenAsync(cancellationToken).ConfigureAwait(false);
 
-                // The timer would invoke callback after every hour.
+                // The timer would invoke callback in an hour and every hour thereafter.
                 _twinTimeoutTimer.Change(s_twinResponseTimeout, s_twinResponseTimeout);
             }
             finally
@@ -519,13 +526,22 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
-        private void RemoveOldOperations(object _)
+        private void RemoveOldOperations(object state)
         {
+            if (state is not TimeSpan maxAge)
+            {
+                maxAge = s_twinResponseTimeout;
+            }
+
             _ = _twinResponseTimeouts
                 .Where(x => DateTimeOffset.UtcNow - x.Value > s_twinResponseTimeout)
                 .Select(x =>
                     {
-                        _twinResponseCompletions.TryRemove(x.Key, out TaskCompletionSource<AmqpMessage> _);
+                        if (_twinResponseCompletions.TryRemove(x.Key, out TaskCompletionSource<AmqpMessage> twinResponse))
+                        {
+                            twinResponse.TrySetException(new IotHubClientException("Did not receive twin response from service.", IotHubClientErrorCode.NetworkErrors));
+                        }
+
                         _twinResponseTimeouts.TryRemove(x.Key, out DateTimeOffset _);
                         return true;
                     });
