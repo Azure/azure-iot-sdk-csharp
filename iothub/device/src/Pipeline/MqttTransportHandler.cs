@@ -1178,10 +1178,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 byte[] payloadBytes = receivedEventArgs.ApplicationMessage.Payload ?? Array.Empty<byte>();
 
-                if (_pendingTwinOperations.TryRemove(receivedRequestId, out PendingMqttTwinOperation getTwinOperation))
+                if (_pendingTwinOperations.TryRemove(receivedRequestId, out PendingMqttTwinOperation patchTwinOperation))
                 {
                     if (Logging.IsEnabled)
-                        Logging.Info(this, $"Received response to get twin request with request id {receivedRequestId}.", nameof(HandleTwinResponse));
+                        Logging.Info(this, $"Received response to patch twin request with request id {receivedRequestId}.", nameof(HandleTwinResponse));
 
                     if (status != 200)
                     {
@@ -1208,13 +1208,14 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         }
 
                         // This received message is in response to an update reported properties request.
-                        var getTwinResponse = new GetTwinResponse
+                        var patchTwinResponse = new PatchTwinResponse
                         {
                             Status = status,
+                            Version = version,
                             ErrorResponseMessage = errorResponse,
                         };
 
-                        getTwinOperation.TwinResponseTask.TrySetResult(getTwinResponse);
+                        patchTwinOperation.TwinPatchTask.TrySetResult(patchTwinResponse);
                     }
                     else
                     {
@@ -1239,14 +1240,14 @@ namespace Microsoft.Azure.Devices.Client.Transport
                                     }),
                             };
 
-                            getTwinOperation.TwinResponseTask.TrySetResult(getTwinResponse);
+                            patchTwinOperation.TwinResponseTask.TrySetResult(getTwinResponse);
                         }
                         catch (JsonReaderException ex)
                         {
                             if (Logging.IsEnabled)
                                 Logging.Error(this, $"Failed to parse Twin JSON.  Message body: '{Encoding.UTF8.GetString(payloadBytes)}'. Exception: {ex}.", nameof(HandleTwinResponse));
 
-                            getTwinOperation.TwinResponseTask.TrySetException(ex);
+                            patchTwinOperation.TwinResponseTask.TrySetException(ex);
                         }
                     }
                 }
