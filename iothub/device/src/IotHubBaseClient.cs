@@ -24,6 +24,8 @@ namespace Microsoft.Azure.Devices.Client
         private readonly SemaphoreSlim _twinDesiredPropertySemaphore = new(1, 1);
         private readonly SemaphoreSlim _receiveMessageSemaphore = new(1, 1);
 
+        private readonly ICertificateValidator _certValidator;
+
         private volatile Func<IncomingMessage, Task<MessageAcknowledgement>> _receiveMessageCallback;
 
         // Method callback information
@@ -40,7 +42,8 @@ namespace Microsoft.Azure.Devices.Client
 
         internal IotHubBaseClient(
             IotHubConnectionCredentials iotHubConnectionCredentials,
-            IotHubClientOptions iotHubClientOptions)
+            IotHubClientOptions iotHubClientOptions,
+            ICertificateValidator certificateValidator = null)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, iotHubClientOptions?.TransportSettings, nameof(IotHubBaseClient) + "_ctor");
@@ -60,13 +63,27 @@ namespace Microsoft.Azure.Devices.Client
                 ModelId = _clientOptions.ModelId,
                 PayloadConvention = _clientOptions.PayloadConvention,
                 IotHubClientTransportSettings = _clientOptions.TransportSettings,
-                HttpOperationTransportSettings = _clientOptions.FileUploadTransportSettings,
                 MethodCallback = OnMethodCalledAsync,
                 DesiredPropertyUpdateCallback = OnDesiredStatePatchReceived,
                 ConnectionStatusChangeHandler = OnConnectionStatusChanged,
                 MessageEventCallback = OnMessageReceivedAsync,
                 RetryPolicy = _clientOptions.RetryPolicy ?? new IotHubClientNoRetry(),
             };
+
+            if (IotHubConnectionCredentials.ModuleId.IsNullOrWhiteSpace())
+            {
+                // Set up file upload settings over HTTP for the device client
+                PipelineContext.HttpOperationTransportSettings = _clientOptions.FileUploadTransportSettings;
+            }
+            else
+            {
+                // Set the remote certificate validator for the module client
+                _certValidator = certificateValidator ?? NullCertificateValidator.Instance;
+                PipelineContext.HttpOperationTransportSettings = new IotHubClientHttpSettings
+                {
+                    ServerCertificateCustomValidationCallback = _certValidator.GetCustomCertificateValidation()
+                };
+            }
 
             InnerHandler = pipelineBuilder.Build(PipelineContext);
 
@@ -501,6 +518,7 @@ namespace Microsoft.Azure.Devices.Client
                 InnerHandler?.Dispose();
                 _methodsSemaphore?.Dispose();
                 _twinDesiredPropertySemaphore?.Dispose();
+                _certValidator?.Dispose();
             }
         }
 

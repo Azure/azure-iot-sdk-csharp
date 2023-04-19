@@ -69,8 +69,9 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
                 IotHubConnectionCredentials = new IotHubConnectionCredentials(TestConnectionString),
                 IotHubClientTransportSettings = transportSettings1,
             };
+            IDelegatingHandler nextHandlerMock = new Mock<IDelegatingHandler>().Object;
 
-            using var amqpTransportHandler1 = new AmqpTransportHandler(pipelineContext1);
+            using var amqpTransportHandler1 = new AmqpTransportHandler(pipelineContext1, nextHandlerMock);
 
             try
             {
@@ -89,7 +90,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
                     IotHubClientTransportSettings = transportSettings2,
                 };
 
-                using var amqpTransportHandler2 = new AmqpTransportHandler(pipelineContext2);
+                using var amqpTransportHandler2 = new AmqpTransportHandler(pipelineContext2, nextHandlerMock);
             }
             catch (ArgumentException ex)
             {
@@ -117,8 +118,9 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
                 IotHubConnectionCredentials = new IotHubConnectionCredentials(TestConnectionString),
                 IotHubClientTransportSettings = new IotHubClientAmqpSettings(),
             };
+            IDelegatingHandler nextHandlerMock = new Mock<IDelegatingHandler>().Object;
 
-            return new AmqpTransportHandler(pipelineContext);
+            return new AmqpTransportHandler(pipelineContext, nextHandlerMock);
         }
     }
 }

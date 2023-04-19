@@ -110,6 +110,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return ExecuteWithExceptionRemappingAsync(() => base.CompleteFileUploadAsync(notification, cancellationToken));
         }
 
+        public override Task<DirectMethodResponse> InvokeMethodAsync(DirectMethodRequest methodInvokeRequest, Uri uri, CancellationToken cancellationToken)
+        {
+            return RunWithExceptionRemappingAsync(() => base.InvokeMethodAsync(methodInvokeRequest, uri, cancellationToken));
+        }
+
         private static bool IsNetworkExceptionChain(Exception exceptionChain)
         {
             return exceptionChain.Unwind(true).Any(e => IsNetwork(e) && !IsTlsSecurity(e));

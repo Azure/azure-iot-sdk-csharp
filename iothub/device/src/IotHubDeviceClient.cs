@@ -70,10 +70,10 @@ namespace Microsoft.Azure.Devices.Client
             }
 
             // Validate certificates
-            if (IotHubConnectionCredentials.AuthenticationMethod is ClientAuthenticationWithX509Certificate x509CertificateAuth
+            if (IotHubConnectionCredentials?.AuthenticationMethod is ClientAuthenticationWithX509Certificate x509CertificateAuth
                 && x509CertificateAuth.CertificateChain != null)
             {
-                if (_clientOptions.TransportSettings.Protocol != IotHubClientTransportProtocol.Tcp)
+                if (_clientOptions?.TransportSettings?.Protocol != IotHubClientTransportProtocol.Tcp)
                 {
                     throw new ArgumentException("Certificate chains for devices are only supported on MQTT over TCP and AMQP over TCP.");
                 }
@@ -82,7 +82,7 @@ namespace Microsoft.Azure.Devices.Client
             if (Logging.IsEnabled)
                 Logging.CreateClient(
                     this,
-                    $"HostName={IotHubConnectionCredentials.HostName};DeviceId={IotHubConnectionCredentials.DeviceId}",
+                    $"HostName={IotHubConnectionCredentials?.HostName};DeviceId={IotHubConnectionCredentials?.DeviceId}",
                     _clientOptions);
         }
 
@@ -104,6 +104,8 @@ namespace Microsoft.Azure.Devices.Client
             CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNull(request, nameof(request));
+            cancellationToken.ThrowIfCancellationRequested();
+
             return InnerHandler.GetFileUploadSasUriAsync(request, cancellationToken);
         }
 
@@ -120,6 +122,8 @@ namespace Microsoft.Azure.Devices.Client
         public Task CompleteFileUploadAsync(FileUploadCompletionNotification notification, CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNull(notification, nameof(notification));
+            cancellationToken.ThrowIfCancellationRequested();
+
             return InnerHandler.CompleteFileUploadAsync(notification, cancellationToken);
         }
     }

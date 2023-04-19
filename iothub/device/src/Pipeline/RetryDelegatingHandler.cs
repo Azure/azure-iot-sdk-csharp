@@ -483,6 +483,29 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
+        public override async Task<DirectMethodResponse> InvokeMethodAsync(DirectMethodRequest methodInvokeRequest, Uri uri, CancellationToken cancellationToken)
+        {
+            if (Logging.IsEnabled)
+                Logging.Enter(this, methodInvokeRequest.RequestId, uri, cancellationToken, nameof(InvokeMethodAsync));
+
+            try
+            {
+                return await _internalRetryHandler
+                    .RunWithRetryAsync(
+                        async () =>
+                        {
+                            return await base.InvokeMethodAsync(methodInvokeRequest, uri, cancellationToken).ConfigureAwait(false);
+                        },
+                        cancellationToken)
+                    .ConfigureAwait(false);
+            }
+            finally
+            {
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, methodInvokeRequest.RequestId, uri, cancellationToken, nameof(InvokeMethodAsync));
+            }
+        }
+
         public override async Task CloseAsync(CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)

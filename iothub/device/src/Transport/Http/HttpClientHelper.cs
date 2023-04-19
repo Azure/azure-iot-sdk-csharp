@@ -49,25 +49,27 @@ namespace Microsoft.Azure.Devices.Client.Transport
             AdditionalClientInformation additionalClientInformation,
             IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> defaultErrorMapping,
             TimeSpan timeout,
-            HttpClientHandler httpClientHandler,
             IotHubClientHttpSettings iotHubClientHttpSettings)
         {
             _baseAddress = baseAddress;
             _connectionCredentials = connectionCredentials;
             _defaultErrorMapping = new ReadOnlyDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>(defaultErrorMapping);
-            _httpClientHandler = httpClientHandler ?? new HttpClientHandler();
-            _httpClientHandler.SslProtocols = iotHubClientHttpSettings.SslProtocols;
-            _httpClientHandler.CheckCertificateRevocationList = iotHubClientHttpSettings.CertificateRevocationCheck;
+
+            _httpClientHandler = new HttpClientHandler
+            {
+                SslProtocols = iotHubClientHttpSettings.SslProtocols,
+                CheckCertificateRevocationList = iotHubClientHttpSettings.CertificateRevocationCheck,
+                ServerCertificateCustomValidationCallback = iotHubClientHttpSettings.ServerCertificateCustomValidationCallback,
+            };
 
             X509Certificate2 clientCert = _connectionCredentials.ClientCertificate;
-            IWebProxy proxy = iotHubClientHttpSettings.Proxy;
-
             if (clientCert != null)
             {
                 _httpClientHandler.ClientCertificates.Add(clientCert);
                 _usingX509ClientCert = true;
             }
 
+            IWebProxy proxy = iotHubClientHttpSettings.Proxy;
             if (proxy != null)
             {
                 _httpClientHandler.UseProxy = true;

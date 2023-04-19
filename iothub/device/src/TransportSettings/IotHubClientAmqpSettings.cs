@@ -59,9 +59,8 @@ namespace Microsoft.Azure.Devices.Client
         /// <remarks>
         /// If incorrectly implemented, your device may fail to connect to IoT hub and/or be open to security vulnerabilities.
         /// <para>
-        /// This feature is only applicable for HTTP, MQTT over TCP, MQTT over web socket, AMQP
-        /// over TCP. AMQP web socket communication does not support this feature. For users who want
-        /// this support over AMQP websocket, you must instead provide a <see cref="ClientWebSocket"/>
+        /// This feature is only applicable for AMQP over TCP. AMQP web socket communication does not support this feature.
+        /// For users who want this support over AMQP websocket, you must instead provide a <see cref="ClientWebSocket"/>
         /// instance with the desired callback and other websocket options (eg. proxy, keep-alive etc.) set.
         /// </para>
         /// </remarks>

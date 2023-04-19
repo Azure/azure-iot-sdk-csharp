@@ -1,6 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System.Net.Http;
+using System.Net.Security;
+using System.Security.Cryptography.X509Certificates;
+using System;
+
 namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
@@ -16,6 +21,8 @@ namespace Microsoft.Azure.Devices.Client
             Protocol = IotHubClientTransportProtocol.WebSocket;
         }
 
+        internal Func<HttpRequestMessage, X509Certificate2, X509Chain, SslPolicyErrors, bool> ServerCertificateCustomValidationCallback { get; set; }
+
         internal override IotHubClientTransportSettings Clone()
         {
             return new IotHubClientHttpSettings()
@@ -24,6 +31,7 @@ namespace Microsoft.Azure.Devices.Client
                 Proxy = Proxy,
                 SslProtocols = SslProtocols,
                 CertificateRevocationCheck = CertificateRevocationCheck,
+                ServerCertificateCustomValidationCallback = ServerCertificateCustomValidationCallback,
             };
         }
     }

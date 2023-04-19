@@ -6,15 +6,10 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Net;
-using System.Net.Http;
-using System.Net.Security;
-using System.Security.Authentication;
-using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client.Edge;
 using Microsoft.Azure.Devices.Client.HsmAuthentication;
-using Microsoft.Azure.Devices.Client.Transport;
 
 namespace Microsoft.Azure.Devices.Client
 {
@@ -25,9 +20,6 @@ namespace Microsoft.Azure.Devices.Client
     {
         private const string ModuleMethodUriFormat = "/twins/{0}/modules/{1}/methods?" + ClientApiVersionHelper.ApiVersionQueryStringLatest;
         private const string DeviceMethodUriFormat = "/twins/{0}/methods?" + ClientApiVersionHelper.ApiVersionQueryStringLatest;
-        private readonly ICertificateValidator _certValidator;
-
-        private readonly SemaphoreSlim _moduleReceiveMessageSemaphore = new(1, 1);
 
         /// <summary>
         /// Creates a disposable client from the specified connection string.
@@ -74,7 +66,7 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         internal IotHubModuleClient(IotHubConnectionCredentials iotHubConnectionCredentials, IotHubClientOptions options, ICertificateValidator certificateValidator)
-            : base(iotHubConnectionCredentials, options)
+            : base(iotHubConnectionCredentials, options, certificateValidator)
         {
             // Validate
             if (iotHubConnectionCredentials.ModuleId.IsNullOrWhiteSpace())
@@ -82,12 +74,10 @@ namespace Microsoft.Azure.Devices.Client
                 throw new InvalidOperationException("A valid module Id should be specified in the authentication credentails to create an IotHubModuleClient.");
             }
 
-            _certValidator = certificateValidator ?? NullCertificateValidator.Instance;
-
             if (Logging.IsEnabled)
                 Logging.CreateClient(
                     this,
-                    $"HostName={IotHubConnectionCredentials.HostName};DeviceId={IotHubConnectionCredentials.DeviceId};ModuleId={IotHubConnectionCredentials.ModuleId}",
+                    $"HostName={IotHubConnectionCredentials?.HostName};DeviceId={IotHubConnectionCredentials?.DeviceId};ModuleId={IotHubConnectionCredentials?.ModuleId}",
                     _clientOptions);
         }
 
@@ -126,7 +116,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="ArgumentNullException">Thrown when a required parameter is null.</exception>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        /// <exception cref="InvalidOperationException">Thrown if ModuleClient instance is not opened already.</exception>
+        /// <exception cref="InvalidOperationException">Thrown if the client instance is not opened already.</exception>
         /// <exception cref="IotHubClientException">Thrown if an error occurs when communicating with IoT hub service.</exception>
         /// <exception cref="ObjectDisposedException">When the client has been disposed.</exception>
         public async Task SendMessageToRouteAsync(string outputName, TelemetryMessage message, CancellationToken cancellationToken = default)
@@ -164,7 +154,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="messages">A list of one or more messages to send.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <returns>The task containing the event.</returns>
-        /// <exception cref="InvalidOperationException">Thrown if IotHubModuleClient instance is not opened already.</exception>
+        /// <exception cref="InvalidOperationException">Thrown if the client instance is not opened already.</exception>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         /// <exception cref="ObjectDisposedException">When the client has been disposed.</exception>
         public async Task SendMessagesToRouteAsync(string outputName, IEnumerable<TelemetryMessage> messages, CancellationToken cancellationToken = default)
@@ -173,6 +163,7 @@ namespace Microsoft.Azure.Devices.Client
                 Logging.Enter(this, outputName, messages, nameof(SendMessagesToRouteAsync));
 
             Argument.AssertNotNullOrWhiteSpace(outputName, nameof(outputName));
+            cancellationToken.ThrowIfCancellationRequested();
 
             var messagesList = messages?.ToList();
             Argument.AssertNotNullOrEmpty(messagesList, nameof(messages));
@@ -204,16 +195,13 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="methodRequest">The details of the method to invoke.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <returns>The result of the method invocation.</returns>
-        /// <exception cref="InvalidOperationException">Thrown if IotHubModuleClient instance is not opened already.</exception>
+        /// <exception cref="InvalidOperationException">Thrown if the client instance is not opened already.</exception>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         /// <exception cref="ObjectDisposedException">When the client has been disposed.</exception>
         public Task<DirectMethodResponse> InvokeMethodAsync(string deviceId, DirectMethodRequest methodRequest, CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNull(methodRequest, nameof(methodRequest));
-            if (_isDisposed)
-            {
-                throw new ObjectDisposedException(nameof(IotHubModuleClient));
-            }
+            cancellationToken.ThrowIfCancellationRequested();
 
             return InvokeMethodAsync(GetDeviceMethodUri(deviceId), methodRequest, cancellationToken);
         }
@@ -233,70 +221,27 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="methodRequest">The details of the method to invoke.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <returns>The result of the method invocation.</returns>
-        /// <exception cref="InvalidOperationException">Thrown if IotHubModuleClient instance is not opened already.</exception>
+        /// <exception cref="InvalidOperationException">Thrown if the client instance is not opened already.</exception>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         /// <exception cref="ObjectDisposedException">When the client has been disposed.</exception>
         public Task<DirectMethodResponse> InvokeMethodAsync(string deviceId, string moduleId, DirectMethodRequest methodRequest, CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNull(methodRequest, nameof(methodRequest));
-            if (_isDisposed)
-            {
-                throw new ObjectDisposedException(nameof(IotHubModuleClient));
-            }
+            cancellationToken.ThrowIfCancellationRequested();
 
             return InvokeMethodAsync(GetModuleMethodUri(deviceId, moduleId), methodRequest, cancellationToken);
         }
 
-        /// <inheritdoc/>
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                _moduleReceiveMessageSemaphore?.Dispose();
-            }
-
-            // Call the base class implementation.
-            base.Dispose(disposing);
-        }
-
         private async Task<DirectMethodResponse> InvokeMethodAsync(Uri uri, DirectMethodRequest methodRequest, CancellationToken cancellationToken = default)
         {
-            HttpClientHandler httpClientHandler = null;
-            Func<object, X509Certificate, X509Chain, SslPolicyErrors, bool> customCertificateValidation = _certValidator.GetCustomCertificateValidation();
+            methodRequest.PayloadConvention = _clientOptions.PayloadConvention;
+            DirectMethodResponse result = await InnerHandler.InvokeMethodAsync(methodRequest, uri, cancellationToken).ConfigureAwait(false);
 
-            try
+            return new DirectMethodResponse(result.Status)
             {
-                var pipelineContext = new PipelineContext
-                {
-                    IotHubConnectionCredentials = IotHubConnectionCredentials,
-                    HttpOperationTransportSettings = new IotHubClientHttpSettings(),
-                };
-
-                if (customCertificateValidation != null)
-                {
-                    httpClientHandler = new HttpClientHandler
-                    {
-                        ServerCertificateCustomValidationCallback = customCertificateValidation,
-                        SslProtocols = pipelineContext.HttpOperationTransportSettings.SslProtocols,
-                    };
-                }
-
-                using var httpTransport = new HttpTransportHandler(pipelineContext, httpClientHandler: httpClientHandler);
-                methodRequest.PayloadConvention = _clientOptions.PayloadConvention;
-
-                DirectMethodResponse result = await httpTransport.InvokeMethodAsync(methodRequest, uri, cancellationToken).ConfigureAwait(false);
-
-                return new DirectMethodResponse(result.Status)
-                {
-                    Payload = result.Payload,
-                    PayloadConvention = _clientOptions.PayloadConvention,
-                };
-            }
-            finally
-            {
-                httpClientHandler?.Dispose();
-                _certValidator.Dispose();
-            }
+                Payload = result.Payload,
+                PayloadConvention = _clientOptions.PayloadConvention,
+            };
         }
 
         private static Uri GetDeviceMethodUri(string deviceId)

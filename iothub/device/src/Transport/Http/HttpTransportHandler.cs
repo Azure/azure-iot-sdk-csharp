@@ -25,8 +25,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         internal HttpTransportHandler(
             PipelineContext context,
-            IDelegatingHandler nextHandler = null,
-            HttpClientHandler httpClientHandler = null)
+            IDelegatingHandler nextHandler = null)
             : base(context, nextHandler)
         {
             var additionalClientInformation = new AdditionalClientInformation
@@ -44,7 +43,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 additionalClientInformation,
                 ClientExceptionHandlingHelper.GetDefaultErrorMapping(),
                 s_defaultOperationTimeout,
-                httpClientHandler,
                 context.HttpOperationTransportSettings);
         }
 
@@ -75,7 +73,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         }
 
         // This is for invoking methods from an edge module to another edge device or edge module.
-        internal async Task<DirectMethodResponse> InvokeMethodAsync(
+        public override async Task<DirectMethodResponse> InvokeMethodAsync(
             DirectMethodRequest methodInvokeRequest,
             Uri uri,
             CancellationToken cancellationToken)

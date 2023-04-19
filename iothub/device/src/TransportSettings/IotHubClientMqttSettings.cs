@@ -86,7 +86,7 @@ namespace Microsoft.Azure.Devices.Client
         /// A callback for remote certificate validation.
         /// </summary>
         /// <remarks>
-        /// If incorrectly implemented, your device may fail to connect to IoTHub and/or be open to security vulnerabilities.
+        /// If incorrectly implemented, your device may fail to connect to IoT hub and/or be open to security vulnerabilities.
         /// </remarks>
         public RemoteCertificateValidationCallback RemoteCertificateValidationCallback { get; set; }
 

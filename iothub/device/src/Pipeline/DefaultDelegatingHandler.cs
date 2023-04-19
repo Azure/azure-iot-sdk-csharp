@@ -142,6 +142,12 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return NextHandler?.CompleteFileUploadAsync(notification, cancellationToken) ?? Task.CompletedTask;
         }
 
+        public virtual Task<DirectMethodResponse> InvokeMethodAsync(DirectMethodRequest methodInvokeRequest, Uri uri, CancellationToken cancellationToken)
+        {
+            ThrowIfDisposed();
+            return NextHandler?.InvokeMethodAsync(methodInvokeRequest, uri, cancellationToken) ?? Task.FromResult<DirectMethodResponse>(null);
+        }
+
         public virtual Task<DateTime> RefreshSasTokenAsync(CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
