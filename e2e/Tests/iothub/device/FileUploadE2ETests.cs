@@ -211,13 +211,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 deviceClient = new IotHubDeviceClient(testDevice.ConnectionString, options);
             }
 
-            int count = 0;
-            deviceClient.ConnectionStatusChangeCallback = (connInfo) =>
-            {
-                VerboseTestLogger.WriteLine($"Connection status change detected: status={connInfo.Status}, reason={connInfo.ChangeReason}, count={++count}.");
-            };
             await deviceClient.OpenAsync(ct).ConfigureAwait(false);
-
             await using (deviceClient)
             {
                 FileUploadSasUriResponse sasUriResponse = await deviceClient
