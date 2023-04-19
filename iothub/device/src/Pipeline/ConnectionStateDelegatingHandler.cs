@@ -101,7 +101,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                                             Logging.Error(this, ex, nameof(HandleDisconnectAsync));
 
                                         HandleConnectionStatusExceptions(ex, true);
-                                        if (_clientTransportStateMachine.GetCurrentState() == ClientTransportState.Opening && !_wasOpened)
+                                        if (!_wasOpened && _clientTransportStateMachine.GetCurrentState() == ClientTransportState.Opening)
                                         {
                                             _clientTransportStateMachine.MoveNext(ClientStateAction.OpenFailure, ClientTransportState.Closed);
                                         }
