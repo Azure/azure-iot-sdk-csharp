@@ -110,6 +110,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
                     .ConfigureAwait(false);
             }
             catch (OperationCanceledException) { } // user signalled an exit
+            catch (AggregateException ex) when (ex.InnerException is OperationCanceledException) { } // user signaled an exit
             catch (Exception ex)
             {
                 s_logger.Trace($"Device app failed with exception {ex}", TraceSeverity.Error);
