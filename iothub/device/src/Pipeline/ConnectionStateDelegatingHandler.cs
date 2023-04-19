@@ -23,7 +23,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         private Task _transportClosedTask;
         private CancellationTokenSource _handleDisconnectCts;
         private CancellationTokenSource _cancelPendingOperationsCts;
-        private bool _wasOpened;
+        private volatile bool _wasOpened;
 
         internal ConnectionStateDelegatingHandler(PipelineContext context, IDelegatingHandler innerHandler)
             : base(context, innerHandler)
