@@ -3,10 +3,8 @@
 
 using System.Collections.Concurrent;
 using System.Diagnostics;
-using System.Text;
 using Mash.Logging;
 using Microsoft.Azure.Devices.Client;
-using Newtonsoft.Json;
 using static Microsoft.Azure.Devices.LongHaul.Module.LoggingConstants;
 
 namespace Microsoft.Azure.Devices.LongHaul.Module
@@ -26,8 +24,9 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
         private RecommendedAction _disconnectedRecommendedAction;
         private volatile IotHubModuleClient _moduleClient;
 
-        private static readonly TimeSpan s_messageLoopSleepTime = TimeSpan.FromSeconds(10);
-        private static readonly TimeSpan s_deviceTwinUpdateInterval = TimeSpan.FromSeconds(3);
+        private static readonly TimeSpan s_messageLoopSleepTime = TimeSpan.FromSeconds(3);
+        private static readonly TimeSpan s_deviceTwinUpdateInterval = TimeSpan.FromSeconds(10);
+        private static readonly TimeSpan s_retryInterval = TimeSpan.FromSeconds(1);
         private readonly ConcurrentQueue<TelemetryMessage> _messagesToSend = new();
 
         private long _totalTelemetryMessagesToModuleSent;
@@ -108,39 +107,13 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
             bool sendSingle = true;
 
             var pendingMessages = new List<TelemetryMessage>(maxBulkMessages);
-            bool loggedDisconnection = false;
             logger.LoggerContext.Add(OperationName, LoggingConstants.TelemetryMessage);
             var sw = new Stopwatch();
             while (!ct.IsCancellationRequested)
             {
                 logger.Metric(ModuleMessageBacklog, _messagesToSend.Count);
 
-                // Wait when there are no messages to send, or if not connected
-                if (!IsConnected
-                    || !_messagesToSend.Any())
-                {
-                    try
-                    {
-                        await Task.Delay(s_messageLoopSleepTime, ct).ConfigureAwait(false);
-                    }
-                    catch (TaskCanceledException)
-                    {
-                        // App is signalled to exit
-                        _logger.Trace($"Exit signal encountered. Terminating telemetry message pump.", TraceSeverity.Verbose);
-                        return;
-                    }
-                }
-
-                // If not connected, skip the work below this round.
-                if (!IsConnected)
-                {
-                    if (!loggedDisconnection)
-                    {
-                        loggedDisconnection = true;
-                        logger.Trace($"Waiting for connection before sending telemetry", TraceSeverity.Warning);
-                    }
-                    continue;
-                }
+                await Task.Delay(s_messageLoopSleepTime, ct).ConfigureAwait(false);
 
                 // Get messages to send, unless we're retrying a previous set of messages.
                 if (!pendingMessages.Any())
@@ -163,45 +136,47 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
                     }
                 }
 
-                // Send any message prepped to send.
                 if (pendingMessages.Any())
                 {
-                    if (pendingMessages.Count > 1)
+                    try
                     {
-                        logger.Trace($"Sending {pendingMessages.Count} messages in bulk.");
-                        sw.Restart();
-                        await _moduleClient.SendMessagesToRouteAsync("*", pendingMessages, ct).ConfigureAwait(false);
+                        if (pendingMessages.Count > 1)
+                        {
+                            logger.Trace($"Sending {pendingMessages.Count} messages in bulk.");
+                            sw.Restart();
+                            await _moduleClient.SendMessagesToRouteAsync("*", pendingMessages, ct).ConfigureAwait(false);
+                        }
+                        else
+                        {
+                            sw.Restart();
+                            await _moduleClient.SendMessageToRouteAsync("*", pendingMessages.First(), ct).ConfigureAwait(false);
+                        }
+                        sw.Stop();
+
+                        _totalTelemetryMessagesToModuleSent += pendingMessages.Count;
+                        _logger.Metric(TotalTwinCallbacksToModuleHandled, _totalTwinCallbacksToModuleHandled);
+                        _logger.Metric(TelemetryMessageToModuleDelaySeconds, sw.Elapsed.TotalSeconds);
+                        pendingMessages.Clear();
+
+                        // Alternate sending between single and in bulk.
+                        sendSingle = !sendSingle;
                     }
-                    else
+                    catch (Exception ex)
                     {
-                        sw.Restart();
-                        await _moduleClient.SendMessageToRouteAsync("*", pendingMessages.First(), ct).ConfigureAwait(false);
+                        _logger.Trace($"Exception when sending telemetry when connected is {IsConnected}\n{ex}", TraceSeverity.Warning);
                     }
-                    sw.Stop();
-
-                    _totalTelemetryMessagesToModuleSent += pendingMessages.Count;
-                    _logger.Metric(TotalTwinCallbacksToModuleHandled, _totalTwinCallbacksToModuleHandled);
-                    _logger.Metric(TelemetryMessageToModuleDelaySeconds, sw.Elapsed.TotalSeconds);
-                    pendingMessages.Clear();
-
-                    // Alternate sending between single and in bulk.
-                    sendSingle = !sendSingle;
-                    loggedDisconnection = false;
                 }
             }
         }
 
         public async Task ReportReadOnlyPropertiesAsync(Logger logger, CancellationToken ct)
         {
-            bool loggedDisconnection = false;
             logger.LoggerContext.Add(OperationName, ReportTwinProperties);
             var sw = new Stopwatch();
             while (!ct.IsCancellationRequested)
             {
-                // If not connected, skip the work below this round
-                if (IsConnected)
+                try
                 {
-                    loggedDisconnection = false;
                     var reported = new ReportedProperties
                     {
                         { "TotalTelemetryMessagesSent", _totalTelemetryMessagesToModuleSent },
@@ -215,10 +190,9 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
                     logger.Metric(TotalTwinUpdatesToModuleReported, _totalTwinUpdatesToModuleReported);
                     logger.Metric(ReportedTwinUpdateToModuleOperationSeconds, sw.Elapsed.TotalSeconds);
                 }
-                else if (!loggedDisconnection)
+                catch (Exception ex)
                 {
-                    loggedDisconnection = true;
-                    logger.Trace($"Waiting for connection before any other operations.", TraceSeverity.Warning);
+                    logger.Trace($"Exception when reporting properties when connected is {IsConnected}\n{ex}");
                 }
 
                 await Task.Delay(s_deviceTwinUpdateInterval, ct).ConfigureAwait(false);
@@ -261,7 +235,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
             _messagesToSend.Enqueue(iotMessage);
         }
 
-        public async Task SetPropertiesAsync(string keyName, object properties, CancellationToken cancellationToken)
+        public async Task SetPropertiesAsync(string keyName, object properties, Logger logger, CancellationToken ct)
         {
             Debug.Assert(_moduleClient != null);
             Debug.Assert(properties != null);
@@ -271,11 +245,23 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
                 { keyName, properties },
             };
 
-            await _moduleClient
-                .UpdateReportedPropertiesAsync(reportedProperties, cancellationToken)
-                .ConfigureAwait(false);
+            while (!ct.IsCancellationRequested)
+            {
+                try
+                {
+                    await _moduleClient
+                        .UpdateReportedPropertiesAsync(reportedProperties, ct)
+                    .ConfigureAwait(false);
 
-            _logger.Trace($"Set the reported property with name [{keyName}] in device twin.", TraceSeverity.Information);
+                    logger.Trace($"Set the reported property with name [{keyName}] in device twin.", TraceSeverity.Information);
+                    break;
+                }
+                catch (Exception ex)
+                {
+                    logger.Trace($"Exception reporting property\n{ex}", TraceSeverity.Warning);
+                    await Task.Delay(s_retryInterval, ct).ConfigureAwait(false);
+                }
+            }
         }
 
         public async ValueTask DisposeAsync()

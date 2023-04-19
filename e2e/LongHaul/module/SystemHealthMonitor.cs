@@ -37,7 +37,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
                     { nameof(properties.OsVersion), properties.OsVersion },
                     { nameof(properties.SystemArchitecture), properties.SystemArchitecture },
                 });
-            await _iotHub.SetPropertiesAsync("systemProperties", properties, ct).ConfigureAwait(false);
+            await _iotHub.SetPropertiesAsync("systemProperties", properties, _logger, ct).ConfigureAwait(false);
 
             while (!ct.IsCancellationRequested)
             {

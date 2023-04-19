@@ -5,7 +5,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
 {
     internal static class LoggingConstants
     {
-        // Metrics
+        // Metric names
 
         public const string ModuleDisconnectedDurationSeconds = "ModuleDisconnectedDurationSeconds";
         public const string TotalTelemetryMessagesToModuleSent = "TotalTelemetryMessagesToModuleSent";
@@ -24,7 +24,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
         public const string ModuleClientCloseDelaySeconds = "ModuleClientCloseDelaySeconds";
         public const string ModuleClientOpenDelaySeconds = "ModuleClientOpenDelaySeconds";
 
-        // Events
+        // Event names
 
         public const string StartingRun = "StartingRun";
         public const string ConnectedEvent = "Connected";
@@ -52,7 +52,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
         public const string DisconnectedRecommendedAction = "disconnectedRecommendedAction";
         public const string ConnectionStatusChangeCount = "connectionStatusChangeCount";
 
-        // Operations
+        // Operation names
 
         public const string TelemetryMessage = "TelemetryMessage";
         public const string ReportTwinProperties = "ReportTwinProperties";
