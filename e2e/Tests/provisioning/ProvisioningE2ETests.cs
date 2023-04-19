@@ -704,11 +704,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                         VerboseTestLogger.WriteLine($"ProvisioningDeviceClient.RegisterAsync failed because: {ex.Message}");
                         await Task.Delay(TimeSpan.FromSeconds(2)).ConfigureAwait(false);
                     }
-                    catch (TaskCanceledException tce) when (cts.IsCancellationRequested && ++tryCount < MaxTryCount)
+                    catch (OperationCanceledException oce) when (cts.IsCancellationRequested && ++tryCount < MaxTryCount)
                     {
                         // This catch statement shouldn't execute when the test itself is cancelled, but will
                         // execute when the registerAsync(cts) call times out 
-                        VerboseTestLogger.WriteLine($"ProvisioningDeviceClient.RegisterAsync timed out because: {tce.Message}");
+                        VerboseTestLogger.WriteLine($"ProvisioningDeviceClient.RegisterAsync timed out because: {oce.Message}");
                         await Task.Delay(TimeSpan.FromSeconds(2)).ConfigureAwait(false);
                     }
                 }
