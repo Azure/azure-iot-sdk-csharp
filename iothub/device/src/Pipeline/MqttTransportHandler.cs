@@ -1196,7 +1196,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                             string errorResponseString = Encoding.UTF8.GetString(payloadBytes);
                             try
                             {
-                                errorResponse = DefaultPayloadConvention.GetObject<IotHubClientErrorResponseMessage>(errorResponseString);
+                                errorResponse = DefaultPayloadConvention.Instance.GetObject<IotHubClientErrorResponseMessage>(errorResponseString);
                             }
                             catch (JsonException ex)
                             {
@@ -1268,7 +1268,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         string errorResponseString = Encoding.UTF8.GetString(payloadBytes);
                         try
                         {
-                            errorResponse = DefaultPayloadConvention.GetObject<IotHubClientErrorResponseMessage>(errorResponseString);
+                            errorResponse = DefaultPayloadConvention.Instance.GetObject<IotHubClientErrorResponseMessage>(errorResponseString);
                         }
                         catch (JsonException ex)
                         {
