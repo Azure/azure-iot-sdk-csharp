@@ -118,7 +118,10 @@ namespace Microsoft.Azure.Devices.E2ETests
             IotHubDeviceClient deviceClient;
             var clientOptions = new IotHubClientOptions
             {
-                FileUploadTransportSettings = fileUploadTransportSettings
+                FileUploadTransportSettings = fileUploadTransportSettings,
+
+                // Turn off retry policy so that correlation ID mis-match errors are returned to the app immediately
+                RetryPolicy = new IotHubClientNoRetry(),
             };
 
             X509Certificate2 cert = null;
@@ -165,6 +168,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     catch (IotHubClientException ex) when (ex.ErrorCode is IotHubClientErrorCode.ServerError)
                     {
                         // Gateway V1 flow
+                        // Even though this is a 400 level error, service responds with a 500 level error for this case. 
                     }
                     catch (IotHubClientException ex) when (ex.ErrorCode is IotHubClientErrorCode.IotHubFormatError)
                     {
