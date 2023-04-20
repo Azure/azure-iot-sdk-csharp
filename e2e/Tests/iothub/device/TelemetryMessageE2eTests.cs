@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
     [TestClass]
     [TestCategory("E2E")]
     [TestCategory("IoTHub-Client")]
-    public partial class TelemetryMessageE2eTests : E2EMsTestBase
+    public class TelemetryMessageE2eTests : E2EMsTestBase
     {
         private const int MessageBatchCount = 5;
 

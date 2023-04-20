@@ -178,9 +178,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
             try
             {
                 await ValidateStateAndPerformOperationAsync(
-                    (ct) => base.SendTelemetryAsync(message, ct),
-                    nameof(SendTelemetryAsync),
-                    cancellationToken);
+                        (ct) => base.SendTelemetryAsync(message, ct),
+                        nameof(SendTelemetryAsync),
+                        cancellationToken)
+                    .ConfigureAwait(false);
             }
             finally
             {
@@ -197,9 +198,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
             try
             {
                 await ValidateStateAndPerformOperationAsync(
-                    (ct) => base.SendTelemetryAsync(messages, ct),
-                    nameof(SendTelemetryAsync),
-                    cancellationToken);
+                        (ct) => base.SendTelemetryAsync(messages, ct),
+                        nameof(SendTelemetryAsync),
+                        cancellationToken)
+                    .ConfigureAwait(false);
             }
             finally
             {
@@ -215,9 +217,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
             try
             {
                 await ValidateStateAndPerformOperationAsync(
-                    (ct) => base.EnableReceiveMessageAsync(ct),
-                    nameof(EnableReceiveMessageAsync),
-                    cancellationToken);
+                        (ct) => base.EnableReceiveMessageAsync(ct),
+                        nameof(EnableReceiveMessageAsync),
+                        cancellationToken)
+                    .ConfigureAwait(false);
             }
             finally
             {
@@ -234,9 +237,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
             try
             {
                 await ValidateStateAndPerformOperationAsync(
-                    (ct) => base.DisableReceiveMessageAsync(ct),
-                    nameof(DisableReceiveMessageAsync),
-                    cancellationToken);
+                        (ct) => base.DisableReceiveMessageAsync(ct),
+                        nameof(DisableReceiveMessageAsync),
+                        cancellationToken)
+                    .ConfigureAwait(false);
             }
             finally
             {
@@ -253,9 +257,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
             try
             {
                 await ValidateStateAndPerformOperationAsync(
-                    (ct) => base.EnableMethodsAsync(ct),
-                    nameof(EnableMethodsAsync),
-                    cancellationToken);
+                        (ct) => base.EnableMethodsAsync(ct),
+                        nameof(EnableMethodsAsync),
+                        cancellationToken)
+                    .ConfigureAwait(false);
             }
             finally
             {
@@ -272,9 +277,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
             try
             {
                 await ValidateStateAndPerformOperationAsync(
-                    (ct) => base.DisableMethodsAsync(ct),
-                    nameof(DisableMethodsAsync),
-                    cancellationToken);
+                        (ct) => base.DisableMethodsAsync(ct),
+                        nameof(DisableMethodsAsync),
+                        cancellationToken)
+                    .ConfigureAwait(false);
             }
             finally
             {
@@ -291,9 +297,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
             try
             {
                 await ValidateStateAndPerformOperationAsync(
-                    (ct) => base.SendMethodResponseAsync(method, ct),
-                    nameof(SendMethodResponseAsync),
-                    cancellationToken);
+                        (ct) => base.SendMethodResponseAsync(method, ct),
+                        nameof(SendMethodResponseAsync),
+                        cancellationToken)
+                    .ConfigureAwait(false);
             }
             finally
             {
@@ -310,9 +317,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
             try
             {
                 await ValidateStateAndPerformOperationAsync(
-                    (ct) => base.EnableTwinPatchAsync(ct),
-                    nameof(EnableTwinPatchAsync),
-                    cancellationToken);
+                        (ct) => base.EnableTwinPatchAsync(ct),
+                        nameof(EnableTwinPatchAsync),
+                        cancellationToken)
+                    .ConfigureAwait(false);
             }
             finally
             {
@@ -329,9 +337,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
             try
             {
                 await ValidateStateAndPerformOperationAsync(
-                    (ct) => base.DisableTwinPatchAsync(ct),
-                    nameof(DisableTwinPatchAsync),
-                    cancellationToken);
+                        (ct) => base.DisableTwinPatchAsync(ct),
+                        nameof(DisableTwinPatchAsync),
+                        cancellationToken)
+                    .ConfigureAwait(false);
             }
             finally
             {
@@ -348,9 +357,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
             try
             {
                 return await ValidateStateAndPerformOperationAsync(
-                    (ct) => base.GetTwinAsync(ct),
-                    nameof(GetTwinAsync),
-                    cancellationToken);
+                        (ct) => base.GetTwinAsync(ct),
+                        nameof(GetTwinAsync),
+                        cancellationToken)
+                    .ConfigureAwait(false);
             }
             finally
             {
@@ -367,14 +377,75 @@ namespace Microsoft.Azure.Devices.Client.Transport
             try
             {
                 return await ValidateStateAndPerformOperationAsync(
-                    (ct) => base.UpdateReportedPropertiesAsync(reportedProperties, ct),
-                    nameof(UpdateReportedPropertiesAsync),
-                    cancellationToken);
+                        (ct) => base.UpdateReportedPropertiesAsync(reportedProperties, ct),
+                        nameof(UpdateReportedPropertiesAsync),
+                        cancellationToken)
+                    .ConfigureAwait(false);
             }
             finally
             {
                 if (Logging.IsEnabled)
                     Logging.Exit(this, reportedProperties, cancellationToken, nameof(UpdateReportedPropertiesAsync));
+            }
+        }
+
+        public override async Task<FileUploadSasUriResponse> GetFileUploadSasUriAsync(FileUploadSasUriRequest request, CancellationToken cancellationToken)
+        {
+            if (Logging.IsEnabled)
+                Logging.Enter(this, request.BlobName, cancellationToken, nameof(GetFileUploadSasUriAsync));
+
+            try
+            {
+                return await ValidateStateAndPerformOperationAsync(
+                        (ct) => base.GetFileUploadSasUriAsync(request, ct),
+                        nameof(GetFileUploadSasUriAsync),
+                        cancellationToken)
+                    .ConfigureAwait(false);
+            }
+            finally
+            {
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, request.BlobName, cancellationToken, nameof(GetFileUploadSasUriAsync));
+            }
+        }
+
+        public override async Task CompleteFileUploadAsync(FileUploadCompletionNotification notification, CancellationToken cancellationToken)
+        {
+            if (Logging.IsEnabled)
+                Logging.Enter(this, notification.CorrelationId, cancellationToken, nameof(CompleteFileUploadAsync));
+
+            try
+            {
+                await ValidateStateAndPerformOperationAsync(
+                        (ct) => base.CompleteFileUploadAsync(notification, ct),
+                        nameof(CompleteFileUploadAsync),
+                        cancellationToken)
+                    .ConfigureAwait(false);
+            }
+            finally
+            {
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, notification.CorrelationId, cancellationToken, nameof(CompleteFileUploadAsync));
+            }
+        }
+
+        public override async Task<DirectMethodResponse> InvokeMethodAsync(DirectMethodRequest methodInvokeRequest, Uri uri, CancellationToken cancellationToken)
+        {
+            if (Logging.IsEnabled)
+                Logging.Enter(this, methodInvokeRequest.RequestId, uri, cancellationToken, nameof(InvokeMethodAsync));
+
+            try
+            {
+                return await ValidateStateAndPerformOperationAsync(
+                        (ct) => base.InvokeMethodAsync(methodInvokeRequest, uri, ct),
+                        nameof(InvokeMethodAsync),
+                        cancellationToken)
+                    .ConfigureAwait(false);
+            }
+            finally
+            {
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, methodInvokeRequest.RequestId, uri, cancellationToken, nameof(InvokeMethodAsync));
             }
         }
 
@@ -386,9 +457,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
             try
             {
                 return await ValidateStateAndPerformOperationAsync(
-                    (ct) => base.RefreshSasTokenAsync(ct),
-                    nameof(RefreshSasTokenAsync),
-                    cancellationToken);
+                        (ct) => base.RefreshSasTokenAsync(ct),
+                        nameof(RefreshSasTokenAsync),
+                        cancellationToken)
+                    .ConfigureAwait(false);
             }
             finally
             {

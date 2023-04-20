@@ -24,6 +24,8 @@ namespace Microsoft.Azure.Devices.Client
         private readonly SemaphoreSlim _twinDesiredPropertySemaphore = new(1, 1);
         private readonly SemaphoreSlim _receiveMessageSemaphore = new(1, 1);
 
+        private readonly ICertificateValidator _certValidator;
+
         private volatile Func<IncomingMessage, Task<MessageAcknowledgement>> _receiveMessageCallback;
 
         // Method callback information
@@ -40,7 +42,8 @@ namespace Microsoft.Azure.Devices.Client
 
         internal IotHubBaseClient(
             IotHubConnectionCredentials iotHubConnectionCredentials,
-            IotHubClientOptions iotHubClientOptions)
+            IotHubClientOptions iotHubClientOptions,
+            ICertificateValidator certificateValidator = null)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, iotHubClientOptions?.TransportSettings, nameof(IotHubBaseClient) + "_ctor");
@@ -60,13 +63,27 @@ namespace Microsoft.Azure.Devices.Client
                 ModelId = _clientOptions.ModelId,
                 PayloadConvention = _clientOptions.PayloadConvention,
                 IotHubClientTransportSettings = _clientOptions.TransportSettings,
-                HttpOperationTransportSettings = _clientOptions.FileUploadTransportSettings,
                 MethodCallback = OnMethodCalledAsync,
                 DesiredPropertyUpdateCallback = OnDesiredStatePatchReceived,
                 ConnectionStatusChangeHandler = OnConnectionStatusChanged,
                 MessageEventCallback = OnMessageReceivedAsync,
                 RetryPolicy = _clientOptions.RetryPolicy ?? new IotHubClientNoRetry(),
             };
+
+            if (IotHubConnectionCredentials.ModuleId.IsNullOrWhiteSpace())
+            {
+                // Set up file upload settings over HTTP for the device client
+                PipelineContext.HttpOperationTransportSettings = _clientOptions.FileUploadTransportSettings;
+            }
+            else
+            {
+                // Set the remote certificate validator for the module client
+                _certValidator = certificateValidator ?? NullCertificateValidator.Instance;
+                PipelineContext.HttpOperationTransportSettings = new IotHubClientHttpSettings
+                {
+                    ServerCertificateCustomValidationCallback = _certValidator.GetCustomCertificateValidation()
+                };
+            }
 
             InnerHandler = pipelineBuilder.Build(PipelineContext);
 
@@ -193,6 +210,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <exception cref="InvalidOperationException">Thrown if the client instance is not opened already.</exception>
         /// <exception cref="InvalidOperationException">When this method is called when the client is configured to use MQTT.</exception>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
+        /// <exception cref="ObjectDisposedException">When the client has been disposed.</exception>
         public async Task SendTelemetryAsync(IEnumerable<TelemetryMessage> messages, CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNullOrEmpty(messages, nameof(messages));
@@ -232,7 +250,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </remarks>
         /// <param name="messageCallback">The callback to be invoked when a cloud-to-device message is received by the client.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <exception cref="InvalidOperationException">Thrown if instance is not opened already.</exception>
+        /// <exception cref="InvalidOperationException">Thrown if the client instance is not opened already.</exception>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         /// <exception cref="ObjectDisposedException">When the client has been disposed.</exception>
         public async Task SetIncomingMessageCallbackAsync(
@@ -288,6 +306,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </remarks>
         /// <param name="directMethodCallback">The callback to be invoked when any method is invoked by the cloud service.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
+        /// <exception cref="InvalidOperationException">Thrown if the client instance is not opened already.</exception>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         /// <exception cref="ObjectDisposedException">When the client has been disposed.</exception>
         public async Task SetDirectMethodCallbackAsync(
@@ -352,6 +371,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </remarks>
         /// <param name="reportedProperties">Reported properties to push</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
+        /// <exception cref="InvalidOperationException">Thrown if the client instance is not opened already.</exception>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         /// <exception cref="ObjectDisposedException">When the client has been disposed.</exception>
         /// <returns>The new version of the updated twin if the update was successful.</returns>
@@ -382,6 +402,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </remarks>
         /// <param name="callback">The callback to be invoked when a desired property update is received from the service.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
+        /// <exception cref="InvalidOperationException">Thrown if the client instance is not opened already.</exception>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
         /// <exception cref="ObjectDisposedException">When the client has been disposed.</exception>
         public async Task SetDesiredPropertyUpdateCallbackAsync(
@@ -497,6 +518,7 @@ namespace Microsoft.Azure.Devices.Client
                 InnerHandler?.Dispose();
                 _methodsSemaphore?.Dispose();
                 _twinDesiredPropertySemaphore?.Dispose();
+                _certValidator?.Dispose();
             }
         }
 
@@ -619,7 +641,9 @@ namespace Microsoft.Azure.Devices.Client
                 .With((ctx, innerHandler) => new RetryDelegatingHandler(ctx, innerHandler))
                 .With((ctx, innerHandler) => new ExceptionRemappingHandler(ctx, innerHandler))
                 .With((ctx, innerHandler) => new TransportDelegatingHandler(ctx, innerHandler))
-                .With((ctx, innerHandler) => transporthandlerFactory.Create(ctx));
+                .With((ctx, innerHandler) => transporthandlerFactory.Create(ctx, innerHandler))
+                // An HTTP layer is added for some operations that aren't available over MQTT or AMQP, including, e.g., file upload.
+                .With((ctx, innerHandler) => new HttpTransportHandler(ctx, innerHandler));
 
             return pipelineBuilder;
         }

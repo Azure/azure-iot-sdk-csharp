@@ -12,8 +12,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
     {
         private TaskCompletionSource<bool> _transportShouldRetry;
 
-        protected TransportHandlerBase(PipelineContext context)
-            : base(context, nextHandler: null)
+        protected TransportHandlerBase(PipelineContext context, IDelegatingHandler nextHandler)
+            : base(context, nextHandler)
         {
         }
 

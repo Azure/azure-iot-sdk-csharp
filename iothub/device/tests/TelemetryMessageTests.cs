@@ -56,6 +56,53 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
+        public void SetTelemetryMessageProperties()
+        {
+            // arrange and act
+            var testMessage = new TelemetryMessage(Encoding.UTF8.GetBytes("test message"))
+            {
+                InputName = "endpoint1",
+                MessageId = "123",
+                CorrelationId = "1234",
+                UserId = "id",
+                CreatedOnUtc = new DateTimeOffset(DateTime.MinValue),
+                BatchCreatedOnUtc = new DateTimeOffset(DateTime.MinValue),
+                EnqueuedOnUtc = new DateTimeOffset(DateTime.MinValue),
+                ExpiresOnUtc = new DateTimeOffset(DateTime.MinValue),
+                ComponentName = "component",
+                MessageSchema = "schema",
+                ContentType = "type",
+                ContentEncoding = "encoding",
+                PayloadConvention = DefaultPayloadConvention.Instance,
+                ConnectionDeviceId = "connectionDeviceId",
+                ConnectionModuleId = "connectionModuleId",
+            };
+
+            var testMessage1 = new IncomingMessage(Encoding.UTF8.GetBytes("test message"));
+
+            // assert
+            testMessage.GetPayloadObjectBytes().Should().NotBeNull();
+            testMessage.InputName.Should().Be("endpoint1");
+            testMessage.MessageId.Should().Be("123");
+            testMessage.CorrelationId.Should().Be("1234");
+            testMessage.UserId.Should().Be("id");
+            testMessage.CreatedOnUtc.Should().Be(new DateTimeOffset(DateTime.MinValue));
+            testMessage.BatchCreatedOnUtc.Should().Be(new DateTimeOffset(DateTime.MinValue));
+            testMessage.EnqueuedOnUtc.Should().Be(new DateTimeOffset(DateTime.MinValue));
+            testMessage.ExpiresOnUtc.Should().Be(new DateTimeOffset(DateTime.MinValue));
+            testMessage.ComponentName.Should().Be("component");
+            testMessage.MessageSchema.Should().Be("schema");
+            testMessage.ContentType.Should().Be("type");
+            testMessage.ContentEncoding.Should().Be("encoding");
+            testMessage.Properties.Should().NotBeNull();
+            testMessage.PayloadConvention.Should().Be(DefaultPayloadConvention.Instance);
+            testMessage.ConnectionDeviceId.Should().Be("connectionDeviceId");
+            testMessage.ConnectionModuleId.Should().Be("connectionModuleId");
+
+            testMessage1.InputName.Should().BeNull();
+        }
+
+        [TestMethod]
         public void CloneWithBodyTest()
         {
             // arrange

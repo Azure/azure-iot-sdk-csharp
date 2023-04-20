@@ -44,6 +44,14 @@ namespace Microsoft.Azure.Devices.Client
 
         Task DisableTwinPatchAsync(CancellationToken cancellationToken);
 
+        // HTTP specific operations
+        Task<FileUploadSasUriResponse> GetFileUploadSasUriAsync(FileUploadSasUriRequest request, CancellationToken cancellationToken);
+
+        Task CompleteFileUploadAsync(FileUploadCompletionNotification notification, CancellationToken cancellationToken);
+
+        // This is for invoking methods from an edge module to another edge device or edge module.
+        Task<DirectMethodResponse> InvokeMethodAsync(DirectMethodRequest methodInvokeRequest, Uri uri, CancellationToken cancellationToken);
+
         // Sas token validity
         Task<DateTime> RefreshSasTokenAsync(CancellationToken cancellationToken);
 

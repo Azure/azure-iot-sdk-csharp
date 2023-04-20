@@ -159,8 +159,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         private MqttClientOptions _mqttClientOptions;
 
-        internal MqttTransportHandler(PipelineContext context)
-            : base(context)
+        internal MqttTransportHandler(PipelineContext context, IDelegatingHandler nextHandler)
+            : base(context, nextHandler)
         {
             _mqttTransportSettings = (IotHubClientMqttSettings)context.IotHubClientTransportSettings;
             _deviceId = context.IotHubConnectionCredentials.DeviceId;

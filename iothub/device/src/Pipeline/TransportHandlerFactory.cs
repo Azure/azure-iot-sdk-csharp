@@ -7,14 +7,14 @@ namespace Microsoft.Azure.Devices.Client.Transport
 {
     internal sealed class TransportHandlerFactory : ITransportHandlerFactory
     {
-        public IDelegatingHandler Create(PipelineContext context)
+        public IDelegatingHandler Create(PipelineContext context, IDelegatingHandler nextHandler)
         {
             IotHubClientTransportSettings transportSettings = context.IotHubClientTransportSettings;
             return transportSettings switch
             {
-                IotHubClientAmqpSettings => new AmqpTransportHandler(context),
+                IotHubClientAmqpSettings => new AmqpTransportHandler(context, nextHandler),
 
-                IotHubClientMqttSettings => new MqttTransportHandler(context),
+                IotHubClientMqttSettings => new MqttTransportHandler(context, nextHandler),
 
                 _ => throw new InvalidOperationException($"Unsupported transport setting {context.IotHubClientTransportSettings.GetType()}")
             };
