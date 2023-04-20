@@ -118,7 +118,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
             var pendingMessages = new List<TelemetryMessage>(maxBulkMessages);
             logger.LoggerContext.Add(OperationName, LoggingConstants.TelemetryMessage);
             var sw = new Stopwatch();
-            
+
             while (!ct.IsCancellationRequested)
             {
                 logger.Metric(MessageBacklog, _messagesToSend.Count);
@@ -182,32 +182,6 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
             }
         }
 
-        public async Task ReportReadOnlyPropertiesAsync(Logger logger, CancellationToken ct)
-        {
-            logger.LoggerContext.Add(OperationName, ReportTwinProperties);
-            var sw = new Stopwatch();
-
-            while (!ct.IsCancellationRequested)
-            {
-                try
-                {
-                    sw.Restart();
-                    await SetPropertiesAsync("totalTelemetryMessagesSent", _totalTelemetryMessagesSent, logger, ct).ConfigureAwait(false);
-                    sw.Stop();
-
-                    ++_totalTwinUpdatesReported;
-                    logger.Metric(TotalTwinUpdatesReported, _totalTwinUpdatesReported);
-                    logger.Metric(ReportedTwinUpdateOperationSeconds, sw.Elapsed.TotalSeconds);
-                }
-                catch (Exception ex)
-                {
-                    logger.Trace($"Exception when reporting properties when connected is {IsConnected}\n{ex}");
-                }
-
-                await Task.Delay(s_deviceTwinUpdateInterval, ct).ConfigureAwait(false);
-            }
-        }
-
         public void AddTelemetry(
             TelemetryBase telemetryObject,
             IDictionary<string, string> extraProperties = null)
@@ -242,6 +216,25 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
 
             // Worker feeding off this queue will dispose the messages when they are sent
             _messagesToSend.Enqueue(iotMessage);
+        }
+
+        public async Task ReportReadOnlyPropertiesAsync(Logger logger, CancellationToken ct)
+        {
+            logger.LoggerContext.Add(OperationName, ReportTwinProperties);
+            var sw = new Stopwatch();
+
+            while (!ct.IsCancellationRequested)
+            {
+                sw.Restart();
+                await SetPropertiesAsync("totalTelemetryMessagesSent", _totalTelemetryMessagesSent, logger, ct).ConfigureAwait(false);
+                sw.Stop();
+
+                ++_totalTwinUpdatesReported;
+                logger.Metric(TotalTwinUpdatesReported, _totalTwinUpdatesReported);
+                logger.Metric(ReportedTwinUpdateOperationSeconds, sw.Elapsed.TotalSeconds);
+
+                await Task.Delay(s_deviceTwinUpdateInterval, ct).ConfigureAwait(false);
+            }
         }
 
         public async Task SetPropertiesAsync(string keyName, object properties, Logger logger, CancellationToken ct)
