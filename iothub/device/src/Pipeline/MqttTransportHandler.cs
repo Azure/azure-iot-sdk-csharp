@@ -1241,9 +1241,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                                 // Use the encoder that has been agreed to between the client and service to decode the byte[] response
                                 // The response is deserialized into an SDK-defined type based on service-defined NewtonSoft.Json-based json property name.
                                 // For this reason, we use Newtonsoft.Json serializer for this deserialization.
-                                TwinDocument clientTwinProperties = status == 200
-                                    ? DefaultPayloadConvention.Instance.GetObject<TwinDocument>(payloadBytes)
-                                    : null;
+                                TwinDocument clientTwinProperties = DefaultPayloadConvention.Instance.GetObject<TwinDocument>(payloadBytes);
 
                                 getTwinResponse.Twin = new TwinProperties(
                                     new DesiredProperties(clientTwinProperties.Desired)
