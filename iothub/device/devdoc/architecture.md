@@ -54,19 +54,6 @@ Functional requirements:
 1. Maintains the `WaitForTransportClosedAsync` request.
 1. Cancels any in-progress client operations when `CloseAsync` is called.
 
-### RetryDelegatingHandler
-
-`RetryDelegatingHandler` class is responsible with applying the operation retry policy.<br>
-__Important:__ No other pipeline component should attempt operation retry.<br>
-
-Functional requirements:
-1. Implements the default `RetryStrategy`
-
-#### Design considerations
-The internal `RetryStrategy` aggregates two concepts:
-1. Exception handling strategy: `IotHubException.IsTransient` is the only exception class considered transient. See [Exception handling](#exception-handling) for more details.
-1. Retry timing strategy: see [Retry Policy](retrypolicy.md) for details.
-
 #### Handling disconnects
 
 A `WaitForTransportClosedAsync` request is made right after a successfull open. The design avoids mixing event-based and task-based notifications:
@@ -75,9 +62,19 @@ A `WaitForTransportClosedAsync` request is made right after a successfull open. 
 
 Handling disconnects is going to apply the configured `RetryStrategy` indefinitely to recover existing subscriptions (e.g. methods, twin, etc.)
 
+### RetryDelegatingHandler
+
+`RetryDelegatingHandler` class is responsible with applying the operation retry policy.<br>
+__Important:__ No other pipeline component should attempt operation retry.<br>
+
+Functional requirements:
+1. Implements the default `RetryStrategy`
+
 ### ExceptionRemappingHandler
 
 `ExceptionRemappingHandler` performs error adaptation for non-Azure IoT Hub specific errors thrown by the transport layer (e.g. SocketException or AmqpException) to `IoTHubClientException` types. Ideally this code should be pushed within the respective handlers. The pipeline class is present for legacy reasons only.
+
+Exceptions that are transient have `IotHubClientException.IsTransient` set to `true`.
 
 The handler is responsible with logging application-level exceptions. It is guaranteed that these exceptions will be available to applications either through custom `IRetryStrategy` implementations or by having them thrown by the public APIs.
 
