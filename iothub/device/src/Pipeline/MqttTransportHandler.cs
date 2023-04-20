@@ -1362,7 +1362,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 Logging.Info(this, $"Removing operations older than {maxAge}", nameof(RemoveOldOperations));
 
             const string exceptionMessage = "Did not receive twin response from service.";
-            _ = _pendingTwinOperations
+            int canceledOperations = _pendingTwinOperations
                 .Where(x => DateTimeOffset.UtcNow - x.Value.RequestSentOnUtc > maxAge)
                 .Select(x =>
                     {
@@ -1375,7 +1375,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
                             pendingOperation.TwinPatchTask?.TrySetException(new IotHubClientException(exceptionMessage, IotHubClientErrorCode.NetworkErrors));
                         }
                         return true;
-                    });
+                    })
+                .Count();
+
+            if (Logging.IsEnabled)
+                Logging.Error(this, $"Remnoved {canceledOperations} twin responses", nameof(RemoveOldOperations));
         }
 
         private static void PopulateMessagePropertiesFromMqttMessage(IncomingMessage message, MqttApplicationMessage mqttMessage)

@@ -533,19 +533,23 @@ namespace Microsoft.Azure.Devices.Client.Transport
             if (Logging.IsEnabled)
                 Logging.Info(this, $"Removing operations older than {maxAge}", nameof(RemoveOldOperations));
 
-            _ = _pendingTwinOperations
-                .Where(x => DateTimeOffset.UtcNow - x.Value.RequestSentOnUtc > s_twinResponseTimeout)
+            int canceledOperations = _pendingTwinOperations
+                .Where(x => DateTimeOffset.UtcNow - x.Value.RequestSentOnUtc > maxAge)
                 .Select(x =>
                     {
                         if (_pendingTwinOperations.TryRemove(x.Key, out PendingAmqpTwinOperation pendingOperation))
                         {
                             if (Logging.IsEnabled)
-                                Logging.Info(this, $"Removing twin response for {x.Key}", nameof(RemoveOldOperations));
+                                Logging.Error(this, $"Removing twin response for {x.Key}", nameof(RemoveOldOperations));
 
                             pendingOperation.CompletionTask.TrySetException(new IotHubClientException("Did not receive twin response from service.", IotHubClientErrorCode.NetworkErrors));
                         }
                         return true;
-                    });
+                    })
+                .Count();
+
+            if (Logging.IsEnabled)
+                Logging.Error(this, $"Remnoved {canceledOperations} twin responses", nameof(RemoveOldOperations));
         }
 
         protected private override void Dispose(bool disposing)
