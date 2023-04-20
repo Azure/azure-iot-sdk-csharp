@@ -143,6 +143,54 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
+        public async Task IotHubModuleClient_SendMessagesToRoute_ThrowsSocketExceptionAsIotHubClientException()
+        {
+            // arrange
+            string messageId = Guid.NewGuid().ToString();
+            await using var moduleClient = new IotHubModuleClient(fakeConnectionString);
+            var innerHandler = new Mock<IDelegatingHandler>();
+            // This is used to simulate the transport level socket exception
+            innerHandler
+                .Setup(x => x.SendTelemetryAsync(It.IsAny<TelemetryMessage>(), It.IsAny<CancellationToken>()))
+                .Returns(() => Task.FromException(new SocketException()));
+            moduleClient.InnerHandler = innerHandler.Object;
+
+            // act
+            var messageWithId = new TelemetryMessage
+            {
+                MessageId = messageId,
+            };
+
+            // assert
+            Func<Task> act = async () => await moduleClient.SendMessageToRouteAsync("output", messageWithId).ConfigureAwait(false);
+            await act.Should().ThrowAsync<IotHubClientException>();
+        }
+
+        [TestMethod]
+        public async Task IotHubModuleClient_SendMessagesToRoute_ThrowsWebSocketExceptionAsIotHubClientException()
+        {
+            // arrange
+            string messageId = Guid.NewGuid().ToString();
+            await using var moduleClient = new IotHubModuleClient(fakeConnectionString);
+            var innerHandler = new Mock<IDelegatingHandler>();
+            // This is used to simulate the transport level websocket exception
+            innerHandler
+                .Setup(x => x.SendTelemetryAsync(It.IsAny<TelemetryMessage>(), It.IsAny<CancellationToken>()))
+                .Returns(() => Task.FromException(new WebSocketException()));
+            moduleClient.InnerHandler = innerHandler.Object;
+
+            // act
+            var messageWithId = new TelemetryMessage
+            {
+                MessageId = messageId,
+            };
+            Func<Task> act = async () => await moduleClient.SendMessageToRouteAsync("output", messageWithId).ConfigureAwait(false);
+
+            // assert
+            await act.Should().ThrowAsync<IotHubClientException>();
+        }
+
+        [TestMethod]
         public async Task IotHubModuleClient_InvokeMethodAsync_EdgeDevice_NullMethodRequest_Throws_NullException()
         {
             // arrange
