@@ -549,7 +549,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 .Count();
 
             if (Logging.IsEnabled)
-                Logging.Error(this, $"Remnoved {canceledOperations} twin responses", nameof(RemoveOldOperations));
+                Logging.Error(this, $"Removed {canceledOperations} twin responses", nameof(RemoveOldOperations));
         }
 
         protected private override void Dispose(bool disposing)

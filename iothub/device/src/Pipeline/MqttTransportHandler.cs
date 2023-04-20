@@ -1379,7 +1379,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 .Count();
 
             if (Logging.IsEnabled)
-                Logging.Error(this, $"Remnoved {canceledOperations} twin responses", nameof(RemoveOldOperations));
+                Logging.Error(this, $"Removed {canceledOperations} twin responses", nameof(RemoveOldOperations));
         }
 
         private static void PopulateMessagePropertiesFromMqttMessage(IncomingMessage message, MqttApplicationMessage mqttMessage)
