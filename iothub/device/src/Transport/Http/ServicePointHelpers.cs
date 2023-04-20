@@ -41,8 +41,11 @@ namespace Microsoft.Azure.Devices.Client
                     ServicePoint servicePoint = ServicePointManager.FindServicePoint(baseUri);
                     servicePoint.ConnectionLeaseTimeout = connectionLeaseTimeoutMilliseconds;
                     break;
-#if NETCOREAPP2_1_OR_GREATER || NET5_0_OR_GREATER
-                // SocketsHttpHandler is only available in netcore2.1 and onwards
+#if NET5_0_OR_GREATER
+                // SocketsHttpHandler is only available in netcore2.1 and onwards and .NET 5 and onwards.
+                // This library does not target netcore2.1+ though, so there is no way to set these timeouts
+                // within this library for netcore2.1+ cases though. Users will need to pass in this handler
+                // themselves in netcore2.1+ cases
                 case SocketsHttpHandler socketsHttpHandler:
                     socketsHttpHandler.MaxConnectionsPerServer = DefaultMaxConnectionsPerServer;
                     socketsHttpHandler.PooledConnectionLifetime = TimeSpan.FromMilliseconds(connectionLeaseTimeoutMilliseconds);

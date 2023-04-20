@@ -64,7 +64,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
             PipelineContext context,
             IotHubConnectionString iotHubConnectionString,
             Http1TransportSettings transportSettings,
-            HttpClientHandler httpClientHandler = null,
             bool isClientPrimaryTransportHandler = false)
             : base(context, transportSettings)
         {
@@ -77,8 +76,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 ExceptionHandlingHelper.GetDefaultErrorMapping(),
                 s_defaultOperationTimeout,
                 null,
-                transportSettings.ClientCertificate,
-                httpClientHandler,
+                transportSettings,
                 productInfo,
                 transportSettings.Proxy,
                 isClientPrimaryTransportHandler);

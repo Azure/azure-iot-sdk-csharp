@@ -834,25 +834,6 @@ namespace Microsoft.Azure.Devices.Client
 
             try
             {
-                if (customCertificateValidation != null)
-                {
-                    TlsVersions.Instance.SetLegacyAcceptableVersions();
-
-#if !NET451
-                    httpClientHandler = new HttpClientHandler
-                    {
-                        ServerCertificateCustomValidationCallback = customCertificateValidation,
-                        SslProtocols = TlsVersions.Instance.Preferred,
-                    };
-#else
-                    httpClientHandler = new WebRequestHandler();
-                    ((WebRequestHandler)httpClientHandler).ServerCertificateValidationCallback = (sender, certificate, chain, errors) =>
-                    {
-                        return customCertificateValidation(sender, certificate, chain, errors);
-                    };
-#endif
-                }
-
                 var context = new PipelineContext()
                 {
                     ProductInfo = new ProductInfo
@@ -868,7 +849,26 @@ namespace Microsoft.Azure.Devices.Client
                     transportSettings.ClientCertificate = InternalClient.Certificate;
                 }
 
-                using var httpTransport = new HttpTransportHandler(context, InternalClient.IotHubConnectionString, transportSettings, httpClientHandler);
+                if (customCertificateValidation != null)
+                {
+                    TlsVersions.Instance.SetLegacyAcceptableVersions();
+
+#if !NET451
+                    httpClientHandler = new HttpClientHandler
+                    {
+                        ServerCertificateCustomValidationCallback = customCertificateValidation,
+                        SslProtocols = TlsVersions.Instance.Preferred,
+                    };
+#else
+                    transportSettings.HttpMessageHandler = new WebRequestHandler();
+                    ((WebRequestHandler)httpClientHandler).ServerCertificateValidationCallback = (sender, certificate, chain, errors) =>
+                    {
+                        return customCertificateValidation(sender, certificate, chain, errors);
+                    };
+#endif
+                }
+
+                using var httpTransport = new HttpTransportHandler(context, InternalClient.IotHubConnectionString, transportSettings);
                 var methodInvokeRequest = new MethodInvokeRequest(methodRequest.Name, methodRequest.DataAsJson, methodRequest.ResponseTimeout, methodRequest.ConnectionTimeout);
                 MethodInvokeResponse result = await httpTransport.InvokeMethodAsync(methodInvokeRequest, uri, cancellationToken).ConfigureAwait(false);
 

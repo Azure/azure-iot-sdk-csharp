@@ -38,26 +38,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
         private readonly IReadOnlyDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> _defaultErrorMapping;
         private readonly bool _usingX509ClientCert;
         private HttpClient _httpClientObj;
-        private HttpClientHandler _httpClientHandler;
+        private HttpMessageHandler _httpMessageHandler;
         private bool _isDisposed;
         private readonly ProductInfo _productInfo;
         private readonly bool _isClientPrimaryTransportHandler;
-
-        // These default values are consistent with Azure.Core default values:
-        // https://github.com/Azure/azure-sdk-for-net/blob/7e3cf643977591e9041f4c628fd4d28237398e0b/sdk/core/Azure.Core/src/Pipeline/ServicePointHelpers.cs#L28
-        private const int DefaultMaxConnectionsPerServer = 50;
-
-        // How long, in milliseconds, a given cached TCP connection created by this client's HTTP layer will live before being closed.
-        // If this value is set to any negative value, the connection lease will be infinite. If this value is set to 0, then the TCP connection will close after
-        // each HTTP request and a new TCP connection will be opened upon the next request.
-        //
-        // By closing cached TCP connections and opening a new one upon the next request, the underlying HTTP client has a chance to do a DNS lookup
-        // to validate that it will send the requests to the correct IP address. While it is atypical for a given IoT hub to change its IP address, it does
-        // happen when a given IoT hub fails over into a different region.
-        //
-        // This default value is consistent with the default value used in Azure.Core
-        // https://github.com/Azure/azure-sdk-for-net/blob/7e3cf643977591e9041f4c628fd4d28237398e0b/sdk/core/Azure.Core/src/Pipeline/ServicePointHelpers.cs#L29
-        private static readonly TimeSpan s_defaultConnectionLeaseTimeout = TimeSpan.FromMinutes(5);
 
         public HttpClientHelper(
             Uri baseAddress,
@@ -65,8 +49,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> defaultErrorMapping,
             TimeSpan timeout,
             Action<HttpClient> preRequestActionForAllRequests,
-            X509Certificate2 clientCert,
-            HttpClientHandler httpClientHandler,
+            Http1TransportSettings transportSettings,
             ProductInfo productInfo,
             IWebProxy proxy,
             bool isClientPrimaryTransportHandler = false)
@@ -74,55 +57,85 @@ namespace Microsoft.Azure.Devices.Client.Transport
             _baseAddress = baseAddress;
             _authenticationHeaderProvider = authenticationHeaderProvider;
             _defaultErrorMapping = new ReadOnlyDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>(defaultErrorMapping);
+            _httpMessageHandler = transportSettings.HttpMessageHandler;
 
+            if (_httpMessageHandler == null)
+            {
 #if NET451
-            TlsVersions.Instance.SetLegacyAcceptableVersions();
+                TlsVersions.Instance.SetLegacyAcceptableVersions();
 
-            _httpClientHandler = httpClientHandler;
+                var webRequestHandler = new WebRequestHandler();
 
-            if (clientCert != null)
-            {
-                if (_httpClientHandler == null)
+                if (transportSettings.ClientCertificate != null)
                 {
-                    _httpClientHandler = new WebRequestHandler();
+                    webRequestHandler.ClientCertificates.Add(transportSettings.ClientCertificate);
+                    _usingX509ClientCert = true;
+                }
+                else
+                {
+                    _usingX509ClientCert = false;
                 }
 
-                (_httpClientHandler as WebRequestHandler).ClientCertificates.Add(clientCert);
-                _usingX509ClientCert = true;
-            }
-
-            if (proxy != DefaultWebProxySettings.Instance)
-            {
-                if (_httpClientHandler == null)
+                if (proxy != DefaultWebProxySettings.Instance)
                 {
-                    _httpClientHandler = new WebRequestHandler();
+                    webRequestHandler.UseProxy = proxy != null;
+                    webRequestHandler.Proxy = proxy;
                 }
 
-                _httpClientHandler.UseProxy = (proxy != null);
-                _httpClientHandler.Proxy = proxy;
-            }
+                _httpMessageHandler = webRequestHandler;
+#elif NET5_0_OR_GREATER
+                var socketsHandler = new SocketsHttpHandler();
+                socketsHandler.SslOptions.EnabledSslProtocols = TlsVersions.Instance.Preferred;
+
+                if (!TlsVersions.Instance.CertificateRevocationCheck)
+                {
+                    socketsHandler.SslOptions.CertificateRevocationCheckMode = X509RevocationMode.NoCheck;
+                }
+
+                if (transportSettings.ClientCertificate != null)
+                {
+                    socketsHandler.SslOptions.ClientCertificates.Add(transportSettings.ClientCertificate);
+                }
+                else
+                {
+                    _usingX509ClientCert = false;
+                }
+
+                if (proxy != DefaultWebProxySettings.Instance)
+                {
+                    socketsHandler.UseProxy = proxy != null;
+                    socketsHandler.Proxy = proxy;
+                }
+
+                _httpMessageHandler = socketsHandler;
 #else
+                var httpClientHandler = new HttpClientHandler();
+                httpClientHandler.SslProtocols = TlsVersions.Instance.Preferred;
+                httpClientHandler.CheckCertificateRevocationList = TlsVersions.Instance.CertificateRevocationCheck;
 
-            _httpClientHandler = httpClientHandler ?? new HttpClientHandler();
-            _httpClientHandler.SslProtocols = TlsVersions.Instance.Preferred;
-            _httpClientHandler.CheckCertificateRevocationList = TlsVersions.Instance.CertificateRevocationCheck;
+                if (transportSettings.ClientCertificate != null)
+                {
+                    httpClientHandler.ClientCertificates.Add(transportSettings.ClientCertificate);
+                    _usingX509ClientCert = true;
+                }
+                else
+                {
+                    _usingX509ClientCert = false;
+                }
 
-            if (clientCert != null)
-            {
-                _httpClientHandler.ClientCertificates.Add(clientCert);
-                _usingX509ClientCert = true;
-            }
+                if (proxy != DefaultWebProxySettings.Instance)
+                {
+                    httpClientHandler.UseProxy = proxy != null;
+                    httpClientHandler.Proxy = proxy;
+                }
 
-            if (proxy != DefaultWebProxySettings.Instance)
-            {
-                _httpClientHandler.UseProxy = proxy != null;
-                _httpClientHandler.Proxy = proxy;
-            }
+                _httpMessageHandler = httpClientHandler;
 #endif
 
-            ServicePointHelpers.SetLimits(_httpClientHandler, _baseAddress);
+                ServicePointHelpers.SetLimits(_httpMessageHandler, _baseAddress);
+            }
 
-            _httpClientObj = _httpClientHandler != null ? new HttpClient(_httpClientHandler) : new HttpClient();
+            _httpClientObj = new HttpClient(_httpMessageHandler);
 
             _httpClientObj.BaseAddress = _baseAddress;
             _httpClientObj.Timeout = timeout;
@@ -558,10 +571,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
                 // HttpClientHandler that is used to create HttpClient will automatically be disposed when HttpClient is disposed
                 // But in case the client handler didn't end up being used by the HttpClient, we explicitly dispose it here.
-                if (_httpClientHandler != null)
+                if (_httpMessageHandler != null)
                 {
-                    _httpClientHandler?.Dispose();
-                    _httpClientHandler = null;
+                    _httpMessageHandler?.Dispose();
+                    _httpMessageHandler = null;
                 }
 
                 // The associated TokenRefresher should be disposed by the http client helper only when the http client

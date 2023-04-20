@@ -10,8 +10,10 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Azure.Amqp.Transport;
 using Microsoft.Azure.Devices.Common;
 using Microsoft.Azure.Devices.Common.Exceptions;
 using Microsoft.Azure.Devices.Common.Extensions;
@@ -885,25 +887,38 @@ namespace Microsoft.Azure.Devices
 
         internal static HttpMessageHandler CreateDefaultHttpMessageHandler(IWebProxy webProxy, Uri baseUri, int connectionLeaseTimeoutMilliseconds)
         {
-#pragma warning disable CA2000 // Dispose objects before losing scope (object is returned by this method, so the caller is responsible for disposing it)
-#if NETCOREAPP && !NETCOREAPP2_0 && !NETCOREAPP1_0 && !NETCOREAPP1_1
-            // SocketsHttpHandler is only available in netcoreapp2.1 and onwards
-            var httpMessageHandler = new SocketsHttpHandler();
-            httpMessageHandler.SslOptions.EnabledSslProtocols = TlsVersions.Instance.Preferred;
-#else
-            var httpMessageHandler = new HttpClientHandler();
-#if !NET451
-            httpMessageHandler.SslProtocols = TlsVersions.Instance.Preferred;
-            httpMessageHandler.CheckCertificateRevocationList = TlsVersions.Instance.CertificateRevocationCheck;
-#endif
-#endif
-#pragma warning restore CA2000 // Dispose objects before losing scope
+            HttpMessageHandler httpMessageHandler = null;
+
+#if NETCOREAPP2_1_OR_GREATER || NET5_0_OR_GREATER
+            var socketsHandler = new SocketsHttpHandler();
+            socketsHandler.SslOptions.EnabledSslProtocols = TlsVersions.Instance.Preferred;
+
+            if (!TlsVersions.Instance.CertificateRevocationCheck)
+            {
+                socketsHandler.SslOptions.CertificateRevocationCheckMode = X509RevocationMode.NoCheck;
+            }
 
             if (webProxy != DefaultWebProxySettings.Instance)
             {
-                httpMessageHandler.UseProxy = webProxy != null;
-                httpMessageHandler.Proxy = webProxy;
+                socketsHandler.UseProxy = webProxy != null;
+                socketsHandler.Proxy = webProxy;
             }
+
+            httpMessageHandler = socketsHandler;
+#else
+            var httpClientHandler = new HttpClientHandler();
+#if !NET451
+            httpClientHandler.SslProtocols = TlsVersions.Instance.Preferred;
+            httpClientHandler.CheckCertificateRevocationList = TlsVersions.Instance.CertificateRevocationCheck;
+#endif
+            if (webProxy != DefaultWebProxySettings.Instance)
+            {
+                httpClientHandler.UseProxy = webProxy != null;
+                httpClientHandler.Proxy = webProxy;
+            }
+
+            httpMessageHandler = httpClientHandler;
+#endif
 
             ServicePointHelpers.SetLimits(httpMessageHandler, baseUri, connectionLeaseTimeoutMilliseconds);
 

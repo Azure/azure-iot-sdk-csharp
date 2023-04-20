@@ -3,6 +3,7 @@
 
 using System;
 using System.Net;
+using System.Net.Http;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.Azure.Devices.Shared;
 
@@ -47,5 +48,11 @@ namespace Microsoft.Azure.Devices.Client
 
         /// <inheritdoc/>
         public IWebProxy Proxy { get; set; }
+
+        /// <summary>
+        /// The handler that this client will instantiate its HttpClient with. If this value
+        /// is provided, all other options will be ignored in favor of this handler.
+        /// </summary>
+        public HttpMessageHandler HttpMessageHandler { get; set; }
     }
 }
