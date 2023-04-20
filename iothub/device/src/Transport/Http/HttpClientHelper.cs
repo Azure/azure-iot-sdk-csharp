@@ -41,7 +41,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         //
         // This default value is consistent with the default value used in Azure.Core
         // https://github.com/Azure/azure-sdk-for-net/blob/7e3cf643977591e9041f4c628fd4d28237398e0b/sdk/core/Azure.Core/src/Pipeline/ServicePointHelpers.cs#L29
-        private static readonly TimeSpan DefaultConnectionLeaseTimeout = TimeSpan.FromMinutes(5);
+        private static readonly TimeSpan s_defaultConnectionLeaseTimeout = TimeSpan.FromMinutes(5);
 
         public HttpClientHelper(
             Uri baseAddress,
@@ -78,7 +78,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             _httpClientHandler.MaxConnectionsPerServer = DefaultMaxConnectionsPerServer;
             ServicePoint servicePoint = ServicePointManager.FindServicePoint(_baseAddress);
-            servicePoint.ConnectionLeaseTimeout = DefaultConnectionLeaseTimeout.Milliseconds;
+            servicePoint.ConnectionLeaseTimeout = s_defaultConnectionLeaseTimeout.Milliseconds;
 
             _httpClientObj = new HttpClient(_httpClientHandler)
             {

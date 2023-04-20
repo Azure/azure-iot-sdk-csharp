@@ -232,10 +232,10 @@ namespace Microsoft.Azure.Devices.Client.Test
             {
                 PayloadConvention = DefaultPayloadConvention.Instance,
             };
-            
+
             // act
             Func<Task> act = async () => await moduleClient.InvokeMethodAsync(deviceId, moduleId, DirectMethodRequest);
-            
+
             // assert
             await act.Should().ThrowAsync<InvalidOperationException>();
         }
