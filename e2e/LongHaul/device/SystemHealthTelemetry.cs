@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Net.NetworkInformation;
 using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.LongHaul.Device
 {
@@ -23,15 +24,19 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
             TcpPortFilter.Add(port);
         }
 
+        [JsonProperty("processCpuUsagePercent")]
         [JsonPropertyName("processCpuUsagePercent")]
         public double ProcessCpuUsagePercent { get; set; } = UpdateCpuUsage();
 
+        [JsonProperty("totalAssignedMemoryBytes")]
         [JsonPropertyName("totalAssignedMemoryBytes")]
         public long TotalAssignedMemoryBytes { get; set; } = s_currentProcess.WorkingSet64;
 
+        [JsonProperty("totalGCBytes")]
         [JsonPropertyName("totalGCBytes")]
         public long TotalGCBytes { get; set; } = GC.GetTotalMemory(false);
 
+        [JsonProperty("activeTcpConnections")]
         [JsonPropertyName("activeTcpConnections")]
         public long ActiveTcpConnections { get; set; } = UpdateTcpConnections();
 
