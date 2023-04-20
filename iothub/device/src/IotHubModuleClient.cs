@@ -31,11 +31,12 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="connectionString">The connection string based on shared access key used in API calls which allows the module to communicate with IoT Hub.</param>
         /// <param name="options">The options that allow configuration of the module client instance during initialization.</param>
         /// <returns>A disposable client instance.</returns>
-        /// <exception cref="ArgumentNullException">When <paramref name="connectionString"/> is null.</exception>
-        /// <exception cref="ArgumentException">When <paramref name="connectionString"/> is empty or white-space.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="connectionString"/> is null.</exception>
+        /// <exception cref="ArgumentException"><paramref name="connectionString"/> is empty or white-space.</exception>
+        /// <exception cref="ArgumentException">Neither shared access key nor shared access signature were presented for authentication.</exception>
         /// <exception cref="InvalidOperationException">Required key/value pairs were missing from the connection string.</exception>
         /// <returns>A disposable client instance.</returns>
-        /// <exception cref="ArgumentException">Neither shared access key nor shared access signature were presented for authentication.</exception>
+        /// <exception cref="InvalidOperationException">A module Id was missing in the connection string. <see cref="IotHubDeviceClient"/> should be used for devices.</exception>
         public IotHubModuleClient(string connectionString, IotHubClientOptions options = default)
             : this(new IotHubConnectionCredentials(connectionString), options, null)
         {
@@ -55,10 +56,11 @@ namespace Microsoft.Azure.Devices.Client
         /// </param>
         /// <param name="options">The options that allow configuration of the module client instance during initialization.</param>
         /// <returns>A disposable <c>IotHubModuleClient</c> instance.</returns>
-        /// <exception cref="ArgumentNullException">When <paramref name="hostName"/> or <paramref name="authenticationMethod"/> is null.</exception>
-        /// <exception cref="ArgumentException">When <paramref name="hostName"/>is empty or white-space.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="hostName"/> or <paramref name="authenticationMethod"/> is null.</exception>
+        /// <exception cref="ArgumentException"><paramref name="hostName"/>is empty or white-space.</exception>
         /// <exception cref="ArgumentException">Neither shared access key, shared access signature, nor X509 certificates were presented for authentication.</exception>
         /// <exception cref="ArgumentException">Either shared access key or shared access signature were presented together with X509 certificates for authentication.</exception>
+        /// <exception cref="InvalidOperationException">A module Id was missing in the provided <paramref name="authenticationMethod"/>. <see cref="IotHubDeviceClient"/> should be used for devices.</exception>
         /// <returns>A disposable client instance.</returns>
         public IotHubModuleClient(string hostName, IAuthenticationMethod authenticationMethod, IotHubClientOptions options = default)
             : this(new IotHubConnectionCredentials(authenticationMethod, hostName, options?.GatewayHostName), options, null)
@@ -85,6 +87,7 @@ namespace Microsoft.Azure.Devices.Client
         /// Creates a disposable <c>IotHubModuleClient</c> instance in an IoT Edge deployment based on environment variables.
         /// </summary>
         /// <param name="options">The options that allow configuration of the module client instance during initialization.</param>
+        /// <exception cref="InvalidOperationException">The required environmental variables were missing. Check the exception thrown for additional details.</exception>
         /// <returns>A disposable client instance.</returns>
         public static async Task<IotHubModuleClient> CreateFromEnvironmentAsync(IotHubClientOptions options = default)
         {
@@ -114,11 +117,11 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="outputName">The named module route for sending the given message.</param>
         /// <param name="message">The message to send.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <exception cref="ArgumentNullException">Thrown when a required parameter is null.</exception>
-        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        /// <exception cref="InvalidOperationException">Thrown if the client instance is not opened already.</exception>
-        /// <exception cref="IotHubClientException">Thrown if an error occurs when communicating with IoT hub service.</exception>
-        /// <exception cref="ObjectDisposedException">When the client has been disposed.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="outputName"/> or <paramref name="message"/> is null.</exception>
+        /// <exception cref="InvalidOperationException">The client instance is not already open.</exception>
+        /// <exception cref="OperationCanceledException">The operation has been canceled.</exception>
+        /// <exception cref="IotHubClientException">An error occured when communicating with IoT hub service.</exception>
+        /// <exception cref="ObjectDisposedException">The client has been disposed.</exception>
         public async Task SendMessageToRouteAsync(string outputName, TelemetryMessage message, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
@@ -154,9 +157,12 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="messages">A list of one or more messages to send.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <returns>The task containing the event.</returns>
-        /// <exception cref="InvalidOperationException">Thrown if the client instance is not opened already.</exception>
-        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        /// <exception cref="ObjectDisposedException">When the client has been disposed.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="outputName"/> or <paramref name="messages"/> is null.</exception>
+        /// <exception cref="InvalidOperationException">The client instance is not already open.</exception>
+        /// <exception cref="InvalidOperationException">This method is called when the client is configured to use MQTT.</exception>
+        /// <exception cref="OperationCanceledException">The operation has been canceled.</exception>
+        /// <exception cref="IotHubClientException">An error occured when communicating with IoT hub service.</exception>
+        /// <exception cref="ObjectDisposedException">The client has been disposed.</exception>
         public async Task SendMessagesToRouteAsync(string outputName, IEnumerable<TelemetryMessage> messages, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
@@ -195,11 +201,14 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="methodRequest">The details of the method to invoke.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <returns>The result of the method invocation.</returns>
-        /// <exception cref="InvalidOperationException">Thrown if the client instance is not opened already.</exception>
-        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        /// <exception cref="ObjectDisposedException">When the client has been disposed.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="deviceId"/> or <paramref name="methodRequest"/> is null.</exception>
+        /// <exception cref="InvalidOperationException">The client instance is not already open.</exception>
+        /// <exception cref="OperationCanceledException">The operation has been canceled.</exception>
+        /// <exception cref="IotHubClientException">An error occured when communicating with IoT hub service.</exception>
+        /// <exception cref="ObjectDisposedException">The client has been disposed.</exception>
         public Task<DirectMethodResponse> InvokeMethodAsync(string deviceId, DirectMethodRequest methodRequest, CancellationToken cancellationToken = default)
         {
+            Argument.AssertNotNullOrWhiteSpace(deviceId, nameof(deviceId));
             Argument.AssertNotNull(methodRequest, nameof(methodRequest));
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -221,11 +230,15 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="methodRequest">The details of the method to invoke.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <returns>The result of the method invocation.</returns>
-        /// <exception cref="InvalidOperationException">Thrown if the client instance is not opened already.</exception>
-        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        /// <exception cref="ObjectDisposedException">When the client has been disposed.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="deviceId"/>, <paramref name="moduleId"/> or <paramref name="methodRequest"/> is null.</exception>
+        /// <exception cref="InvalidOperationException">The client instance is not already open.</exception>
+        /// <exception cref="OperationCanceledException">The operation has been canceled.</exception>
+        /// <exception cref="IotHubClientException">An error occured when communicating with IoT hub service.</exception>
+        /// <exception cref="ObjectDisposedException">The client has been disposed.</exception>
         public Task<DirectMethodResponse> InvokeMethodAsync(string deviceId, string moduleId, DirectMethodRequest methodRequest, CancellationToken cancellationToken = default)
         {
+            Argument.AssertNotNullOrWhiteSpace(deviceId, nameof(deviceId));
+            Argument.AssertNotNullOrWhiteSpace(moduleId, nameof(moduleId));
             Argument.AssertNotNull(methodRequest, nameof(methodRequest));
             cancellationToken.ThrowIfCancellationRequested();
 

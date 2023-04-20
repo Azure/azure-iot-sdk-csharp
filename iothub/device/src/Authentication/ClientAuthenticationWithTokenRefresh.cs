@@ -29,12 +29,10 @@ namespace Microsoft.Azure.Devices.Client
         /// The time buffer before expiry when the token should be renewed, expressed as a percentage of the time to live.
         /// The default behavior is that the token will be renewed when it has <see cref="DefaultSasRenewalBufferPercentage"/> percent or less of its lifespan left.
         /// </param>
-        /// <exception cref="ArgumentNullException">Thrown when <paramref name="deviceId"/> is null.</exception>
-        /// <exception cref="ArgumentException">
-        /// Thrown when <paramref name="deviceId"/> or <paramref name="moduleId"/> is empty or whitespace.
-        /// </exception>
+        /// <exception cref="ArgumentNullException"><paramref name="deviceId"/> is null.</exception>
+        /// <exception cref="ArgumentException"><paramref name="deviceId"/> or <paramref name="moduleId"/> is empty or whitespace.</exception>
         /// <exception cref="ArgumentOutOfRangeException">
-        /// Thrown if <paramref name="suggestedTimeToLive"/> is a negative timespan, or if <paramref name="timeBufferPercentage"/> is outside the range 0-100.
+        /// <paramref name="suggestedTimeToLive"/> is a negative timespan, or <paramref name="timeBufferPercentage"/> is outside the range 0-100.
         /// </exception>
         public ClientAuthenticationWithTokenRefresh(
             string deviceId,
@@ -147,7 +145,7 @@ namespace Microsoft.Azure.Devices.Client
         /// the current instance.
         /// </summary>
         /// <param name="iotHubConnectionCredentials">Instance to populate.</param>
-        /// <exception cref="ArgumentNullException">Thrown when <paramref name="iotHubConnectionCredentials"/> is null.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="iotHubConnectionCredentials"/> is null.</exception>
         public virtual void Populate(ref IotHubConnectionCredentials iotHubConnectionCredentials)
         {
             Argument.AssertNotNull(iotHubConnectionCredentials, nameof(iotHubConnectionCredentials));

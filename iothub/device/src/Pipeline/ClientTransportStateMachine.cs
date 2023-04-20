@@ -120,7 +120,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         /// </summary>
         /// <param name="action">The action executed on the delegating pipeline.</param>
         /// <param name="desiredState">The desired state to transition the delegating pipeline to.</param>
-        /// <exception cref="InvalidOperationException">Thrown if the requested state transition is not a valid transition.</exception>
+        /// <exception cref="InvalidOperationException">The requested state transition is not a valid transition.</exception>
         internal void MoveNext(ClientStateAction action, ClientTransportState desiredState)
         {
             lock (_stateTransitionLock)

@@ -28,7 +28,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <exception cref="ArgumentException">Either <paramref name="connectionString"/> is an empty string or consists only of white-space characters,
         /// or the IoT hub host name or device Id in the connection string are an empty string or consist only of white-space characters.</exception>
         /// <exception cref="ArgumentException">Neither shared access key nor shared access signature were presented for authentication.</exception>
-        /// <exception cref="ArgumentException">A module Id was specified in the connection string. <see cref="IotHubModuleClient"/> should be used for modules.</exception>
+        /// <exception cref="InvalidOperationException">A module Id was specified in the connection string. <see cref="IotHubModuleClient"/> should be used for modules.</exception>
         public IotHubDeviceClient(string connectionString, IotHubClientOptions options = default)
             : this(new IotHubConnectionCredentials(connectionString), options)
         {
@@ -54,7 +54,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <exception cref="ArgumentException">Either shared access key or shared access signature were presented together with X509 certificates for authentication.</exception>
         /// <exception cref="ArgumentException"><see cref="ClientAuthenticationWithX509Certificate.CertificateChain"/> is used over a protocol other than MQTT over TCP or AMQP over TCP></exception>
         /// <exception cref="IotHubClientException"><see cref="ClientAuthenticationWithX509Certificate.CertificateChain"/> could not be installed.</exception>
-        /// <exception cref="InvalidOperationException">A module Id was specified in the connection string. <see cref="IotHubModuleClient"/> should be used for modules.</exception>
+        /// <exception cref="InvalidOperationException">A module Id was specified in the provided <paramref name="authenticationMethod"/>. <see cref="IotHubModuleClient"/> should be used for modules.</exception>
         public IotHubDeviceClient(string hostName, IAuthenticationMethod authenticationMethod, IotHubClientOptions options = default)
             : this(new IotHubConnectionCredentials(authenticationMethod, hostName, options?.GatewayHostName), options)
         {
@@ -95,10 +95,11 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="request">The request details for getting the SAS URI, including the destination blob name.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The file upload details to be used with the Azure Storage SDK in order to upload a file from this device.</returns>
-        /// <exception cref="ArgumentNullException">When <paramref name="request"/> is null.</exception>
-        /// <exception cref="InvalidOperationException">Thrown if the client instance is not opened already.</exception>
-        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        /// <exception cref="ObjectDisposedException">When the client has been disposed.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="request"/> is null.</exception>
+        /// <exception cref="InvalidOperationException">The client instance is not already open.</exception>
+        /// <exception cref="OperationCanceledException">The operation has been canceled.</exception>
+        /// <exception cref="IotHubClientException">An error occured when communicating with IoT hub service.</exception>
+        /// <exception cref="ObjectDisposedException">The client has been disposed.</exception>
         public Task<FileUploadSasUriResponse> GetFileUploadSasUriAsync(
             FileUploadSasUriRequest request,
             CancellationToken cancellationToken = default)
@@ -115,10 +116,11 @@ namespace Microsoft.Azure.Devices.Client
         /// <seealso href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-file-upload#notify-iot-hub-of-a-completed-file-upload" />.
         /// <param name="notification">The notification details, including if the file upload succeeded.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <exception cref="ArgumentNullException">When <paramref name="notification"/> is null.</exception>
-        /// <exception cref="InvalidOperationException">Thrown if the client instance is not opened already.</exception>
-        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        /// <exception cref="ObjectDisposedException">When the client has been disposed.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="notification"/> is null.</exception>
+        /// <exception cref="InvalidOperationException">The client instance is not already open.</exception>
+        /// <exception cref="OperationCanceledException">The operation has been canceled.</exception>
+        /// <exception cref="IotHubClientException">An error occured when communicating with IoT hub service.</exception>
+        /// <exception cref="ObjectDisposedException">The client has been disposed.</exception>
         public Task CompleteFileUploadAsync(FileUploadCompletionNotification notification, CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNull(notification, nameof(notification));
