@@ -9,7 +9,7 @@ using FluentAssertions;
 using Microsoft.Azure.Devices.Client.Edge;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Microsoft.Azure.Devices.Client.Test.Edge
+namespace Microsoft.Azure.Devices.Client.Tests.Edge
 {
 
     [TestClass]

@@ -6,7 +6,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Threading.Tasks;
 using FluentAssertions;
 
-namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
+namespace Microsoft.Azure.Devices.Client.Tests.ConnectionString
 {
     [TestClass]
     [TestCategory("Unit")]

@@ -10,7 +10,7 @@ using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 
-namespace Microsoft.Azure.Devices.Client.Test.Edge
+namespace Microsoft.Azure.Devices.Client.Tests.Edge
 {
     [TestClass]
     [TestCategory("Unit")]
