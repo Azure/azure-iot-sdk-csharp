@@ -14,6 +14,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
         private readonly string _moduleConnectionString;
         private readonly IotHubClientOptions _clientOptions;
         private readonly Logger _logger;
+        private CancellationToken _ct;
 
         private SemaphoreSlim _lifetimeControl = new(1, 1);
 
@@ -56,8 +57,12 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
         /// <summary>
         /// Initializes the connection to IoT Hub.
         /// </summary>
-        public async Task InitializeAsync()
+        public async Task InitializeAsync(CancellationToken? ct = null)
         {
+            if (ct != null)
+            {
+                _ct = ct.Value;
+            }
             await _lifetimeControl.WaitAsync().ConfigureAwait(false);
             var sw = new Stopwatch();
 
@@ -175,25 +180,13 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
             var sw = new Stopwatch();
             while (!ct.IsCancellationRequested)
             {
-                try
-                {
-                    var reported = new ReportedProperties
-                    {
-                        { "TotalTelemetryMessagesSent", _totalTelemetryMessagesToModuleSent },
-                    };
+                sw.Restart();
+                await SetPropertiesAsync("totalTelemetryMessagesSent", _totalTelemetryMessagesToModuleSent, logger, ct).ConfigureAwait(false);
+                sw.Stop();
 
-                    sw.Restart();
-                    await _moduleClient.UpdateReportedPropertiesAsync(reported, ct).ConfigureAwait(false);
-                    sw.Stop();
-
-                    ++_totalTwinUpdatesToModuleReported;
-                    logger.Metric(TotalTwinUpdatesToModuleReported, _totalTwinUpdatesToModuleReported);
-                    logger.Metric(ReportedTwinUpdateToModuleOperationSeconds, sw.Elapsed.TotalSeconds);
-                }
-                catch (Exception ex)
-                {
-                    logger.Trace($"Exception when reporting properties when connected is {IsConnected}\n{ex}");
-                }
+                ++_totalTwinUpdatesToModuleReported;
+                logger.Metric(TotalTwinUpdatesToModuleReported, _totalTwinUpdatesToModuleReported);
+                logger.Metric(ReportedTwinUpdateToModuleOperationSeconds, sw.Elapsed.TotalSeconds);
 
                 await Task.Delay(s_deviceTwinUpdateInterval, ct).ConfigureAwait(false);
             }
@@ -249,11 +242,11 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
             {
                 try
                 {
-                    await _moduleClient
+                    long version = await _moduleClient
                         .UpdateReportedPropertiesAsync(reportedProperties, ct)
-                    .ConfigureAwait(false);
+                        .ConfigureAwait(false);
 
-                    logger.Trace($"Set the reported property with name [{keyName}] in device twin.", TraceSeverity.Information);
+                    logger.Trace($"Set the reported property with key {keyName} and value {properties} in device twin; observed version {version}.", TraceSeverity.Information);
                     break;
                 }
                 catch (Exception ex)
@@ -333,7 +326,19 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
             {
                 case RecommendedAction.OpenConnection:
                     _logger.Trace($"Following recommended action of reinitializing the client.", TraceSeverity.Information);
-                    await InitializeAsync().ConfigureAwait(false);
+                    while (!_ct.IsCancellationRequested)
+                    {
+                        try
+                        {
+                            await InitializeAsync().ConfigureAwait(false);
+                            break;
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.Trace($"Exception re-initializing client\n{ex}", TraceSeverity.Warning);
+                            await Task.Delay(s_retryInterval, _ct).ConfigureAwait(false);
+                        }
+                    }
                     break;
 
                 case RecommendedAction.PerformNormally:
@@ -403,7 +408,8 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
 
             if (reported.Any())
             {
-                await _moduleClient.UpdateReportedPropertiesAsync(reported).ConfigureAwait(false);
+                long version = await _moduleClient.UpdateReportedPropertiesAsync(reported).ConfigureAwait(false);
+                _logger.Trace($"Updated {reported.Count()} properties and observed new version {version}.", TraceSeverity.Information);
 
                 _totalDesiredPropertiesToModuleHandled += reported.Count();
                 _logger.Metric(TotalDesiredPropertiesToModuleHandled, _totalDesiredPropertiesToModuleHandled);
