@@ -100,6 +100,21 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return ExecuteWithExceptionRemappingAsync(() => base.SendMethodResponseAsync(methodResponse, cancellationToken));
         }
 
+        public override Task<FileUploadSasUriResponse> GetFileUploadSasUriAsync(FileUploadSasUriRequest request, CancellationToken cancellationToken)
+        {
+            return RunWithExceptionRemappingAsync(() => base.GetFileUploadSasUriAsync(request, cancellationToken));
+        }
+
+        public override Task CompleteFileUploadAsync(FileUploadCompletionNotification notification, CancellationToken cancellationToken)
+        {
+            return ExecuteWithExceptionRemappingAsync(() => base.CompleteFileUploadAsync(notification, cancellationToken));
+        }
+
+        public override Task<DirectMethodResponse> InvokeMethodAsync(DirectMethodRequest methodInvokeRequest, Uri uri, CancellationToken cancellationToken)
+        {
+            return RunWithExceptionRemappingAsync(() => base.InvokeMethodAsync(methodInvokeRequest, uri, cancellationToken));
+        }
+
         private static bool IsNetworkExceptionChain(Exception exceptionChain)
         {
             return exceptionChain.Unwind(true).Any(e => IsNetwork(e) && !IsTlsSecurity(e));

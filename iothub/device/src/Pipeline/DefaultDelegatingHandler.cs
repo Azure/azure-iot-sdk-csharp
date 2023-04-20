@@ -130,6 +130,24 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return NextHandler?.UpdateReportedPropertiesAsync(reportedProperties, cancellationToken) ?? Task.FromResult(0L);
         }
 
+        public virtual Task<FileUploadSasUriResponse> GetFileUploadSasUriAsync(FileUploadSasUriRequest request, CancellationToken cancellationToken)
+        {
+            ThrowIfDisposed();
+            return NextHandler?.GetFileUploadSasUriAsync(request, cancellationToken) ?? Task.FromResult<FileUploadSasUriResponse>(null);
+        }
+
+        public virtual Task CompleteFileUploadAsync(FileUploadCompletionNotification notification, CancellationToken cancellationToken)
+        {
+            ThrowIfDisposed();
+            return NextHandler?.CompleteFileUploadAsync(notification, cancellationToken) ?? Task.CompletedTask;
+        }
+
+        public virtual Task<DirectMethodResponse> InvokeMethodAsync(DirectMethodRequest methodInvokeRequest, Uri uri, CancellationToken cancellationToken)
+        {
+            ThrowIfDisposed();
+            return NextHandler?.InvokeMethodAsync(methodInvokeRequest, uri, cancellationToken) ?? Task.FromResult<DirectMethodResponse>(null);
+        }
+
         public virtual Task<DateTime> RefreshSasTokenAsync(CancellationToken cancellationToken)
         {
             ThrowIfDisposed();

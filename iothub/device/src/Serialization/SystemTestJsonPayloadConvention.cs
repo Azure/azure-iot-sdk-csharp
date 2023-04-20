@@ -19,7 +19,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// A static instance of this class.
         /// </summary>
-        public static SystemTextJsonPayloadConvention Instance => new();
+        public static SystemTextJsonPayloadConvention Instance { get; } = new();
 
         /// <inheritdoc/>
         public override string ContentType => "application/json";

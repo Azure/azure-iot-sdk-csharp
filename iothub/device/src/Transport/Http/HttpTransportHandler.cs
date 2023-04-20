@@ -25,8 +25,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         internal HttpTransportHandler(
             PipelineContext context,
-            HttpClientHandler httpClientHandler = null)
-            : base(context)
+            IDelegatingHandler nextHandler = null)
+            : base(context, nextHandler)
         {
             var additionalClientInformation = new AdditionalClientInformation
             {
@@ -43,11 +43,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 additionalClientInformation,
                 ClientExceptionHandlingHelper.GetDefaultErrorMapping(),
                 s_defaultOperationTimeout,
-                httpClientHandler,
                 context.HttpOperationTransportSettings);
         }
 
-        internal async Task<FileUploadSasUriResponse> GetFileUploadSasUriAsync(FileUploadSasUriRequest request, CancellationToken cancellationToken)
+        public override async Task<FileUploadSasUriResponse> GetFileUploadSasUriAsync(FileUploadSasUriRequest request, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -60,7 +59,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 .ConfigureAwait(false);
         }
 
-        internal async Task CompleteFileUploadAsync(FileUploadCompletionNotification notification, CancellationToken cancellationToken)
+        public override async Task CompleteFileUploadAsync(FileUploadCompletionNotification notification, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -74,7 +73,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         }
 
         // This is for invoking methods from an edge module to another edge device or edge module.
-        internal async Task<DirectMethodResponse> InvokeMethodAsync(
+        public override async Task<DirectMethodResponse> InvokeMethodAsync(
             DirectMethodRequest methodInvokeRequest,
             Uri uri,
             CancellationToken cancellationToken)

@@ -437,6 +437,75 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
+        public override async Task<FileUploadSasUriResponse> GetFileUploadSasUriAsync(FileUploadSasUriRequest request, CancellationToken cancellationToken)
+        {
+            if (Logging.IsEnabled)
+                Logging.Enter(this, request.BlobName, cancellationToken, nameof(GetFileUploadSasUriAsync));
+
+            try
+            {
+                return await _internalRetryHandler
+                    .RunWithRetryAsync(
+                        async () =>
+                        {
+                            return await base.GetFileUploadSasUriAsync(request, cancellationToken).ConfigureAwait(false);
+                        },
+                        cancellationToken)
+                    .ConfigureAwait(false);
+            }
+            finally
+            {
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, request.BlobName, cancellationToken, nameof(GetFileUploadSasUriAsync));
+            }
+        }
+
+        public override async Task CompleteFileUploadAsync(FileUploadCompletionNotification notification, CancellationToken cancellationToken)
+        {
+            if (Logging.IsEnabled)
+                Logging.Enter(this, notification.CorrelationId, cancellationToken, nameof(CompleteFileUploadAsync));
+
+            try
+            {
+                await _internalRetryHandler
+                    .RunWithRetryAsync(
+                        async () =>
+                        {
+                            await base.CompleteFileUploadAsync(notification, cancellationToken).ConfigureAwait(false);
+                        },
+                        cancellationToken)
+                    .ConfigureAwait(false);
+            }
+            finally
+            {
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, notification.CorrelationId, cancellationToken, nameof(CompleteFileUploadAsync));
+            }
+        }
+
+        public override async Task<DirectMethodResponse> InvokeMethodAsync(DirectMethodRequest methodInvokeRequest, Uri uri, CancellationToken cancellationToken)
+        {
+            if (Logging.IsEnabled)
+                Logging.Enter(this, methodInvokeRequest.RequestId, uri, cancellationToken, nameof(InvokeMethodAsync));
+
+            try
+            {
+                return await _internalRetryHandler
+                    .RunWithRetryAsync(
+                        async () =>
+                        {
+                            return await base.InvokeMethodAsync(methodInvokeRequest, uri, cancellationToken).ConfigureAwait(false);
+                        },
+                        cancellationToken)
+                    .ConfigureAwait(false);
+            }
+            finally
+            {
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, methodInvokeRequest.RequestId, uri, cancellationToken, nameof(InvokeMethodAsync));
+            }
+        }
+
         public override async Task CloseAsync(CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
