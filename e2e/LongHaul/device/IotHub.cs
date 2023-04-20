@@ -33,6 +33,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
         private ConnectionStatusChangeReason _disconnectedReason;
         private RecommendedAction _disconnectedRecommendedAction;
         private volatile IotHubDeviceClient _deviceClient;
+        private CancellationToken _ct;
 
         private static readonly TimeSpan s_messageLoopSleepTime = TimeSpan.FromSeconds(3);
         private static readonly TimeSpan s_deviceTwinUpdateInterval = TimeSpan.FromSeconds(10);
@@ -66,8 +67,13 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
         /// <summary>
         /// Initializes the connection to IoT Hub.
         /// </summary>
-        public async Task InitializeAsync()
+        public async Task InitializeAsync(CancellationToken? ct = null)
         {
+            if (ct != null)
+            {
+                _ct = ct.Value;
+            }
+
             await _lifetimeControl.WaitAsync().ConfigureAwait(false);
 
             try
@@ -186,7 +192,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
                 try
                 {
                     sw.Restart();
-                    await SetPropertiesAsync("TotalTelemetryMessagesSent", _totalTelemetryMessagesSent, logger, ct).ConfigureAwait(false);
+                    await SetPropertiesAsync("totalTelemetryMessagesSent", _totalTelemetryMessagesSent, logger, ct).ConfigureAwait(false);
                     sw.Stop();
 
                     ++_totalTwinUpdatesReported;
@@ -404,7 +410,19 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
             {
                 case RecommendedAction.OpenConnection:
                     _logger.Trace($"Following recommended action of reinitializing the client.", TraceSeverity.Information);
-                    await InitializeAsync().ConfigureAwait(false);
+                    while (!_ct.IsCancellationRequested)
+                    {
+                        try
+                        {
+                            await InitializeAsync().ConfigureAwait(false);
+                            break;
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.Trace($"Exception re-initializing client\n{ex}", TraceSeverity.Warning);
+                            await Task.Delay(s_retryInterval, _ct).ConfigureAwait(false);
+                        }
+                    }
                     break;
 
                 case RecommendedAction.PerformNormally:

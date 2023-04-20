@@ -82,7 +82,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
             {
                 try
                 {
-                    await iotHub.InitializeAsync().ConfigureAwait(false);
+                    await iotHub.InitializeAsync(cts.Token).ConfigureAwait(false);
                     break;
                 }
                 catch (Exception ex)
