@@ -31,7 +31,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         internal IotHubConnectionCredentials _connectionCredentials;
 
-        private static readonly TimeSpan s_twinResponseTimeout = TimeSpan.FromMinutes(2);
         private bool _closed;
 
         static AmqpTransportHandler()
@@ -145,7 +144,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 await _amqpUnit.OpenAsync(cancellationToken).ConfigureAwait(false);
 
                 // The timer would invoke callback in the specified time and that duration thereafter.
-                _twinTimeoutTimer.Change(s_twinResponseTimeout, s_twinResponseTimeout);
+                _twinTimeoutTimer.Change(TwinResponseTimeout, TwinResponseTimeout);
             }
             finally
             {
@@ -527,7 +526,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             if (state is not TimeSpan maxAge)
             {
-                maxAge = s_twinResponseTimeout;
+                maxAge = TwinResponseTimeout;
             }
 
             if (Logging.IsEnabled)

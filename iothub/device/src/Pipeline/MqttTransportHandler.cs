@@ -102,8 +102,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
         // Timer to check if any expired messages exist. The timer is executed after each hour of execution.
         private readonly Timer _twinTimeoutTimer;
 
-        private static TimeSpan s_twinResponseTimeout = TimeSpan.FromMinutes(2);
-
         private bool _isSubscribedToTwinResponses;
 
         private readonly string _deviceId;
@@ -313,7 +311,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     _mqttClient.ApplicationMessageReceivedAsync += HandleReceivedMessageAsync;
 
                     // The timer would invoke callback in the specified time and that duration thereafter.
-                    _twinTimeoutTimer.Change(s_twinResponseTimeout, s_twinResponseTimeout);
+                    _twinTimeoutTimer.Change(TwinResponseTimeout, TwinResponseTimeout);
                 }
                 catch (MqttConnectingFailedException ex)
                 {
@@ -1355,7 +1353,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             if (state is not TimeSpan maxAge)
             {
-                maxAge = s_twinResponseTimeout;
+                maxAge = TwinResponseTimeout;
             }
 
             if (Logging.IsEnabled)
