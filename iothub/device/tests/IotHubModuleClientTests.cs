@@ -28,8 +28,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         private static readonly string connectionStringWithModuleId = $"GatewayHostName={fakeGatewayHostName};HostName={fakeHostName};DeviceId={deviceId};ModuleId={moduleId};SharedAccessKey={fakeSharedAccessKey}";
         private static readonly string connectionStringWithoutModuleId = $"GatewayHostName={fakeGatewayHostName};HostName={fakeHostName};DeviceId={deviceId};SharedAccessKey={fakeSharedAccessKey}";
         private static readonly string fakeConnectionString = $"HostName={fakeHostName};SharedAccessKeyName=AllAccessKey;DeviceId={deviceId};ModuleId={moduleId};SharedAccessKey={fakeSharedAccessKey}";
-        private static readonly X509Certificate2 s_cert = new();
-        private static readonly X509Certificate2Collection s_certs = new();
 
         public const string NoModuleTwinJson = "{ \"maxConnections\": 10 }";
 
@@ -69,7 +67,8 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public async Task IotHubModuleClient_AuthenticationWithX509Certificate_Succeeds()
         {
-            var auth = new ClientAuthenticationWithX509Certificate(s_cert, s_certs, deviceId, moduleId);
+            var cert = new Mock<X509Certificate2>();
+            var auth = new ClientAuthenticationWithX509Certificate(cert.Object, deviceId, moduleId);
             await using var moduleClient = new IotHubModuleClient(fakeHostName, auth, new IotHubClientOptions());
             moduleClient.Should().NotBeNull();
         }
