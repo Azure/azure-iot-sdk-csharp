@@ -186,8 +186,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         throw;
                     }
 
-                    // Apparently HttpClient throws AggregateException when a timeout occurs.
-                    // TODO: pradeepc - need to confirm this with ASP.NET team
                     if (innerExceptions.Any(e => e is TimeoutException))
                     {
                         throw new IotHubClientException(ex.Message, IotHubClientErrorCode.NetworkErrors, ex);
