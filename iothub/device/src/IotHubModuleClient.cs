@@ -77,7 +77,7 @@ namespace Microsoft.Azure.Devices.Client
             if (Logging.IsEnabled)
                 Logging.CreateClient(
                     this,
-                    $"HostName={IotHubConnectionCredentials?.HostName};DeviceId={IotHubConnectionCredentials?.DeviceId};ModuleId={IotHubConnectionCredentials?.ModuleId}",
+                    $"HostName={IotHubConnectionCredentials.HostName};DeviceId={IotHubConnectionCredentials.DeviceId};ModuleId={IotHubConnectionCredentials.ModuleId}",
                     _clientOptions);
         }
 
