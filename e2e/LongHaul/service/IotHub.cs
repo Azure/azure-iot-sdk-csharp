@@ -155,7 +155,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                             var source = new CancellationTokenSource();
                             CancellationToken token = source.Token;
 
-                            async Task Operations()
+                            async Task OperateWithModuleAsync()
                             {
                                 var moduleOperations = new ModuleOperations(s_serviceClient, moduleTwin.DeviceId, moduleTwin.ModuleId, _logger.Clone());
                                 _logger.Trace($"Creating {nameof(ModuleOperations)} on the device: [{moduleTwin.DeviceId}], module: [{moduleTwin.ModuleId}]", TraceSeverity.Verbose);
@@ -179,7 +179,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                             }
 
                             // Passing in "Operations()" as Task so we don't need to manually call "Invoke()" on it.
-                            var operationsTuple = new Tuple<Task, CancellationTokenSource>(Operations(), source);
+                            var operationsTuple = new Tuple<Task, CancellationTokenSource>(OperateWithModuleAsync(), source);
                             s_onlineModuleOperations.TryAdd(moduleId, operationsTuple);
                         }
                     }
