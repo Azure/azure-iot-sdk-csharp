@@ -131,8 +131,9 @@ namespace Microsoft.Azure.Devices.Client
         /// re-opening a client.
         /// </remarks>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        /// <exception cref="ObjectDisposedException">When the client has been disposed.</exception>
+        /// <exception cref="OperationCanceledException">The operation has been canceled.</exception>
+        /// <exception cref="IotHubClientException">An error occured when communicating with IoT hub service.</exception>
+        /// <exception cref="ObjectDisposedException">The client has been disposed.</exception>
         public async Task OpenAsync(CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -156,11 +157,11 @@ namespace Microsoft.Azure.Devices.Client
         /// </remarks>
         /// <param name="message">The message to send.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <exception cref="ArgumentNullException">Thrown when <paramref name="message"/> is null.</exception>
-        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        /// <exception cref="InvalidOperationException">Thrown if the client instance is not opened already.</exception>
-        /// <exception cref="IotHubClientException">Thrown if an error occurs when communicating with IoT hub service.</exception>
-        /// <exception cref="ObjectDisposedException">When the client has been disposed.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="message"/> is null.</exception>
+        /// <exception cref="InvalidOperationException">The client instance is not already open.</exception>
+        /// <exception cref="OperationCanceledException">The operation has been canceled.</exception>
+        /// <exception cref="IotHubClientException">An error occured when communicating with IoT hub service.</exception>
+        /// <exception cref="ObjectDisposedException">The client has been disposed.</exception>
         public async Task SendTelemetryAsync(TelemetryMessage message, CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNull(message, nameof(message));
@@ -207,10 +208,12 @@ namespace Microsoft.Azure.Devices.Client
         /// </remarks>
         /// <param name="messages">An <see cref="IEnumerable{Message}"/> set of message objects.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <exception cref="InvalidOperationException">Thrown if the client instance is not opened already.</exception>
-        /// <exception cref="InvalidOperationException">When this method is called when the client is configured to use MQTT.</exception>
-        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        /// <exception cref="ObjectDisposedException">When the client has been disposed.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="messages"/> is null.</exception>
+        /// <exception cref="InvalidOperationException">The client instance is not already open.</exception>
+        /// <exception cref="InvalidOperationException">This method is called when the client is configured to use MQTT.</exception>
+        /// <exception cref="OperationCanceledException">The operation has been canceled.</exception>
+        /// <exception cref="IotHubClientException">An error occured when communicating with IoT hub service.</exception>
+        /// <exception cref="ObjectDisposedException">The client has been disposed.</exception>
         public async Task SendTelemetryAsync(IEnumerable<TelemetryMessage> messages, CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNullOrEmpty(messages, nameof(messages));
@@ -250,9 +253,10 @@ namespace Microsoft.Azure.Devices.Client
         /// </remarks>
         /// <param name="messageCallback">The callback to be invoked when a cloud-to-device message is received by the client.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <exception cref="InvalidOperationException">Thrown if the client instance is not opened already.</exception>
-        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        /// <exception cref="ObjectDisposedException">When the client has been disposed.</exception>
+        /// <exception cref="InvalidOperationException">The client instance is not already open.</exception>
+        /// <exception cref="OperationCanceledException">The operation has been canceled.</exception>
+        /// <exception cref="IotHubClientException">An error occured when communicating with IoT hub service.</exception>
+        /// <exception cref="ObjectDisposedException">The client has been disposed.</exception>
         public async Task SetIncomingMessageCallbackAsync(
             Func<IncomingMessage, Task<MessageAcknowledgement>> messageCallback,
             CancellationToken cancellationToken = default)
@@ -306,9 +310,10 @@ namespace Microsoft.Azure.Devices.Client
         /// </remarks>
         /// <param name="directMethodCallback">The callback to be invoked when any method is invoked by the cloud service.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <exception cref="InvalidOperationException">Thrown if the client instance is not opened already.</exception>
-        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        /// <exception cref="ObjectDisposedException">When the client has been disposed.</exception>
+        /// <exception cref="InvalidOperationException">The client instance is not already open.</exception>
+        /// <exception cref="OperationCanceledException">The operation has been canceled.</exception>
+        /// <exception cref="IotHubClientException">An error occured when communicating with IoT hub service.</exception>
+        /// <exception cref="ObjectDisposedException">The client has been disposed.</exception>
         public async Task SetDirectMethodCallbackAsync(
             Func<DirectMethodRequest, Task<DirectMethodResponse>> directMethodCallback,
             CancellationToken cancellationToken = default)
@@ -352,9 +357,10 @@ namespace Microsoft.Azure.Devices.Client
         /// </para>
         /// </remarks>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <exception cref="InvalidOperationException">Thrown if the client instance is not opened already.</exception>
-        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        /// <exception cref="ObjectDisposedException">When the client has been disposed.</exception>
+        /// <exception cref="InvalidOperationException">The client instance is not already open.</exception>
+        /// <exception cref="OperationCanceledException">The operation has been canceled.</exception>
+        /// <exception cref="IotHubClientException">An error occured when communicating with IoT hub service.</exception>
+        /// <exception cref="ObjectDisposedException">The client has been disposed.</exception>
         /// <returns>The twin object for the current client.</returns>
         public async Task<TwinProperties> GetTwinPropertiesAsync(CancellationToken cancellationToken = default)
         {
@@ -371,9 +377,11 @@ namespace Microsoft.Azure.Devices.Client
         /// </remarks>
         /// <param name="reportedProperties">Reported properties to push</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <exception cref="InvalidOperationException">Thrown if the client instance is not opened already.</exception>
-        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        /// <exception cref="ObjectDisposedException">When the client has been disposed.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="reportedProperties"/> is null.</exception>
+        /// <exception cref="InvalidOperationException">The client instance is not already open.</exception>
+        /// <exception cref="OperationCanceledException">The operation has been canceled.</exception>
+        /// <exception cref="IotHubClientException">An error occured when communicating with IoT hub service.</exception>
+        /// <exception cref="ObjectDisposedException">The client has been disposed.</exception>
         /// <returns>The new version of the updated twin if the update was successful.</returns>
         public async Task<long> UpdateReportedPropertiesAsync(ReportedProperties reportedProperties, CancellationToken cancellationToken = default)
         {
@@ -402,9 +410,10 @@ namespace Microsoft.Azure.Devices.Client
         /// </remarks>
         /// <param name="callback">The callback to be invoked when a desired property update is received from the service.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <exception cref="InvalidOperationException">Thrown if the client instance is not opened already.</exception>
-        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        /// <exception cref="ObjectDisposedException">When the client has been disposed.</exception>
+        /// <exception cref="InvalidOperationException">The client instance is not already open.</exception>
+        /// <exception cref="OperationCanceledException">The operation has been canceled.</exception>
+        /// <exception cref="IotHubClientException">An error occured when communicating with IoT hub service.</exception>
+        /// <exception cref="ObjectDisposedException">The client has been disposed.</exception>
         public async Task SetDesiredPropertyUpdateCallbackAsync(
             Func<DesiredProperties, Task> callback,
             CancellationToken cancellationToken = default)
@@ -448,8 +457,8 @@ namespace Microsoft.Azure.Devices.Client
         /// to cloud to device messages/twin/methods do not persist when re-opening a client.
         /// </remarks>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        /// <exception cref="ObjectDisposedException">When the client has been disposed.</exception>
+        /// <exception cref="OperationCanceledException">The operation has been canceled.</exception>
+        /// <exception cref="ObjectDisposedException">The client has been disposed.</exception>
         public async Task CloseAsync(CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();

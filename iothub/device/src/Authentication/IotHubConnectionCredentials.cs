@@ -34,7 +34,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <exception cref="ArgumentException"><see cref="ClientAuthenticationWithX509Certificate.CertificateChain"/> is used over a protocol other than MQTT over TCP or AMQP over TCP.</exception>
         /// <exception cref="FormatException">Neither shared access key, shared access signature or X509 certificates were presented for authentication.</exception>
         /// <exception cref="FormatException">Either shared access key or shared access signature where presented together with X509 certificates for authentication.</exception>
-        /// <exception cref="IotHubClientException">When <see cref="ClientAuthenticationWithX509Certificate.CertificateChain"/> could not be installed.</exception>
+        /// <exception cref="IotHubClientException"><see cref="ClientAuthenticationWithX509Certificate.CertificateChain"/> could not be installed.</exception>
         public IotHubConnectionCredentials(IAuthenticationMethod authenticationMethod, string hostName, string gatewayHostName = null)
         {
             Argument.AssertNotNull(authenticationMethod, nameof(authenticationMethod));

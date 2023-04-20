@@ -121,8 +121,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         /// Under a semaphore, fetch the reference to an AMQP session that is open and active, and has a reference to an opened telemetry sending link.
         /// </summary>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <exception cref="IotHubClientException">Thrown if an attempt is made to open a session on a client that is already closed.</exception>
-        /// <exception cref="OperationCanceledException"> Thrown if the operation canceled before it could gain access to the semaphore for retrieving the session reference.</exception>
+        /// <exception cref="IotHubClientException">An attempt is made to open a session on a client that is already closed.</exception>
+        /// <exception cref="OperationCanceledException"> The operation canceled before it could gain access to the semaphore for retrieving the session reference.</exception>
         internal async Task<AmqpIotSession> EnsureSessionIsOpenAsync(CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)

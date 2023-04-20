@@ -23,7 +23,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <param name="transportSettings">The transport settings to use (i.e., <see cref="IotHubClientMqttSettings"/> or
         /// <see cref="IotHubClientAmqpSettings"/>.</param>
-        /// <exception cref="ArgumentNullException">When <paramref name="transportSettings"/> is null.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="transportSettings"/> is null.</exception>
         public IotHubClientOptions(IotHubClientTransportSettings transportSettings)
         {
             TransportSettings = transportSettings ?? throw new ArgumentNullException(nameof(transportSettings));

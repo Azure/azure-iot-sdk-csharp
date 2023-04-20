@@ -30,10 +30,10 @@ namespace Microsoft.Azure.Devices.Client
         /// The default behavior is that the token will be renewed when it has 15% or less of its lifespan left.
         /// </param>
         /// <exception cref="ArgumentNullException">
-        /// Thrown when <paramref name="sharedAccessKey"/> or <paramref name="sharedAccessKeyName"/> is null.
+        /// <paramref name="sharedAccessKey"/> or <paramref name="sharedAccessKeyName"/> is null.
         /// </exception>
         /// <exception cref="ArgumentException">
-        /// Thrown when <paramref name="sharedAccessKey"/> or <paramref name="sharedAccessKeyName"/> is empty or whitespace.
+        /// <paramref name="sharedAccessKey"/> or <paramref name="sharedAccessKeyName"/> is empty or whitespace.
         /// </exception>
         public ClientAuthenticationWithSharedAccessKeyRefresh(
             string sharedAccessKey,
@@ -69,10 +69,8 @@ namespace Microsoft.Azure.Devices.Client
         /// The time buffer before expiry when the token should be renewed, expressed as a percentage of the time to live.
         /// The default behavior is that the token will be renewed when it has 15% or less of its lifespan left.
         /// </param>
-        /// <exception cref="ArgumentNullException">Thrown when <paramref name="sharedAccessKey"/> is null.</exception>
-        /// <exception cref="ArgumentException">
-        /// Thrown when <paramref name="sharedAccessKey"/> is empty or whitespace.
-        /// </exception>
+        /// <exception cref="ArgumentNullException"><paramref name="sharedAccessKey"/> is null.</exception>
+        /// <exception cref="ArgumentException"><paramref name="sharedAccessKey"/> is empty or whitespace.</exception>
         public ClientAuthenticationWithSharedAccessKeyRefresh(
             string sharedAccessKey,
             string deviceId,
@@ -104,8 +102,8 @@ namespace Microsoft.Azure.Devices.Client
         /// The time buffer before expiry when the token should be renewed, expressed as a percentage of the time to live.
         /// The default behavior is that the token will be renewed when it has 15% or less of its lifespan left.
         /// </param>
-        /// <exception cref="ArgumentNullException">Thrown when <paramref name="connectionString"/> is null.</exception>
-        /// <exception cref="ArgumentException">Thrown when <paramref name="connectionString"/> is empty or whitespace.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="connectionString"/> is null.</exception>
+        /// <exception cref="ArgumentException"><paramref name="connectionString"/> is empty or whitespace.</exception>
         public ClientAuthenticationWithSharedAccessKeyRefresh(
             string connectionString,
             TimeSpan sasTokenTimeToLive = default,
@@ -136,7 +134,7 @@ namespace Microsoft.Azure.Devices.Client
         /// the current instance.
         /// </summary>
         /// <param name="iotHubConnectionCredentials">Instance to populate.</param>
-        /// <exception cref="ArgumentNullException">Thrown when <paramref name="iotHubConnectionCredentials"/> is null.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="iotHubConnectionCredentials"/> is null.</exception>
         public override void Populate(ref IotHubConnectionCredentials iotHubConnectionCredentials)
         {
             Argument.AssertNotNull(iotHubConnectionCredentials, nameof(iotHubConnectionCredentials));

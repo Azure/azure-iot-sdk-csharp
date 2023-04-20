@@ -16,8 +16,8 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <param name="correlationId">The correlation Id of the SAS URI.</param>
         /// <param name="isSuccess">Whether the file upload was successful or not.</param>
-        /// <exception cref="ArgumentNullException">When the provided <paramref name="correlationId"/> is null.</exception>
-        /// <exception cref="ArgumentException">If the provided <paramref name="correlationId"/> is empty or whitespace.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="correlationId"/> is null.</exception>
+        /// <exception cref="ArgumentException"><paramref name="correlationId"/> is empty or whitespace.</exception>
         public FileUploadCompletionNotification(string correlationId, bool isSuccess)
         {
             Argument.AssertNotNullOrWhiteSpace(correlationId, nameof(correlationId));

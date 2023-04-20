@@ -25,7 +25,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="certificateChain">Certificates in the device certificate chain.</param>
         /// <param name="deviceId">Device identifier.</param>
         /// <param name="moduleId">Module identifier.</param>
-        /// <exception cref="ArgumentException">When <paramref name="clientCertificate"/> or <paramref name="certificateChain"/> is null.</exception>
+        /// <exception cref="ArgumentException"><paramref name="clientCertificate"/> or <paramref name="certificateChain"/> is null.</exception>
         public ClientAuthenticationWithX509Certificate(
             X509Certificate2 clientCertificate,
             X509Certificate2Collection certificateChain,
@@ -50,7 +50,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="certificate">X.509 certificate.</param>
         /// <param name="deviceId">Device identifier.</param>
         /// <param name="moduleId">Module identifier.</param>
-        /// <exception cref="ArgumentException">When <paramref name="certificate"/> is null.</exception>
+        /// <exception cref="ArgumentException"><paramref name="certificate"/> is null.</exception>
         public ClientAuthenticationWithX509Certificate(
             X509Certificate2 certificate,
             string deviceId,
@@ -98,7 +98,7 @@ namespace Microsoft.Azure.Devices.Client
         /// Populates a supplied instance based on the properties of the current instance.
         /// </summary>
         /// <param name="iotHubConnectionCredentials">Instance to populate.</param>
-        /// <exception cref="ArgumentNullException">Thrown when <paramref name="iotHubConnectionCredentials"/> is null.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="iotHubConnectionCredentials"/> is null.</exception>
         public void Populate(ref IotHubConnectionCredentials iotHubConnectionCredentials)
         {
             Argument.AssertNotNull(iotHubConnectionCredentials, nameof(iotHubConnectionCredentials));

@@ -15,8 +15,8 @@ namespace Microsoft.Azure.Devices.Client
         /// The request parameters when getting a file upload SAS URI from IoT hub.
         /// </summary>
         /// <param name="blobName">The name of the file for which a SAS URI will be generated.</param>
-        /// <exception cref="ArgumentNullException">When the provided <paramref name="blobName"/> is null.</exception>
-        /// <exception cref="ArgumentException">If the provided <paramref name="blobName"/> is empty or whitespace.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="blobName"/> is null.</exception>
+        /// <exception cref="ArgumentException"><paramref name="blobName"/> is empty or whitespace.</exception>
         public FileUploadSasUriRequest(string blobName)
         {
             Argument.AssertNotNullOrWhiteSpace(blobName, nameof(blobName));
