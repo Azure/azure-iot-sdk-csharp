@@ -22,8 +22,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         protected AmqpUnit _amqpUnit;
         private readonly Action<DesiredProperties> _onDesiredStatePatchListener;
         private readonly object _lock = new();
-        private readonly ConcurrentDictionary<string, TaskCompletionSource<AmqpMessage>> _twinResponseCompletions = new();
-        private readonly ConcurrentDictionary<string, DateTimeOffset> _twinResponseTimeouts = new();
+        private readonly ConcurrentDictionary<string, PendingAmqpTwinOperation> _pendingTwinOperations = new();
 
         // Timer to check if any expired messages exist. The timer is executed after each hour of execution.
         private readonly Timer _twinTimeoutTimer;
@@ -32,7 +31,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         internal IotHubConnectionCredentials _connectionCredentials;
 
-        private static readonly TimeSpan s_twinResponseTimeout = TimeSpan.FromMinutes(60);
         private bool _closed;
 
         static AmqpTransportHandler()
@@ -81,6 +79,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         private void OnDisconnected()
         {
+            if (Logging.IsEnabled)
+                Logging.Info(this, $"AMQP connection was lost", nameof(OnDisconnected));
+
             if (!_closed)
             {
                 lock (_lock)
@@ -88,6 +89,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     if (!_closed)
                     {
                         OnTransportDisconnected();
+
+                        // During a disconnection, any pending twin updates won't be received, so we'll preemptively
+                        // cancel these operations so the client can retry once reconnected.
+                        RemoveOldOperations(TimeSpan.Zero);
                     }
                 }
             }
@@ -138,8 +143,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 await _amqpUnit.OpenAsync(cancellationToken).ConfigureAwait(false);
 
-                // The timer would invoke callback after every hour.
-                _twinTimeoutTimer.Change(s_twinResponseTimeout, s_twinResponseTimeout);
+                // The timer would invoke callback in the specified time and that duration thereafter.
+                _twinTimeoutTimer.Change(TwinResponseTimeout, TwinResponseTimeout);
             }
             finally
             {
@@ -442,8 +447,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 var taskCompletionSource = new TaskCompletionSource<AmqpMessage>(TaskCreationOptions.RunContinuationsAsynchronously);
-                _twinResponseCompletions[correlationId] = taskCompletionSource;
-                _twinResponseTimeouts[correlationId] = DateTimeOffset.UtcNow;
+                _pendingTwinOperations[correlationId] = new PendingAmqpTwinOperation(taskCompletionSource);
 
                 await _amqpUnit.SendTwinMessageAsync(amqpTwinMessageType, correlationId, reportedProperties, cancellationToken).ConfigureAwait(false);
 
@@ -460,8 +464,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
             finally
             {
-                _twinResponseCompletions.TryRemove(correlationId, out _);
-                _twinResponseTimeouts.TryRemove(correlationId, out _);
+                _pendingTwinOperations.TryRemove(correlationId, out _);
 
                 if (Logging.IsEnabled)
                     Logging.Exit(this, cancellationToken, nameof(RoundTripTwinMessageAsync));
@@ -492,43 +495,60 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         Logging.Info(this, $"Received a response for operation with correlation Id {correlationId}.", nameof(TwinMessageListener));
 
                     // For Get and Patch, complete the task.
-                    if (_twinResponseCompletions.TryRemove(correlationId, out TaskCompletionSource<AmqpMessage> task))
+                    if (_pendingTwinOperations.TryRemove(correlationId, out PendingAmqpTwinOperation pendingOperation))
                     {
                         if (ex == default)
                         {
-                            task.TrySetResult(responseFromService);
+                            pendingOperation.CompletionTask.TrySetResult(responseFromService);
                         }
                         else
                         {
-                            task.TrySetException(ex);
+                            pendingOperation.CompletionTask.TrySetException(ex);
                         }
                     }
                     else
                     {
                         // This can happen if we received a message from service with correlation Id that was not set by SDK or does not exist in dictionary.
                         if (Logging.IsEnabled)
-                            Logging.Info("Could not remove correlation Id to complete the task awaiter for a twin operation.", nameof(TwinMessageListener));
+                            Logging.Info(this, "Could not remove correlation Id to complete the task awaiter for a twin operation.", nameof(TwinMessageListener));
                     }
                 }
                 else if (correlationId.StartsWith(AmqpTwinMessageType.Put.ToString(), StringComparison.OrdinalIgnoreCase))
                 {
                     // This is an acknowledgement received from service for subscribing to desired property updates
                     if (Logging.IsEnabled)
-                        Logging.Info("Subscribed for twin desired property updates successfully", nameof(TwinMessageListener));
+                        Logging.Info(this, "Subscribed for twin desired property updates successfully", nameof(TwinMessageListener));
                 }
             }
         }
 
-        private void RemoveOldOperations(object _)
+        private void RemoveOldOperations(object state)
         {
-            _ = _twinResponseTimeouts
-                .Where(x => DateTimeOffset.UtcNow - x.Value > s_twinResponseTimeout)
+            if (state is not TimeSpan maxAge)
+            {
+                maxAge = TwinResponseTimeout;
+            }
+
+            if (Logging.IsEnabled)
+                Logging.Info(this, $"Removing operations older than {maxAge}", nameof(RemoveOldOperations));
+
+            int canceledOperations = _pendingTwinOperations
+                .Where(x => DateTimeOffset.UtcNow - x.Value.RequestSentOnUtc > maxAge)
                 .Select(x =>
                     {
-                        _twinResponseCompletions.TryRemove(x.Key, out TaskCompletionSource<AmqpMessage> _);
-                        _twinResponseTimeouts.TryRemove(x.Key, out DateTimeOffset _);
+                        if (_pendingTwinOperations.TryRemove(x.Key, out PendingAmqpTwinOperation pendingOperation))
+                        {
+                            if (Logging.IsEnabled)
+                                Logging.Error(this, $"Removing twin response for {x.Key}", nameof(RemoveOldOperations));
+
+                            pendingOperation.CompletionTask.TrySetException(new IotHubClientException("Did not receive twin response from service.", IotHubClientErrorCode.NetworkErrors));
+                        }
                         return true;
-                    });
+                    })
+                .Count();
+
+            if (Logging.IsEnabled)
+                Logging.Error(this, $"Removed {canceledOperations} twin responses", nameof(RemoveOldOperations));
         }
 
         protected private override void Dispose(bool disposing)

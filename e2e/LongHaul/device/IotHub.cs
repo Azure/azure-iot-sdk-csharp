@@ -33,6 +33,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
         private ConnectionStatusChangeReason _disconnectedReason;
         private RecommendedAction _disconnectedRecommendedAction;
         private volatile IotHubDeviceClient _deviceClient;
+        private CancellationToken _ct;
 
         private static readonly TimeSpan s_messageLoopSleepTime = TimeSpan.FromSeconds(3);
         private static readonly TimeSpan s_deviceTwinUpdateInterval = TimeSpan.FromSeconds(10);
@@ -66,8 +67,13 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
         /// <summary>
         /// Initializes the connection to IoT Hub.
         /// </summary>
-        public async Task InitializeAsync()
+        public async Task InitializeAsync(CancellationToken? ct = null)
         {
+            if (ct != null)
+            {
+                _ct = ct.Value;
+            }
+
             await _lifetimeControl.WaitAsync().ConfigureAwait(false);
 
             try
@@ -112,7 +118,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
             var pendingMessages = new List<TelemetryMessage>(maxBulkMessages);
             logger.LoggerContext.Add(OperationName, LoggingConstants.TelemetryMessage);
             var sw = new Stopwatch();
-            
+
             while (!ct.IsCancellationRequested)
             {
                 logger.Metric(MessageBacklog, _messagesToSend.Count);
@@ -176,38 +182,6 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
             }
         }
 
-        public async Task ReportReadOnlyPropertiesAsync(Logger logger, CancellationToken ct)
-        {
-            logger.LoggerContext.Add(OperationName, ReportTwinProperties);
-            var sw = new Stopwatch();
-
-            while (!ct.IsCancellationRequested)
-            {
-                try
-                {
-                    var reported = new ReportedProperties
-                    {
-                        { "TotalTelemetryMessagesSent", _totalTelemetryMessagesSent },
-                    };
-
-                    logger.Trace($"Updating reported properties.", TraceSeverity.Information);
-                    sw.Restart();
-                    await _deviceClient.UpdateReportedPropertiesAsync(reported, ct).ConfigureAwait(false);
-                    sw.Stop();
-
-                    ++_totalTwinUpdatesReported;
-                    logger.Metric(TotalTwinUpdatesReported, _totalTwinUpdatesReported);
-                    logger.Metric(ReportedTwinUpdateOperationSeconds, sw.Elapsed.TotalSeconds);
-                }
-                catch (Exception ex)
-                {
-                    logger.Trace($"Exception when reporting properties when connected is {IsConnected}\n{ex}");
-                }
-
-                await Task.Delay(s_deviceTwinUpdateInterval, ct).ConfigureAwait(false);
-            }
-        }
-
         public void AddTelemetry(
             TelemetryBase telemetryObject,
             IDictionary<string, string> extraProperties = null)
@@ -244,7 +218,26 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
             _messagesToSend.Enqueue(iotMessage);
         }
 
-        public async Task SetPropertiesAsync(string keyName, object properties, Logger logger, CancellationToken ct)
+        public async Task ReportReadOnlyPropertiesAsync(Logger logger, CancellationToken ct)
+        {
+            logger.LoggerContext.Add(OperationName, ReportTwinProperties);
+            var sw = new Stopwatch();
+
+            while (!ct.IsCancellationRequested)
+            {
+                sw.Restart();
+                await SetPropertiesAsync("totalTelemetryMessagesSent", _totalTelemetryMessagesSent, logger, ct).ConfigureAwait(false);
+                sw.Stop();
+
+                ++_totalTwinUpdatesReported;
+                logger.Metric(TotalTwinUpdatesReported, _totalTwinUpdatesReported);
+                logger.Metric(ReportedTwinUpdateOperationSeconds, sw.Elapsed.TotalSeconds);
+
+                await Task.Delay(s_deviceTwinUpdateInterval, ct).ConfigureAwait(false);
+            }
+        }
+
+        public async Task SetPropertiesAsync<T>(string keyName, T properties, Logger logger, CancellationToken ct)
         {
             Debug.Assert(_deviceClient != null);
             Debug.Assert(properties != null);
@@ -257,16 +250,38 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
             {
                 try
                 {
-                    await _deviceClient
+                    long version = await _deviceClient
                         .UpdateReportedPropertiesAsync(reportedProperties, ct)
                         .ConfigureAwait(false);
 
-                    logger.Trace($"Set the reported property with name [{keyName}] in device twin.", TraceSeverity.Information);
+                    logger.Trace($"Set the reported property with key {keyName} and value {properties} in device twin; observed version {version}.", TraceSeverity.Information);
                     break;
                 }
                 catch (Exception ex)
                 {
                     logger.Trace($"Exception reporting property\n{ex}", TraceSeverity.Warning);
+                    await Task.Delay(s_retryInterval, ct).ConfigureAwait(false);
+                }
+            }
+
+            while (!ct.IsCancellationRequested)
+            {
+                try
+                {
+                    TwinProperties twin = await _deviceClient.GetTwinPropertiesAsync(ct).ConfigureAwait(false);
+                    if (!twin.Reported.TryGetValue<T>(keyName, out T actualValue))
+                    {
+                        logger.Trace($"Couldn't find the reported property {keyName} in the device twin.", TraceSeverity.Warning);
+                    }
+                    else if (!actualValue.Equals(properties))
+                    {
+                        logger.Trace($"Couldn't validate value for {keyName} was set to {properties}, found {actualValue}.");
+                    }
+                    break;
+                }
+                catch (Exception ex)
+                {
+                    logger.Trace($"Exception getting twin\n{ex}", TraceSeverity.Warning);
                     await Task.Delay(s_retryInterval, ct).ConfigureAwait(false);
                 }
             }
@@ -410,7 +425,19 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
             {
                 case RecommendedAction.OpenConnection:
                     _logger.Trace($"Following recommended action of reinitializing the client.", TraceSeverity.Information);
-                    await InitializeAsync().ConfigureAwait(false);
+                    while (!_ct.IsCancellationRequested)
+                    {
+                        try
+                        {
+                            await InitializeAsync().ConfigureAwait(false);
+                            break;
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.Trace($"Exception re-initializing client\n{ex}", TraceSeverity.Warning);
+                            await Task.Delay(s_retryInterval, _ct).ConfigureAwait(false);
+                        }
+                    }
                     break;
 
                 case RecommendedAction.PerformNormally:
@@ -479,7 +506,8 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
 
             if (reported.Any())
             {
-                await _deviceClient.UpdateReportedPropertiesAsync(reported).ConfigureAwait(false);
+                long version = await _deviceClient.UpdateReportedPropertiesAsync(reported).ConfigureAwait(false);
+                _logger.Trace($"Updated {reported.Count()} properties and observed new version {version}.", TraceSeverity.Information);
 
                 _totalDesiredPropertiesHandled += reported.Count();
                 _logger.Metric(TotalDesiredPropertiesHandled, _totalDesiredPropertiesHandled);

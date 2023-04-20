@@ -3,6 +3,7 @@
 
 using System;
 using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.LongHaul.Device
 {
@@ -11,6 +12,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
         /// <summary>
         /// The date/time the event occurred, in UTC.
         /// </summary>
+        [JsonProperty("eventDateTimeUtc")]
         [JsonPropertyName("eventDateTimeUtc")]
         public DateTime? EventDateTimeUtc { get; set; } = DateTime.UtcNow;
     }

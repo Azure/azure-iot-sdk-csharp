@@ -69,7 +69,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
             {
                 try
                 {
-                    await iotHub.InitializeAsync().ConfigureAwait(false);
+                    await iotHub.InitializeAsync(cts.Token).ConfigureAwait(false);
                     break;
                 }
                 catch (Exception ex)
@@ -96,6 +96,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
                     .ConfigureAwait(false);
             }
             catch (TaskCanceledException) { } // user signalled an exit
+            catch (AggregateException ex) when (ex.InnerException is OperationCanceledException) { } // user signaled an exit
             catch (Exception ex)
             {
                 s_logger.Trace($"Device app failed with exception {ex}", TraceSeverity.Error);
