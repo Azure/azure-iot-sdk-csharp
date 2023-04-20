@@ -237,7 +237,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
             }
         }
 
-        public async Task SetPropertiesAsync(string keyName, object properties, Logger logger, CancellationToken ct)
+        public async Task SetPropertiesAsync<T>(string keyName, T properties, Logger logger, CancellationToken ct)
         {
             Debug.Assert(_deviceClient != null);
             Debug.Assert(properties != null);
@@ -260,6 +260,28 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
                 catch (Exception ex)
                 {
                     logger.Trace($"Exception reporting property\n{ex}", TraceSeverity.Warning);
+                    await Task.Delay(s_retryInterval, ct).ConfigureAwait(false);
+                }
+            }
+
+            while (!ct.IsCancellationRequested)
+            {
+                try
+                {
+                    TwinProperties twin = await _deviceClient.GetTwinPropertiesAsync(ct).ConfigureAwait(false);
+                    if (!twin.Reported.TryGetValue<T>(keyName, out T actualValue))
+                    {
+                        logger.Trace($"Couldn't find the reported property {keyName} in the device twin.", TraceSeverity.Warning);
+                    }
+                    else if (!actualValue.Equals(properties))
+                    {
+                        logger.Trace($"Couldn't validate value for {keyName} was set to {properties}, found {actualValue}.");
+                    }
+                    break;
+                }
+                catch (Exception ex)
+                {
+                    logger.Trace($"Exception getting twin\n{ex}", TraceSeverity.Warning);
                     await Task.Delay(s_retryInterval, ct).ConfigureAwait(false);
                 }
             }

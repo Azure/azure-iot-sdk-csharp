@@ -1176,58 +1176,76 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 byte[] payloadBytes = receivedEventArgs.ApplicationMessage.Payload ?? Array.Empty<byte>();
 
-                if (_pendingTwinOperations.TryRemove(receivedRequestId, out PendingMqttTwinOperation patchTwinOperation))
+                if (_pendingTwinOperations.TryRemove(receivedRequestId, out PendingMqttTwinOperation twinOperation))
                 {
                     if (Logging.IsEnabled)
                         Logging.Info(this, $"Received response to patch twin request with request id {receivedRequestId}.", nameof(HandleTwinResponse));
 
-                    if (status != 200)
+                    IotHubClientErrorResponseMessage ParseError(byte[] payloadBytes)
                     {
-                        IotHubClientErrorResponseMessage errorResponse = null;
-
                         // This will only ever contain an error message which is encoded based on service contract (UTF-8).
-                        if (payloadBytes.Length > 0)
+                        if (payloadBytes.Length == 0)
                         {
-                            string errorResponseString = Encoding.UTF8.GetString(payloadBytes);
-                            try
-                            {
-                                errorResponse = DefaultPayloadConvention.Instance.GetObject<IotHubClientErrorResponseMessage>(errorResponseString);
-                            }
-                            catch (JsonException ex)
-                            {
-                                if (Logging.IsEnabled)
-                                    Logging.Error(this, $"Failed to parse twin patch error response JSON. Message body: '{errorResponseString}'. Exception: {ex}. ", nameof(HandleTwinResponse));
-
-                                errorResponse = new IotHubClientErrorResponseMessage
-                                {
-                                    Message = errorResponseString,
-                                };
-                            }
+                            return null;
                         }
+
+                        string errorResponseString = Encoding.UTF8.GetString(payloadBytes);
+                        try
+                        {
+                            return DefaultPayloadConvention.Instance.GetObject<IotHubClientErrorResponseMessage>(errorResponseString);
+                        }
+                        catch (JsonException ex)
+                        {
+                            if (Logging.IsEnabled)
+                                Logging.Error(this, $"Failed to parse twin patch error response JSON. Message body: '{errorResponseString}'. Exception: {ex}. ", nameof(HandleTwinResponse));
+
+                            return new IotHubClientErrorResponseMessage
+                            {
+                                Message = errorResponseString,
+                            };
+                        }
+                    }
+
+                    if (twinOperation.TwinPatchTask != null)
+                    {
+                        IotHubClientErrorResponseMessage error = status == 204
+                            ? null
+                            : ParseError(payloadBytes);
 
                         // This received message is in response to an update reported properties request.
                         var patchTwinResponse = new PatchTwinResponse
                         {
                             Status = status,
                             Version = version,
-                            ErrorResponseMessage = errorResponse,
+                            ErrorResponseMessage = error,
                         };
 
-                        patchTwinOperation.TwinPatchTask.TrySetResult(patchTwinResponse);
+                        twinOperation.TwinPatchTask.TrySetResult(patchTwinResponse);
                     }
-                    else
+                    else // should be a "get twin" operation
                     {
-                        try
+                        var getTwinResponse = new GetTwinResponse
                         {
-                            // Use the encoder that has been agreed to between the client and service to decode the byte[] response
-                            // The response is deserialized into an SDK-defined type based on service-defined NewtonSoft.Json-based json property name.
-                            // For this reason, we use NewtonSoft Json serializer for this deserialization.
-                            TwinDocument clientTwinProperties = DefaultPayloadConvention.Instance.GetObject<TwinDocument>(payloadBytes);
+                            Status = status,
+                        };
 
-                            var getTwinResponse = new GetTwinResponse
+                        if (status != 200)
+                        {
+                            getTwinResponse.ErrorResponseMessage = ParseError(payloadBytes);
+                            twinOperation.TwinResponseTask.TrySetResult(getTwinResponse);
+                        }
+                        else
+                        {
+                            try
                             {
-                                Status = status,
-                                Twin = new TwinProperties(
+                                // Use the encoder that has been agreed to between the client and service to decode the byte[] response
+                                // The response is deserialized into an SDK-defined type based on service-defined NewtonSoft.Json-based json property name.
+                                // For this reason, we use Newtonsoft.Json serializer for this deserialization.
+                                TwinDocument clientTwinProperties = status == 200
+                                    ? DefaultPayloadConvention.Instance.GetObject<TwinDocument>(payloadBytes)
+                                    : null;
+
+                                getTwinResponse.Twin = new TwinProperties(
                                     new DesiredProperties(clientTwinProperties.Desired)
                                     {
                                         PayloadConvention = _payloadConvention,
@@ -1235,56 +1253,19 @@ namespace Microsoft.Azure.Devices.Client.Transport
                                     new ReportedProperties(clientTwinProperties.Reported, true)
                                     {
                                         PayloadConvention = _payloadConvention,
-                                    }),
-                            };
+                                    });
 
-                            patchTwinOperation.TwinResponseTask.TrySetResult(getTwinResponse);
-                        }
-                        catch (JsonReaderException ex)
-                        {
-                            if (Logging.IsEnabled)
-                                Logging.Error(this, $"Failed to parse Twin JSON.  Message body: '{Encoding.UTF8.GetString(payloadBytes)}'. Exception: {ex}.", nameof(HandleTwinResponse));
-
-                            patchTwinOperation.TwinResponseTask.TrySetException(ex);
-                        }
-                    }
-                }
-                else if (_pendingTwinOperations.TryRemove(receivedRequestId, out PendingMqttTwinOperation pendingPatchOperation))
-                {
-                    if (Logging.IsEnabled)
-                        Logging.Info(this, $"Received response to patch twin request with request id {receivedRequestId}.", nameof(HandleTwinResponse));
-
-                    IotHubClientErrorResponseMessage errorResponse = null;
-
-                    // This will only ever contain an error message which is encoded based on service contract (UTF-8).
-                    if (payloadBytes.Length > 0)
-                    {
-                        string errorResponseString = Encoding.UTF8.GetString(payloadBytes);
-                        try
-                        {
-                            errorResponse = DefaultPayloadConvention.Instance.GetObject<IotHubClientErrorResponseMessage>(errorResponseString);
-                        }
-                        catch (JsonException ex)
-                        {
-                            if (Logging.IsEnabled)
-                                Logging.Error(this, $"Failed to parse twin patch error response JSON. Message body: '{errorResponseString}'. Exception: {ex}. ", nameof(HandleTwinResponse));
-
-                            errorResponse = new IotHubClientErrorResponseMessage
+                                twinOperation.TwinResponseTask.TrySetResult(getTwinResponse);
+                            }
+                            catch (JsonReaderException ex)
                             {
-                                Message = errorResponseString,
-                            };
+                                if (Logging.IsEnabled)
+                                    Logging.Error(this, $"Failed to parse Twin JSON. Message body: '{Encoding.UTF8.GetString(payloadBytes)}'. Exception: {ex}.", nameof(HandleTwinResponse));
+
+                                twinOperation.TwinResponseTask.TrySetException(ex);
+                            }
                         }
                     }
-
-                    // This received message is in response to an update reported properties request.
-                    var patchTwinResponse = new PatchTwinResponse
-                    {
-                        Status = status,
-                        Version = version,
-                        ErrorResponseMessage = errorResponse,
-                    };
-
-                    pendingPatchOperation.TwinPatchTask.TrySetResult(patchTwinResponse);
                 }
                 else if (Logging.IsEnabled)
                 {

@@ -16,5 +16,18 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
 
         [JsonPropertyName("frameworkDescription")]
         public string FrameworkDescription { get; set; } = RuntimeInformation.FrameworkDescription;
+
+        public override bool Equals(object obj)
+        {
+            return obj is SystemProperties other
+                && SystemArchitecture == other.SystemArchitecture
+                && OsVersion == other.OsVersion
+                && FrameworkDescription == other.FrameworkDescription;
+        }
+
+        public override int GetHashCode()
+        {
+            return SystemArchitecture.GetHashCode() ^ OsVersion.GetHashCode() ^ FrameworkDescription.GetHashCode();
+        }
     }
 }

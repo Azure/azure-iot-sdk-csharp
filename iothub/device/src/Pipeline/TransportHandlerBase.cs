@@ -18,7 +18,14 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
         }
 
-        protected static TimeSpan TwinResponseTimeout { get; } = TimeSpan.FromHours(1);
+        /// <summary>
+        /// Twin operations are initiated one one link/topic and the response is received on another, where the
+        /// waiting client call is completed via a TaskCompletionSource linked to the request Id.
+        /// For various reasons, the device may never observe the response from the service and the client call will
+        /// sit indefinitely, however unlikely. In order to prevent an ever increasing dictionary, we'll occasionally
+        /// review these pending operations, and cancel/remove them from the dictionary.
+        /// </summary>
+        protected private static TimeSpan TwinResponseTimeout { get; } = TimeSpan.FromHours(1);
 
         public override Task WaitForTransportClosedAsync()
         {
