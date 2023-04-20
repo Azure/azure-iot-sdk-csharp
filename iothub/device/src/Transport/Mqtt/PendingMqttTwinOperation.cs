@@ -31,7 +31,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         }
 
         /// <summary>
-        /// The pending task for get twin to be signaled when complete.
+        /// The pending task for getting a twin to be signaled when complete.
         /// </summary>
         /// <remarks>
         /// Will be null if this if this class is not being used for get twin.
