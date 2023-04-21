@@ -48,7 +48,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
             IAuthorizationProvider authenticationHeaderProvider,
             IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> defaultErrorMapping,
             TimeSpan timeout,
-            Action<HttpClient> preRequestActionForAllRequests,
             Http1TransportSettings transportSettings,
             ProductInfo productInfo,
             IWebProxy proxy,
@@ -57,83 +56,87 @@ namespace Microsoft.Azure.Devices.Client.Transport
             _baseAddress = baseAddress;
             _authenticationHeaderProvider = authenticationHeaderProvider;
             _defaultErrorMapping = new ReadOnlyDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>(defaultErrorMapping);
-            _httpMessageHandler = transportSettings.HttpMessageHandler;
+            _productInfo = productInfo;
+            _isClientPrimaryTransportHandler = isClientPrimaryTransportHandler;
 
-            if (_httpMessageHandler == null)
+            if (transportSettings.HttpClient != null)
             {
+                _httpClientObj = transportSettings.HttpClient;
+                return;
+            }
+
 #if NET451
-                TlsVersions.Instance.SetLegacyAcceptableVersions();
+            TlsVersions.Instance.SetLegacyAcceptableVersions();
 
-                var webRequestHandler = new WebRequestHandler();
+            var webRequestHandler = new WebRequestHandler();
 
-                if (transportSettings.ClientCertificate != null)
-                {
-                    webRequestHandler.ClientCertificates.Add(transportSettings.ClientCertificate);
-                    _usingX509ClientCert = true;
-                }
-                else
-                {
-                    _usingX509ClientCert = false;
-                }
+            if (transportSettings.ClientCertificate != null)
+            {
+                webRequestHandler.ClientCertificates.Add(transportSettings.ClientCertificate);
+                _usingX509ClientCert = true;
+            }
+            else
+            {
+                _usingX509ClientCert = false;
+            }
 
-                if (proxy != DefaultWebProxySettings.Instance)
-                {
-                    webRequestHandler.UseProxy = proxy != null;
-                    webRequestHandler.Proxy = proxy;
-                }
+            if (proxy != DefaultWebProxySettings.Instance)
+            {
+                webRequestHandler.UseProxy = proxy != null;
+                webRequestHandler.Proxy = proxy;
+            }
 
-                _httpMessageHandler = webRequestHandler;
+            _httpMessageHandler = webRequestHandler;
 #elif NET5_0_OR_GREATER
-                var socketsHandler = new SocketsHttpHandler();
-                socketsHandler.SslOptions.EnabledSslProtocols = TlsVersions.Instance.Preferred;
+            var socketsHandler = new SocketsHttpHandler();
+            socketsHandler.SslOptions.EnabledSslProtocols = TlsVersions.Instance.Preferred;
 
-                if (!TlsVersions.Instance.CertificateRevocationCheck)
-                {
-                    socketsHandler.SslOptions.CertificateRevocationCheckMode = X509RevocationMode.NoCheck;
-                }
+            if (!TlsVersions.Instance.CertificateRevocationCheck)
+            {
+                socketsHandler.SslOptions.CertificateRevocationCheckMode = X509RevocationMode.NoCheck;
+            }
 
-                if (transportSettings.ClientCertificate != null)
-                {
-                    socketsHandler.SslOptions.ClientCertificates.Add(transportSettings.ClientCertificate);
-                }
-                else
-                {
-                    _usingX509ClientCert = false;
-                }
+            if (transportSettings.ClientCertificate != null)
+            {
+                socketsHandler.SslOptions.ClientCertificates.Add(transportSettings.ClientCertificate);
+            }
+            else
+            {
+                _usingX509ClientCert = false;
+            }
 
-                if (proxy != DefaultWebProxySettings.Instance)
-                {
-                    socketsHandler.UseProxy = proxy != null;
-                    socketsHandler.Proxy = proxy;
-                }
+            if (proxy != DefaultWebProxySettings.Instance)
+            {
+                socketsHandler.UseProxy = proxy != null;
+                socketsHandler.Proxy = proxy;
+            }
 
-                _httpMessageHandler = socketsHandler;
+            _httpMessageHandler = socketsHandler;
 #else
-                var httpClientHandler = new HttpClientHandler();
-                httpClientHandler.SslProtocols = TlsVersions.Instance.Preferred;
-                httpClientHandler.CheckCertificateRevocationList = TlsVersions.Instance.CertificateRevocationCheck;
+            var httpClientHandler = new HttpClientHandler();
+            httpClientHandler.SslProtocols = TlsVersions.Instance.Preferred;
+            httpClientHandler.CheckCertificateRevocationList = TlsVersions.Instance.CertificateRevocationCheck;
 
-                if (transportSettings.ClientCertificate != null)
-                {
-                    httpClientHandler.ClientCertificates.Add(transportSettings.ClientCertificate);
-                    _usingX509ClientCert = true;
-                }
-                else
-                {
-                    _usingX509ClientCert = false;
-                }
+            if (transportSettings.ClientCertificate != null)
+            {
+                httpClientHandler.ClientCertificates.Add(transportSettings.ClientCertificate);
+                _usingX509ClientCert = true;
+            }
+            else
+            {
+                _usingX509ClientCert = false;
+            }
 
-                if (proxy != DefaultWebProxySettings.Instance)
-                {
-                    httpClientHandler.UseProxy = proxy != null;
-                    httpClientHandler.Proxy = proxy;
-                }
+            if (proxy != DefaultWebProxySettings.Instance)
+            {
+                httpClientHandler.UseProxy = proxy != null;
+                httpClientHandler.Proxy = proxy;
+            }
 
-                _httpMessageHandler = httpClientHandler;
+            _httpMessageHandler = httpClientHandler;
 #endif
 
-                ServicePointHelpers.SetLimits(_httpMessageHandler, _baseAddress);
-            }
+            ServicePointHelpers.SetLimits(_httpMessageHandler, _baseAddress);
 
             _httpClientObj = new HttpClient(_httpMessageHandler);
 
@@ -142,10 +145,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
             _httpClientObj.DefaultRequestHeaders.Accept.Add(
                 new MediaTypeWithQualityHeaderValue(CommonConstants.MediaTypeForDeviceManagementApis));
             _httpClientObj.DefaultRequestHeaders.ExpectContinue = false;
-
-            preRequestActionForAllRequests?.Invoke(_httpClientObj);
-            _productInfo = productInfo;
-            _isClientPrimaryTransportHandler = isClientPrimaryTransportHandler;
         }
 
         public Task<T> GetAsync<T>(

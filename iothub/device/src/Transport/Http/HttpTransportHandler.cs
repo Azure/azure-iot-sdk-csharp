@@ -75,7 +75,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 iotHubConnectionString,
                 ExceptionHandlingHelper.GetDefaultErrorMapping(),
                 s_defaultOperationTimeout,
-                null,
                 transportSettings,
                 productInfo,
                 transportSettings.Proxy,
