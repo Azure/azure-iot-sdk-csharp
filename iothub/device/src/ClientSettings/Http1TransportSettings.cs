@@ -49,6 +49,9 @@ namespace Microsoft.Azure.Devices.Client
         /// <inheritdoc/>
         public IWebProxy Proxy { get; set; }
 
+        /// <summary>
+        /// The HTTP client to use for all HTTP operations.
+        /// </summary>
         /// <remarks>
         /// If not provided, an HTTP client will be created for you based on the other settings provided.
         /// <para>
