@@ -104,7 +104,8 @@ The operations implemented over HTTP are:
 1. `CompleteFileUploadAsync`
 1. `InvokeMethodAsync`
 
-__Important:__ HTTP transport communicates over port 443 so you will need to ensure this port is open for traffic.<br>
+
+__Important:__ HTTP transport communicates over port 443 so you will need to ensure this port is open for traffic.
 
 ### Cancellation
 
