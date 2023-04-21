@@ -95,6 +95,7 @@ package "Transport Pipeline"
   TransportHandlerBase <|-- MqttTransportHandler
   TransportHandlerBase <|-- AmqpTransportHandler
   TransportHandlerBase <|-- HttpTransportHandler
+  DefaultDelegatingHandler --> ConnectionStateDelegatingHandler
   ConnectionStateDelegatingHandler -> RetryDelegatingHandler
   RetryDelegatingHandler -> ExceptionRemappingHandler
   ExceptionRemappingHandler-> TransportDelegatingHandler
