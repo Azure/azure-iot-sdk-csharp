@@ -829,7 +829,7 @@ namespace Microsoft.Azure.Devices.Client
             }
             methodRequest.ThrowIfNull(nameof(methodRequest));
 
-            HttpClientHandler httpClientHandler = null;
+            HttpMessageHandler httpMessageHandler = null;
             Func<object, X509Certificate, X509Chain, SslPolicyErrors, bool> customCertificateValidation = _certValidator.GetCustomCertificateValidation();
 
             try
@@ -854,7 +854,7 @@ namespace Microsoft.Azure.Devices.Client
                     TlsVersions.Instance.SetLegacyAcceptableVersions();
 
 #if !NET451
-                    httpClientHandler = new HttpClientHandler
+                    httpMessageHandler = new HttpClientHandler
                     {
                         ServerCertificateCustomValidationCallback = customCertificateValidation,
                         SslProtocols = TlsVersions.Instance.Preferred,
@@ -862,9 +862,9 @@ namespace Microsoft.Azure.Devices.Client
 #else
 #pragma warning disable CA2000 // Dispose objects before losing scope
                     // This object is given to an HTTP client to use, so it can't be disposed yet
-                    var httpMessageHandler = new WebRequestHandler();
+                    httpMessageHandler = new WebRequestHandler();
 #pragma warning restore CA2000 // Dispose objects before losing scope
-                    ((WebRequestHandler)httpClientHandler).ServerCertificateValidationCallback = (sender, certificate, chain, errors) =>
+                    ((WebRequestHandler)httpMessageHandler).ServerCertificateValidationCallback = (sender, certificate, chain, errors) =>
                     {
                         return customCertificateValidation(sender, certificate, chain, errors);
                     };
@@ -881,7 +881,7 @@ namespace Microsoft.Azure.Devices.Client
             }
             finally
             {
-                httpClientHandler?.Dispose();
+                httpMessageHandler?.Dispose();
             }
         }
 
