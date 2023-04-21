@@ -266,7 +266,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
 
         public async ValueTask DisposeAsync()
         {
-            _logger.Trace("Disposing", TraceSeverity.Verbose);
+            _logger.Trace($"Disposing the {nameof(IotHub)} instance", TraceSeverity.Verbose);
 
             if (_lifetimeControl != null)
             {
@@ -276,7 +276,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
 
             await _moduleClient.DisposeAsync().ConfigureAwait(false);
 
-            _logger.Trace($"IoT Hub client instance disposed", TraceSeverity.Verbose);
+            _logger.Trace($"{nameof(IotHub)} instance disposed", TraceSeverity.Verbose);
 
         }
 

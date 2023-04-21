@@ -141,7 +141,7 @@ namespace Microsoft.Azure.Devices.LongHual.AmqpPooling
 
         public async ValueTask DisposeAsync()
         {
-            _logger.Trace("Disposing", TraceSeverity.Verbose);
+            _logger.Trace($"Disposing the {nameof(IotHub)} instance", TraceSeverity.Verbose);
 
             if (_lifetimeControl != null)
             {
@@ -158,7 +158,7 @@ namespace Microsoft.Azure.Devices.LongHual.AmqpPooling
                 }
             }
 
-            _logger.Trace($"IoTHub instance disposed", TraceSeverity.Verbose);
+            _logger.Trace($"{nameof(IotHub)} instance disposed", TraceSeverity.Verbose);
 
         }
 

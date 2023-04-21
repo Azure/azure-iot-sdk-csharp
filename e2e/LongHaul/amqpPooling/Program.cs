@@ -107,6 +107,7 @@ namespace Microsoft.Azure.Devices.LongHual.AmqpPooling
             }
             finally
             {
+                // Clean up devices for Amqp pooling long-haul testing
                 await registerManager.RemoveDevicesAsync().ConfigureAwait(false);
             }
 
