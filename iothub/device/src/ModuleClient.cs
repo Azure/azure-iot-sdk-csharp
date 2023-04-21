@@ -860,10 +860,7 @@ namespace Microsoft.Azure.Devices.Client
                         SslProtocols = TlsVersions.Instance.Preferred,
                     };
 #else
-#pragma warning disable CA2000 // Dispose objects before losing scope
-                    // This object is given to an HTTP client to use, so it can't be disposed yet
                     httpMessageHandler = new WebRequestHandler();
-#pragma warning restore CA2000 // Dispose objects before losing scope
                     ((WebRequestHandler)httpMessageHandler).ServerCertificateValidationCallback = (sender, certificate, chain, errors) =>
                     {
                         return customCertificateValidation(sender, certificate, chain, errors);
