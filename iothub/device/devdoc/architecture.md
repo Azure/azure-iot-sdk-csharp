@@ -50,7 +50,7 @@ Functional requirements:
 1. Verifies the client state before attempting any non-state-change operation. Client operations executed without opening the client result in an `InvalidOperationException`.
 1. Updates the `ConnectionStatusChangeCallback`.
 1. Performs reconnect when the `TransportHandlerBase` reports `OnTransportDisconnected`.
-1. Updates the internal status when the `TransportHandlerBase` reports `OnTransportClosedGracefully` 
+1. Updates the internal status when the `TransportHandlerBase` reports `OnTransportClosedGracefully`.
 1. Maintains the `WaitForTransportClosedAsync` request.
 1. Cancels any in-progress client operations when `CloseAsync` is called.
 
