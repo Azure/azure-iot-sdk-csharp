@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -436,17 +437,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
             await deviceClient.OpenAsync().ConfigureAwait(false);
             using var message = new Client.Message();
-            try
-            {
-                await deviceClient.SendEventAsync(message).ConfigureAwait(false);
-            }
-            catch (Exception e)
-            {
-                // The custom HttpMessageHandler throws NotImplementedException when making any Http request.
-                // So if this exception is not thrown, then the client didn't use the custom HttpMessageHandler
-                e.InnerException.Should().BeOfType(typeof(NotImplementedException),
-                    "The provided custom HttpMessageHandler throws NotImplementedException when making any HTTP request");
-            }
+            var ex = await Assert.ThrowsExceptionAsync<IotHubException>(
+                async () => await deviceClient.SendEventAsync(message).ConfigureAwait(false));
+
+            ex.InnerException.Should().BeOfType<NotImplementedException>(
+                "The provided custom HttpMessageHandler throws NotImplementedException when making any HTTP request");
         }
 
         private async Task SendSingleMessage(TestDeviceType type, Client.TransportType transport, int messageSize = 0)
@@ -570,7 +565,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         {
             protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
             {
-                throw new NotImplementedException("Deliberately  not implemented for test purposes");
+                throw new NotImplementedException("Deliberately not implemented for test purposes");
             }
         }
     }

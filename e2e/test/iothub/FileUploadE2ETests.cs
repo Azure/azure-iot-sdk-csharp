@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Azure.Devices.Client;
+using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Devices.Client.Transport;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -159,18 +160,11 @@ namespace Microsoft.Azure.Devices.E2ETests
             {
                 BlobName = "someBlobName",
             };
+            var ex = await Assert.ThrowsExceptionAsync<IotHubException>(
+                            async () => await deviceClient.GetFileUploadSasUriAsync(request).ConfigureAwait(false));
 
-            try
-            {
-                await deviceClient.GetFileUploadSasUriAsync(request).ConfigureAwait(false);
-            }
-            catch (Exception e)
-            {
-                // The custom HttpMessageHandler throws NotImplementedException when making any Http request.
-                // So if this exception is not thrown, then the client didn't use the custom HttpMessageHandler
-                e.InnerException.Should().BeOfType(typeof(NotImplementedException),
-                    "The provided custom HttpMessageHandler throws NotImplementedException when making any HTTP request");
-            }
+            ex.InnerException.Should().BeOfType<NotImplementedException>(
+                "The provided custom HttpMessageHandler throws NotImplementedException when making any HTTP request");
         }
 
         private async Task UploadFileGranularAsync(Stream source, string filename, Http1TransportSettings fileUploadTransportSettings, bool useX509auth = false)
@@ -315,7 +309,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
             {
-                throw new NotImplementedException("Deliberately  not implemented for test purposes");
+                throw new NotImplementedException("Deliberately not implemented for test purposes");
             }
         }
 
