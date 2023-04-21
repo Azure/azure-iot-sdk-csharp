@@ -59,16 +59,10 @@ namespace Microsoft.Azure.Devices.LongHual.AmqpPooling
             s_devices = null;
         }
 
-        public async void Dispose()
+        public void Dispose()
         {
             _logger.Trace("Disposing RegisterManager instance...", TraceSeverity.Verbose);
-
             s_serviceClient?.Dispose();
-            if (s_devices != null)
-            {
-                await RemoveDevicesAsync().ConfigureAwait(false);
-            }
-
             _logger.Trace("RegisterManager instance disposed.", TraceSeverity.Verbose);
         }
     }

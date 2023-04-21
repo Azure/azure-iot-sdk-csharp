@@ -18,6 +18,7 @@ namespace Microsoft.Azure.Devices.LongHual.AmqpPooling
     {
         private readonly string _hubConnectionString;
         private readonly Logger _logger;
+        private readonly IotHubClientTransportSettings _transportSettings;
         private readonly IotHubClientOptions _clientOptions;
         private static IList<Device> s_devices;
         private static IDictionary<string, IotHubDeviceClient> s_deviceClients;
@@ -33,7 +34,8 @@ namespace Microsoft.Azure.Devices.LongHual.AmqpPooling
         {
             _logger = logger;
             _hubConnectionString = parameters.IotHubConnectionString;
-            _clientOptions = new IotHubClientOptions(parameters.GetTransportSettingsWithPooling());
+            _transportSettings = parameters.GetTransportSettingsWithPooling();
+            _clientOptions = new IotHubClientOptions(_transportSettings);
 
             s_devices = devices;
             s_deviceClients = new Dictionary<string, IotHubDeviceClient>();
@@ -49,6 +51,10 @@ namespace Microsoft.Azure.Devices.LongHual.AmqpPooling
 
             try
             {
+                _logger.Trace(
+                    $"Creating {s_devices.Count} device clients with transport settings [{_transportSettings.ToString()}].",
+                    TraceSeverity.Information);
+
                 foreach (var device in s_devices)
                 {
                     string deviceConnectionString = $"HostName={helper.HostName};DeviceId={device.Id};SharedAccessKey={device.Authentication.SymmetricKey.PrimaryKey}";
@@ -152,7 +158,7 @@ namespace Microsoft.Azure.Devices.LongHual.AmqpPooling
                 }
             }
 
-            _logger.Trace($"IoT Hub client instance disposed", TraceSeverity.Verbose);
+            _logger.Trace($"IoTHub instance disposed", TraceSeverity.Verbose);
 
         }
 
