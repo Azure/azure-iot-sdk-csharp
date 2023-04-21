@@ -131,18 +131,9 @@ namespace Microsoft.Azure.Devices.E2ETests
             await deviceClient.OpenAsync(cts.Token).ConfigureAwait(false);
 
             var request = new FileUploadSasUriRequest("someBlobName");
-
-            try
-            {
-                await deviceClient.GetFileUploadSasUriAsync(request, cts.Token).ConfigureAwait(false);
-            }
-            catch (Exception e)
-            {
-                // The custom HttpMessageHandler throws NotImplementedException when making any Http request.
-                // So if this exception is not thrown, then the client didn't use the custom HttpMessageHandler
-                e.Should().BeOfType(typeof(NotImplementedException),
-                    "The provided custom HttpMessageHandler throws NotImplementedException when making any HTTP request");
-            }
+            var ex = await Assert.ThrowsExceptionAsync<NotImplementedException>(
+                        async () => await deviceClient.GetFileUploadSasUriAsync(request).ConfigureAwait(false),
+                        "The provided custom HttpMessageHandler throws NotImplementedException when making any HTTP request");
         }
 
         private async Task UploadFileGranularAsync(
