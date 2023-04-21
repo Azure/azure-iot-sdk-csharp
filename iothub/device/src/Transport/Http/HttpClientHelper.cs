@@ -55,39 +55,38 @@ namespace Microsoft.Azure.Devices.Client.Transport
             _connectionCredentials = connectionCredentials;
             _defaultErrorMapping = new ReadOnlyDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>(defaultErrorMapping);
 
-            if (iotHubClientHttpSettings.HttpMessageHandler != null)
+            if (iotHubClientHttpSettings.HttpClient != null)
             {
-                _httpMessageHandler = iotHubClientHttpSettings.HttpMessageHandler;
+                _httpClientObj = iotHubClientHttpSettings.HttpClient;
+                return;
             }
-            else 
+
+            var httpClientHandler = new HttpClientHandler
             {
-                var httpClientHandler = new HttpClientHandler
-                {
-                    SslProtocols = iotHubClientHttpSettings.SslProtocols,
-                    CheckCertificateRevocationList = iotHubClientHttpSettings.CertificateRevocationCheck,
-                    ServerCertificateCustomValidationCallback = iotHubClientHttpSettings.ServerCertificateCustomValidationCallback,
-                };
+                SslProtocols = iotHubClientHttpSettings.SslProtocols,
+                CheckCertificateRevocationList = iotHubClientHttpSettings.CertificateRevocationCheck,
+                ServerCertificateCustomValidationCallback = iotHubClientHttpSettings.ServerCertificateCustomValidationCallback,
+            };
 
-                X509Certificate2 clientCert = _connectionCredentials.ClientCertificate;
-                if (clientCert != null)
-                {
-                    httpClientHandler.ClientCertificates.Add(clientCert);
-                    _usingX509ClientCert = true;
-                }
-
-                IWebProxy proxy = iotHubClientHttpSettings.Proxy;
-                if (proxy != null)
-                {
-                    httpClientHandler.UseProxy = true;
-                    httpClientHandler.Proxy = proxy;
-                }
-
-                httpClientHandler.MaxConnectionsPerServer = DefaultMaxConnectionsPerServer;
-                ServicePoint servicePoint = ServicePointManager.FindServicePoint(_baseAddress);
-                servicePoint.ConnectionLeaseTimeout = s_defaultConnectionLeaseTimeout.Milliseconds;
-
-                _httpMessageHandler = httpClientHandler;
+            X509Certificate2 clientCert = _connectionCredentials.ClientCertificate;
+            if (clientCert != null)
+            {
+                httpClientHandler.ClientCertificates.Add(clientCert);
+                _usingX509ClientCert = true;
             }
+
+            IWebProxy proxy = iotHubClientHttpSettings.Proxy;
+            if (proxy != null)
+            {
+                httpClientHandler.UseProxy = true;
+                httpClientHandler.Proxy = proxy;
+            }
+
+            httpClientHandler.MaxConnectionsPerServer = DefaultMaxConnectionsPerServer;
+            ServicePoint servicePoint = ServicePointManager.FindServicePoint(_baseAddress);
+            servicePoint.ConnectionLeaseTimeout = s_defaultConnectionLeaseTimeout.Milliseconds;
+
+            _httpMessageHandler = httpClientHandler;
 
             _httpClientObj = new HttpClient(_httpMessageHandler)
             {

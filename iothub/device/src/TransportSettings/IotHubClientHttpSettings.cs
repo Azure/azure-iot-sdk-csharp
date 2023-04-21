@@ -22,10 +22,16 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// The handler that this client will instantiate its HttpClient with. If this value
-        /// is provided, all other options will be ignored in favor of this handler.
+        /// The HTTP client to use for all HTTP operations.
         /// </summary>
-        public HttpMessageHandler HttpMessageHandler { get; set; }
+        /// <remarks>
+        /// If not provided, an HTTP client will be created for you based on the other settings provided.
+        /// <para>
+        /// If provided, all other HTTP-specific settings (such as proxy, SSL protocols, and CertificateRevocationCheck)
+        /// on this class will be ignored and must be specified on the custom HttpClient instance.
+        /// </para>
+        /// </remarks>
+        public HttpClient HttpClient { get; set; }
 
         /// <summary>
         /// Gets or sets a callback method to validate the server certificate.

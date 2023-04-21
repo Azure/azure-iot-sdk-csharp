@@ -111,9 +111,12 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .GetTestDeviceAsync(_devicePrefix, TestDeviceType.Sasl, cts.Token)
                 .ConfigureAwait(false);
 
+            using var CustomHttpMessageHandler = new CustomHttpMessageHandler();
             var fileUploadSettings = new IotHubClientHttpSettings()
             {
-                HttpMessageHandler = new CustomHttpMessageHandler(),
+                // This HttpClient should throw a NotImplementedException whenever it makes an HTTP
+                // request
+                HttpClient = new HttpClient(CustomHttpMessageHandler),
             };
 
             var clientOptions = new IotHubClientOptions
@@ -139,15 +142,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 // So if this exception is not thrown, then the client didn't use the custom HttpMessageHandler
                 e.Should().BeOfType(typeof(NotImplementedException),
                     "The provided custom HttpMessageHandler throws NotImplementedException when making any HTTP request");
-            }
-        }
-
-        
-        private class CustomHttpMessageHandler : HttpMessageHandler
-        {
-            protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-            {
-                throw new NotImplementedException("Deliberately  not implemented for test purposes");
             }
         }
 
@@ -302,6 +296,14 @@ namespace Microsoft.Azure.Devices.E2ETests
            // {
            //     disposableCertificate?.Dispose();
            // }
+        }
+
+        private class CustomHttpMessageHandler : HttpMessageHandler
+        {
+            protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+            {
+                throw new NotImplementedException("Deliberately  not implemented for test purposes");
+            }
         }
     }
 }
