@@ -38,7 +38,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
         private readonly IReadOnlyDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> _defaultErrorMapping;
         private readonly bool _usingX509ClientCert;
         private HttpClient _httpClientObj;
-        private HttpMessageHandler _httpMessageHandler;
         private bool _isDisposed;
         private readonly ProductInfo _productInfo;
         private readonly bool _isClientPrimaryTransportHandler;
@@ -65,10 +64,14 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 return;
             }
 
+            HttpMessageHandler httpMessageHandler;
 #if NET451
             TlsVersions.Instance.SetLegacyAcceptableVersions();
 
+#pragma warning disable CA2000 // Dispose objects before losing scope
+            // This disposable handler is disposed when the HttpClient it is given to is disposed
             var webRequestHandler = new WebRequestHandler();
+#pragma warning restore CA2000 // Dispose objects before losing scope
 
             if (transportSettings.ClientCertificate != null)
             {
@@ -86,9 +89,12 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 webRequestHandler.Proxy = proxy;
             }
 
-            _httpMessageHandler = webRequestHandler;
+            httpMessageHandler = webRequestHandler;
 #elif NET5_0_OR_GREATER
+#pragma warning disable CA2000 // Dispose objects before losing scope
+            // This disposable handler is disposed when the HttpClient it is given to is disposed
             var socketsHandler = new SocketsHttpHandler();
+#pragma warning restore CA2000 // Dispose objects before losing scope
             socketsHandler.SslOptions.EnabledSslProtocols = TlsVersions.Instance.Preferred;
 
             if (!TlsVersions.Instance.CertificateRevocationCheck)
@@ -111,9 +117,13 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 socketsHandler.Proxy = proxy;
             }
 
-            _httpMessageHandler = socketsHandler;
+            httpMessageHandler = socketsHandler;
 #else // cases other than Net 5.0+ and net451
+#pragma warning disable CA2000 // Dispose objects before losing scope
+            // This disposable handler is disposed when the HttpClient it is given to is disposed
             var httpClientHandler = new HttpClientHandler();
+#pragma warning restore CA2000 // Dispose objects before losing scope
+
             httpClientHandler.SslProtocols = TlsVersions.Instance.Preferred;
             httpClientHandler.CheckCertificateRevocationList = TlsVersions.Instance.CertificateRevocationCheck;
 
@@ -133,12 +143,12 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 httpClientHandler.Proxy = proxy;
             }
 
-            _httpMessageHandler = httpClientHandler;
+            httpMessageHandler = httpClientHandler;
 #endif
 
-            ServicePointHelpers.SetLimits(_httpMessageHandler, _baseAddress);
+            ServicePointHelpers.SetLimits(httpMessageHandler, _baseAddress);
 
-            _httpClientObj = new HttpClient(_httpMessageHandler, true);
+            _httpClientObj = new HttpClient(httpMessageHandler, true);
 
             _httpClientObj.BaseAddress = _baseAddress;
             _httpClientObj.Timeout = timeout;
