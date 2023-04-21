@@ -64,8 +64,10 @@ Handling disconnects is going to apply the configured `RetryStrategy` indefinite
 
 ### RetryDelegatingHandler
 
-`RetryDelegatingHandler` class is responsible with applying the operation retry policy.<br>
-__Important:__ No other pipeline component should attempt operation retry.<br>
+`RetryDelegatingHandler` class is responsible with applying the operation retry policy.
+
+__Important:__ No other pipeline component should attempt operation retry.
+
 
 Functional requirements:
 1. Implements the default `RetryStrategy`
