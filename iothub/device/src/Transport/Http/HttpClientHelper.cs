@@ -104,7 +104,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             if (transportSettings.ClientCertificate != null)
             {
-                socketsHandler.SslOptions.ClientCertificates.Add(transportSettings.ClientCertificate);
+                socketsHandler.SslOptions.ClientCertificates =
+                    new X509CertificateCollection() { transportSettings.ClientCertificate };
             }
             else
             {
