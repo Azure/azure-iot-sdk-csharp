@@ -834,7 +834,7 @@ namespace Microsoft.Azure.Devices.Client
 
             try
             {
-                var context = new PipelineContext()
+                var context = new PipelineContext
                 {
                     ProductInfo = new ProductInfo
                     {
