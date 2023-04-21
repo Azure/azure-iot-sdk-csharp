@@ -867,11 +867,12 @@ namespace Microsoft.Azure.Devices.Client
                     httpMessageHandler.ClientCertificates.Add(InternalClient.Certificate);
                 }
 
-                HttpClient httpClient = new HttpClient(httpMessageHandler, true);
-
+                // Note that this client is ignoring any HttpTransportSettings that the user may have
+                // provided. This is because the kinds of settings a user would want to override
+                // aren't as applicable for this particular operation.
                 var transportSettings = new Http1TransportSettings()
                 {
-                    HttpClient = httpClient
+                    HttpClient = new HttpClient(httpMessageHandler, true)
                 };
 
                 var context = new PipelineContext

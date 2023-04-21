@@ -112,7 +112,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
 
             _httpMessageHandler = socketsHandler;
-#else
+#else // cases other than Net 5.0+ and net451
             var httpClientHandler = new HttpClientHandler();
             httpClientHandler.SslProtocols = TlsVersions.Instance.Preferred;
             httpClientHandler.CheckCertificateRevocationList = TlsVersions.Instance.CertificateRevocationCheck;
@@ -138,7 +138,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             ServicePointHelpers.SetLimits(_httpMessageHandler, _baseAddress);
 
-            _httpClientObj = new HttpClient(_httpMessageHandler);
+            _httpClientObj = new HttpClient(_httpMessageHandler, true);
 
             _httpClientObj.BaseAddress = _baseAddress;
             _httpClientObj.Timeout = timeout;
@@ -566,14 +566,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 {
                     _httpClientObj.Dispose();
                     _httpClientObj = null;
-                }
-
-                // HttpClientHandler that is used to create HttpClient will automatically be disposed when HttpClient is disposed
-                // But in case the client handler didn't end up being used by the HttpClient, we explicitly dispose it here.
-                if (_httpMessageHandler != null)
-                {
-                    _httpMessageHandler?.Dispose();
-                    _httpMessageHandler = null;
                 }
 
                 // The associated TokenRefresher should be disposed by the http client helper only when the http client
