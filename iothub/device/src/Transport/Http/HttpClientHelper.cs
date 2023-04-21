@@ -24,7 +24,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         private readonly IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> _defaultErrorMapping;
         private readonly bool _usingX509ClientCert;
         private readonly HttpClient _httpClientObj;
-        private readonly HttpClientHandler _httpClientHandler;
+        private readonly HttpMessageHandler _httpMessageHandler;
         private readonly AdditionalClientInformation _additionalClientInformation;
 
         // These default values are consistent with Azure.Core default values:
@@ -55,32 +55,41 @@ namespace Microsoft.Azure.Devices.Client.Transport
             _connectionCredentials = connectionCredentials;
             _defaultErrorMapping = new ReadOnlyDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>(defaultErrorMapping);
 
-            _httpClientHandler = new HttpClientHandler
+            if (iotHubClientHttpSettings.HttpMessageHandler != null)
             {
-                SslProtocols = iotHubClientHttpSettings.SslProtocols,
-                CheckCertificateRevocationList = iotHubClientHttpSettings.CertificateRevocationCheck,
-                ServerCertificateCustomValidationCallback = iotHubClientHttpSettings.ServerCertificateCustomValidationCallback,
-            };
+                _httpMessageHandler = iotHubClientHttpSettings.HttpMessageHandler;
+            }
+            else 
+            {
+                var httpClientHandler = new HttpClientHandler
+                {
+                    SslProtocols = iotHubClientHttpSettings.SslProtocols,
+                    CheckCertificateRevocationList = iotHubClientHttpSettings.CertificateRevocationCheck,
+                    ServerCertificateCustomValidationCallback = iotHubClientHttpSettings.ServerCertificateCustomValidationCallback,
+                };
 
-            X509Certificate2 clientCert = _connectionCredentials.ClientCertificate;
-            if (clientCert != null)
-            {
-                _httpClientHandler.ClientCertificates.Add(clientCert);
-                _usingX509ClientCert = true;
+                X509Certificate2 clientCert = _connectionCredentials.ClientCertificate;
+                if (clientCert != null)
+                {
+                    httpClientHandler.ClientCertificates.Add(clientCert);
+                    _usingX509ClientCert = true;
+                }
+
+                IWebProxy proxy = iotHubClientHttpSettings.Proxy;
+                if (proxy != null)
+                {
+                    httpClientHandler.UseProxy = true;
+                    httpClientHandler.Proxy = proxy;
+                }
+
+                httpClientHandler.MaxConnectionsPerServer = DefaultMaxConnectionsPerServer;
+                ServicePoint servicePoint = ServicePointManager.FindServicePoint(_baseAddress);
+                servicePoint.ConnectionLeaseTimeout = s_defaultConnectionLeaseTimeout.Milliseconds;
+
+                _httpMessageHandler = httpClientHandler;
             }
 
-            IWebProxy proxy = iotHubClientHttpSettings.Proxy;
-            if (proxy != null)
-            {
-                _httpClientHandler.UseProxy = true;
-                _httpClientHandler.Proxy = proxy;
-            }
-
-            _httpClientHandler.MaxConnectionsPerServer = DefaultMaxConnectionsPerServer;
-            ServicePoint servicePoint = ServicePointManager.FindServicePoint(_baseAddress);
-            servicePoint.ConnectionLeaseTimeout = s_defaultConnectionLeaseTimeout.Milliseconds;
-
-            _httpClientObj = new HttpClient(_httpClientHandler)
+            _httpClientObj = new HttpClient(_httpMessageHandler)
             {
                 BaseAddress = _baseAddress,
                 Timeout = timeout,

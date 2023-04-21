@@ -22,6 +22,12 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
+        /// The handler that this client will instantiate its HttpClient with. If this value
+        /// is provided, all other options will be ignored in favor of this handler.
+        /// </summary>
+        public HttpMessageHandler HttpMessageHandler { get; set; }
+
+        /// <summary>
         /// Gets or sets a callback method to validate the server certificate.
         /// </summary>
         /// <remarks>

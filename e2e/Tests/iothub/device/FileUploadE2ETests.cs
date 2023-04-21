@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using System.Net;
+using System.Net.Http;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
@@ -98,6 +99,56 @@ namespace Microsoft.Azure.Devices.E2ETests
             };
 
             await UploadFileGranularAsync(fileStreamSource, filename, fileUploadTransportSettings, isCorrelationIdValid: true, ct: cts.Token).ConfigureAwait(false);
+        }
+
+        // File upload requests can be configured to use a user-provided HttpMessageHandler
+        [TestMethod]
+        public async Task FileUpload_UsesCustomHttpMessageHandler()
+        {
+            using var cts = new CancellationTokenSource(s_testTimeout);
+
+            await using TestDevice testDevice = await TestDevice
+                .GetTestDeviceAsync(_devicePrefix, TestDeviceType.Sasl, cts.Token)
+                .ConfigureAwait(false);
+
+            var fileUploadSettings = new IotHubClientHttpSettings()
+            {
+                HttpMessageHandler = new CustomHttpMessageHandler(),
+            };
+
+            var clientOptions = new IotHubClientOptions
+            {
+                FileUploadTransportSettings = fileUploadSettings,
+                RetryPolicy = new IotHubClientNoRetry(),
+            };
+
+            await using var deviceClient = 
+                new IotHubDeviceClient(testDevice.ConnectionString, clientOptions);
+
+            await deviceClient.OpenAsync(cts.Token).ConfigureAwait(false);
+
+            var request = new FileUploadSasUriRequest("someBlobName");
+
+            try
+            {
+                await deviceClient.GetFileUploadSasUriAsync(request, cts.Token).ConfigureAwait(false);
+            }
+            catch (Exception e)
+            {
+                // The custom HttpMessageHandler throws NotImplementedException when making any Http request.
+                // So if this exception is not thrown, then the client didn't use the custom HttpMessageHandler
+                e.Should().BeOfType(typeof(NotImplementedException),
+                    "The provided custom HttpMessageHandler throws NotImplementedException when making any HTTP request");
+            }
+        }
+
+        
+        private class CustomHttpMessageHandler : HttpMessageHandler
+        {
+            protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+            {
+                throw new NotImplementedException("Deliberately  not implemented for test purposes");
+            }
         }
 
         private async Task UploadFileGranularAsync(
@@ -247,10 +298,10 @@ namespace Microsoft.Azure.Devices.E2ETests
         [ClassCleanup]
         public static void CleanupCertificates()
         {
-            if (s_selfSignedCertificate is IDisposable disposableCertificate)
-            {
-                disposableCertificate?.Dispose();
-            }
+            //if (s_selfSignedCertificate is IDisposable disposableCertificate)
+           // {
+           //     disposableCertificate?.Dispose();
+           // }
         }
     }
 }
