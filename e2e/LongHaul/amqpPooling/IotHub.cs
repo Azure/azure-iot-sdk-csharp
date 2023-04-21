@@ -10,7 +10,6 @@ using System.Threading.Tasks;
 using Mash.Logging;
 using Microsoft.Azure.Devices.Client;
 using Newtonsoft.Json;
-using static Microsoft.Azure.Devices.LongHaul.AmqpPooling.LoggingConstants;
 
 namespace Microsoft.Azure.Devices.LongHaul.AmqpPooling
 {
@@ -21,14 +20,12 @@ namespace Microsoft.Azure.Devices.LongHaul.AmqpPooling
         private readonly IotHubClientTransportSettings _transportSettings;
         private readonly IotHubClientOptions _clientOptions;
         private static IList<Device> s_devices;
-        private static IDictionary<string, IotHubDeviceClient> s_deviceClients;
+        private static IDictionary<string, DeviceOperations> s_deviceOperations;
 
         private static readonly TimeSpan s_messageLoopSleepTime = TimeSpan.FromSeconds(3);
         private readonly ConcurrentQueue<SystemHealthTelemetry> _messagesToSend = new();
 
         private SemaphoreSlim _lifetimeControl = new(1, 1);
-
-        private long _totalTelemetryMessagesSent = 0;
 
         public IotHub(Logger logger, Parameters parameters, IList<Device> devices)
         {
@@ -38,7 +35,7 @@ namespace Microsoft.Azure.Devices.LongHaul.AmqpPooling
             _clientOptions = new IotHubClientOptions(_transportSettings);
 
             s_devices = devices;
-            s_deviceClients = new Dictionary<string, IotHubDeviceClient>();
+            s_deviceOperations = new Dictionary<string, DeviceOperations>();
         }
 
         public Dictionary<string, string> TelemetryUserProperties { get; } = new();
@@ -67,7 +64,8 @@ namespace Microsoft.Azure.Devices.LongHaul.AmqpPooling
 
                     await deviceClient.OpenAsync().ConfigureAwait(false);
 
-                    s_deviceClients.Add(device.Id, deviceClient);
+                    var deviceOperations = new DeviceOperations(deviceClient, device.Id, _logger.Clone());
+                    s_deviceOperations.Add(device.Id, deviceOperations);
                 }
             }
             finally
@@ -78,11 +76,11 @@ namespace Microsoft.Azure.Devices.LongHaul.AmqpPooling
 
         public async Task SendTelemetryMessagesAsync(CancellationToken ct)
         {
-            var sw = new Stopwatch();
-
             while (!ct.IsCancellationRequested)
             {
                 await Task.Delay(s_messageLoopSleepTime, ct).ConfigureAwait(false);
+
+                List<Task> deviceOperationTasks = new();
 
                 _messagesToSend.TryDequeue(out SystemHealthTelemetry systemHealth);
                 if (systemHealth == null)
@@ -90,12 +88,12 @@ namespace Microsoft.Azure.Devices.LongHaul.AmqpPooling
                     continue;
                 }
 
-                if (s_deviceClients != null)
+                if (s_deviceOperations != null)
                 {
-                    foreach (KeyValuePair<string, IotHubDeviceClient> entry in s_deviceClients)
+                    foreach (KeyValuePair<string, DeviceOperations> entry in s_deviceOperations)
                     {
                         string deviceId = entry.Key;
-                        IotHubDeviceClient deviceClient = entry.Value;
+                        DeviceOperations deviceOperations = entry.Value;
 
                         var telemetryObject = new DeviceTelemetry
                         {
@@ -110,30 +108,17 @@ namespace Microsoft.Azure.Devices.LongHaul.AmqpPooling
                             message.Properties.TryAdd(prop.Key, prop.Value);
                         }
 
-                        try
-                        {
-                            _logger.Trace($"Sending a telemetry message from the device with Id [{deviceId}].", TraceSeverity.Information);
-                            sw.Restart();
-
-                            await deviceClient.SendTelemetryAsync(message).ConfigureAwait(false);
-
-                            sw.Stop();
-
-                            _logger.Metric(TotalTelemetryMessagesSent, ++_totalTelemetryMessagesSent);
-                            _logger.Metric(TelemetryMessageDelaySeconds, sw.Elapsed.TotalSeconds);
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.Trace($"Exception when sending telemetry from the device with Id [{deviceId}].\n{ex}", TraceSeverity.Warning);
-                        }
+                        deviceOperationTasks.Add(await deviceOperations.SendAsync(message, ct).ConfigureAwait(false));
                     }
+
+                    await Task.WhenAll(deviceOperationTasks).ConfigureAwait(false);
                 }
             }
         }
 
         public void AddTelemetry(SystemHealthTelemetry telemetryObject)
         {
-            Debug.Assert(s_deviceClients != null);
+            Debug.Assert(s_deviceOperations != null);
             Debug.Assert(telemetryObject != null);
 
             _messagesToSend.Enqueue(telemetryObject);
@@ -149,11 +134,11 @@ namespace Microsoft.Azure.Devices.LongHaul.AmqpPooling
                 _lifetimeControl = null;
             }
 
-            if (s_deviceClients != null)
+            if (s_deviceOperations != null)
             {
-                foreach (KeyValuePair<string, IotHubDeviceClient> entry in s_deviceClients)
+                foreach (KeyValuePair<string, DeviceOperations> entry in s_deviceOperations)
                 {
-                    IotHubDeviceClient deviceClient = entry.Value;
+                    IotHubDeviceClient deviceClient = entry.Value.DeviceClient;
                     await deviceClient.DisposeAsync().ConfigureAwait(false);
                 }
             }

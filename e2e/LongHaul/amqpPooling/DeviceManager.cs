@@ -9,7 +9,7 @@ using Mash.Logging;
 
 namespace Microsoft.Azure.Devices.LongHaul.AmqpPooling
 {
-    internal class DeviceManager : IDisposable
+    internal class DeviceManager : IAsyncDisposable
     {
         private readonly Logger _logger;
         private readonly int _devicesCount;
@@ -59,11 +59,15 @@ namespace Microsoft.Azure.Devices.LongHaul.AmqpPooling
             s_devices = null;
         }
 
-        public void Dispose()
+        public async ValueTask DisposeAsync()
         {
             _logger.Trace($"Disposing {nameof(DeviceManager)} instance...", TraceSeverity.Verbose);
 
             s_serviceClient?.Dispose();
+            if (s_devices != null)
+            {
+                await RemoveDevicesAsync().ConfigureAwait(false);
+            }
 
             _logger.Trace($"{nameof(DeviceManager)} instance disposed.", TraceSeverity.Verbose);
         }

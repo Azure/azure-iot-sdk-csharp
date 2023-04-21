@@ -63,7 +63,7 @@ namespace Microsoft.Azure.Devices.LongHaul.AmqpPooling
 
             s_logger.Event(StartingRun);
 
-            using var registerManager = new DeviceManager(s_logger, parameters);
+            await using var registerManager = new DeviceManager(s_logger, parameters);
 
             // Set up a condition to quit the sample
             Console.WriteLine("Press CTRL+C to exit");
