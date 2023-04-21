@@ -843,7 +843,7 @@ namespace Microsoft.Azure.Devices.Client
                 };
 
                 var transportSettings = new Http1TransportSettings();
-                //We need to add the certificate to the httpTransport if DeviceAuthenticationWithX509Certificate
+                // We need to add the certificate to the httpTransport if DeviceAuthenticationWithX509Certificate
                 if (InternalClient.Certificate != null)
                 {
                     transportSettings.ClientCertificate = InternalClient.Certificate;
