@@ -41,8 +41,7 @@ namespace Microsoft.Azure.Devices.LongHaul.AmqpPooling
 
             while (!ct.IsCancellationRequested)
             {
-                SystemHealthTelemetry telemetry = BuildAndLogSystemHealth(_logger);
-                _iotHub.AddTelemetry(telemetry);
+                BuildAndLogSystemHealth(_logger);
 
                 await Task.Delay(s_interval, ct).ConfigureAwait(false);
             }

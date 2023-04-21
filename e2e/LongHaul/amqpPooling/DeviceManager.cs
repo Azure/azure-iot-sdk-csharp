@@ -32,7 +32,7 @@ namespace Microsoft.Azure.Devices.LongHaul.AmqpPooling
         {
             _logger.Trace($"Start creating totally {_devicesCount} devices.", TraceSeverity.Information);
 
-            for (int i=0; i< _devicesCount; i++)
+            for (int i = 0; i < _devicesCount; i++)
             {
                 string deviceId = DevicePrefix + i;
                 _logger.Trace($"Creating a device with Id {deviceId}", TraceSeverity.Verbose);
@@ -63,11 +63,11 @@ namespace Microsoft.Azure.Devices.LongHaul.AmqpPooling
         {
             _logger.Trace($"Disposing {nameof(DeviceManager)} instance...", TraceSeverity.Verbose);
 
-            s_serviceClient?.Dispose();
             if (s_devices != null)
             {
                 await RemoveDevicesAsync().ConfigureAwait(false);
             }
+            s_serviceClient?.Dispose();
 
             _logger.Trace($"{nameof(DeviceManager)} instance disposed.", TraceSeverity.Verbose);
         }

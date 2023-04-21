@@ -2,9 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Mash.Logging;
@@ -23,7 +21,6 @@ namespace Microsoft.Azure.Devices.LongHaul.AmqpPooling
         private static IDictionary<string, DeviceOperations> s_deviceOperations;
 
         private static readonly TimeSpan s_messageLoopSleepTime = TimeSpan.FromSeconds(3);
-        private readonly ConcurrentQueue<SystemHealthTelemetry> _messagesToSend = new();
 
         private SemaphoreSlim _lifetimeControl = new(1, 1);
 
@@ -58,13 +55,9 @@ namespace Microsoft.Azure.Devices.LongHaul.AmqpPooling
 
                     var deviceClient = new IotHubDeviceClient(deviceConnectionString, _clientOptions);
 
-                    // Set the device client connection status change handler
-                    var amqpConnectionStatusChange = new AmqpConnectionStatusChange(_logger.Clone());
-                    deviceClient.ConnectionStatusChangeCallback = amqpConnectionStatusChange.ConnectionStatusChangeHandler;
-
-                    await deviceClient.OpenAsync().ConfigureAwait(false);
-
                     var deviceOperations = new DeviceOperations(deviceClient, device.Id, _logger.Clone());
+                    await deviceOperations.InitializeAsync().ConfigureAwait(false);
+
                     s_deviceOperations.Add(device.Id, deviceOperations);
                 }
             }
@@ -82,12 +75,6 @@ namespace Microsoft.Azure.Devices.LongHaul.AmqpPooling
 
                 List<Task> deviceOperationTasks = new();
 
-                _messagesToSend.TryDequeue(out SystemHealthTelemetry systemHealth);
-                if (systemHealth == null)
-                {
-                    continue;
-                }
-
                 if (s_deviceOperations != null)
                 {
                     foreach (KeyValuePair<string, DeviceOperations> entry in s_deviceOperations)
@@ -98,7 +85,7 @@ namespace Microsoft.Azure.Devices.LongHaul.AmqpPooling
                         var telemetryObject = new DeviceTelemetry
                         {
                             DeviceId = deviceId,
-                            SystemHealth = systemHealth,
+                            GuidValue = Guid.NewGuid().ToString(),
                         };
 
                         var message = new TelemetryMessage(telemetryObject);
@@ -114,14 +101,6 @@ namespace Microsoft.Azure.Devices.LongHaul.AmqpPooling
                     await Task.WhenAll(deviceOperationTasks).ConfigureAwait(false);
                 }
             }
-        }
-
-        public void AddTelemetry(SystemHealthTelemetry telemetryObject)
-        {
-            Debug.Assert(s_deviceOperations != null);
-            Debug.Assert(telemetryObject != null);
-
-            _messagesToSend.Enqueue(telemetryObject);
         }
 
         public async ValueTask DisposeAsync()
@@ -144,28 +123,6 @@ namespace Microsoft.Azure.Devices.LongHaul.AmqpPooling
             }
 
             _logger.Trace($"{nameof(IotHub)} instance disposed", TraceSeverity.Verbose);
-
-        }
-
-        private class AmqpConnectionStatusChange
-        {
-            private readonly Logger _logger;
-
-            public AmqpConnectionStatusChange(Logger logger)
-            {
-                _logger = logger;
-                ConnectionStatusChangeHandlerCount = 0;
-            }
-
-            public void ConnectionStatusChangeHandler(ConnectionStatusInfo connectionStatusInfo)
-            {
-                ConnectionStatusChangeHandlerCount++;
-                _logger.Trace(
-                    $"{nameof(IotHub)}.{nameof(ConnectionStatusChangeHandler)}:\n" +
-                    $"status={connectionStatusInfo.Status} statusChangeReason={connectionStatusInfo.ChangeReason} count={ConnectionStatusChangeHandlerCount}");
-            }
-
-            public int ConnectionStatusChangeHandlerCount { get; set; }
         }
 
         private class DeviceTelemetry
@@ -176,8 +133,8 @@ namespace Microsoft.Azure.Devices.LongHaul.AmqpPooling
             [JsonProperty("sentTimeUtc")]
             public DateTimeOffset SentOnUtc { get; set; } = DateTimeOffset.UtcNow;
 
-            [JsonProperty("systemHealth")]
-            public SystemHealthTelemetry SystemHealth { get; set; }
+            [JsonProperty("guidValue")]
+            public string GuidValue { get; set; }
         }
     }
 }
