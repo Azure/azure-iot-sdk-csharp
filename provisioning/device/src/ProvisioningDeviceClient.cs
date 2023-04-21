@@ -33,11 +33,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             AuthenticationProvider authenticationProvider,
             ProvisioningClientOptions options = default)
         {
-            if (authenticationProvider is AuthenticationProviderX509 x509Auth)
-            {
-                CertificateInstaller.EnsureChainIsInstalled(x509Auth.CertificateChain);
-            }
-
             // Specify the JsonSerializerSettings. Check JsonSerializerSettingsInitializer for more details.
             JsonConvert.DefaultSettings = JsonSerializerSettingsInitializer.GetJsonSerializerSettingsDelegate();
 
@@ -72,11 +67,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             ProvisioningTransportHandler provisioningTransportHandler,
             ProvisioningClientOptions options = default)
         {
-            if (authenticationProvider is AuthenticationProviderX509 x509Auth)
-            {
-                CertificateInstaller.EnsureChainIsInstalled(x509Auth.CertificateChain);
-            }
-
             _options = options?.Clone() ?? new();
 
             _provisioningTransportHandler = provisioningTransportHandler;

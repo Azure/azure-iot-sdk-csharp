@@ -132,6 +132,13 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The full chain of certificates from the one used to sign the client certificate to the one uploaded to the service.
         /// </summary>
+        /// <remarks>
+        /// The certificates provided are assumed to be a full chain and are not validated. The caller should
+        /// validate them independently.
+        /// <para>
+        /// If the certificates need to be installed to the local certificate store, that should be done by the user.
+        /// </para>
+        /// </remarks>
         public X509Certificate2Collection CertificateChain { get; set; }
 
         /// <summary>
@@ -323,29 +330,6 @@ namespace Microsoft.Azure.Devices.Client
                 // Parse the supplied shared access signature string
                 // and throw exception if the string is not in the expected format.
                 _ = SharedAccessSignatureParser.Parse(SharedAccessSignature);
-            }
-
-            // Validate certs.
-            if (AuthenticationMethod is ClientAuthenticationWithX509Certificate)
-            {
-                if (CertificateChain != null)
-                {
-                    // Install all the intermediate certificates in the chain if specified.
-                    try
-                    {
-                        CertificateInstaller.EnsureChainIsInstalled(CertificateChain);
-                    }
-                    catch (Exception ex)
-                    {
-                        if (Logging.IsEnabled)
-                            Logging.Error(null, $"{nameof(CertificateInstaller)} failed to read or write to cert store due to: {ex}");
-
-                        throw new IotHubClientException(
-                            $"Failed to provide certificates in the chain - {ex.Message}",
-                            IotHubClientErrorCode.Unauthorized,
-                            ex);
-                    }
-                }
             }
         }
 

@@ -16,6 +16,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// </summary>
         /// <remarks>
         /// Ensure that you dispose any supplied <see cref="X509Certificate2"/> after you are done using it to ensure there are no memory leaks.
+        /// <para>
+        /// The certificates provided are assumed to be a full chain and are not validated. The caller should
+        /// validate them independently.
+        /// </para>
+        /// <para>
+        /// If the certificates need to be installed to the local certificate store, that should be done by the user.
+        /// </para>
         /// </remarks>
         /// <param name="clientCertificate">
         /// The client certificate used for authentication. The private key should be available in the <see cref="X509Certificate2"/> object,

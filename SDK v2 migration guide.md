@@ -163,6 +163,7 @@ Find a client you currently use below, read the table of API name changes and us
     1. Initialize the client with the **await** keyword: `await using client = new IotHubDeviceClient(...);`. The client will be disposed when it goes out of scope.
   - For more information, see <https://learn.microsoft.com/dotnet/api/system.iasyncdisposable>.
   - `DirectMethodRequest` constructor for module-initiated direct method calls requires the method name as a parameter; the property is not settable directly.
+- When including a certificate chain when using X509 authentication, the chain will no longer be validated nor installed to the local certificate store.
 
 #### Notable additions
 
@@ -418,6 +419,7 @@ These span across all service clients.
 - The previous way of providing transport level settings, `ProvisioningTransportHandler`, has been replaced with `ProvisioningClientTransportSettings`.
 - TPM support removed. The library used for TPM operations is broken on Linux and support for it is being shutdown. We'll reconsider how to support HSM.
 - HTTP has been removed as a transport option to keep the provisioning device SDK consistent with IoT hub device SDK transport options.
+- When including a certificate chain when using X509 authentication, the chain will no longer be validated nor installed to the local certificate store.
 
 #### Notable additions
 
