@@ -302,7 +302,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
             {
-                throw new NotImplementedException("Deliberately  not implemented for test purposes");
+                throw new NotImplementedException("Deliberately not implemented for test purposes");
             }
         }
     }

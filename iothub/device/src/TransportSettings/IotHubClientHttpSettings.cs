@@ -27,6 +27,9 @@ namespace Microsoft.Azure.Devices.Client
         /// <remarks>
         /// If not provided, an HTTP client will be created for you based on the other settings provided.
         /// <para>
+        /// This HTTP client instance will be disposed when the device/module client using it is disposed.
+        /// </para>
+        /// <para>
         /// If provided, all other HTTP-specific settings (such as proxy, SSL protocols, and CertificateRevocationCheck)
         /// on this class will be ignored and must be specified on the custom HttpClient instance.
         /// </para>
