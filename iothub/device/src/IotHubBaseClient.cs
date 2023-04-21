@@ -77,7 +77,8 @@ namespace Microsoft.Azure.Devices.Client
             }
             else
             {
-                // Set the remote certificate validator for the module client
+                // Module clients currently use the default HTTP transport settings
+                // Set the remote certificate validator for HTTP for the module client
                 _certValidator = certificateValidator ?? NullCertificateValidator.Instance;
                 PipelineContext.HttpOperationTransportSettings = new IotHubClientHttpSettings
                 {
