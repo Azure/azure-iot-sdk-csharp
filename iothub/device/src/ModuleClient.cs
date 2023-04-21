@@ -36,6 +36,7 @@ namespace Microsoft.Azure.Devices.Client
         private const string DeviceMethodUriFormat = "/twins/{0}/methods?" + ClientApiVersionHelper.ApiVersionQueryStringLatest;
         private readonly bool _isAnEdgeModule;
         private readonly ICertificateValidator _certValidator;
+        private HttpTransportHandler _httpTransportHandler;
 
         internal InternalClient InternalClient { get; private set; }
 
@@ -514,6 +515,7 @@ namespace Microsoft.Azure.Devices.Client
         {
             Dispose(true);
             GC.SuppressFinalize(this);
+            _httpTransportHandler?.Dispose();
         }
 
 #if !NET451 && !NET472 && !NETSTANDARD2_0
@@ -827,13 +829,51 @@ namespace Microsoft.Azure.Devices.Client
             {
                 throw new ObjectDisposedException("IoT client", DefaultDelegatingHandler.ClientDisposedMessage);
             }
+
             methodRequest.ThrowIfNull(nameof(methodRequest));
 
-            HttpMessageHandler httpMessageHandler = null;
-            Func<object, X509Certificate, X509Chain, SslPolicyErrors, bool> customCertificateValidation = _certValidator.GetCustomCertificateValidation();
-
-            try
+            if (_httpTransportHandler == null)
             {
+                Func<object, X509Certificate, X509Chain, SslPolicyErrors, bool> customCertificateValidation = _certValidator.GetCustomCertificateValidation();
+
+                // The HTTP message handlers created in this block are disposed when this client is
+                // disposed.
+#pragma warning disable CA2000 // Dispose objects before losing scope
+#if !NET451
+                var httpMessageHandler = new HttpClientHandler();
+#else
+                var httpMessageHandler = new WebRequestHandler();
+#endif
+#pragma warning restore CA2000 // Dispose objects before losing scope
+
+                if (customCertificateValidation != null)
+                {
+                    TlsVersions.Instance.SetLegacyAcceptableVersions();
+
+#if !NET451
+                    httpMessageHandler.ServerCertificateCustomValidationCallback = customCertificateValidation;
+                    httpMessageHandler.SslProtocols = TlsVersions.Instance.Preferred;
+#else
+                    httpMessageHandler.ServerCertificateValidationCallback = (sender, certificate, chain, errors) =>
+                    {
+                        return customCertificateValidation(sender, certificate, chain, errors);
+                    };
+#endif
+                }
+
+                // We need to add the certificate to the httpTransport if DeviceAuthenticationWithX509Certificate
+                if (InternalClient.Certificate != null)
+                {
+                    httpMessageHandler.ClientCertificates.Add(InternalClient.Certificate);
+                }
+
+                HttpClient httpClient = new HttpClient(httpMessageHandler, true);
+
+                var transportSettings = new Http1TransportSettings()
+                {
+                    HttpClient = httpClient
+                };
+
                 var context = new PipelineContext
                 {
                     ProductInfo = new ProductInfo
@@ -842,44 +882,12 @@ namespace Microsoft.Azure.Devices.Client
                     }
                 };
 
-                var transportSettings = new Http1TransportSettings();
-                // We need to add the certificate to the httpTransport if DeviceAuthenticationWithX509Certificate
-                if (InternalClient.Certificate != null)
-                {
-                    transportSettings.ClientCertificate = InternalClient.Certificate;
-                }
-
-                if (customCertificateValidation != null)
-                {
-                    TlsVersions.Instance.SetLegacyAcceptableVersions();
-
-#if !NET451
-                    httpMessageHandler = new HttpClientHandler
-                    {
-                        ServerCertificateCustomValidationCallback = customCertificateValidation,
-                        SslProtocols = TlsVersions.Instance.Preferred,
-                    };
-#else
-                    httpMessageHandler = new WebRequestHandler();
-                    ((WebRequestHandler)httpMessageHandler).ServerCertificateValidationCallback = (sender, certificate, chain, errors) =>
-                    {
-                        return customCertificateValidation(sender, certificate, chain, errors);
-                    };
-
-                    transportSettings.HttpClient = new HttpClient(httpMessageHandler, true);
-#endif
-                }
-
-                using var httpTransport = new HttpTransportHandler(context, InternalClient.IotHubConnectionString, transportSettings);
-                var methodInvokeRequest = new MethodInvokeRequest(methodRequest.Name, methodRequest.DataAsJson, methodRequest.ResponseTimeout, methodRequest.ConnectionTimeout);
-                MethodInvokeResponse result = await httpTransport.InvokeMethodAsync(methodInvokeRequest, uri, cancellationToken).ConfigureAwait(false);
-
-                return new MethodResponse(Encoding.UTF8.GetBytes(result.GetPayloadAsJson()), result.Status);
+                _httpTransportHandler = new HttpTransportHandler(context, InternalClient.IotHubConnectionString, transportSettings);
             }
-            finally
-            {
-                httpMessageHandler?.Dispose();
-            }
+
+            var methodInvokeRequest = new MethodInvokeRequest(methodRequest.Name, methodRequest.DataAsJson, methodRequest.ResponseTimeout, methodRequest.ConnectionTimeout);
+            MethodInvokeResponse result = await _httpTransportHandler.InvokeMethodAsync(methodInvokeRequest, uri, cancellationToken).ConfigureAwait(false);
+            return new MethodResponse(Encoding.UTF8.GetBytes(result.GetPayloadAsJson()), result.Status);
         }
 
         private static Uri GetDeviceMethodUri(string deviceId)
