@@ -6,7 +6,6 @@ using System.IO;
 using System.Net.WebSockets;
 using System.Threading.Tasks;
 using FluentAssertions;
-using Microsoft.Azure.Devices.Client.Test;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Azure.Devices.Client.Tests

@@ -8,7 +8,7 @@ using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Devices.Client.Transport.Amqp;
 using Microsoft.Azure.Devices.Client.Transport.AmqpIot;
 
-namespace Microsoft.Azure.Devices.Client.Test.Transport
+namespace Microsoft.Azure.Devices.Client.Tests.Transport
 {
     internal class MockableAmqpUnit : AmqpUnit
     {

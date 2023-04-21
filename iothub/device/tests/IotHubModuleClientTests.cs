@@ -14,20 +14,20 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Newtonsoft.Json;
 
-namespace Microsoft.Azure.Devices.Client.Test
+namespace Microsoft.Azure.Devices.Client.Tests
 {
     [TestClass]
     [TestCategory("Unit")]
     public class IotHubModuleClientTests
     {
-        private static readonly string deviceId = "module-twin-test";
-        private static readonly string moduleId = "mongo-server";
-        private static readonly string fakeHostName = "acme.azure-devices.net";
-        private static readonly string fakeGatewayHostName = "edge.iot.microsoft.com";
-        private static readonly string fakeSharedAccessKey = "dGVzdFN0cmluZzQ=";
-        private static readonly string connectionStringWithModuleId = $"GatewayHostName={fakeGatewayHostName};HostName={fakeHostName};DeviceId={deviceId};ModuleId={moduleId};SharedAccessKey={fakeSharedAccessKey}";
-        private static readonly string connectionStringWithoutModuleId = $"GatewayHostName={fakeGatewayHostName};HostName={fakeHostName};DeviceId={deviceId};SharedAccessKey={fakeSharedAccessKey}";
-        private static readonly string fakeConnectionString = $"HostName={fakeHostName};SharedAccessKeyName=AllAccessKey;DeviceId={deviceId};ModuleId={moduleId};SharedAccessKey={fakeSharedAccessKey}";
+        private const string DeviceId = "module-twin-test";
+        private const string ModuleId = "mongo-server";
+        private const string FakeHostName = "acme.azure-devices.net";
+        private const string FakeGatewayHostName = "edge.iot.microsoft.com";
+        private const string FakeSharedAccessKey = "dGVzdFN0cmluZzQ=";
+        private static readonly string s_connectionStringWithModuleId = $"GatewayHostName={FakeGatewayHostName};HostName={FakeHostName};DeviceId={DeviceId};ModuleId={ModuleId};SharedAccessKey={FakeSharedAccessKey}";
+        private static readonly string s_connectionStringWithoutModuleId = $"GatewayHostName={FakeGatewayHostName};HostName={FakeHostName};DeviceId={DeviceId};SharedAccessKey={FakeSharedAccessKey}";
+        private static readonly string s_fakeConnectionString = $"HostName={FakeHostName};SharedAccessKeyName=AllAccessKey;DeviceId={DeviceId};ModuleId={ModuleId};SharedAccessKey={FakeSharedAccessKey}";
 
         public const string NoModuleTwinJson = "{ \"maxConnections\": 10 }";
 
@@ -46,21 +46,21 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public async Task IotHubModuleClient_CreateFromConnectionString_WithModuleId_Succeeds()
         {
-            await using var moduleClient = new IotHubModuleClient(connectionStringWithModuleId);
+            await using var moduleClient = new IotHubModuleClient(s_connectionStringWithModuleId);
             moduleClient.Should().NotBeNull();
         }
 
         [TestMethod]
         public async Task IotHubModuleClient_CreateFromConnectionString_WithNoModuleId_Throws()
         {
-            Func<Task> act = async () => { await using var moduleClient = new IotHubModuleClient(connectionStringWithoutModuleId); };
+            Func<Task> act = async () => { await using var moduleClient = new IotHubModuleClient(s_connectionStringWithoutModuleId); };
             await act.Should().ThrowAsync<InvalidOperationException>();
         }
 
         [TestMethod]
         public async Task IotHubModuleClient_CreateFromConnectionString_NoTransportSettings_Succeeds()
         {
-            await using var moduleClient = new IotHubModuleClient(fakeConnectionString);
+            await using var moduleClient = new IotHubModuleClient(s_fakeConnectionString);
             moduleClient.Should().NotBeNull();
         }
 
@@ -68,8 +68,8 @@ namespace Microsoft.Azure.Devices.Client.Test
         public async Task IotHubModuleClient_AuthenticationWithX509Certificate_Succeeds()
         {
             var cert = new Mock<X509Certificate2>();
-            var auth = new ClientAuthenticationWithX509Certificate(cert.Object, deviceId, moduleId);
-            await using var moduleClient = new IotHubModuleClient(fakeHostName, auth, new IotHubClientOptions());
+            var auth = new ClientAuthenticationWithX509Certificate(cert.Object, DeviceId, ModuleId);
+            await using var moduleClient = new IotHubModuleClient(FakeHostName, auth, new IotHubClientOptions());
             moduleClient.Should().NotBeNull();
         }
 
@@ -83,7 +83,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             };
 
             // act
-            await using var moduleClient = new IotHubModuleClient(fakeConnectionString, clientOptions);
+            await using var moduleClient = new IotHubModuleClient(s_fakeConnectionString, clientOptions);
             
             // assert
             moduleClient.Should().NotBeNull();
@@ -94,7 +94,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             // arrange
             var options = new IotHubClientOptions(new IotHubClientMqttSettings());
-            await using var moduleClient = new IotHubModuleClient(fakeConnectionString, options);
+            await using var moduleClient = new IotHubModuleClient(s_fakeConnectionString, options);
             var innerHandler = new Mock<IDelegatingHandler>();
             moduleClient.InnerHandler = innerHandler.Object;
 
@@ -115,7 +115,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         public async Task IotHubModuleClient_OnReceiveEventMessageCalled_DefaultCallbackCalled()
         {
             // arrange
-            await using var moduleClient = new IotHubModuleClient(fakeConnectionString);
+            await using var moduleClient = new IotHubModuleClient(s_fakeConnectionString);
             var innerHandler = new Mock<IDelegatingHandler>();
             moduleClient.InnerHandler = innerHandler.Object;
 
@@ -146,7 +146,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             // arrange
             string messageId = Guid.NewGuid().ToString();
-            await using var moduleClient = new IotHubModuleClient(fakeConnectionString);
+            await using var moduleClient = new IotHubModuleClient(s_fakeConnectionString);
             var innerHandler = new Mock<IDelegatingHandler>();
             // This is used to simulate the transport level socket exception
             innerHandler
@@ -170,7 +170,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             // arrange
             string messageId = Guid.NewGuid().ToString();
-            await using var moduleClient = new IotHubModuleClient(fakeConnectionString);
+            await using var moduleClient = new IotHubModuleClient(s_fakeConnectionString);
             var innerHandler = new Mock<IDelegatingHandler>();
             // This is used to simulate the transport level websocket exception
             innerHandler
@@ -193,14 +193,14 @@ namespace Microsoft.Azure.Devices.Client.Test
         public async Task IotHubModuleClient_InvokeMethodAsync_EdgeDevice_NullMethodRequest_Throws_NullException()
         {
             // arrange
-            await using var moduleClient = new IotHubModuleClient(fakeConnectionString);
+            await using var moduleClient = new IotHubModuleClient(s_fakeConnectionString);
             var DirectMethodRequest = new DirectMethodRequest("TestMethodName")
             {
                 PayloadConvention = DefaultPayloadConvention.Instance,
             };
             
             // act
-            Func<Task> act = async () => await moduleClient.InvokeMethodAsync(deviceId, null);
+            Func<Task> act = async () => await moduleClient.InvokeMethodAsync(DeviceId, null);
             
             // assert
             await act.Should().ThrowAsync<ArgumentNullException>();
@@ -210,14 +210,14 @@ namespace Microsoft.Azure.Devices.Client.Test
         public async Task IotHubModuleClient_InvokeMethodAsync_EdgeModule_NullMethodRequest_Throws_NullException()
         {
             // arrange
-            await using var moduleClient = new IotHubModuleClient(fakeConnectionString);
+            await using var moduleClient = new IotHubModuleClient(s_fakeConnectionString);
             var DirectMethodRequest = new DirectMethodRequest("TestMethodName")
             {
                 PayloadConvention = DefaultPayloadConvention.Instance,
             };
 
             // act
-            Func<Task> act = async () => await moduleClient.InvokeMethodAsync(deviceId, moduleId, null);
+            Func<Task> act = async () => await moduleClient.InvokeMethodAsync(DeviceId, ModuleId, null);
 
             // assert
             await act.Should().ThrowAsync<ArgumentNullException>();
@@ -227,14 +227,14 @@ namespace Microsoft.Azure.Devices.Client.Test
         public async Task IotHubModuleClient_InvokeMethodAsync_WithoutExplicitOpenAsync_Throws_InvalidOperationException()
         {
             // arrange
-            await using var moduleClient = new IotHubModuleClient(fakeConnectionString);
+            await using var moduleClient = new IotHubModuleClient(s_fakeConnectionString);
             var DirectMethodRequest = new DirectMethodRequest("TestMethodName")
             {
                 PayloadConvention = DefaultPayloadConvention.Instance,
             };
 
             // act
-            Func<Task> act = async () => await moduleClient.InvokeMethodAsync(deviceId, moduleId, DirectMethodRequest);
+            Func<Task> act = async () => await moduleClient.InvokeMethodAsync(DeviceId, ModuleId, DirectMethodRequest);
 
             // assert
             await act.Should().ThrowAsync<InvalidOperationException>();
@@ -245,7 +245,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             // arrange
             string messageId = Guid.NewGuid().ToString();
-            await using var moduleClient = new IotHubModuleClient(fakeConnectionString);
+            await using var moduleClient = new IotHubModuleClient(s_fakeConnectionString);
 
             var innerHandler = new Mock<IDelegatingHandler>();
             innerHandler
@@ -272,7 +272,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             // arrange
             string messageId = Guid.NewGuid().ToString();
-            await using var moduleClient = new IotHubModuleClient(fakeConnectionString, new IotHubClientOptions(new IotHubClientAmqpSettings()));
+            await using var moduleClient = new IotHubModuleClient(s_fakeConnectionString, new IotHubClientOptions(new IotHubClientAmqpSettings()));
 
             var innerHandler = new Mock<IDelegatingHandler>();
             innerHandler
@@ -298,7 +298,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         public async Task IotHubModuleClient_SendTelemetryAsync_WithoutExplicitOpenAsync_ThrowsInvalidOperationException()
         {
             // arrange
-            await using var moduleClient = new IotHubModuleClient(fakeConnectionString);
+            await using var moduleClient = new IotHubModuleClient(s_fakeConnectionString);
 
             // act
             Func<Task> act = async () => await moduleClient.SendTelemetryAsync(new TelemetryMessage());
@@ -311,7 +311,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         public async Task IotHubModuleClient_SendTelemetryBatchAsync_WithoutExplicitOpenAsync_ThrowsInvalidOperationException()
         {
             // arrange
-            await using var moduleClient = new IotHubModuleClient(fakeConnectionString);
+            await using var moduleClient = new IotHubModuleClient(s_fakeConnectionString);
 
             // act
             Func<Task> act = async () => await moduleClient.SendTelemetryAsync(new List<TelemetryMessage> { new TelemetryMessage(), new TelemetryMessage() });
@@ -324,7 +324,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         public async Task IotHubModuleClient_SetMethodHandlerUnset_WhenNoMethodHandler()
         {
             // arrange
-            await using var moduleClient = new IotHubModuleClient(fakeConnectionString);
+            await using var moduleClient = new IotHubModuleClient(s_fakeConnectionString);
 
             var innerHandler = new Mock<IDelegatingHandler>();
             moduleClient.InnerHandler = innerHandler.Object;
@@ -342,7 +342,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         public async Task IotHubModuleClient_SetMethodHandler_UnsetLastMethodHandler()
         {
             // arrange
-            await using var moduleClient = new IotHubModuleClient(fakeConnectionString);
+            await using var moduleClient = new IotHubModuleClient(s_fakeConnectionString);
 
             var innerHandler = new Mock<IDelegatingHandler>();
             moduleClient.InnerHandler = innerHandler.Object;

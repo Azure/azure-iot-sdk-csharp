@@ -4,7 +4,7 @@
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Microsoft.Azure.Devices.Client.Test.AuthenticationMethod
+namespace Microsoft.Azure.Devices.Client.Tests.AuthenticationMethod
 {
     [TestClass]
     [TestCategory("Unit")]

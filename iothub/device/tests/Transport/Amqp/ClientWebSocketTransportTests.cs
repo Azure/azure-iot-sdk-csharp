@@ -11,7 +11,7 @@ using Microsoft.Azure.Amqp.Transport;
 using Microsoft.Azure.Devices.Client.HsmAuthentication.Transport;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Microsoft.Azure.Devices.Client.Test.Transport
+namespace Microsoft.Azure.Devices.Client.Tests.Transport
 {
     [TestClass]
     [TestCategory("Unit")]

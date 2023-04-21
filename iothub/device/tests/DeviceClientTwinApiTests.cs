@@ -10,24 +10,24 @@ using Microsoft.Azure.Devices.Client.Transport.Mqtt;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 
-namespace Microsoft.Azure.Devices.Client.Test
+namespace Microsoft.Azure.Devices.Client.Tests
 {
     [TestClass]
     [TestCategory("Unit")]
     public class DeviceClientTwinApiTests
     {
-        static readonly string fakeHostName = "acme.azure-devices.net";
-        static readonly string fakeDeviceId = "fake";
-        static readonly string fakeSharedAccessKey = "dGVzdFN0cmluZzE=";
-        static readonly string fakeSharedAccessKeyName = "AllAccessKey";
-        static readonly string fakeConnectionString = $"HostName={fakeHostName};SharedAccessKeyName={fakeSharedAccessKeyName};DeviceId={fakeDeviceId};SharedAccessKey={fakeSharedAccessKey}";
+        private const string FakeHostName = "acme.azure-devices.net";
+        private const string FakeDeviceId = "fake";
+        private const string FakeSharedAccessKey = "dGVzdFN0cmluZzE=";
+        private const string FakeSharedAccessKeyName = "AllAccessKey";
+        private static readonly string s_fakeConnectionString = $"HostName={FakeHostName};SharedAccessKeyName={FakeSharedAccessKeyName};DeviceId={FakeDeviceId};SharedAccessKey={FakeSharedAccessKey}";
 
         [TestMethod]
         public async Task IotHubDeviceClient_SetDesiredPropertyUpdateCallbackAsyncRegistersForPatchesOnFirstCall()
         {
             // arrange
             var innerHandler = new Mock<IDelegatingHandler>();
-            await using var client = new IotHubDeviceClient(fakeConnectionString);
+            await using var client = new IotHubDeviceClient(s_fakeConnectionString);
             client.InnerHandler = innerHandler.Object;
             Func<DesiredProperties, Task> myCallback = (p) => Task.CompletedTask;
 
@@ -45,7 +45,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             // arrange
             var innerHandler = new Mock<IDelegatingHandler>();
-            await using var client = new IotHubDeviceClient(fakeConnectionString);
+            await using var client = new IotHubDeviceClient(s_fakeConnectionString);
             client.InnerHandler = innerHandler.Object;
             Func<DesiredProperties, Task> myCallback = (p) => Task.CompletedTask;
 
@@ -64,7 +64,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             // arrange
             var innerHandler = new Mock<IDelegatingHandler>();
-            await using var client = new IotHubDeviceClient(fakeConnectionString);
+            await using var client = new IotHubDeviceClient(s_fakeConnectionString);
             client.InnerHandler = innerHandler.Object;
             Func<DesiredProperties, Task> myCallback = (p) => Task.CompletedTask;
 
@@ -84,7 +84,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             // arrange
             var innerHandler = new Mock<IDelegatingHandler>();
-            await using var client = new IotHubDeviceClient(fakeConnectionString);
+            await using var client = new IotHubDeviceClient(s_fakeConnectionString);
             client.InnerHandler = innerHandler.Object;
 
             // act
@@ -138,7 +138,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             // arrange
             var innerHandler = new Mock<IDelegatingHandler>();
-            await using var client = new IotHubDeviceClient(fakeConnectionString);
+            await using var client = new IotHubDeviceClient(s_fakeConnectionString);
             client.InnerHandler = innerHandler.Object;
             var props = new ReportedProperties();
 
@@ -156,7 +156,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             // arrange
             var innerHandler = new Mock<IDelegatingHandler>();
-            await using var client = new IotHubDeviceClient(fakeConnectionString);
+            await using var client = new IotHubDeviceClient(s_fakeConnectionString);
             client.InnerHandler = innerHandler.Object;
 
             // act
@@ -174,7 +174,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             // arrange
             var innerHandler = new Mock<IDelegatingHandler>();
-            await using var client = new IotHubDeviceClient(fakeConnectionString);
+            await using var client = new IotHubDeviceClient(s_fakeConnectionString);
             client.InnerHandler = innerHandler.Object;
             var myPatch = new DesiredProperties(new Dictionary<string, object> { { "key", "value" }, { "$version", 1 } })
             {
@@ -204,7 +204,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             // arrange
             var innerHandler = new Mock<IDelegatingHandler>();
-            await using var client = new IotHubDeviceClient(fakeConnectionString);
+            await using var client = new IotHubDeviceClient(s_fakeConnectionString);
             client.InnerHandler = innerHandler.Object;
             var myPatch = new DesiredProperties(new Dictionary<string, object> { { "key", "value" }, { "$version", 1 } })
             {

@@ -9,7 +9,7 @@ using FluentAssertions;
 using Microsoft.Azure.Devices.Client.HsmAuthentication.Transport;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Microsoft.Azure.Devices.Client.Test.HsmAuthentication
+namespace Microsoft.Azure.Devices.Client.Tests.HsmAuthentication
 {
     [TestClass]
     [TestCategory("Unit")]

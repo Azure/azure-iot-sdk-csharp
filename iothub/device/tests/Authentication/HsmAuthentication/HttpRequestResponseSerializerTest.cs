@@ -2,11 +2,9 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information
 
 using System;
-using System.Diagnostics.Contracts;
 using System.IO;
 using System.Net;
 using System.Net.Http;
-using System.Runtime.Serialization;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,7 +13,7 @@ using FluentAssertions.Specialized;
 using Microsoft.Azure.Devices.Client.HsmAuthentication.Transport;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Microsoft.Azure.Devices.Client.Test.HsmAuthentication
+namespace Microsoft.Azure.Devices.Client.Tests.HsmAuthentication
 {
     [TestClass]
     [TestCategory("Unit")]

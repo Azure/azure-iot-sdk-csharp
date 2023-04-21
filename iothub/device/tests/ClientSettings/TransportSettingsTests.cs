@@ -9,17 +9,14 @@ using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
 
-namespace Microsoft.Azure.Devices.Client.Test
+namespace Microsoft.Azure.Devices.Client.Tests
 {
     [TestClass]
     [TestCategory("Unit")]
     public class TransportSettingsTests
     {
-#pragma warning disable SYSLIB0026 // Type or member is obsolete
-        private static readonly X509Certificate2 s_cert = new();
-#pragma warning restore SYSLIB0026 // Type or member is obsolete
-
         [TestMethod]
         public void IotHubClientOptions_None_Throw()
         {       
@@ -120,7 +117,8 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             // arrange
             const string hostName = "acme.azure-devices.net";
-            var authMethod = new ClientAuthenticationWithX509Certificate(s_cert, "device1");
+            X509Certificate2 cert = new Mock<X509Certificate2>().Object;
+            var authMethod = new ClientAuthenticationWithX509Certificate(cert, "device1");
             var options = new IotHubClientOptions(new IotHubClientAmqpSettings { PrefetchCount = 100 });
             options.FileUploadTransportSettings = new IotHubClientHttpSettings()
             {
@@ -137,7 +135,8 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public void IotHubDeviceClient_NullX509CertificateChain()
         {
-            Action act = () => _ = new ClientAuthenticationWithX509Certificate(s_cert, certificateChain: null, "device1");
+            X509Certificate2 cert = new Mock<X509Certificate2>().Object;
+            Action act = () => _ = new ClientAuthenticationWithX509Certificate(cert, certificateChain: null, "device1");
             act.Should().Throw<ArgumentException>();
         }
 

@@ -4,7 +4,7 @@
 using Microsoft.Azure.Devices.Client.Transport;
 using Moq;
 
-namespace Microsoft.Azure.Devices.Client.Test.Transport
+namespace Microsoft.Azure.Devices.Client.Tests.Transport
 {
     internal class MockableAmqpTransportHandler : AmqpTransportHandler
     {
