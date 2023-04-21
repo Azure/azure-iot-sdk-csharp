@@ -13,16 +13,16 @@ namespace Microsoft.Azure.Devices.LongHaul.AmqpPooling
             'c',
             "IoTHubConnectionString",
             Required = false,
-            HelpText = "The connection string of the IoT hub instance to connect to.")]
+            HelpText = "The service connection string of the IoT hub instance to connect to with permissions to create devices.")]
         public string IotHubConnectionString { get; set; } = Environment.GetEnvironmentVariable("IOTHUB_CONNECTION_STRING");
 
         [Option(
             'd',
-            "DevicesCountNumber",
+            "DevicesCount",
             Default = 3,
             Required = false,
             HelpText = "The count number of how many devices to register in the IoT hub.")]
-        public int DevicesCountNumber { get; set; }
+        public int DevicesCount { get; set; }
 
         [Option(
             'p',
@@ -63,7 +63,7 @@ namespace Microsoft.Azure.Devices.LongHaul.AmqpPooling
         {
             return !string.IsNullOrWhiteSpace(IotHubConnectionString)
                 && !string.IsNullOrWhiteSpace(InstrumentationKey)
-                && DevicesCountNumber > 0
+                && DevicesCount > 0
                 && AmqpPoolingSize > 0;
         }
     }

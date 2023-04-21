@@ -58,12 +58,12 @@ namespace Microsoft.Azure.Devices.LongHaul.AmqpPooling
             s_logger = InitializeLogging(parameters);
             s_port = PortFilter(parameters);
 
-            // Log system health before initializing RegisterManager
+            // Log system health before initializing DeviceManager
             SystemHealthMonitor.BuildAndLogSystemHealth(s_logger);
 
             s_logger.Event(StartingRun);
 
-            using var registerManager = new RegisterManager(s_logger, parameters);
+            using var registerManager = new DeviceManager(s_logger, parameters);
 
             // Set up a condition to quit the sample
             Console.WriteLine("Press CTRL+C to exit");
@@ -78,7 +78,7 @@ namespace Microsoft.Azure.Devices.LongHaul.AmqpPooling
             // Register devices to the IoT hub
             IList<Device> devices = await registerManager.AddDevicesAsync(cancellationTokenSource.Token).ConfigureAwait(false);
 
-            // Log system health before initializing RegisterManager
+            // Log system health before initializing DeviceManager
             SystemHealthMonitor.BuildAndLogSystemHealth(s_logger);
             await using var iotHub = new IotHub(s_logger, parameters, devices);
 

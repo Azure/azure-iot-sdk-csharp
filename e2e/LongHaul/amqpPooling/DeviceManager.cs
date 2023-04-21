@@ -9,30 +9,30 @@ using Mash.Logging;
 
 namespace Microsoft.Azure.Devices.LongHaul.AmqpPooling
 {
-    internal class RegisterManager : IDisposable
+    internal class DeviceManager : IDisposable
     {
         private readonly Logger _logger;
-        private readonly int _devicesCountNumber;
+        private readonly int _devicesCount;
 
         private const string DevicePrefix = "LongHaulAmqpPoolingDevice_";
 
         private static IotHubServiceClient s_serviceClient;
         private static IList<Device> s_devices;
 
-        public RegisterManager(Logger logger, Parameters parameters)
+        public DeviceManager(Logger logger, Parameters parameters)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _devicesCountNumber = parameters.DevicesCountNumber;
+            _devicesCount = parameters.DevicesCount;
 
             s_serviceClient = new IotHubServiceClient(parameters.IotHubConnectionString);
-            s_devices = new List<Device>(_devicesCountNumber);
+            s_devices = new List<Device>(_devicesCount);
         }
 
         public async Task<IList<Device>> AddDevicesAsync(CancellationToken ct)
         {
-            _logger.Trace($"Start creating totally {_devicesCountNumber} devices.", TraceSeverity.Information);
+            _logger.Trace($"Start creating totally {_devicesCount} devices.", TraceSeverity.Information);
 
-            for (int i=0; i< _devicesCountNumber; i++)
+            for (int i=0; i< _devicesCount; i++)
             {
                 string deviceId = DevicePrefix + i;
                 _logger.Trace($"Creating a device with Id {deviceId}", TraceSeverity.Verbose);
@@ -47,7 +47,7 @@ namespace Microsoft.Azure.Devices.LongHaul.AmqpPooling
 
         public async Task RemoveDevicesAsync()
         {
-            _logger.Trace($"Start deleting totally {_devicesCountNumber} devices for Amqp pooling long haul testing.", TraceSeverity.Information);
+            _logger.Trace($"Start deleting totally {_devicesCount} devices for Amqp pooling long haul testing.", TraceSeverity.Information);
 
             foreach (var device in s_devices)
             {
@@ -61,11 +61,11 @@ namespace Microsoft.Azure.Devices.LongHaul.AmqpPooling
 
         public void Dispose()
         {
-            _logger.Trace($"Disposing {nameof(RegisterManager)} instance...", TraceSeverity.Verbose);
+            _logger.Trace($"Disposing {nameof(DeviceManager)} instance...", TraceSeverity.Verbose);
 
             s_serviceClient?.Dispose();
 
-            _logger.Trace($"{nameof(RegisterManager)} instance disposed.", TraceSeverity.Verbose);
+            _logger.Trace($"{nameof(DeviceManager)} instance disposed.", TraceSeverity.Verbose);
         }
     }
 }

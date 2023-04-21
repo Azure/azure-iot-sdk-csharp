@@ -97,7 +97,7 @@ namespace Microsoft.Azure.Devices.LongHaul.AmqpPooling
                         string deviceId = entry.Key;
                         IotHubDeviceClient deviceClient = entry.Value;
 
-                        var telemetryObject = new DeviceTelemetry()
+                        var telemetryObject = new DeviceTelemetry
                         {
                             DeviceId = deviceId,
                             SystemHealth = systemHealth,
