@@ -866,7 +866,7 @@ namespace Microsoft.Azure.Devices.Client
                         return customCertificateValidation(sender, certificate, chain, errors);
                     };
 
-                    transportSettings.HttpClient = new HttpClient(httpMessageHandler);
+                    transportSettings.HttpClient = new HttpClient(httpMessageHandler, true);
 #endif
                 }
 
