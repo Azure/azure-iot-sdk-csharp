@@ -75,7 +75,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             if (transportSettings.ClientCertificate != null)
             {
-                webRequestHandler.ClientCertificates.Add(transportSettings.ClientCertificate);
+                webRequestHandler.ClientCertificates =
+                    new X509CertificateCollection() { transportSettings.ClientCertificate };
                 _usingX509ClientCert = true;
             }
             else
@@ -130,7 +131,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             if (transportSettings.ClientCertificate != null)
             {
-                httpClientHandler.ClientCertificates.Add(transportSettings.ClientCertificate);
+                httpClientHandler.ClientCertificates =
+                    new X509CertificateCollection() { transportSettings.ClientCertificate };
                 _usingX509ClientCert = true;
             }
             else
