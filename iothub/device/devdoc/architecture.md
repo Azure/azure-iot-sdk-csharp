@@ -2,7 +2,7 @@
 
 ## Abstract
 
-This document describes the internal architecture for the Azure IoT Hub Device SDK. Applications use `IotHubDeviceClient` and `IotHubModuleClient` which represent the two types of device identities. During object creation, a transport pipeline, following the _chain of responsibility_ pattern, is also created. All but the last element of the pipeline will perform alterations of application requests. The last element, based on `TransportHandlerBase`, has the responsibility of converting IoT Hub request messages into the selected protocol and perform network I/O.
+This document describes the internal architecture for the Azure IoT Hub Device SDK. Applications use `IotHubDeviceClient` and `IotHubModuleClient` which represent the two types of device identities. During object creation, a transport pipeline is created. All but the last element of the pipeline will perform alterations of application requests. The last element, based on `TransportHandlerBase`, has the responsibility of converting IoT Hub request messages into the selected protocol and perform network I/O.
 
 ## Architecture diagram
 <!--arhitecture.puml-->
