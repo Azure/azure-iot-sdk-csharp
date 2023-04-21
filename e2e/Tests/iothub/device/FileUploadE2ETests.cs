@@ -292,10 +292,10 @@ namespace Microsoft.Azure.Devices.E2ETests
         [ClassCleanup]
         public static void CleanupCertificates()
         {
-            //if (s_selfSignedCertificate is IDisposable disposableCertificate)
-           // {
-           //     disposableCertificate?.Dispose();
-           // }
+            if (s_selfSignedCertificate is IDisposable disposableCertificate)
+            {
+                disposableCertificate?.Dispose();
+            }
         }
 
         private class CustomHttpMessageHandler : HttpMessageHandler
