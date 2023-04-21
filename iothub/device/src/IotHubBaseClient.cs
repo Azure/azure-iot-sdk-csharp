@@ -73,7 +73,7 @@ namespace Microsoft.Azure.Devices.Client
             if (IotHubConnectionCredentials.ModuleId.IsNullOrWhiteSpace())
             {
                 // Set up file upload settings over HTTP for the device client
-                PipelineContext.HttpOperationTransportSettings = _clientOptions.FileUploadTransportSettings;
+                PipelineContext.HttpOperationTransportSettings = _clientOptions.HttpOperationTransportSettings;
             }
             else
             {

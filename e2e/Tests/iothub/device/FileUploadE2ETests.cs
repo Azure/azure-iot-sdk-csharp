@@ -121,7 +121,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             var clientOptions = new IotHubClientOptions
             {
-                FileUploadTransportSettings = fileUploadSettings,
+                HttpOperationTransportSettings = fileUploadSettings,
                 RetryPolicy = new IotHubClientNoRetry(),
             };
 
@@ -154,7 +154,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             IotHubDeviceClient deviceClient;
             var clientOptions = new IotHubClientOptions
             {
-                FileUploadTransportSettings = fileUploadTransportSettings,
+                HttpOperationTransportSettings = fileUploadTransportSettings,
 
                 // Turn off retry policy so that correlation ID mis-match errors are returned to the app immediately
                 RetryPolicy = new IotHubClientNoRetry(),
@@ -167,7 +167,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 cert = s_selfSignedCertificate;
                 x509Auth = new ClientAuthenticationWithX509Certificate(cert, testDevice.Id);
 
-                deviceClient = new IotHubDeviceClient(testDevice.IotHubHostName, x509Auth, new IotHubClientOptions { FileUploadTransportSettings = fileUploadTransportSettings });
+                deviceClient = new IotHubDeviceClient(testDevice.IotHubHostName, x509Auth, new IotHubClientOptions { HttpOperationTransportSettings = fileUploadTransportSettings });
             }
             else
             {
@@ -235,7 +235,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             var options = new IotHubClientOptions(clientMainTransport)
             {
-                FileUploadTransportSettings = fileUploadSettings,
+                HttpOperationTransportSettings = fileUploadSettings,
             };
             IotHubDeviceClient deviceClient;
             X509Certificate2 cert = null;

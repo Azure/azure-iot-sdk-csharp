@@ -35,7 +35,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
             {
                 GatewayHostName = "sampleHost",
                 SdkAssignsMessageId = SdkAssignsMessageId.WhenUnset,
-                FileUploadTransportSettings = new IotHubClientHttpSettings(),
+                HttpOperationTransportSettings = new IotHubClientHttpSettings(),
                 PayloadConvention = DefaultPayloadConvention.Instance,
                 ModelId = "Id",
                 AdditionalUserAgentInfo = "info"
@@ -73,7 +73,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
             {
                 GatewayHostName = "sampleHost",
                 SdkAssignsMessageId = SdkAssignsMessageId.WhenUnset,
-                FileUploadTransportSettings = new IotHubClientHttpSettings(),
+                HttpOperationTransportSettings = new IotHubClientHttpSettings(),
                 PayloadConvention = DefaultPayloadConvention.Instance,
                 ModelId = "Id",
                 AdditionalUserAgentInfo = "info"
