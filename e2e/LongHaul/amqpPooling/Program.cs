@@ -10,9 +10,9 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using static Microsoft.Azure.Devices.LongHual.AmqpPooling.LoggingConstants;
+using static Microsoft.Azure.Devices.LongHaul.AmqpPooling.LoggingConstants;
 
-namespace Microsoft.Azure.Devices.LongHual.AmqpPooling
+namespace Microsoft.Azure.Devices.LongHaul.AmqpPooling
 {
     internal class Program
     {

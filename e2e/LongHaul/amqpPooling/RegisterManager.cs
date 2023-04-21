@@ -7,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Mash.Logging;
 
-namespace Microsoft.Azure.Devices.LongHual.AmqpPooling
+namespace Microsoft.Azure.Devices.LongHaul.AmqpPooling
 {
     internal class RegisterManager : IDisposable
     {

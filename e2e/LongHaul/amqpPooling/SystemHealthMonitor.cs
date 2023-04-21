@@ -6,10 +6,10 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Threading;
 using Mash.Logging;
-using static Microsoft.Azure.Devices.LongHual.AmqpPooling.LoggingConstants;
+using static Microsoft.Azure.Devices.LongHaul.AmqpPooling.LoggingConstants;
 using Microsoft.ApplicationInsights.Channel;
 
-namespace Microsoft.Azure.Devices.LongHual.AmqpPooling
+namespace Microsoft.Azure.Devices.LongHaul.AmqpPooling
 {
     internal class SystemHealthMonitor
     {

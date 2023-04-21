@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.Azure.Devices.LongHual.AmqpPooling
+namespace Microsoft.Azure.Devices.LongHaul.AmqpPooling
 {
     internal class IotHubConnectionStringHelper
     {

@@ -8,7 +8,7 @@ using System.Linq;
 using System.Net.NetworkInformation;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.Azure.Devices.LongHual.AmqpPooling
+namespace Microsoft.Azure.Devices.LongHaul.AmqpPooling
 {
     internal class SystemHealthTelemetry
     {

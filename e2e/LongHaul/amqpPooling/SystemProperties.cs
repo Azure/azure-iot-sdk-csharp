@@ -4,7 +4,7 @@
 using System.Runtime.InteropServices;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.Azure.Devices.LongHual.AmqpPooling
+namespace Microsoft.Azure.Devices.LongHaul.AmqpPooling
 {
     internal class SystemProperties
     {
