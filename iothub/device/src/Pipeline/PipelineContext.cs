@@ -9,7 +9,7 @@ namespace Microsoft.Azure.Devices.Client
 {
     internal class PipelineContext
     {
-        internal ITransportSettings TransportSettings { get; set; }
+        internal ITransportSettings TransportSettingsSelected { get; set; }
 
         internal ITransportSettings[] TransportSettingsArray { get; set; }
 

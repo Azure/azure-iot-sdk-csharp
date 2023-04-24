@@ -16,7 +16,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             // ProtocolRoutingDelegatingHandler configures the ITransportSettings configuration
             // which is different from ITransportSettings[] element.
-            ITransportSettings transportSetting = context.TransportSettings;
+            ITransportSettings transportSetting = context.TransportSettingsSelected;
             IotHubConnectionString connectionString = context.IotHubConnectionString;
             InternalClient.OnMethodCalledDelegate onMethodCallback = context.MethodCallback;
             Action<TwinCollection> onDesiredStatePatchReceived = context.DesiredPropertyUpdateCallback;
