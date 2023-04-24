@@ -7,8 +7,10 @@ using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Mash.Logging;
+using Microsoft.Azure.Amqp.Framing;
 using Microsoft.Azure.Devices.Client;
 using Newtonsoft.Json;
+using static Microsoft.ApplicationInsights.MetricDimensionNames.TelemetryContext;
 using static Microsoft.Azure.Devices.LongHaul.AmqpPooling.LoggingConstants;
 
 namespace Microsoft.Azure.Devices.LongHaul.AmqpPooling
@@ -27,11 +29,12 @@ namespace Microsoft.Azure.Devices.LongHaul.AmqpPooling
         private volatile int _connectionStatusChangeCount = 0;
         private static readonly TimeSpan s_messageLoopSleepTime = TimeSpan.FromSeconds(3);
 
-        public DeviceOperations(IotHubDeviceClient deviceClient, string deviceId, Logger logger)
+        public DeviceOperations(Device device, string hostName, IotHubClientOptions clientOptions, Logger logger)
         {
-            _deviceClient = deviceClient;
-            _deviceId = deviceId;
-            logger.LoggerContext.Add("deviceId", deviceId);
+            string deviceConnectionString = $"HostName={hostName};DeviceId={device.Id};SharedAccessKey={device.Authentication.SymmetricKey.PrimaryKey}";
+            _deviceClient = new IotHubDeviceClient(deviceConnectionString, clientOptions);
+            _deviceId = device.Id;
+            logger.LoggerContext.Add("deviceId", _deviceId);
             _logger = logger;
         }
 

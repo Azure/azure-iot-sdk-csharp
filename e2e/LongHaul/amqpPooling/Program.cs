@@ -58,14 +58,14 @@ namespace Microsoft.Azure.Devices.LongHaul.AmqpPooling
             s_logger = InitializeLogging(parameters);
             s_port = PortFilter(parameters);
 
-            // Log system health before initializing DeviceManager
+            // Log system health before creating IotHub
 
             var systemHealthMonitor = new SystemHealthMonitor(s_port, s_logger.Clone());
             systemHealthMonitor.BuildAndLogSystemHealth();
 
             s_logger.Event(StartingRun);
 
-            using var registerManager = new DeviceManager(s_logger, parameters);
+            await using var iotHub = new IotHub(s_logger, parameters);
 
             // Set up a condition to quit the sample
             Console.WriteLine("Press CTRL+C to exit");
@@ -78,14 +78,10 @@ namespace Microsoft.Azure.Devices.LongHaul.AmqpPooling
             };
 
             // Clean up devices with "LongHaulAmqpPoolingDevice_" before running the app
-            await registerManager.RemoveDevicesAsync(cancellationTokenSource.Token).ConfigureAwait(false);
+            await iotHub.RemoveDevicesAsync(cancellationTokenSource.Token).ConfigureAwait(false);
 
             // Register devices to the IoT hub
-            IList<Device> devices = await registerManager.AddDevicesAsync(cancellationTokenSource.Token).ConfigureAwait(false);
-
-            // Log system health before initializing DeviceManager
-            systemHealthMonitor.BuildAndLogSystemHealth();
-            await using var iotHub = new IotHub(s_logger, parameters, devices);
+            IList<Device> devices = await iotHub.AddDevicesAsync(cancellationTokenSource.Token).ConfigureAwait(false);
 
             await iotHub.InitializeAsync().ConfigureAwait(false);
 
@@ -106,7 +102,7 @@ namespace Microsoft.Azure.Devices.LongHaul.AmqpPooling
             finally
             {
                 // Clean up devices for Amqp pooling long-haul testing
-                await registerManager.RemoveDevicesAsync().ConfigureAwait(false);
+                await iotHub.RemoveDevicesAsync().ConfigureAwait(false);
             }
 
             await iotHub.DisposeAsync().ConfigureAwait(false);
