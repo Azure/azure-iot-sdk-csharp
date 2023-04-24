@@ -131,9 +131,10 @@ namespace Microsoft.Azure.Devices.E2ETests
             await deviceClient.OpenAsync(cts.Token).ConfigureAwait(false);
 
             var request = new FileUploadSasUriRequest("someBlobName");
-            var ex = await Assert.ThrowsExceptionAsync<NotImplementedException>(
+            var ex = await Assert.ThrowsExceptionAsync<IotHubClientException>(
                         async () => await deviceClient.GetFileUploadSasUriAsync(request).ConfigureAwait(false),
                         "The provided custom HttpMessageHandler throws NotImplementedException when making any HTTP request");
+            ex.InnerException.Should().BeOfType(typeof(NotImplementedException));
         }
 
         private async Task UploadFileGranularAsync(
