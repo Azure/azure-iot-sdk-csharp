@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Mash.Logging;
@@ -17,8 +18,8 @@ namespace Microsoft.Azure.Devices.LongHaul.AmqpPooling
         private readonly Logger _logger;
         private readonly IotHubClientTransportSettings _transportSettings;
         private readonly IotHubClientOptions _clientOptions;
-        private static IList<Device> s_devices;
-        private static IDictionary<string, DeviceOperations> s_deviceOperations;
+        private readonly IList<Device> _devices;
+        private readonly List<DeviceOperations> _deviceOperations = new();
 
         private static readonly TimeSpan s_messageLoopSleepTime = TimeSpan.FromSeconds(3);
 
@@ -31,11 +32,8 @@ namespace Microsoft.Azure.Devices.LongHaul.AmqpPooling
             _transportSettings = parameters.GetTransportSettingsWithPooling();
             _clientOptions = new IotHubClientOptions(_transportSettings);
 
-            s_devices = devices;
-            s_deviceOperations = new Dictionary<string, DeviceOperations>();
+            _devices = devices;
         }
-
-        public Dictionary<string, string> TelemetryUserProperties { get; } = new();
 
         public async Task InitializeAsync()
         {
@@ -46,10 +44,10 @@ namespace Microsoft.Azure.Devices.LongHaul.AmqpPooling
             try
             {
                 _logger.Trace(
-                    $"Creating {s_devices.Count} device clients with transport settings [{_transportSettings.ToString()}].",
+                    $"Creating {_devices.Count} device clients with transport settings [{_transportSettings.ToString()}].",
                     TraceSeverity.Information);
 
-                foreach (var device in s_devices)
+                foreach (Device device in _devices)
                 {
                     string deviceConnectionString = $"HostName={helper.HostName};DeviceId={device.Id};SharedAccessKey={device.Authentication.SymmetricKey.PrimaryKey}";
 
@@ -58,7 +56,7 @@ namespace Microsoft.Azure.Devices.LongHaul.AmqpPooling
                     var deviceOperations = new DeviceOperations(deviceClient, device.Id, _logger.Clone());
                     await deviceOperations.InitializeAsync().ConfigureAwait(false);
 
-                    s_deviceOperations.Add(device.Id, deviceOperations);
+                    _deviceOperations.Add(deviceOperations);
                 }
             }
             finally
@@ -67,40 +65,13 @@ namespace Microsoft.Azure.Devices.LongHaul.AmqpPooling
             }
         }
 
-        public async Task SendTelemetryMessagesAsync(CancellationToken ct)
+        public async Task RunDevicesTasksAsync(CancellationToken ct)
         {
-            while (!ct.IsCancellationRequested)
-            {
-                await Task.Delay(s_messageLoopSleepTime, ct).ConfigureAwait(false);
+            var deviceOperationTasks = _deviceOperations
+                .Select(deviceOperation => deviceOperation.SendMessagesAsync(ct))
+                .ToList();
 
-                List<Task> deviceOperationTasks = new();
-
-                if (s_deviceOperations != null)
-                {
-                    foreach (KeyValuePair<string, DeviceOperations> entry in s_deviceOperations)
-                    {
-                        string deviceId = entry.Key;
-                        DeviceOperations deviceOperations = entry.Value;
-
-                        var telemetryObject = new DeviceTelemetry
-                        {
-                            DeviceId = deviceId,
-                            GuidValue = Guid.NewGuid().ToString(),
-                        };
-
-                        var message = new TelemetryMessage(telemetryObject);
-
-                        foreach (KeyValuePair<string, string> prop in TelemetryUserProperties)
-                        {
-                            message.Properties.TryAdd(prop.Key, prop.Value);
-                        }
-
-                        deviceOperationTasks.Add(await deviceOperations.SendAsync(message, ct).ConfigureAwait(false));
-                    }
-
-                    await Task.WhenAll(deviceOperationTasks).ConfigureAwait(false);
-                }
-            }
+            await Task.WhenAll(deviceOperationTasks).ConfigureAwait(false);
         }
 
         public async ValueTask DisposeAsync()
@@ -113,28 +84,15 @@ namespace Microsoft.Azure.Devices.LongHaul.AmqpPooling
                 _lifetimeControl = null;
             }
 
-            if (s_deviceOperations != null)
+            if (_deviceOperations != null)
             {
-                foreach (KeyValuePair<string, DeviceOperations> entry in s_deviceOperations)
+                foreach (DeviceOperations deviceOp in _deviceOperations)
                 {
-                    IotHubDeviceClient deviceClient = entry.Value.DeviceClient;
-                    await deviceClient.DisposeAsync().ConfigureAwait(false);
+                    await deviceOp.DisposeAsync().ConfigureAwait(false);
                 }
             }
 
             _logger.Trace($"{nameof(IotHub)} instance disposed", TraceSeverity.Verbose);
-        }
-
-        private class DeviceTelemetry
-        {
-            [JsonProperty("deviceId")]
-            public string DeviceId { get; set; }
-
-            [JsonProperty("sentTimeUtc")]
-            public DateTimeOffset SentOnUtc { get; set; } = DateTimeOffset.UtcNow;
-
-            [JsonProperty("guidValue")]
-            public string GuidValue { get; set; }
         }
     }
 }

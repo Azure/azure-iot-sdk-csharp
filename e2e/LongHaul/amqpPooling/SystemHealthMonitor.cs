@@ -3,25 +3,22 @@
 
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using System.Threading;
+using System.Threading.Tasks;
 using Mash.Logging;
 using static Microsoft.Azure.Devices.LongHaul.AmqpPooling.LoggingConstants;
-using Microsoft.ApplicationInsights.Channel;
 
 namespace Microsoft.Azure.Devices.LongHaul.AmqpPooling
 {
     internal class SystemHealthMonitor
     {
-        private readonly IotHub _iotHub;
+        private readonly int _port;
         private readonly Logger _logger;
-        private static int s_port;
         private static readonly TimeSpan s_interval = TimeSpan.FromSeconds(3);
 
-        public SystemHealthMonitor(IotHub iotHub, int portFilter, Logger logger)
+        public SystemHealthMonitor(int portFilter, Logger logger)
         {
-            _iotHub = iotHub;
-            s_port = portFilter;
+            _port = portFilter;
             _logger = logger;
             _logger.LoggerContext.Add(Component, nameof(SystemHealthMonitor));
         }
@@ -41,21 +38,19 @@ namespace Microsoft.Azure.Devices.LongHaul.AmqpPooling
 
             while (!ct.IsCancellationRequested)
             {
-                BuildAndLogSystemHealth(_logger);
+                BuildAndLogSystemHealth();
 
                 await Task.Delay(s_interval, ct).ConfigureAwait(false);
             }
         }
 
-        internal static SystemHealthTelemetry BuildAndLogSystemHealth(Logger logger)
+        internal void BuildAndLogSystemHealth()
         {
-            var telemetry = new SystemHealthTelemetry(s_port);
-            logger.Metric(nameof(telemetry.TotalAssignedMemoryBytes), telemetry.TotalAssignedMemoryBytes);
-            logger.Metric(nameof(telemetry.ProcessCpuUsagePercent), telemetry.ProcessCpuUsagePercent);
-            logger.Metric(nameof(telemetry.TotalGCBytes), telemetry.TotalGCBytes);
-            logger.Metric(nameof(telemetry.ActiveTcpConnections), telemetry.ActiveTcpConnections);
-
-            return telemetry;
+            var telemetry = new SystemHealthTelemetry(_port);
+            _logger.Metric(nameof(telemetry.TotalAssignedMemoryBytes), telemetry.TotalAssignedMemoryBytes);
+            _logger.Metric(nameof(telemetry.ProcessCpuUsagePercent), telemetry.ProcessCpuUsagePercent);
+            _logger.Metric(nameof(telemetry.TotalGCBytes), telemetry.TotalGCBytes);
+            _logger.Metric(nameof(telemetry.ActiveTcpConnections), telemetry.ActiveTcpConnections);
         }
     }
 }

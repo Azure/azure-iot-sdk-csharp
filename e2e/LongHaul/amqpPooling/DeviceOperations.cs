@@ -8,11 +8,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using Mash.Logging;
 using Microsoft.Azure.Devices.Client;
+using Newtonsoft.Json;
 using static Microsoft.Azure.Devices.LongHaul.AmqpPooling.LoggingConstants;
 
 namespace Microsoft.Azure.Devices.LongHaul.AmqpPooling
 {
-    internal class DeviceOperations
+    internal class DeviceOperations : IAsyncDisposable
     {
         private readonly IotHubDeviceClient _deviceClient;
         private readonly string _deviceId;
@@ -24,7 +25,7 @@ namespace Microsoft.Azure.Devices.LongHaul.AmqpPooling
         private RecommendedAction _disconnectedRecommendedAction;
 
         private volatile int _connectionStatusChangeCount = 0;
-        private long _totalTelemetryMessagesSent = 0;
+        private static readonly TimeSpan s_messageLoopSleepTime = TimeSpan.FromSeconds(3);
 
         public DeviceOperations(IotHubDeviceClient deviceClient, string deviceId, Logger logger)
         {
@@ -36,8 +37,6 @@ namespace Microsoft.Azure.Devices.LongHaul.AmqpPooling
 
         public bool IsConnected => _deviceClient.ConnectionStatusInfo.Status == ConnectionStatus.Connected;
 
-        public IotHubDeviceClient DeviceClient => _deviceClient;
-
         public async Task InitializeAsync()
         {
             // Set the device client connection status change handler
@@ -46,28 +45,37 @@ namespace Microsoft.Azure.Devices.LongHaul.AmqpPooling
             await _deviceClient.OpenAsync().ConfigureAwait(false);
         }
 
-        public async Task<Task> SendAsync(TelemetryMessage message, CancellationToken ct)
+        public async Task SendMessagesAsync(CancellationToken ct)
         {
-            try
+            var sw = new Stopwatch();
+            long totalTelemetryMessagesSent = 0;
+
+            while (!ct.IsCancellationRequested)
             {
-                var sw = new Stopwatch();
+                try
+                {
+                    var message = new TelemetryMessage(
+                        new DeviceTelemetry
+                        {
+                            DeviceId = _deviceId,
+                            GuidValue = Guid.NewGuid().ToString(),
+                        });
 
-                _logger.Trace($"Sending a telemetry message from the device with Id [{_deviceId}].", TraceSeverity.Information);
-                sw.Restart();
 
-                await _deviceClient.SendTelemetryAsync(message, ct).ConfigureAwait(false);
-                sw.Stop();
+                    sw.Restart();
+                    await _deviceClient.SendTelemetryAsync(message, ct).ConfigureAwait(false);
+                    sw.Stop();
+                    _logger.Trace($"Sent a telemetry message from the device with Id [{_deviceId}].", TraceSeverity.Information);
 
-                _logger.Metric(TelemetryMessageDelaySeconds, sw.Elapsed.TotalSeconds);
-                _logger.Metric(TotalTelemetryMessagesSent, ++_totalTelemetryMessagesSent);
+                    _logger.Metric(TelemetryMessageDelaySeconds, sw.Elapsed.TotalSeconds);
+                    _logger.Metric(TotalTelemetryMessagesSent, ++totalTelemetryMessagesSent);
+                }
+                catch (Exception ex)
+                {
+                    _logger.Trace($"Exception when sending telemetry from the device with Id [{_deviceId}].\n{ex}", TraceSeverity.Warning);
+                }
 
-                return Task.CompletedTask;
-            }
-            catch (Exception ex)
-            {
-                _logger.Trace($"Exception when sending telemetry from the device with Id [{_deviceId}].\n{ex}", TraceSeverity.Warning);
-
-                return Task.FromException(ex);
+                await Task.Delay(s_messageLoopSleepTime).ConfigureAwait(false);
             }
         }
 
@@ -140,6 +148,23 @@ namespace Microsoft.Azure.Devices.LongHaul.AmqpPooling
                     _logger.Trace("Quitting.", TraceSeverity.Information);
                     break;
             }
+        }
+
+        public async ValueTask DisposeAsync()
+        {
+            await _deviceClient.DisposeAsync();
+        }
+
+        private class DeviceTelemetry
+        {
+            [JsonProperty("deviceId")]
+            public string DeviceId { get; set; }
+
+            [JsonProperty("guidValue")]
+            public string GuidValue { get; set; }
+
+            [JsonProperty("sentTimeUtc")]
+            public DateTimeOffset SentOnUtc { get; set; } = DateTimeOffset.UtcNow;
         }
     }
 }

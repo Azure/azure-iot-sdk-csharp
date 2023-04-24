@@ -59,7 +59,9 @@ namespace Microsoft.Azure.Devices.LongHaul.AmqpPooling
             s_port = PortFilter(parameters);
 
             // Log system health before initializing DeviceManager
-            SystemHealthMonitor.BuildAndLogSystemHealth(s_logger);
+
+            var systemHealthMonitor = new SystemHealthMonitor(s_port, s_logger.Clone());
+            systemHealthMonitor.BuildAndLogSystemHealth();
 
             s_logger.Event(StartingRun);
 
@@ -82,24 +84,17 @@ namespace Microsoft.Azure.Devices.LongHaul.AmqpPooling
             IList<Device> devices = await registerManager.AddDevicesAsync(cancellationTokenSource.Token).ConfigureAwait(false);
 
             // Log system health before initializing DeviceManager
-            SystemHealthMonitor.BuildAndLogSystemHealth(s_logger);
+            systemHealthMonitor.BuildAndLogSystemHealth();
             await using var iotHub = new IotHub(s_logger, parameters, devices);
 
-            foreach (KeyValuePair<string, string> prop in s_commonProperties)
-            {
-                iotHub.TelemetryUserProperties.Add(prop.Key, prop.Value);
-            }
-
             await iotHub.InitializeAsync().ConfigureAwait(false);
-
-            var systemHealthMonitor = new SystemHealthMonitor(iotHub, s_port, s_logger.Clone());
 
             try
             {
                 await Task
                     .WhenAll(
                         systemHealthMonitor.RunAsync(cancellationTokenSource.Token),
-                        iotHub.SendTelemetryMessagesAsync(cancellationTokenSource.Token))
+                        iotHub.RunDevicesTasksAsync(cancellationTokenSource.Token))
                     .ConfigureAwait(false);
             }
             catch (OperationCanceledException) { } // user signaled an exit
@@ -117,7 +112,7 @@ namespace Microsoft.Azure.Devices.LongHaul.AmqpPooling
             await iotHub.DisposeAsync().ConfigureAwait(false);
 
             // Log system health after disposing hub
-            SystemHealthMonitor.BuildAndLogSystemHealth(s_logger);
+            systemHealthMonitor.BuildAndLogSystemHealth();
 
             s_logger.Event(EndingRun);
             s_logger.Flush();
