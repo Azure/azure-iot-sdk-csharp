@@ -90,7 +90,8 @@ namespace Microsoft.Azure.Devices.LongHaul.AmqpPooling
                 });
 
             _logger.Trace(
-                $"Connection status changed ({++_connectionStatusChangeCount}): status=[{status}], reason=[{reason}], recommendation=[{recommendedAction}]",
+                $"Device [{_deviceId}]: Connection status changed ({++_connectionStatusChangeCount}).\n" +
+                $"status=[{status}], reason=[{reason}], recommendation=[{recommendedAction}]",
                 TraceSeverity.Information);
 
             if (IsConnected)

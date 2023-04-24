@@ -75,6 +75,9 @@ namespace Microsoft.Azure.Devices.LongHaul.AmqpPooling
                 Console.WriteLine("Exiting...");
             };
 
+            // Clean up devices with "LongHaulAmqpPoolingDevice_" before running the app
+            await registerManager.RemoveDevicesBeforeRunningAsync(cancellationTokenSource.Token).ConfigureAwait(false);
+
             // Register devices to the IoT hub
             IList<Device> devices = await registerManager.AddDevicesAsync(cancellationTokenSource.Token).ConfigureAwait(false);
 

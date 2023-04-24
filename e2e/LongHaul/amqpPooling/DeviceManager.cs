@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure;
 using Mash.Logging;
 
 namespace Microsoft.Azure.Devices.LongHaul.AmqpPooling
@@ -26,6 +27,22 @@ namespace Microsoft.Azure.Devices.LongHaul.AmqpPooling
 
             s_serviceClient = new IotHubServiceClient(parameters.IotHubConnectionString);
             s_devices = new List<Device>(_devicesCount);
+        }
+
+        public async Task RemoveDevicesBeforeRunningAsync(CancellationToken ct)
+        {
+            _logger.Trace($"Clean up devices with Id prefix [{DevicePrefix}] before running the app.", TraceSeverity.Information);
+
+            AsyncPageable<ClientTwin> allDevices = s_serviceClient.Query.Create<ClientTwin>("SELECT deviceId FROM devices", ct);
+
+            await foreach (ClientTwin device in allDevices)
+            {
+                string deviceId = device.DeviceId;
+                if(deviceId.StartsWith(DevicePrefix))
+                {
+                    await s_serviceClient.Devices.DeleteAsync(deviceId).ConfigureAwait(false);
+                }
+            }
         }
 
         public async Task<IList<Device>> AddDevicesAsync(CancellationToken ct)
