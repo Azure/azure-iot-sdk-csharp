@@ -65,6 +65,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
 
             HttpMessageHandler httpMessageHandler;
+            _usingX509ClientCert = transportSettings.ClientCertificate != null;
 #if NET451
             TlsVersions.Instance.SetLegacyAcceptableVersions();
 
@@ -73,14 +74,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
             var webRequestHandler = new WebRequestHandler();
 #pragma warning restore CA2000 // Dispose objects before losing scope
 
-            if (transportSettings.ClientCertificate != null)
+            if (_usingX509ClientCert)
             {
                 webRequestHandler.ClientCertificates.Add(transportSettings.ClientCertificate);
-                _usingX509ClientCert = true;
-            }
-            else
-            {
-                _usingX509ClientCert = false;
             }
 
             if (proxy != DefaultWebProxySettings.Instance)
@@ -102,15 +98,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 socketsHandler.SslOptions.CertificateRevocationCheckMode = X509RevocationMode.NoCheck;
             }
 
-            if (transportSettings.ClientCertificate != null)
+            if (_usingX509ClientCert)
             {
                 socketsHandler.SslOptions.ClientCertificates =
                     new X509CertificateCollection() { transportSettings.ClientCertificate };
-                _usingX509ClientCert = true;
-            }
-            else
-            {
-                _usingX509ClientCert = false;
             }
 
             if (proxy != DefaultWebProxySettings.Instance)
@@ -129,14 +120,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
             httpClientHandler.SslProtocols = TlsVersions.Instance.Preferred;
             httpClientHandler.CheckCertificateRevocationList = TlsVersions.Instance.CertificateRevocationCheck;
 
-            if (transportSettings.ClientCertificate != null)
+            if (_usingX509ClientCert)
             {
                 httpClientHandler.ClientCertificates.Add(transportSettings.ClientCertificate);
-                _usingX509ClientCert = true;
-            }
-            else
-            {
-                _usingX509ClientCert = false;
             }
 
             if (proxy != DefaultWebProxySettings.Instance)
