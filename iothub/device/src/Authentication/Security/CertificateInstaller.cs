@@ -27,6 +27,9 @@ namespace Microsoft.Azure.Devices.Client
             // Device client we'll want to ensure these actions (get certs, install certs) are atomic.
             lock (s_certOperationsLock)
             {
+                // Although this looks like we're opening the root CA store, StoreName.CertificateAuthority is actually for the intermediate store.
+                // Installing them here makes them available by SSLStream to include them in a request.
+                // It does not make the certs trusted for requests to remote servers that use them.
                 var store = new X509Store(StoreName.CertificateAuthority, StoreLocation.CurrentUser);
 
                 store.Open(OpenFlags.ReadWrite);

@@ -132,6 +132,13 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The full chain of certificates from the one used to sign the client certificate to the one uploaded to the service.
         /// </summary>
+        /// <remarks>
+        /// If supplied, the certificate chain will be verified and sent to the service in the request by adding them to the current user
+        /// intermediate certificate store.
+        /// <para>
+        /// If not specified, they must be installed to the certificate store by the user.
+        /// </para>
+        /// </remarks>
         public X509Certificate2Collection CertificateChain { get; set; }
 
         /// <summary>
