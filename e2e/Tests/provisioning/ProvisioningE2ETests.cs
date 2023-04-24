@@ -669,7 +669,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             {
                 clientOptions.TransportSettings.Proxy = proxyServerAddress == null
                     ? null
-                    : new WebProxy(s_proxyServerAddress);
+                    : new WebProxy(proxyServerAddress);
             }
 
             var provClient = new ProvisioningDeviceClient(
@@ -678,8 +678,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                 auth,
                 clientOptions);
 
-            using var cts = new CancellationTokenSource(PassingTimeoutMilliseconds);
-
             DeviceRegistrationResult result = null;
             IAuthenticationMethod authMethod = null;
 
@@ -687,24 +685,28 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
             try
             {
+                using var overallCts = new CancellationTokenSource(PassingTimeoutMilliseconds);
+
                 // Trying to register simultaneously can cause conflicts (409). Retry in those scenarios to succeed.
-                int tryCount = 0;
                 while (true)
                 {
+                    using var attemptCts = new CancellationTokenSource(FailingTimeoutMilliseconds);
+                    using var opCts = CancellationTokenSource.CreateLinkedTokenSource(overallCts.Token, attemptCts.Token);
+
                     try
                     {
-                        result = await provClient.RegisterAsync(cts.Token).ConfigureAwait(false);
+                        result = await provClient.RegisterAsync(opCts.Token).ConfigureAwait(false);
                         deviceId = result.DeviceId;
                         break;
                     }
                     // Catching all ProvisioningClientException as the status code is not the same for Mqtt, Amqp and Http.
                     // It should be safe to retry on any non-transient exception just for E2E tests as we have concurrency issues.
-                    catch (ProvisioningClientException ex) when (++tryCount < MaxTryCount)
+                    catch (ProvisioningClientException ex)
                     {
                         VerboseTestLogger.WriteLine($"ProvisioningDeviceClient.RegisterAsync failed because: {ex.Message}");
                         await Task.Delay(TimeSpan.FromSeconds(2)).ConfigureAwait(false);
                     }
-                    catch (OperationCanceledException oce) when (cts.IsCancellationRequested && ++tryCount < MaxTryCount)
+                    catch (OperationCanceledException oce) when (attemptCts.IsCancellationRequested)
                     {
                         // This catch statement shouldn't execute when the test itself is cancelled, but will
                         // execute when the registerAsync(cts) call times out 
