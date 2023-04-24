@@ -10,7 +10,7 @@ using Mash.Logging;
 
 namespace Microsoft.Azure.Devices.LongHaul.AmqpPooling
 {
-    internal class DeviceManager : IAsyncDisposable
+    internal class DeviceManager : IDisposable
     {
         private readonly Logger _logger;
         private readonly int _devicesCount;
@@ -29,25 +29,26 @@ namespace Microsoft.Azure.Devices.LongHaul.AmqpPooling
             s_devices = new List<Device>(_devicesCount);
         }
 
-        public async Task RemoveDevicesBeforeRunningAsync(CancellationToken ct)
+        public async Task RemoveDevicesAsync(CancellationToken ct = default)
         {
-            _logger.Trace($"Clean up devices with Id prefix [{DevicePrefix}] before running the app.", TraceSeverity.Information);
+            _logger.Trace($"Clean up devices with Id prefix [{DevicePrefix}].", TraceSeverity.Information);
 
             AsyncPageable<ClientTwin> allDevices = s_serviceClient.Query.Create<ClientTwin>("SELECT deviceId FROM devices", ct);
 
             await foreach (ClientTwin device in allDevices)
             {
                 string deviceId = device.DeviceId;
-                if(deviceId.StartsWith(DevicePrefix))
+                if (deviceId.StartsWith(DevicePrefix))
                 {
                     await s_serviceClient.Devices.DeleteAsync(deviceId).ConfigureAwait(false);
+                    _logger.Trace($"Deleted the device with Id [{deviceId}].", TraceSeverity.Verbose);
                 }
             }
         }
 
         public async Task<IList<Device>> AddDevicesAsync(CancellationToken ct)
         {
-            _logger.Trace($"Start creating totally {_devicesCount} devices.", TraceSeverity.Information);
+            _logger.Trace($"Start creating {_devicesCount} devices.", TraceSeverity.Information);
 
             for (int i = 0; i < _devicesCount; i++)
             {
@@ -62,28 +63,10 @@ namespace Microsoft.Azure.Devices.LongHaul.AmqpPooling
             return s_devices;
         }
 
-        public async Task RemoveDevicesAsync()
-        {
-            _logger.Trace($"Start deleting totally {_devicesCount} devices for Amqp pooling long haul testing.", TraceSeverity.Information);
-
-            foreach (var device in s_devices)
-            {
-                string deviceId = device.Id;
-                _logger.Trace($"Deleting a device with Id {deviceId}", TraceSeverity.Verbose);
-                await s_serviceClient.Devices.DeleteAsync(deviceId).ConfigureAwait(false);
-            }
-
-            s_devices = null;
-        }
-
-        public async ValueTask DisposeAsync()
+        public void Dispose()
         {
             _logger.Trace($"Disposing {nameof(DeviceManager)} instance...", TraceSeverity.Verbose);
 
-            if (s_devices != null)
-            {
-                await RemoveDevicesAsync().ConfigureAwait(false);
-            }
             s_serviceClient?.Dispose();
 
             _logger.Trace($"{nameof(DeviceManager)} instance disposed.", TraceSeverity.Verbose);

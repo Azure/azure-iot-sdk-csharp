@@ -65,7 +65,7 @@ namespace Microsoft.Azure.Devices.LongHaul.AmqpPooling
 
             s_logger.Event(StartingRun);
 
-            await using var registerManager = new DeviceManager(s_logger, parameters);
+            using var registerManager = new DeviceManager(s_logger, parameters);
 
             // Set up a condition to quit the sample
             Console.WriteLine("Press CTRL+C to exit");
@@ -78,7 +78,7 @@ namespace Microsoft.Azure.Devices.LongHaul.AmqpPooling
             };
 
             // Clean up devices with "LongHaulAmqpPoolingDevice_" before running the app
-            await registerManager.RemoveDevicesBeforeRunningAsync(cancellationTokenSource.Token).ConfigureAwait(false);
+            await registerManager.RemoveDevicesAsync(cancellationTokenSource.Token).ConfigureAwait(false);
 
             // Register devices to the IoT hub
             IList<Device> devices = await registerManager.AddDevicesAsync(cancellationTokenSource.Token).ConfigureAwait(false);
