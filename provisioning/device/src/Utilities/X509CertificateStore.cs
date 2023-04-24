@@ -14,6 +14,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
         public X509CertificateStore()
         {
+            // Although this looks like we're opening the root CA store, StoreName.CertificateAuthority is actually for the intermediate store.
+            // Installing them here makes them available by SSLStream to include them in a request.
+            // It does not make the certs trusted for requests to remote servers that use them.
             _store = new X509Store(StoreName.CertificateAuthority, StoreLocation.CurrentUser);
             _store.Open(OpenFlags.ReadWrite);
         }

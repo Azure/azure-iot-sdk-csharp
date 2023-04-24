@@ -366,17 +366,15 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             string password = "";
             if (provisioningRequest.Authentication is AuthenticationProviderX509 x509Auth)
             {
-                var certs = new List<X509Certificate>
+                tlsParameters.Certificates = new List<X509Certificate>
                 {
                     x509Auth.ClientCertificate,
                 };
-
-                tlsParameters.Certificates = certs;
             }
-            else if (provisioningRequest.Authentication is AuthenticationProviderSymmetricKey key1)
+            else if (provisioningRequest.Authentication is AuthenticationProviderSymmetricKey keyAuth)
             {
                 password = ProvisioningSasBuilder.BuildSasSignature(
-                    key1.PrimaryKey,
+                    keyAuth.PrimaryKey,
                     string.Concat(
                         provisioningRequest.IdScope,
                         "/registrations/",

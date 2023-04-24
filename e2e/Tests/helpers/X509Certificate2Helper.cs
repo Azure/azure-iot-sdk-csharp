@@ -41,7 +41,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
             string leafCertificatePfxFile = Path.Combine(destinationCertificateFolder.FullName, $"{leafCertificateSubject}.pfx");
 
             // Generate the private key for the certificate
-            VerboseTestLogger.WriteLine($"Generating the private key for the certificate with subject {leafCertificateSubject} using ...\n");
+            VerboseTestLogger.WriteLine($"Generating the private key for the certificate with subject {leafCertificateSubject} using...\n");
             string keyGen = $"genpkey" +
                 $" -out \"{leafCertificateKeyFile}\"" +
                 $" -algorithm RSA" +
@@ -54,7 +54,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
             keyGenCmdProcess.ExitCode.Should().Be(0, $"\"{keyGen}\" exited with error {keyGenCmdProcess.StandardError.ReadToEnd()}.");
 
             // Generate the certificate signing request for the certificate
-            VerboseTestLogger.WriteLine($"Generating the certificate signing request for the certificate with subject {leafCertificateSubject} using ...\n");
+            VerboseTestLogger.WriteLine($"Generating the certificate signing request for the certificate with subject {leafCertificateSubject} using...\n");
             string csrGen = $"req" +
                 $" -new" +
                 $" -subj /CN={leafCertificateSubject}" +
@@ -73,7 +73,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
             if (string.IsNullOrWhiteSpace(signingIntermediateCertificateSubject))
             {
                 // Self-sign the certificate signing request generating a file containing the public certificate information
-                VerboseTestLogger.WriteLine($"Self-sign the certificate with subject {leafCertificateSubject} using ...\n");
+                VerboseTestLogger.WriteLine($"Self-sign the certificate with subject {leafCertificateSubject} using...\n");
                 signGen = $"x509" +
                     $" -req" +
                     $" -days 7" +
@@ -85,7 +85,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
             else
             {
                 // Use the public certificate and private keys from the intermediate certificate to sign the leaf device certificate.
-                VerboseTestLogger.WriteLine($"Sign the certificate with subject {leafCertificateSubject} using the keys from intermediate certificate with subject {signingIntermediateCertificateSubject} ...\n");
+                VerboseTestLogger.WriteLine($"Sign the certificate with subject {leafCertificateSubject} using the keys from intermediate certificate with subject {signingIntermediateCertificateSubject}...\n");
                 signGen = $"x509" +
                     $" -req" +
                     $" -days 7" +
@@ -103,7 +103,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
             signGenCmdProcess.ExitCode.Should().Be(0, $"\"{signGen}\" exited with error {signGenCmdProcess.StandardError.ReadToEnd()}.");
 
             // Generate the pfx file containing both public certificate and private key information
-            VerboseTestLogger.WriteLine($"Generating {leafCertificateSubject}.pfx file using ...\n");
+            VerboseTestLogger.WriteLine($"Generating {leafCertificateSubject}.pfx file using...\n");
             string pfxGen = $"pkcs12" +
                 $" -export" +
                 $" -in \"{leafCertificateCerFile}\"" +
@@ -134,7 +134,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
 
             File.WriteAllBytes(pfxFile, buff);
 
-            Console.WriteLine($"Extracting the private key from intermediate certificate with subject {pfxCertificate.Subject} file using ...\n");
+            Console.WriteLine($"Extracting the private key from intermediate certificate with subject {pfxCertificate.Subject} file using...\n");
             string extractKey = $"pkcs12" +
                 $" -in \"{pfxFile}\"" +
                 $" -nocerts" +
@@ -148,7 +148,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
             extractKeyCmdProcess.WaitForExit();
             extractKeyCmdProcess.ExitCode.Should().Be(0, $"\"{extractKey}\" exited with error {extractKeyCmdProcess.StandardError.ReadToEnd()}.");
 
-            Console.WriteLine($"Extracting the public certificate from intermediate certificate with subject {pfxCertificate.Subject} file using ...\n");
+            Console.WriteLine($"Extracting the public certificate from intermediate certificate with subject {pfxCertificate.Subject} file using...\n");
             string extractCertificate = $"pkcs12" +
                 $" -in \"{pfxFile}\"" +
                 $" -nokeys" +

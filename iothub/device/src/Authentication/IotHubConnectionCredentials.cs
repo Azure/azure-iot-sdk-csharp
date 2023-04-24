@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client.HsmAuthentication;
+using static System.Net.WebRequestMethods;
 
 namespace Microsoft.Azure.Devices.Client
 {
@@ -132,6 +133,14 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The full chain of certificates from the one used to sign the client certificate to the one uploaded to the service.
         /// </summary>
+        /// <remarks>
+        /// If supplied, the certificate chain will be verified and sent to the service in the request by adding them to the current user's
+        /// Intermediate Certification Authorities store.
+        /// <para>
+        /// If not specified, they must be installed to the certificate store by the user.
+        /// </para>
+        /// </remarks>
+        /// <seealso href="https://learn.microsoft.com/troubleshoot/developer/webapps/iis/www-authentication-authorization/configure-intermediate-certificates"/>
         public X509Certificate2Collection CertificateChain { get; set; }
 
         /// <summary>
