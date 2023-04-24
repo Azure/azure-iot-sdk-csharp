@@ -19,8 +19,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
         public const string TotalM2mMessagesRejected = "TotalM2mMessagesRejected";
         public const string M2mMessageOperationSeconds = "M2mMessageOperationSeconds";
         public const string ReportedTwinUpdateToModuleOperationSeconds = "ReportedTwinUpdateToModuleOperationSeconds";
-        public const string DirectMethodToModuleRoundTripSeconds = "DirectMethodToModuleRoundTripSeconds";
-        public const string TotalDirectMethodCallsToModuleCount = "TotalDirectMethodCallsToModuleCount";
+        public const string TotalDirectMethodCallsModuleToModuleCount = "TotalDirectMethodCallsModuleToModuleCount";
         public const string ModuleClientCloseDelaySeconds = "ModuleClientCloseDelaySeconds";
         public const string ModuleClientOpenDelaySeconds = "ModuleClientOpenDelaySeconds";
 

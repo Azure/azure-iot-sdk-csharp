@@ -370,7 +370,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
                             _logger.Metric(
                                 C2mDirectMethodDelaySeconds,
                                 (DateTimeOffset.UtcNow - methodPayload.CurrentTimeUtc).TotalSeconds);
-                            _logger.Metric(TotalDirectMethodCallsToModuleCount, ++_totalMethodCallsToModuleCount);
+                            _logger.Metric(TotalDirectMethodCallsModuleToModuleCount, ++_totalMethodCallsToModuleCount);
 
                             // Log the current time again and send the response back to the service app.
                             methodPayload.CurrentTimeUtc = DateTimeOffset.UtcNow;
