@@ -23,8 +23,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         private readonly IConnectionCredentials _connectionCredentials;
         private readonly IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> _defaultErrorMapping;
         private readonly bool _usingX509ClientCert;
-        private readonly HttpClient _httpClientObj;
-        private readonly HttpClientHandler _httpClientHandler;
+        private readonly HttpClient _httpClient;
         private readonly AdditionalClientInformation _additionalClientInformation;
 
         // These default values are consistent with Azure.Core default values:
@@ -54,44 +53,54 @@ namespace Microsoft.Azure.Devices.Client.Transport
             _baseAddress = baseAddress;
             _connectionCredentials = connectionCredentials;
             _defaultErrorMapping = new ReadOnlyDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>(defaultErrorMapping);
+            _additionalClientInformation = additionalClientInformation;
 
-            _httpClientHandler = new HttpClientHandler
+            if (iotHubClientHttpSettings.HttpClient != null)
+            {
+                _httpClient = iotHubClientHttpSettings.HttpClient;
+                return;
+            }
+
+#pragma warning disable CA2000 // Dispose objects before losing scope
+            // This HttpClientHandler is used by the locally saved HttpClient. When dispose() is called
+            // on this object, it will dispose both the HttpClient and this handler
+            var httpClientHandler = new HttpClientHandler
             {
                 SslProtocols = iotHubClientHttpSettings.SslProtocols,
                 CheckCertificateRevocationList = iotHubClientHttpSettings.CertificateRevocationCheck,
                 ServerCertificateCustomValidationCallback = iotHubClientHttpSettings.ServerCertificateCustomValidationCallback,
             };
+#pragma warning restore CA2000 // Dispose objects before losing scope
 
             X509Certificate2 clientCert = _connectionCredentials.ClientCertificate;
             if (clientCert != null)
             {
-                _httpClientHandler.ClientCertificates.Add(clientCert);
+                httpClientHandler.ClientCertificates.Add(clientCert);
                 _usingX509ClientCert = true;
             }
 
             IWebProxy proxy = iotHubClientHttpSettings.Proxy;
             if (proxy != null)
             {
-                _httpClientHandler.UseProxy = true;
-                _httpClientHandler.Proxy = proxy;
+                httpClientHandler.UseProxy = true;
+                httpClientHandler.Proxy = proxy;
             }
 
-            _httpClientHandler.MaxConnectionsPerServer = DefaultMaxConnectionsPerServer;
+            httpClientHandler.MaxConnectionsPerServer = DefaultMaxConnectionsPerServer;
             ServicePoint servicePoint = ServicePointManager.FindServicePoint(_baseAddress);
             servicePoint.ConnectionLeaseTimeout = s_defaultConnectionLeaseTimeout.Milliseconds;
 
-            _httpClientObj = new HttpClient(_httpClientHandler)
+            _httpClient = new HttpClient(httpClientHandler, true)
             {
                 BaseAddress = _baseAddress,
                 Timeout = timeout,
             };
 
-            _httpClientObj.BaseAddress = _baseAddress;
-            _httpClientObj.Timeout = timeout;
-            _httpClientObj.DefaultRequestHeaders.Accept.Add(
+            _httpClient.BaseAddress = _baseAddress;
+            _httpClient.Timeout = timeout;
+            _httpClient.DefaultRequestHeaders.Accept.Add(
                 new MediaTypeWithQualityHeaderValue(CommonConstants.MediaTypeForDeviceManagementApis));
-            _httpClientObj.DefaultRequestHeaders.ExpectContinue = false;
-            _additionalClientInformation = additionalClientInformation;
+            _httpClient.DefaultRequestHeaders.ExpectContinue = false;
         }
 
         private static async Task<T> ReadResponseMessageAsync<T>(HttpResponseMessage message, CancellationToken token)
@@ -167,7 +176,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 HttpResponseMessage responseMsg;
                 try
                 {
-                    responseMsg = await _httpClientObj.SendAsync(msg, cancellationToken).ConfigureAwait(false);
+                    responseMsg = await _httpClient.SendAsync(msg, cancellationToken).ConfigureAwait(false);
                     if (responseMsg == null)
                     {
                         throw new InvalidOperationException(
@@ -254,7 +263,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         public void Dispose()
         {
-            _httpClientObj?.Dispose();
+            _httpClient?.Dispose();
         }
     }
 }

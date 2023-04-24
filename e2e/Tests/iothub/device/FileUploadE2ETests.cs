@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using System.Net;
+using System.Net.Http;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
@@ -100,6 +101,42 @@ namespace Microsoft.Azure.Devices.E2ETests
             await UploadFileGranularAsync(fileStreamSource, filename, fileUploadTransportSettings, isCorrelationIdValid: true, ct: cts.Token).ConfigureAwait(false);
         }
 
+        // File upload requests can be configured to use a user-provided HttpClient
+        [TestMethod]
+        public async Task FileUpload_UsesCustomHttpClient()
+        {
+            using var cts = new CancellationTokenSource(s_testTimeout);
+
+            await using TestDevice testDevice = await TestDevice
+                .GetTestDeviceAsync(_devicePrefix, TestDeviceType.Sasl, cts.Token)
+                .ConfigureAwait(false);
+
+            using var CustomHttpMessageHandler = new CustomHttpMessageHandler();
+            var fileUploadSettings = new IotHubClientHttpSettings()
+            {
+                // This HttpClient should throw a NotImplementedException whenever it makes an HTTP
+                // request
+                HttpClient = new HttpClient(CustomHttpMessageHandler),
+            };
+
+            var clientOptions = new IotHubClientOptions
+            {
+                HttpOperationTransportSettings = fileUploadSettings,
+                RetryPolicy = new IotHubClientNoRetry(),
+            };
+
+            await using var deviceClient = 
+                new IotHubDeviceClient(testDevice.ConnectionString, clientOptions);
+
+            await deviceClient.OpenAsync(cts.Token).ConfigureAwait(false);
+
+            var request = new FileUploadSasUriRequest("someBlobName");
+            var ex = await Assert.ThrowsExceptionAsync<IotHubClientException>(
+                        async () => await deviceClient.GetFileUploadSasUriAsync(request).ConfigureAwait(false),
+                        "The provided custom HttpMessageHandler throws NotImplementedException when making any HTTP request");
+            ex.InnerException.Should().BeOfType(typeof(NotImplementedException));
+        }
+
         private async Task UploadFileGranularAsync(
             Stream source,
             string filename,
@@ -118,7 +155,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             IotHubDeviceClient deviceClient;
             var clientOptions = new IotHubClientOptions
             {
-                FileUploadTransportSettings = fileUploadTransportSettings,
+                HttpOperationTransportSettings = fileUploadTransportSettings,
 
                 // Turn off retry policy so that correlation ID mis-match errors are returned to the app immediately
                 RetryPolicy = new IotHubClientNoRetry(),
@@ -131,7 +168,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 cert = s_selfSignedCertificate;
                 x509Auth = new ClientAuthenticationWithX509Certificate(cert, testDevice.Id);
 
-                deviceClient = new IotHubDeviceClient(testDevice.IotHubHostName, x509Auth, new IotHubClientOptions { FileUploadTransportSettings = fileUploadTransportSettings });
+                deviceClient = new IotHubDeviceClient(testDevice.IotHubHostName, x509Auth, new IotHubClientOptions { HttpOperationTransportSettings = fileUploadTransportSettings });
             }
             else
             {
@@ -199,7 +236,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             var options = new IotHubClientOptions(clientMainTransport)
             {
-                FileUploadTransportSettings = fileUploadSettings,
+                HttpOperationTransportSettings = fileUploadSettings,
             };
             IotHubDeviceClient deviceClient;
             X509Certificate2 cert = null;
@@ -250,6 +287,14 @@ namespace Microsoft.Azure.Devices.E2ETests
             if (s_selfSignedCertificate is IDisposable disposableCertificate)
             {
                 disposableCertificate?.Dispose();
+            }
+        }
+
+        private class CustomHttpMessageHandler : HttpMessageHandler
+        {
+            protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+            {
+                throw new NotImplementedException("Deliberately not implemented for test purposes");
             }
         }
     }

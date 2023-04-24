@@ -50,7 +50,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
         {
             var options = new IotHubClientOptions();
             options.TransportSettings.Should().BeOfType(typeof(IotHubClientMqttSettings));
-            options.FileUploadTransportSettings.Should().BeOfType(typeof(IotHubClientHttpSettings));
+            options.HttpOperationTransportSettings.Should().BeOfType(typeof(IotHubClientHttpSettings));
             options.PayloadConvention.Should().Be(DefaultPayloadConvention.Instance);
             options.SdkAssignsMessageId.Should().Be(SdkAssignsMessageId.Never);
         }
@@ -120,7 +120,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
             X509Certificate2 cert = new Mock<X509Certificate2>().Object;
             var authMethod = new ClientAuthenticationWithX509Certificate(cert, "device1");
             var options = new IotHubClientOptions(new IotHubClientAmqpSettings { PrefetchCount = 100 });
-            options.FileUploadTransportSettings = new IotHubClientHttpSettings()
+            options.HttpOperationTransportSettings = new IotHubClientHttpSettings()
             {
                 Proxy = new WebProxy(),
             };
@@ -169,7 +169,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
             {
                 GatewayHostName = "sampleHost",
                 SdkAssignsMessageId = SdkAssignsMessageId.WhenUnset,
-                FileUploadTransportSettings = new IotHubClientHttpSettings(),
+                HttpOperationTransportSettings = new IotHubClientHttpSettings(),
                 PayloadConvention = DefaultPayloadConvention.Instance,
                 ModelId = "Id",
                 AdditionalUserAgentInfo = "info"
@@ -216,7 +216,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
             {
                 GatewayHostName = "sampleHost",
                 SdkAssignsMessageId = SdkAssignsMessageId.WhenUnset,
-                FileUploadTransportSettings = new IotHubClientHttpSettings(),
+                HttpOperationTransportSettings = new IotHubClientHttpSettings(),
                 PayloadConvention = DefaultPayloadConvention.Instance,
                 ModelId = "Id",
                 AdditionalUserAgentInfo = "info"

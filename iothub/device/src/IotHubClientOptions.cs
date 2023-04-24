@@ -40,10 +40,15 @@ namespace Microsoft.Azure.Devices.Client
         public IotHubClientTransportSettings TransportSettings { get; }
 
         /// <summary>
-        /// The transport settings to use for all file upload operations, regardless of what protocol the device
-        /// client is configured with. All file upload operations take place over https.
+        /// The transport settings to use for all HTTP requests made by this client.
         /// </summary>
-        public IotHubClientHttpSettings FileUploadTransportSettings { get; set; } = new IotHubClientHttpSettings();
+        /// <remarks>
+        /// All <see cref="IotHubDeviceClient"/> file upload operations take place over HTTP regardless of the configured protocol. 
+        /// Additionally, all <see cref="IotHubModuleClient"/> direct method invoking operations (such as 
+        /// <see cref="IotHubModuleClient.InvokeMethodAsync(string, DirectMethodRequest, System.Threading.CancellationToken)"/>) 
+        /// take place over HTTP as well. The settings provided in this class will be used for all these operations.
+        /// </remarks>
+        public IotHubClientHttpSettings HttpOperationTransportSettings { get; set; } = new IotHubClientHttpSettings();
 
         /// <summary>
         /// The payload convention to be used to serialize and encode the payloads exchanged with the service.
@@ -105,7 +110,7 @@ namespace Microsoft.Azure.Devices.Client
 
             return new IotHubClientOptions(transport)
             {
-                FileUploadTransportSettings = (IotHubClientHttpSettings)FileUploadTransportSettings.Clone(),
+                HttpOperationTransportSettings = (IotHubClientHttpSettings)HttpOperationTransportSettings.Clone(),
                 PayloadConvention = PayloadConvention,
                 GatewayHostName = GatewayHostName,
                 ModelId = ModelId,

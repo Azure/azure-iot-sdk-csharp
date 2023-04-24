@@ -68,21 +68,15 @@ namespace Microsoft.Azure.Devices.Client
                 ConnectionStatusChangeHandler = OnConnectionStatusChanged,
                 MessageEventCallback = OnMessageReceivedAsync,
                 RetryPolicy = _clientOptions.RetryPolicy ?? new IotHubClientNoRetry(),
+                HttpOperationTransportSettings = _clientOptions.HttpOperationTransportSettings,
             };
-
-            if (IotHubConnectionCredentials.ModuleId.IsNullOrWhiteSpace())
-            {
-                // Set up file upload settings over HTTP for the device client
-                PipelineContext.HttpOperationTransportSettings = _clientOptions.FileUploadTransportSettings;
-            }
-            else
+            
+            if (!IotHubConnectionCredentials.ModuleId.IsNullOrWhiteSpace())
             {
                 // Set the remote certificate validator for the module client
                 _certValidator = certificateValidator ?? NullCertificateValidator.Instance;
-                PipelineContext.HttpOperationTransportSettings = new IotHubClientHttpSettings
-                {
-                    ServerCertificateCustomValidationCallback = _certValidator.GetCustomCertificateValidation()
-                };
+                PipelineContext.HttpOperationTransportSettings.ServerCertificateCustomValidationCallback =
+                    _certValidator.GetCustomCertificateValidation();
             }
 
             InnerHandler = pipelineBuilder.Build(PipelineContext);
