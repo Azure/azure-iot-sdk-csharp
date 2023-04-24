@@ -20,7 +20,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
         private readonly IotHub _iotHub;
         private readonly Logger _logger;
         private static int s_port;
-        private static readonly TimeSpan s_interval = TimeSpan.FromSeconds(3);
+        private static readonly TimeSpan s_interval = TimeSpan.FromSeconds(4);
 
         public SystemHealthMonitor(IotHub iotHub, int portFilter, Logger logger)
         {

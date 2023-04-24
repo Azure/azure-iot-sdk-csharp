@@ -100,7 +100,6 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                             async Task OperateWithDeviceAsync()
                             {
                                 Logger deviceLogger = _logger.Clone();
-                                deviceLogger.LoggerContext.Add(DeviceId, deviceId);
                                 var deviceOperations = new DeviceOperations(s_serviceClient, deviceId, deviceLogger);
                                 _logger.Trace($"Creating {nameof(DeviceOperations)} on the device [{deviceId}]", TraceSeverity.Verbose);
 
@@ -123,7 +122,6 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                                 }
                             }
 
-                            // Passing in "Operations()" as Task so we don't need to manually call "Invoke()" on it.
                             var operationsTuple = new Tuple<Task, CancellationTokenSource>(OperateWithDeviceAsync(), source);
                             s_onlineDeviceOperations.TryAdd(deviceId, operationsTuple);
                         }
@@ -157,7 +155,8 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
 
                             async Task OperateWithModuleAsync()
                             {
-                                var moduleOperations = new ModuleOperations(s_serviceClient, moduleTwin.DeviceId, moduleTwin.ModuleId, _logger.Clone());
+                                Logger deviceLogger = _logger.Clone();
+                                var moduleOperations = new ModuleOperations(s_serviceClient, moduleTwin.DeviceId, moduleTwin.ModuleId, deviceLogger);
                                 _logger.Trace($"Creating {nameof(ModuleOperations)} on the device: [{moduleTwin.DeviceId}], module: [{moduleTwin.ModuleId}]", TraceSeverity.Verbose);
 
                                 try
@@ -178,7 +177,6 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
                                 }
                             }
 
-                            // Passing in "Operations()" as Task so we don't need to manually call "Invoke()" on it.
                             var operationsTuple = new Tuple<Task, CancellationTokenSource>(OperateWithModuleAsync(), source);
                             s_onlineModuleOperations.TryAdd(moduleId, operationsTuple);
                         }
