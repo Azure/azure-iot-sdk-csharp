@@ -168,7 +168,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                     receivedMessage.TryGetPayload(out T actualPayload).Should().BeTrue();
                     ExpectedOutgoingMessage.Payload.Should().BeOfType<T>();
                     var expectedPayload = (T)ExpectedOutgoingMessage.Payload;
-                    actualPayload.Should().Be(expectedPayload);
+                    actualPayload.Should().BeEquivalentTo(expectedPayload);
 
                     receivedMessage.Properties.Count.Should().Be(ExpectedOutgoingMessage.Properties.Count, $"The count of received properties did not match for device {_testDeviceId}");
                     if (ExpectedOutgoingMessage.Properties.Count > 0)

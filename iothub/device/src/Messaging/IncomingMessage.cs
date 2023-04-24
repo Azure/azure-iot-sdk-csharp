@@ -168,7 +168,7 @@ namespace Microsoft.Azure.Devices.Client
 
             try
             {
-                payload = PayloadConvention.GetObject<T>(_payload);
+                payload = DefaultPayloadConvention.Instance.GetObject<T>(_payload);
 
                 return true;
             }

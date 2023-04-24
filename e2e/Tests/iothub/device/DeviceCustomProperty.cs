@@ -5,7 +5,7 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices.E2ETests.Twins
 {
-    internal class DeviceTwinCustomProperty
+    internal class DeviceCustomProperty
     {
         [JsonPropertyName("customProperty")]
         public string CustomProperty { get; set; }

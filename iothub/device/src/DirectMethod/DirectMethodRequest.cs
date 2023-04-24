@@ -121,7 +121,7 @@ namespace Microsoft.Azure.Devices.Client
 
             try
             {
-                payload = PayloadConvention.GetObject<T>(Payload);
+                payload = DefaultPayloadConvention.Instance.GetObject<T>(Payload);
                 return true;
             }
             catch (Exception ex)

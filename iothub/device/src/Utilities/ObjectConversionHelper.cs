@@ -18,7 +18,7 @@ namespace Microsoft.Azure.Devices.Client
 
             try
             {
-                // We'll serialize the object back to JSON using the user's configured payload convention
+                // We'll serialize the object back to JSON using the default payload convention
                 // and then to the type of their choosing with the same payload convention.
                 value = payloadConvention.GetObject<T>(DefaultPayloadConvention.Instance.GetObjectBytes(objectToCastOrConvert));
                 return true;
