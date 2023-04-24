@@ -63,13 +63,6 @@ The API reference documentation for .NET SDK is [here][dotnet-api-reference].
 To find SDKs in other languages for Azure IoT, please refer to the [azure-iot-sdks][azure-iot-sdks] repository.
 For IoT Hub Management SDK in .NET, please visit [azure-sdk-for-net](https://github.com/Azure/azure-sdk-for-net) repository.
 
-## Need support?
-
-- Have a feature request for SDKs? Please post it on [User Voice](https://feedback.azure.com/forums/321918-azure-iot) to help us prioritize.
-- Have a technical question? Ask on [Stack Overflow](https://stackoverflow.com/questions/tagged/azure-iot-hub) with tag “azure-iot-hub”.
-- Need Support? Every customer with an active Azure subscription has access to [support](https://docs.microsoft.com/azure/azure-supportability/how-to-create-azure-support-request) with guaranteed response time. Consider submitting a ticket and get assistance from Microsoft support team.
-- Found a bug? Please help us fix it by thoroughly documenting it and filing an issue on GitHub (C, Java, .NET, Node.js, Python).
-
 ## Developing applications for Azure IoT
 
 Visit [Azure IoT Dev Center][iot-dev-center] to learn more about developing applications for Azure IoT.
@@ -192,7 +185,25 @@ A couple of examples:
 
 For additional guidance and important information about certificates, please refer to [this blog post](https://techcommunity.microsoft.com/t5/internet-of-things/azure-iot-tls-changes-are-coming-and-why-you-should-care/ba-p/1658456) from the security team.
 
-## Long-Term Support (LTS)
+## Support
+
+The Azure IoT Hub Device Client supported releases is outlined in the following table.
+
+Refer to the [Azure IoT Device SDK lifecycle and support](https://learn.microsoft.com/azure/iot/iot-device-sdks-lifecycle-and-support) for details on the different supported stages.
+
+| Release | Category | End-of-life |
+|-|-|-|
+| 1.41.3 | Active | - |
+| 1.36.8 | Deprecated (LTS) | 2024-03-28 |
+| 2.0.0-preview004 | Preview | 2023-06-13
+
+### Need help?
+- Have a feature request for SDKs? Please post it on [User Voice](https://feedback.azure.com/forums/321918-azure-iot) to help us prioritize.
+- Have a technical question? Ask on [Stack Overflow](https://stackoverflow.com/questions/tagged/azure-iot-hub) with tag “azure-iot-hub”.
+- Need Support? Every customer with an active Azure subscription has access to [support](https://docs.microsoft.com/azure/azure-supportability/how-to-create-azure-support-request) with guaranteed response time. Consider submitting a ticket and get assistance from Microsoft support team.
+- Found a bug? Please help us fix it by thoroughly documenting it and filing an issue on GitHub (C, Java, .NET, Node.js, Python).
+
+### Long-Term Support (LTS)
 
 The project offers a Long-Term Support (LTS) releases to allow users that do not need the latest features to be shielded from unwanted changes.
 
