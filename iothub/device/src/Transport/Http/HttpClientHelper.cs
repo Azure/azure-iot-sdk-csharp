@@ -53,6 +53,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             _baseAddress = baseAddress;
             _connectionCredentials = connectionCredentials;
             _defaultErrorMapping = new ReadOnlyDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>(defaultErrorMapping);
+            _additionalClientInformation = additionalClientInformation;
 
             if (iotHubClientHttpSettings.HttpClient != null)
             {
@@ -100,7 +101,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
             _httpClient.DefaultRequestHeaders.Accept.Add(
                 new MediaTypeWithQualityHeaderValue(CommonConstants.MediaTypeForDeviceManagementApis));
             _httpClient.DefaultRequestHeaders.ExpectContinue = false;
-            _additionalClientInformation = additionalClientInformation;
         }
 
         private static async Task<T> ReadResponseMessageAsync<T>(HttpResponseMessage message, CancellationToken token)

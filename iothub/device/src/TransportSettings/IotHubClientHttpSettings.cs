@@ -53,6 +53,7 @@ namespace Microsoft.Azure.Devices.Client
                 SslProtocols = SslProtocols,
                 CertificateRevocationCheck = CertificateRevocationCheck,
                 ServerCertificateCustomValidationCallback = ServerCertificateCustomValidationCallback,
+                HttpClient = HttpClient,
             };
         }
     }

@@ -68,10 +68,9 @@ namespace Microsoft.Azure.Devices.Client
                 ConnectionStatusChangeHandler = OnConnectionStatusChanged,
                 MessageEventCallback = OnMessageReceivedAsync,
                 RetryPolicy = _clientOptions.RetryPolicy ?? new IotHubClientNoRetry(),
+                HttpOperationTransportSettings = _clientOptions.HttpOperationTransportSettings,
             };
-
-            PipelineContext.HttpOperationTransportSettings = _clientOptions.HttpOperationTransportSettings;
-
+            
             if (!IotHubConnectionCredentials.ModuleId.IsNullOrWhiteSpace())
             {
                 // Set the remote certificate validator for the module client
