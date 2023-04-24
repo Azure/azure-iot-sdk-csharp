@@ -4,9 +4,13 @@
 using System;
 using System.IO;
 using System.Net;
+using System.Net.Http;
 using System.Security.Cryptography.X509Certificates;
+using System.Threading;
 using System.Threading.Tasks;
+using FluentAssertions;
 using Microsoft.Azure.Devices.Client;
+using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Devices.Client.Transport;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -125,6 +129,42 @@ namespace Microsoft.Azure.Devices.E2ETests
             };
 
             await UploadFileGranularAsync(fileStreamSource, filename, fileUploadTransportSettings).ConfigureAwait(false);
+        }
+
+        // File upload requests can be configured to use a user-provided HttpClient
+        [TestMethod]
+        public async Task FileUpload_UsesCustomHttpClient()
+        {
+            using TestDevice testDevice =
+                await TestDevice.GetTestDeviceAsync(_devicePrefix, TestDeviceType.Sasl).ConfigureAwait(false);
+
+            using var CustomHttpMessageHandler = new CustomHttpMessageHandler();
+            var fileUploadSettings = new Http1TransportSettings()
+            {
+                // This HttpClient should throw a NotImplementedException whenever it makes an HTTP
+                // request
+                HttpClient = new HttpClient(CustomHttpMessageHandler),
+            };
+
+            var clientOptions = new ClientOptions()
+            {
+                FileUploadTransportSettings = fileUploadSettings,
+            };
+
+            using var deviceClient =
+                DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, clientOptions);
+
+            await deviceClient.OpenAsync().ConfigureAwait(false);
+
+            var request = new FileUploadSasUriRequest()
+            {
+                BlobName = "someBlobName",
+            };
+            var ex = await Assert.ThrowsExceptionAsync<IotHubException>(
+                            async () => await deviceClient.GetFileUploadSasUriAsync(request).ConfigureAwait(false));
+
+            ex.InnerException.Should().BeOfType<NotImplementedException>(
+                "The provided custom HttpMessageHandler throws NotImplementedException when making any HTTP request");
         }
 
         private async Task UploadFileGranularAsync(Stream source, string filename, Http1TransportSettings fileUploadTransportSettings, bool useX509auth = false)
@@ -263,6 +303,14 @@ namespace Microsoft.Azure.Devices.E2ETests
 #endif
 
             return filePath;
+        }
+
+        private class CustomHttpMessageHandler : HttpMessageHandler
+        {
+            protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+            {
+                throw new NotImplementedException("Deliberately not implemented for test purposes");
+            }
         }
 
         [ClassCleanup]

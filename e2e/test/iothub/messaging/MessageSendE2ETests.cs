@@ -3,9 +3,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Azure.Devices.Client;
@@ -416,6 +419,31 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             await SendSingleMessage(TestDeviceType.Sasl, Client.TransportType.Http1, OverlyExceedAllowedMessageSizeInBytes).ConfigureAwait(false);
         }
 
+        [TestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
+        public async Task Message_DeviceSendSingleWithCustomHttpClient_Http()
+        {
+            using var httpMessageHandler = new CustomHttpMessageHandler();
+            var httpTransportSettings = new Http1TransportSettings()
+            {
+                HttpClient = new HttpClient(httpMessageHandler)
+            };
+            var transportSettings = new ITransportSettings[] { httpTransportSettings };
+
+            using TestDevice testDevice =
+                await TestDevice.GetTestDeviceAsync(_devicePrefix).ConfigureAwait(false);
+
+            using DeviceClient deviceClient = testDevice.CreateDeviceClient(transportSettings);
+
+            await deviceClient.OpenAsync().ConfigureAwait(false);
+            using var message = new Client.Message();
+            var ex = await Assert.ThrowsExceptionAsync<IotHubException>(
+                async () => await deviceClient.SendEventAsync(message).ConfigureAwait(false));
+
+            ex.InnerException.Should().BeOfType<NotImplementedException>(
+                "The provided custom HttpMessageHandler throws NotImplementedException when making any HTTP request");
+        }
+
         private async Task SendSingleMessage(TestDeviceType type, Client.TransportType transport, int messageSize = 0)
         {
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix, type).ConfigureAwait(false);
@@ -531,6 +559,14 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             message.Properties.Add("property2", null);
 
             return message;
+        }
+
+        private class CustomHttpMessageHandler : HttpMessageHandler
+        {
+            protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+            {
+                throw new NotImplementedException("Deliberately not implemented for test purposes");
+            }
         }
     }
 }
