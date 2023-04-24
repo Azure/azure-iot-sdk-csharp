@@ -159,7 +159,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
                         sw.Stop();
 
                         _totalTelemetryMessagesToModuleSent += pendingMessages.Count;
-                        _logger.Metric(TotalTwinCallbacksToModuleHandled, _totalTwinCallbacksToModuleHandled);
+                        _logger.Metric(TotalTelemetryMessagesToModuleSent, _totalTelemetryMessagesToModuleSent);
                         _logger.Metric(TelemetryMessageToModuleDelaySeconds, sw.Elapsed.TotalSeconds);
                         pendingMessages.Clear();
 
