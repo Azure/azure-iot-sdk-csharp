@@ -101,9 +101,9 @@ namespace Microsoft.Azure.Devices.E2ETests
             await UploadFileGranularAsync(fileStreamSource, filename, fileUploadTransportSettings, isCorrelationIdValid: true, ct: cts.Token).ConfigureAwait(false);
         }
 
-        // File upload requests can be configured to use a user-provided HttpMessageHandler
+        // File upload requests can be configured to use a user-provided HttpClient
         [TestMethod]
-        public async Task FileUpload_UsesCustomHttpMessageHandler()
+        public async Task FileUpload_UsesCustomHttpClient()
         {
             using var cts = new CancellationTokenSource(s_testTimeout);
 

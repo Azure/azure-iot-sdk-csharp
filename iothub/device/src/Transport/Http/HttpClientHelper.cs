@@ -88,7 +88,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             _httpMessageHandler = httpClientHandler;
 
-            _httpClientObj = new HttpClient(_httpMessageHandler)
+            _httpClientObj = new HttpClient(_httpMessageHandler, true)
             {
                 BaseAddress = _baseAddress,
                 Timeout = timeout,
