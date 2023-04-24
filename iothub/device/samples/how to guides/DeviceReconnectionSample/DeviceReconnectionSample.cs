@@ -427,7 +427,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 && _deviceConnectionStrings.Any();
         }
 
-        private Queue<ITransportSettings> GetTransportSettings(TransportType transportType)
+        private static Queue<ITransportSettings> GetTransportSettings(TransportType transportType)
         {
             var transportSettings = new Queue<ITransportSettings>();
             switch (transportType)
