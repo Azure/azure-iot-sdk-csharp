@@ -33,7 +33,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 PayloadConvention = convention
             };
             await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(s_devicePrefix).ConfigureAwait(false);
-            await using var deviceClient = new IotHubDeviceClient(testDevice.ConnectionString, options);
+            IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(options);
             await testDevice.OpenWithRetryAsync(ct).ConfigureAwait(false);
 
             var expected = new StjCustomPayload
@@ -68,7 +68,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 PayloadConvention = convention
             };
             await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(s_devicePrefix).ConfigureAwait(false);
-            await using var deviceClient = new IotHubDeviceClient(testDevice.ConnectionString, options);
+            IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(options);
             await testDevice.OpenWithRetryAsync(ct).ConfigureAwait(false);
 
             var expected = new StjCustomPayload
