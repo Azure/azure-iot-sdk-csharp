@@ -190,6 +190,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 GuidProperty = Guid.NewGuid().ToString(),
             };
 
+            // act and assert
             var messageReceived = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
             await deviceClient
                 .SetIncomingMessageCallbackAsync((msg) =>
@@ -215,36 +216,43 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             // arrange
             using var cts = new CancellationTokenSource(s_testTimeout);
             CancellationToken ct = cts.Token;
-            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(s_devicePrefix).ConfigureAwait(false);
-            PayloadConvention convention = DefaultPayloadConvention.Instance;
+            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(s_devicePrefix, ct: ct).ConfigureAwait(false);
             var options = new IotHubClientOptions(new IotHubClientAmqpSettings())
             {
-                PayloadConvention = convention
+                PayloadConvention = DefaultPayloadConvention.Instance
             };
             IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(options);
             await testDevice.OpenWithRetryAsync(ct).ConfigureAwait(false);
-            using var deviceHandler = new TestDeviceCallbackHandler(deviceClient, testDevice.Id);
 
             IotHubServiceClient serviceClient = TestDevice.ServiceClient;
 
             await serviceClient.Messages.OpenAsync(ct).ConfigureAwait(false);
 
-            // Now, set a callback on the device client to receive C2D messages.
-            await deviceHandler.SetIncomingMessageCallbackHandlerAndCompleteMessageAsync<StjCustomPayload>(ct).ConfigureAwait(false);
-
             // Now, send a message to the device from the service.
-            var payload = new StjCustomPayload
+            var payload = new NjCustomPayload
             {
                 StringProperty = "foo",
                 GuidProperty = Guid.NewGuid().ToString(),
             };
-            OutgoingMessage firstMsg = new OutgoingMessage(payload);
-            //OutgoingMessage firstMsg = OutgoingMessageHelper.ComposeTestMessage(out string _, out string _);
-            deviceHandler.ExpectedOutgoingMessage = firstMsg;
-            await serviceClient.Messages.SendAsync(testDevice.Id, firstMsg, ct).ConfigureAwait(false);
-            VerboseTestLogger.WriteLine($"Sent C2D message from service, messageId={firstMsg.MessageId} - to be received on callback");
 
-            await deviceHandler.WaitForIncomingMessageCallbackAsync(ct).ConfigureAwait(false);
+            // act and assert
+            var messageReceived = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            await deviceClient
+                .SetIncomingMessageCallbackAsync((msg) =>
+                {
+                    msg.TryGetPayload(out NjCustomPayload actual).Should().BeTrue();
+                    actual.StringProperty.Should().Be(payload.StringProperty);
+                    actual.GuidProperty.Should().Be(payload.GuidProperty);
+                    messageReceived.TrySetResult(true);
+                    return Task.FromResult(MessageAcknowledgement.Complete);
+                },
+                    ct)
+                .ConfigureAwait(false);
+            var svcMsg = new OutgoingMessage(payload);
+            await serviceClient.Messages.SendAsync(testDevice.Id, svcMsg, ct).ConfigureAwait(false);
+            VerboseTestLogger.WriteLine($"Sent C2D message from service, messageId={svcMsg.MessageId} - to be received on callback");
+
+            await messageReceived.WaitAsync(ct).ConfigureAwait(false);
         }
     }
 }
