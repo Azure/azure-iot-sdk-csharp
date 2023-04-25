@@ -163,6 +163,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         public virtual void SetSasTokenRefreshesOn()
         {
             ThrowIfDisposed();
+            NextHandler?.SetSasTokenRefreshesOn();
         }
 
         public virtual Task StopSasTokenLoopAsync()
