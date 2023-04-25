@@ -3,14 +3,14 @@
 
 using System.Text.Json.Serialization;
 
-namespace Microsoft.Azure.Devices.E2ETests.Twins
+namespace Microsoft.Azure.Devices.E2ETests
 {
-    internal class DeviceCustomProperty
+    internal class StjCustomPayload
     {
-        [JsonPropertyName("customProperty")]
-        public string CustomProperty { get; set; }
+        [JsonPropertyName("string")]
+        public string StringProperty { get; set; }
 
         [JsonPropertyName("guid")]
-        public string Guid { get; set; }
+        public string GuidProperty { get; set; }
     }
 }

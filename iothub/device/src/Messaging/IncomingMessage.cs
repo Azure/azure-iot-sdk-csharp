@@ -168,14 +168,16 @@ namespace Microsoft.Azure.Devices.Client
 
             try
             {
-                payload = DefaultPayloadConvention.Instance.GetObject<T>(_payload);
+                payload = PayloadConvention.GetObject<T>(_payload);
 
                 return true;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 // In case the value cannot be converted using the serializer,
                 // then return false with the default value of the type <T> passed in.
+                if (Logging.IsEnabled)
+                    Logging.Info(this, $"Unable to convert payload to {typeof(T)} due to {ex}");
             }
 
             return false;
