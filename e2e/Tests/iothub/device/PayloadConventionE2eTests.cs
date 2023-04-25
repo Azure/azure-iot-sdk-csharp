@@ -34,7 +34,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             };
             await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(s_devicePrefix).ConfigureAwait(false);
             await using var deviceClient = new IotHubDeviceClient(testDevice.ConnectionString, options);
-            await deviceClient.OpenAsync().ConfigureAwait(false);
+            await testDevice.OpenWithRetryAsync(ct).ConfigureAwait(false);
 
             var expected = new StjCustomPayload
             {
@@ -69,7 +69,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             };
             await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(s_devicePrefix).ConfigureAwait(false);
             await using var deviceClient = new IotHubDeviceClient(testDevice.ConnectionString, options);
-            await deviceClient.OpenAsync().ConfigureAwait(false);
+            await testDevice.OpenWithRetryAsync(ct).ConfigureAwait(false);
 
             var expected = new StjCustomPayload
             {
@@ -131,17 +131,17 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             var messageReceived = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
             await deviceClient
                 .SetDirectMethodCallbackAsync((msg) =>
-                {
-                    msg.TryGetPayload(out StjCustomPayload actual).Should().BeTrue();
-                    actual.StringProperty.Should().Be(requestPayload.StringProperty);
-                    actual.GuidProperty.Should().Be(requestPayload.GuidProperty);
-                    messageReceived.TrySetResult(true);
-                    var response = new DirectMethodResponse(200)
                     {
-                        Payload = responsePayload,
-                    };
-                    return Task.FromResult(response);
-                },
+                        msg.TryGetPayload(out StjCustomPayload actual).Should().BeTrue();
+                        actual.StringProperty.Should().Be(requestPayload.StringProperty);
+                        actual.GuidProperty.Should().Be(requestPayload.GuidProperty);
+                        messageReceived.TrySetResult(true);
+                        var response = new DirectMethodResponse(200)
+                        {
+                            Payload = responsePayload,
+                        };
+                        return Task.FromResult(response);
+                    },
                     ct)
                 .ConfigureAwait(false);
 
@@ -186,17 +186,17 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             var messageReceived = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
             await deviceClient
                 .SetDirectMethodCallbackAsync((msg) =>
-                {
-                    msg.TryGetPayload(out NjCustomPayload actual).Should().BeTrue();
-                    actual.StringProperty.Should().Be(payload.StringProperty);
-                    actual.GuidProperty.Should().Be(payload.GuidProperty);
-                    messageReceived.TrySetResult(true);
-                    var response = new DirectMethodResponse(200)
                     {
-                        Payload = payload,
-                    };
-                    return Task.FromResult(response);
-                },
+                        msg.TryGetPayload(out NjCustomPayload actual).Should().BeTrue();
+                        actual.StringProperty.Should().Be(payload.StringProperty);
+                        actual.GuidProperty.Should().Be(payload.GuidProperty);
+                        messageReceived.TrySetResult(true);
+                        var response = new DirectMethodResponse(200)
+                        {
+                            Payload = payload,
+                        };
+                        return Task.FromResult(response);
+                    },
                     ct)
                 .ConfigureAwait(false);
 
@@ -284,13 +284,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             var messageReceived = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
             await deviceClient
                 .SetIncomingMessageCallbackAsync((msg) =>
-                {
-                    msg.TryGetPayload(out NjCustomPayload actual).Should().BeTrue();
-                    actual.StringProperty.Should().Be(payload.StringProperty);
-                    actual.GuidProperty.Should().Be(payload.GuidProperty);
-                    messageReceived.TrySetResult(true);
-                    return Task.FromResult(MessageAcknowledgement.Complete);
-                },
+                    {
+                        msg.TryGetPayload(out NjCustomPayload actual).Should().BeTrue();
+                        actual.StringProperty.Should().Be(payload.StringProperty);
+                        actual.GuidProperty.Should().Be(payload.GuidProperty);
+                        messageReceived.TrySetResult(true);
+                        return Task.FromResult(MessageAcknowledgement.Complete);
+                    },
                     ct)
                 .ConfigureAwait(false);
             var svcMsg = new OutgoingMessage(payload);
