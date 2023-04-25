@@ -102,8 +102,16 @@ namespace Microsoft.Azure.Devices
         /// <returns>The fully-qualified error code, or the response status code, if no error code was provided.</returns>
         public static async Task<ErrorCode> GetExceptionCodeAsync(HttpResponseMessage response)
         {
-            // First we will attempt to retrieve the error code from the response content.
-            string responseContentStr = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            string responseContentStr = "";
+            if (response.Content != null)
+            {
+                // First we will attempt to retrieve the error code from the response content.
+                responseContentStr = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            }
+            else
+            {
+                return ErrorCode.InvalidErrorCode;
+            }
 
             // There are two things to consider when surfacing service errors to the user, the 6-digit error code and the code description. Ideally, when a backend service
             // returns an error, both of these fields are set in the same place. However, IoT hub is returning the 6-digit code in the response content, while
@@ -120,7 +128,11 @@ namespace Microsoft.Azure.Devices
 
                 try
                 {
-                    Dictionary<string, string> messageFields = JsonConvert.DeserializeObject<Dictionary<string, string>>(responseContent.Message);
+                    var messageFields = new Dictionary<string, string>();
+                    if (responseContent != null && responseContent.Message != null)
+                    {
+                        messageFields = JsonConvert.DeserializeObject<Dictionary<string, string>>(responseContent.Message);
+                    }
 
                     if (messageFields != null
                         && messageFields.TryGetValue(CommonConstants.ErrorCode, out string errorCodeObj))
@@ -157,7 +169,8 @@ namespace Microsoft.Azure.Devices
 #endif
                                 {
                                     string[] errorCodeFields = messageField.Split(errorCodeDelimiter);
-                                    if (Enum.TryParse(errorCodeFields[1], out ErrorCode errorCode))
+                                    if (errorCodeFields.Length > 1
+                                        && Enum.TryParse(errorCodeFields[1], out ErrorCode errorCode))
                                     {
                                         errorCodeValue = (int)errorCode;
                                     }
@@ -184,8 +197,14 @@ namespace Microsoft.Azure.Devices
                 return ErrorCode.InvalidErrorCode;
             }
 
-            // Now that we retrieved the integer error code from the response content, we will retrieve the error description from the header.
-            string headerErrorCodeString = response.Headers.GetFirstValueOrNull(CommonConstants.HttpErrorCodeName);
+            string headerErrorCodeString = null;
+
+            if (response.Headers != null)
+            {
+                // Now that we retrieved the integer error code from the response content, we will retrieve the error description from the header.
+                headerErrorCodeString = response.Headers.GetFirstValueOrNull(CommonConstants.HttpErrorCodeName);
+            }
+
             if (headerErrorCodeString != null
                 && Enum.TryParse(headerErrorCodeString, out ErrorCode headerErrorCode))
             {
