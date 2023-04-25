@@ -103,15 +103,12 @@ namespace Microsoft.Azure.Devices
         public static async Task<ErrorCode> GetExceptionCodeAsync(HttpResponseMessage response)
         {
             string responseContentStr = "";
-            if (response.Content != null)
-            {
-                // First we will attempt to retrieve the error code from the response content.
-                responseContentStr = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-            }
-            else
+            if (response.Content == null)
             {
                 return ErrorCode.InvalidErrorCode;
             }
+            // First we will attempt to retrieve the error code from the response content.
+            responseContentStr = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 
             // There are two things to consider when surfacing service errors to the user, the 6-digit error code and the code description. Ideally, when a backend service
             // returns an error, both of these fields are set in the same place. However, IoT hub is returning the 6-digit code in the response content, while
@@ -129,7 +126,7 @@ namespace Microsoft.Azure.Devices
                 try
                 {
                     var messageFields = new Dictionary<string, string>();
-                    if (responseContent != null && responseContent.Message != null)
+                    if (responseContent?.Message != null)
                     {
                         messageFields = JsonConvert.DeserializeObject<Dictionary<string, string>>(responseContent.Message);
                     }
