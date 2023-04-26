@@ -3,6 +3,7 @@
 
 using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.Text;
 using Mash.Logging;
 using Microsoft.Azure.Devices.Client;
 using static Microsoft.Azure.Devices.LongHaul.Module.LoggingConstants;
@@ -358,7 +359,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
 
         private Task<DirectMethodResponse> DirectMethodCallback(DirectMethodRequest methodRequest)
         {
-            _logger.Trace($"Received direct method [{methodRequest.MethodName}] with payload [{methodRequest.GetPayloadAsJsonString()}].", TraceSeverity.Information);
+            _logger.Trace($"Received direct method [{methodRequest.MethodName}] with payload [{Encoding.UTF8.GetString(methodRequest.GetPayloadAsBytes())}].", TraceSeverity.Information);
 
             switch (methodRequest.MethodName)
             {

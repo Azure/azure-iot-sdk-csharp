@@ -5,6 +5,7 @@
 // For samples see: https://github.com/Azure/azure-iot-sdk-csharp/tree/main/iothub/device/samples
 
 using System;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using CommandLine;
@@ -63,7 +64,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
         }
         private static Task<DirectMethodResponse> DirectMethodCallback(DirectMethodRequest methodRequest)
         {
-            Console.WriteLine($"Received direct method [{methodRequest.MethodName}] with payload [{methodRequest.GetPayloadAsJsonString()}].");
+            Console.WriteLine($"Received direct method [{methodRequest.MethodName}] with payload [{Encoding.UTF8.GetString(methodRequest.GetPayloadAsBytes())}].");
 
             switch (methodRequest.MethodName)
             {

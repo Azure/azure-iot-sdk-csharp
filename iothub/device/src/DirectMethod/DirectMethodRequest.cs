@@ -164,16 +164,6 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// The command payload as a JSON string, if applicable.
-        /// </summary>
-        public string GetPayloadAsJsonString()
-        {
-            return Payload == null || Payload.Length == 0
-                ? null
-                : DefaultPayloadConvention.Encoding.GetString(Payload);
-        }
-
-        /// <summary>
         /// Get the raw payload bytes.
         /// </summary>
         /// <remarks>
