@@ -53,7 +53,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
 
             await sample.RunSampleAsync();
 
-            Console.WriteLine("Done.\n");
+            logger.LogInformation("Done.\n");
             return 0;
         }
     }

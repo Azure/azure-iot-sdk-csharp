@@ -51,7 +51,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
             var sample = new EnrollmentGroupSample(provisioningServiceClient, logger);
             await sample.RunSampleAsync();
 
-            Console.WriteLine("Done.\n");
+            logger.LogInformation("Done.\n");
             return 0;
         }
     }
