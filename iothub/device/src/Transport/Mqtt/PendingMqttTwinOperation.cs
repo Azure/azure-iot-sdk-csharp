@@ -12,7 +12,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
     /// topic, we need a way to identify the request, when it was sent, and the task completion source to complete the
     /// waiting user's task.
     /// </summary>
-    internal class PendingMqttTwinOperation
+    internal sealed class PendingMqttTwinOperation
     {
         /// <summary>
         /// Constructor for get twin operations.

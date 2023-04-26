@@ -12,7 +12,7 @@ using System.Net.Http;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
-    internal class QueryBuilder
+    internal sealed class QueryBuilder
     {
         private const string ContinuationTokenHeaderKey = "x-ms-continuation";
         private const string PageSizeHeaderKey = "x-ms-max-item-count";
