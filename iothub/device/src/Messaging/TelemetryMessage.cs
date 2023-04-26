@@ -252,7 +252,7 @@ namespace Microsoft.Azure.Devices.Client
         /// If needed, serialization uses Newtonsoft.Json and encoding is UTF8.
         /// </remarks>
         /// <returns>A payload as a byte array.</returns>
-        internal byte[] GetPayloadObjectBytes()
+        internal byte[] GetPayloadAsBytes()
         {
             return Payload is byte[] payloadAsByteArray
                 ? payloadAsByteArray

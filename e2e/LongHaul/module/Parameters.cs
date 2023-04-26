@@ -21,11 +21,18 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
     internal class Parameters
     {
         [Option(
+            'g',
+            "GatewayHostName",
+            Required = true,
+            HelpText = "The gateway edge device to connects to.")]
+        public string GatewayHostName { get; set; }
+
+        [Option(
             'c',
             "ConnectionString",
             Required = false,
-            HelpText = "The connection string for the module to simulate.")]
-        public string ConnectionString { get; set; } = Environment.GetEnvironmentVariable("IOTHUB_LONG_HAUL_MODULE_CONNECTION_STRING");
+            HelpText = "The connection string for the edge module to simulate.")]
+        public string ConnectionString { get; set; } = Environment.GetEnvironmentVariable("IOTHUB_LONG_HAUL_EDGE_MODULE_CONNECTION_STRING");
 
         [Option(
             'i',

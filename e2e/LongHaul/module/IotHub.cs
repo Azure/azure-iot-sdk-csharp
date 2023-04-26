@@ -42,6 +42,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _moduleConnectionString = parameters.ConnectionString;
+            _moduleConnectionString = $"GatewayHostName={parameters.GatewayHostName};" + _moduleConnectionString;
             _clientOptions = new IotHubClientOptions(parameters.GetTransportSettings())
             {
                 PayloadConvention = parameters.GetPayloadConvention(),

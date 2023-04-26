@@ -129,7 +129,7 @@ namespace Microsoft.Azure.Devices.Client
                 // In case the value cannot be converted using the serializer,
                 // then return false with the default value of the type <T> passed in.
                 if (Logging.IsEnabled)
-                    Logging.Error(this, ex, nameof(TryGetPayload));
+                    Logging.Error(this, $"Unable to convert payload to {typeof(T)} due to {ex}", nameof(TryGetPayload));
             }
 
             return false;

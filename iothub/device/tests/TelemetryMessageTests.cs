@@ -19,7 +19,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
             var msg = new TelemetryMessage(payloadString);
             msg.Payload.Should().BeEquivalentTo(payloadString);
 
-            msg.GetPayloadObjectBytes().Should().BeEquivalentTo(DefaultPayloadConvention.Instance.GetObjectBytes(payloadString));
+            msg.GetPayloadAsBytes().Should().BeEquivalentTo(DefaultPayloadConvention.Instance.GetObjectBytes(payloadString));
         }
 
         [TestMethod]
@@ -31,7 +31,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
             var msg = new TelemetryMessage(payloadBytes);
             msg.Payload.Should().Be(payloadBytes);
 
-            byte[] actualPayload = msg.GetPayloadObjectBytes();
+            byte[] actualPayload = msg.GetPayloadAsBytes();
             encoder.GetString(actualPayload).Should().BeEquivalentTo(payloadString);
         }
 
@@ -81,7 +81,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
             var testMessage1 = new IncomingMessage(Encoding.UTF8.GetBytes("test message"));
 
             // assert
-            testMessage.GetPayloadObjectBytes().Should().NotBeNull();
+            testMessage.GetPayloadAsBytes().Should().NotBeNull();
             testMessage.InputName.Should().Be("endpoint1");
             testMessage.MessageId.Should().Be("123");
             testMessage.CorrelationId.Should().Be("1234");
