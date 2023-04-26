@@ -4,6 +4,8 @@
 using System;
 using System.Threading.Tasks;
 using CommandLine;
+using Microsoft.Azure.Devices.Logging;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
 {
@@ -29,14 +31,25 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
                     Environment.Exit(1);
                 });
 
+            // Set up logging
+            using ILoggerFactory loggerFactory = new LoggerFactory();
+            loggerFactory.AddColorConsoleLogger(
+                new ColorConsoleLoggerConfiguration
+                {
+                    // The SDK logs are written at Trace level. Set this to LogLevel.Trace to get ALL logs.
+                    MinLogLevel = LogLevel.Debug,
+                });
+            ILogger<Program> logger = loggerFactory.CreateLogger<Program>();
+
+
             if (string.IsNullOrWhiteSpace(parameters.ProvisioningConnectionString))
             {
-                Console.WriteLine(CommandLine.Text.HelpText.AutoBuild(result, null, null));
+                logger.LogError(CommandLine.Text.HelpText.AutoBuild(result, null, null));
                 Environment.Exit(1);
             }
 
             using var provisioningServiceClient = new ProvisioningServiceClient(parameters.ProvisioningConnectionString);
-            var sample = new CleanupEnrollmentsSample(provisioningServiceClient);
+            var sample = new CleanupEnrollmentsSample(provisioningServiceClient, logger);
             await sample.RunSampleAsync();
 
             Console.WriteLine("Done.");

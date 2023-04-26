@@ -4,6 +4,7 @@
 using System;
 using System.Security.Cryptography;
 using System.Text;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
 {
@@ -18,17 +19,19 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
     internal class ComputeDerivedKeySample
     {
         private readonly Parameters _parameters;
+        private readonly ILogger _logger;
 
-        public ComputeDerivedKeySample(Parameters parameters)
+        public ComputeDerivedKeySample(Parameters parameters, ILogger logger)
         {
             _parameters = parameters;
+            _logger = logger;
         }
 
         public void RunSample()
         {
             string derivedKey = ComputeDerivedSymmetricKey(_parameters.PrimaryKey, _parameters.RegistrationId);
 
-            Console.WriteLine($"Your derived device key is:'{derivedKey}'");
+            _logger.LogInformation($"Your derived device key is:'{derivedKey}'");
         }
 
         /// <summary>

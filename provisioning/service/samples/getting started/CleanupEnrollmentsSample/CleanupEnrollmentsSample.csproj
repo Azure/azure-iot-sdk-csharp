@@ -27,4 +27,8 @@
     <ProjectReference Include="..\..\..\src\Microsoft.Azure.Devices.Provisioning.Service.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\..\samples\helpers\ColorConsoleLogger\ColorConsoleLogger.csproj" />
+  </ItemGroup>
+
 </Project>

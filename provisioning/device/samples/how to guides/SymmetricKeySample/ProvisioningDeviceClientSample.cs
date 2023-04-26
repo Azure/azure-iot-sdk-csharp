@@ -2,8 +2,10 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
 {
@@ -14,15 +16,26 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
     internal class ProvisioningDeviceClientSample
     {
         private readonly Parameters _parameters;
+        private readonly ILogger _logger;
+        private static CancellationTokenSource s_appCancellation;
 
-        public ProvisioningDeviceClientSample(Parameters parameters)
+        public ProvisioningDeviceClientSample(Parameters parameters, ILogger logger)
         {
             _parameters = parameters;
+            _logger = logger;
         }
 
         public async Task RunSampleAsync()
         {
-            Console.WriteLine($"Initializing the device provisioning client...");
+            s_appCancellation = new CancellationTokenSource();
+            Console.CancelKeyPress += (sender, eventArgs) =>
+            {
+                eventArgs.Cancel = true;
+                s_appCancellation.Cancel();
+                _logger.LogWarning("Sample execution cancellation requested; will exit.");
+            };
+
+            _logger.LogInformation($"Initializing the device provisioning client...");
 
             // For individual enrollments, the first parameter must be the registration Id, where in the enrollment
             // the device Id is already chosen. However, for group enrollments the device Id can be requested by
@@ -41,38 +54,36 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
                 security,
                 clientOptions);
 
-            Console.WriteLine($"Initialized for registration Id {security.GetRegistrationId()}.");
+            _logger.LogInformation($"Initialized for registration Id {security.GetRegistrationId()}.");
 
-            Console.WriteLine("Registering with the device provisioning service...");
+            _logger.LogInformation("Registering with the device provisioning service...");
             DeviceRegistrationResult result = await provClient.RegisterAsync();
 
-            Console.WriteLine($"Registration status: {result.Status}.");
+            _logger.LogInformation($"Registration status: {result.Status}.");
             if (result.Status != ProvisioningRegistrationStatus.Assigned)
             {
-                Console.WriteLine($"Registration status did not assign a hub, so exiting this sample.");
+                _logger.LogError($"Registration status did not assign a hub. Exiting this sample.");
                 return;
             }
 
-            Console.WriteLine($"Device {result.DeviceId} registered to {result.AssignedHub}.");
+            _logger.LogInformation($"Device {result.DeviceId} registered to {result.AssignedHub}.");
 
-            Console.WriteLine("Creating symmetric key authentication for IoT Hub...");
+            _logger.LogInformation("Creating symmetric key authentication for IoT Hub...");
             IAuthenticationMethod auth = new ClientAuthenticationWithSharedAccessKeyRefresh(
                 security.PrimaryKey,
                 result.DeviceId);
 
-            Console.WriteLine($"Testing the provisioned device with IoT Hub...");
-            var hubOptions = new IotHubClientOptions(_parameters.GetHubTransportSettings())
-            {
-            };
-            await using var iotClient = new IotHubDeviceClient(result.AssignedHub, auth, hubOptions);
+            _logger.LogInformation($"Testing the provisioned device with IoT Hub...");
+            var hubOptions = new IotHubClientOptions(_parameters.GetHubTransportSettings());
+            await using var iotHubClient = new IotHubDeviceClient(result.AssignedHub, auth, hubOptions);
 
-            await iotClient.OpenAsync();
-            Console.WriteLine("Sending a telemetry message...");
+            await iotHubClient.OpenAsync();
+            _logger.LogInformation("Sending a telemetry message...");
             var message = new TelemetryMessage("TestMessage");
-            await iotClient.SendTelemetryAsync(message);
+            await iotHubClient.SendTelemetryAsync(message);
 
-            await iotClient.CloseAsync();
-            Console.WriteLine("Finished.");
+            await iotHubClient.CloseAsync();
+            _logger.LogInformation("Finished.");
         }
     }
 }

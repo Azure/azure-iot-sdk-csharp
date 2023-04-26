@@ -4,6 +4,8 @@
 using System;
 using System.Threading.Tasks;
 using CommandLine;
+using Microsoft.Azure.Devices.Logging;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
 {
@@ -32,11 +34,26 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
             // This sample accepts the provisioning connection string as a parameter, if present.
             Parameters.ValidateProvisioningConnectionString(parameters.ProvisioningConnectionString);
 
+            // Set up logging
+            using ILoggerFactory loggerFactory = new LoggerFactory();
+            loggerFactory.AddColorConsoleLogger(
+                new ColorConsoleLoggerConfiguration
+                {
+                    // The SDK logs are written at Trace level. Set this to LogLevel.Trace to get ALL logs.
+                    MinLogLevel = LogLevel.Debug,
+                });
+            ILogger<Program> logger = loggerFactory.CreateLogger<Program>();
+
             using var provisioningServiceClient = new ProvisioningServiceClient(parameters.ProvisioningConnectionString);
-            var sample = new IndividualEnrollmentSample(provisioningServiceClient, parameters.DeviceId, parameters.RegistrationId);
+            var sample = new IndividualEnrollmentSample(
+                provisioningServiceClient, 
+                parameters.DeviceId, 
+                parameters.RegistrationId, 
+                logger);
+
             await sample.RunSampleAsync();
 
-            Console.WriteLine("Done.\n");
+            logger.LogInformation("Done.\n");
             return 0;
         }
     }

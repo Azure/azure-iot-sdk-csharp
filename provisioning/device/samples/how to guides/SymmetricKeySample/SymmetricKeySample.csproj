@@ -30,4 +30,8 @@
     <ProjectReference Include="..\..\..\..\..\iothub\device\src\Microsoft.Azure.Devices.Client.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\..\samples\helpers\ColorConsoleLogger\ColorConsoleLogger.csproj" />
+  </ItemGroup>
+
 </Project>

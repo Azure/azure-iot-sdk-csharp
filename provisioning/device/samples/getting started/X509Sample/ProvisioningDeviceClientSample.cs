@@ -92,14 +92,14 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
 
             _logger.LogInformation("Testing the provisioned device with IoT Hub...");
             var hubOptions = new IotHubClientOptions(s_hubTransportSettings);
-            await using var iotClient = new IotHubDeviceClient(s_provResult.AssignedHub, auth, hubOptions);
+            await using var iotHubClient = new IotHubDeviceClient(s_provResult.AssignedHub, auth, hubOptions);
 
-            await iotClient.OpenAsync(s_appCancellation.Token);
+            await iotHubClient.OpenAsync(s_appCancellation.Token);
             _logger.LogInformation($"Sending a telemetry message...");
             var message = new TelemetryMessage("TestMessage");
-            await iotClient.SendTelemetryAsync(message, s_appCancellation.Token);
+            await iotHubClient.SendTelemetryAsync(message, s_appCancellation.Token);
 
-            await iotClient.CloseAsync(s_appCancellation.Token);
+            await iotHubClient.CloseAsync(s_appCancellation.Token);
             _logger.LogInformation("Finished.");
         }
 
