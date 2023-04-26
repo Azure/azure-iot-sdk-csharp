@@ -228,11 +228,11 @@ $iothubownerSasPrimaryKey = az iot hub policy show --hub-name $iotHubName --name
 ##################################################################################################################################
 
 $longhaulDeviceId = "LongHaulDevice1"
-$longhaulModuleId = "LongHaulModule1"
+$longhaulDeviceModuleId = "LongHaulDeviceModule1"
 $longhaulEdgeDeviceId = "LongHaulEdgeDevice1"
 $longhaulEdgeModuleId = "LongHaulEdgeModule1"
 $longhaulDevice = az iot hub device-identity list -g $ResourceGroup --hub-name $iotHubName --query "[?deviceId=='$longhaulDeviceId'].deviceId" --output tsv
-$longhaulModule = az iot hub module-identity list -g $ResourceGroup --hub-name $iotHubName --query "[?moduleId=='$longhaulModuleId'].moduleId" --output tsv
+$longhaulDeviceModule = az iot hub module-identity list -g $ResourceGroup --hub-name $iotHubName --query "[?moduleId=='$longhaulDeviceModuleId'].moduleId" --output tsv
 $longhaulEdgeDevice = az iot hub device-identity list -g $ResourceGroup --hub-name $iotHubName --query "[?deviceId=='$longhaulEdgeDeviceId'].deviceId" --output tsv
 $longhaulEdgeModule = az iot hub module-identity list -g $ResourceGroup --hub-name $iotHubName --device-id $longhaulEdgeDeviceId --query "[?moduleId=='$longhaulEdgeModuleId'].moduleId" --output tsv
 
@@ -243,10 +243,10 @@ if (-not $longhaulDevice)
     az iot hub device-identity create -g $ResourceGroup --hub-name $iotHubName --device-id $longhaulDeviceId --am shared_private_key
 }
 
-if (-not $longhaulModule)
+if (-not $longhaulDeviceModule)
 {
-    Write-Host "`nCreating SAK authenticated module $longhaulModuleId on IoT hub."
-    az iot hub module-identity create -g $ResourceGroup --hub-name $iotHubName --device-id $longhaulDeviceId --module-id $longhaulModuleId --am shared_private_key
+    Write-Host "`nCreating SAK authenticated module $longhaulDeviceModuleId on IoT hub."
+    az iot hub module-identity create -g $ResourceGroup --hub-name $iotHubName --device-id $longhaulDeviceId --module-id $longhaulDeviceModuleId --am shared_private_key
 }
 
 if (-not $longhaulEdgeDevice)
@@ -257,12 +257,12 @@ if (-not $longhaulEdgeDevice)
 
 if (-not $longhaulEdgeModule)
 {
-    Write-Host "`nCreating SAK authenticated edge module $longhaulModuleId on Edge hub."
-    az iot hub module-identity create -g $ResourceGroup --hub-name $iotHubName --device-id $longhaulDeviceId --module-id $longhaulModuleId
+    Write-Host "`nCreating SAK authenticated edge module $longhaulEdgeModuleId on Edge hub."
+    az iot hub module-identity create -g $ResourceGroup --hub-name $iotHubName --device-id $longhaulEdgeDeviceId --module-id $longhaulEdgeModuleId
 }
 
 $longhaulDeviceConnectionString = az iot hub device-identity connection-string show --device-id $longhaulDeviceId --hub-name $iotHubName --resource-group $ResourceGroup --output tsv
-$longhaulModuleConnectionString = az iot hub module-identity connection-string show --device-id $longhaulDeviceId --module-id $longhaulModuleId --hub-name $iotHubName --resource-group $ResourceGroup --output tsv
+$longhaulDeviceModuleConnectionString = az iot hub module-identity connection-string show --device-id $longhaulDeviceId --module-id $longhaulDeviceModuleId --hub-name $iotHubName --resource-group $ResourceGroup --output tsv
 $longhaulEdgeModuleConnectionString = az iot hub module-identity connection-string show --device-id $longhaulEdgeDeviceId --module-id $longhaulEdgeModuleId --hub-name $iotHubName --resource-group $ResourceGroup --output tsv
 
 ############################################################################################################################
@@ -272,7 +272,7 @@ $longhaulEdgeModuleConnectionString = az iot hub module-identity connection-stri
 $keyvaultKvps = @{
     # Environment variables for IoT Hub E2E tests
     "IOTHUB-LONG-HAUL-DEVICE-CONNECTION-STRING" = $longhaulDeviceConnectionString;
-    "IOTHUB-LONG-HAUL-MODULE-CONNECTION-STRING" = $longhaulModuleConnectionString;
+    "IOTHUB-LONG-HAUL-DEVICE-MODULE-CONNECTION-STRING" = $longhaulDeviceModuleConnectionString;
     "IOTHUB-LONG-HAUL-EDGE-MODULE-CONNECTION-STRING" = $longhaulEdgeModuleConnectionString;
     "APPLICATION-INSIGHTS-INSTRUMENTATION-KEY" = $instrumentationKey;
     "STORAGE-ACCOUNT-CONNECTION-STRING" = $storageAccountConnectionString;

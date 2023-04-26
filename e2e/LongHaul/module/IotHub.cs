@@ -42,12 +42,12 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
         public IotHub(Logger logger, Parameters parameters)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _moduleConnectionString = parameters.GatewayHostName == null ?
-                parameters.ConnectionString : (parameters.EdgeConnectionString + $"{s_gatewayHostName}={parameters.GatewayHostName}");
+            _moduleConnectionString = parameters.GatewayHostName == null ? parameters.DeviceModuleConnectionString : parameters.EdgeModuleConnectionString;
             _clientOptions = new IotHubClientOptions(parameters.GetTransportSettings())
             {
                 PayloadConvention = parameters.GetPayloadConvention(),
                 SdkAssignsMessageId = SdkAssignsMessageId.WhenUnset,
+                GatewayHostName = parameters.GatewayHostName,
             };
             _moduleClient = null;
         }

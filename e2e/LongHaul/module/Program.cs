@@ -114,7 +114,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
 
         private static Logger InitializeLogging(Parameters parameters)
         {
-            var helper = new IotHubConnectionStringHelper(parameters.GatewayHostName == null ? parameters.ConnectionString : parameters.EdgeConnectionString);
+            var helper = new IotHubConnectionStringHelper(parameters.GatewayHostName == null ? parameters.DeviceModuleConnectionString : parameters.EdgeModuleConnectionString);
             var logBuilder = new LoggingBuilder
             {
                 AppContext =

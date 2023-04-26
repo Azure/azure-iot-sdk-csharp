@@ -198,7 +198,7 @@ Find a client you currently use below, read the table of API name changes and us
 | `Message.CreationTimeUtc` | `TelemetryMessage.CreatedOnUtc`, `IncomingMessage.CreatedOnUtc` | Conforming to the naming guidelines by the Azure SDK team, where DateTime/Offset types have an "On" suffix (and "Utc" suffix when explicitly in UTC).³ |
 | `Message.EnqueuedTimeUtc` | `TelemetryMessage.EnqueuedtimeUtc`, `IncomingMessage.EnqueuedTimeUtc` | See³ |
 | `Message.ExpiryTimeUtc` | `TelemetryMessage.ExpiresOnUtc`, `IncomingMessage.ExpiresOnUtc` | See³ |
-| `Message.GetBytes` | `IncomingMessage.GetPayloadAsBytes` | See³ |
+| `Message.GetBytes` | `IncomingMessage.GetPayloadAsBytes` | More descriptive name. |
 | `DeviceClient.SetRetryPolicy(...)` | `IotHubClientOptions.RetryPolicy` | Should be specified at initialization time, and putting it in the client options object reduces the client API surface. |
 | `ExponentialBackOff` | `IotHubClientExponentialBackOffRetryPolicy` | Clarify it is a retry policy. |
 | `MethodRequest` | `DirectMethodRequest` | See⁴ |
