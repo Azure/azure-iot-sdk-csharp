@@ -25,6 +25,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
         private RecommendedAction _disconnectedRecommendedAction;
         private volatile IotHubModuleClient _moduleClient;
 
+        private static readonly string s_gatewayHostName = "GatewayHostName";
         private static readonly TimeSpan s_messageLoopSleepTime = TimeSpan.FromSeconds(3);
         private static readonly TimeSpan s_deviceTwinUpdateInterval = TimeSpan.FromSeconds(10);
         private static readonly TimeSpan s_retryInterval = TimeSpan.FromSeconds(1);
@@ -41,8 +42,8 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
         public IotHub(Logger logger, Parameters parameters)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _moduleConnectionString = parameters.ConnectionString;
-            _moduleConnectionString = $"GatewayHostName={parameters.GatewayHostName};" + _moduleConnectionString;
+            _moduleConnectionString = parameters.GatewayHostName == null ?
+                parameters.ConnectionString : (parameters.EdgeConnectionString + $"{s_gatewayHostName}={parameters.GatewayHostName}");
             _clientOptions = new IotHubClientOptions(parameters.GetTransportSettings())
             {
                 PayloadConvention = parameters.GetPayloadConvention(),
