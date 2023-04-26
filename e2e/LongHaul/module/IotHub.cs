@@ -25,7 +25,6 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
         private RecommendedAction _disconnectedRecommendedAction;
         private volatile IotHubModuleClient _moduleClient;
 
-        private static readonly string s_gatewayHostName = "GatewayHostName";
         private static readonly TimeSpan s_messageLoopSleepTime = TimeSpan.FromSeconds(3);
         private static readonly TimeSpan s_deviceTwinUpdateInterval = TimeSpan.FromSeconds(10);
         private static readonly TimeSpan s_retryInterval = TimeSpan.FromSeconds(1);

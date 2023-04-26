@@ -207,8 +207,10 @@ namespace Microsoft.Azure.Devices.Client
         /// Get the raw payload bytes.
         /// </summary>
         /// <remarks>
-        /// Use this method when the payload is not JSON or the type is not known or the type cannot be deserialized
-        /// using the configured <see cref="PayloadConvention"/>. Otherwise, use <see cref="TryGetPayload{T}(out T)"/>.
+        /// Use this method when to fully control deserialization of the payload.
+        /// <para>
+        /// For JSON payloads with a known type, see <see cref="TryGetPayload{T}(out T)"/>.
+        /// </para>
         /// </remarks>
         /// <returns>A copy of the raw payload as a byte array.</returns>
         /// <example>
@@ -216,9 +218,7 @@ namespace Microsoft.Azure.Devices.Client
         /// await client.SetIncomingMessageCallbackAsync((incomingMessage) =>
         /// {
         ///     byte[] arr = incomingMessage.GetPayloadAsBytes();
-        ///     String val = Encoding.ASCII.GetString(arr)
-        ///     // do work
-        ///     // ...
+        ///     // deserialize as needed and do work...
         ///     
         ///     return Task.FromResult(MessageAcknowledgement.Complete);
         /// },

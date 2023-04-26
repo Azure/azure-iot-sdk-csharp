@@ -101,7 +101,7 @@ The v2 strategy can be grouped into 3 categories.
     - Review the `IsTransient` property to determine if an exception is transient.
     - Review the `ErrorCode` property for specific, structured error details.
     - For the service client only, the `StatusCode` property is the HTTP status response.
-    - The exception message is meant for human readable expanation.
+    - The exception message is meant for human readable explanation.
     - Inner exceptions may offer more insight and are worth logging out.
     - `TrackingId` is for uniquely identifying specific operations and are useful in sharing with IoT hub support to assist them in more quickly identifying errors that may have been logged by the service.
   - `ProvisioningClientException` for provisioning device client and `ProvisioningServiceException` for provisioning service client for exceptions arising from communication attempts with DPS.
