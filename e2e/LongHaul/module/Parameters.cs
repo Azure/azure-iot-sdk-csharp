@@ -45,7 +45,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
             'g',
             "GatewayHostName",
             Required = false,
-            HelpText = "The gateway edge device to connects to; if defined, this app will use the EdgeModuleConnectionString, otherwise it uses the DeviceModuleConnectionString.")]
+            HelpText = "The gateway edge device to connect to; if defined, this app will use the EdgeModuleConnectionString, otherwise it uses the DeviceModuleConnectionString.")]
         public string GatewayHostName { get; set; }
 
         [Option(
