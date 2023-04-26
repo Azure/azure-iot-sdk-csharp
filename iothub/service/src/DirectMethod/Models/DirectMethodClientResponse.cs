@@ -45,6 +45,17 @@ namespace Microsoft.Azure.Devices
         /// <typeparam name="T">The type to convert to.</typeparam>
         /// <param name="value">The value of the payload.</param>
         /// <returns>True if converted, otherwise false.</returns>
+        /// <example>
+        /// <code language="csharp">
+        /// DirectMethodClientResponse methodResponse = await client.DirectMethods
+        ///     .InvokeAsync(deviceId, directMethodRequest, ct)
+        ///     .ConfigureAwait(false);
+        ///     
+        ///     methodResponse.TryGetPayload(out MyCustomType customTypePayload);
+        ///     
+        ///     // ...
+        /// </code>
+        /// </example>
         public bool TryGetPayload<T>(out T value)
         {
             value = default;
