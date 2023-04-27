@@ -220,6 +220,10 @@ namespace Microsoft.Azure.Devices.Client
         /// <exception cref="ObjectDisposedException">The client has been disposed.</exception>
         /// <example>
         /// <code language="csharp">
+        /// var client = new IotHubDeviceClient(
+        ///     connectionString,
+        ///     new IotHubClientOptions(new IotHubClientAmqpSettings())); // This operation only works over AMQP
+        /// 
         /// await client.SendTelemetryAsync(new List<TelemetryMessage/> { message1, message2 }, cancellationToken);
         /// </code>
         /// </example>
