@@ -128,6 +128,11 @@ namespace Microsoft.Azure.Devices.Client
         /// <exception cref="OperationCanceledException">The operation has been canceled.</exception>
         /// <exception cref="IotHubClientException">An error occured when communicating with IoT hub service.</exception>
         /// <exception cref="ObjectDisposedException">The client has been disposed.</exception>
+        /// <example>
+        /// <code language="csharp">
+        /// await client.OpenAsync(cancellationToken);
+        /// </code>
+        /// </example>
         public async Task OpenAsync(CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -156,6 +161,11 @@ namespace Microsoft.Azure.Devices.Client
         /// <exception cref="OperationCanceledException">The operation has been canceled.</exception>
         /// <exception cref="IotHubClientException">An error occured when communicating with IoT hub service.</exception>
         /// <exception cref="ObjectDisposedException">The client has been disposed.</exception>
+        /// <example>
+        /// <code language="csharp">
+        /// await client.SendTelemetryAsync(new TelemetryMessage(payload), cancellationToken);
+        /// </code>
+        /// </example>
         public async Task SendTelemetryAsync(TelemetryMessage message, CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNull(message, nameof(message));
@@ -208,6 +218,11 @@ namespace Microsoft.Azure.Devices.Client
         /// <exception cref="OperationCanceledException">The operation has been canceled.</exception>
         /// <exception cref="IotHubClientException">An error occured when communicating with IoT hub service.</exception>
         /// <exception cref="ObjectDisposedException">The client has been disposed.</exception>
+        /// <example>
+        /// <code language="csharp">
+        /// await client.SendTelemetryAsync(new List<TelemetryMessage/> { message1, message2 }, cancellationToken);
+        /// </code>
+        /// </example>
         public async Task SendTelemetryAsync(IEnumerable<TelemetryMessage> messages, CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNullOrEmpty(messages, nameof(messages));
@@ -251,6 +266,18 @@ namespace Microsoft.Azure.Devices.Client
         /// <exception cref="OperationCanceledException">The operation has been canceled.</exception>
         /// <exception cref="IotHubClientException">An error occured when communicating with IoT hub service.</exception>
         /// <exception cref="ObjectDisposedException">The client has been disposed.</exception>
+        /// <example>
+        /// <code language="csharp">
+        /// await client.SetIncomingMessageCallbackAsync(OnC2dMessageReceivedAsync);
+        /// //...
+        /// 
+        /// Task<MessageAcknowledgement/> OnC2dMessageReceivedAsync(IncomingMessage receivedMessage)
+        /// {
+        ///     // Add message handling logic as needed
+        ///     return Task.FromResult(MessageAcknowledgement.Complete);
+        /// }
+        /// </code>
+        /// </example>
         public async Task SetIncomingMessageCallbackAsync(
             Func<IncomingMessage, Task<MessageAcknowledgement>> messageCallback,
             CancellationToken cancellationToken = default)
@@ -308,6 +335,18 @@ namespace Microsoft.Azure.Devices.Client
         /// <exception cref="OperationCanceledException">The operation has been canceled.</exception>
         /// <exception cref="IotHubClientException">An error occured when communicating with IoT hub service.</exception>
         /// <exception cref="ObjectDisposedException">The client has been disposed.</exception>
+        /// <example>
+        /// <code language="csharp">
+        /// await client.SetDirectMethodCallbackAsync(OnDirectMethodCalledAsync, cancellationToken);
+        /// //...
+        /// 
+        /// Task<DirectMethodResponse/> OnDirectMethodCalledAsync(DirectMethodRequest directMethodRequest)
+        /// {
+        ///     // Add method request handling logic as needed
+        ///     return new DirectMethodResponse(200);
+        /// }
+        /// </code>
+        /// </example>
         public async Task SetDirectMethodCallbackAsync(
             Func<DirectMethodRequest, Task<DirectMethodResponse>> directMethodCallback,
             CancellationToken cancellationToken = default)
@@ -351,11 +390,16 @@ namespace Microsoft.Azure.Devices.Client
         /// </para>
         /// </remarks>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
+        /// <returns>The twin object for the current client.</returns>
         /// <exception cref="InvalidOperationException">The client instance is not already open.</exception>
         /// <exception cref="OperationCanceledException">The operation has been canceled.</exception>
         /// <exception cref="IotHubClientException">An error occured when communicating with IoT hub service.</exception>
         /// <exception cref="ObjectDisposedException">The client has been disposed.</exception>
-        /// <returns>The twin object for the current client.</returns>
+        /// <example>
+        /// <code language="csharp">
+        /// TwinProperties twin = await client.GetTwinPropertiesAsync(cancellationToken);
+        /// </code>
+        /// </example>
         public async Task<TwinProperties> GetTwinPropertiesAsync(CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -371,12 +415,22 @@ namespace Microsoft.Azure.Devices.Client
         /// </remarks>
         /// <param name="reportedProperties">Reported properties to push</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
+        /// <returns>The new version of the updated twin if the update was successful.</returns>
         /// <exception cref="ArgumentNullException"><paramref name="reportedProperties"/> is null.</exception>
         /// <exception cref="InvalidOperationException">The client instance is not already open.</exception>
         /// <exception cref="OperationCanceledException">The operation has been canceled.</exception>
         /// <exception cref="IotHubClientException">An error occured when communicating with IoT hub service.</exception>
         /// <exception cref="ObjectDisposedException">The client has been disposed.</exception>
-        /// <returns>The new version of the updated twin if the update was successful.</returns>
+        /// <example>
+        /// <code language="csharp">
+        /// long newVersion = await client.UpdateReportedPropertiesAsync(
+        ///     new ReportedProperties
+        ///     {
+        ///         [key1] = value1,
+        ///         [key2] = value2,
+        ///     });
+        /// </code>
+        /// </example>
         public async Task<long> UpdateReportedPropertiesAsync(ReportedProperties reportedProperties, CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNull(reportedProperties, nameof(reportedProperties));
@@ -408,6 +462,17 @@ namespace Microsoft.Azure.Devices.Client
         /// <exception cref="OperationCanceledException">The operation has been canceled.</exception>
         /// <exception cref="IotHubClientException">An error occured when communicating with IoT hub service.</exception>
         /// <exception cref="ObjectDisposedException">The client has been disposed.</exception>
+        /// <example>
+        /// <code language="csharp">
+        /// await client.SetDesiredPropertyUpdateCallbackAsync(OnDesiredPropertyChangedAsync);
+        /// //...
+        /// 
+        /// Task OnDesiredPropertyChangedAsync(DesiredProperties desiredProperties)
+        /// {
+        ///     // Add received desired properties handling logic as needed
+        /// }
+        /// </code>
+        /// </example>
         public async Task SetDesiredPropertyUpdateCallbackAsync(
             Func<DesiredProperties, Task> callback,
             CancellationToken cancellationToken = default)
@@ -453,6 +518,11 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="OperationCanceledException">The operation has been canceled.</exception>
         /// <exception cref="ObjectDisposedException">The client has been disposed.</exception>
+        /// <example>
+        /// <code language="csharp">
+        /// await client.CloseAsync(cancellationToken);
+        /// </code>
+        /// </example>
         public async Task CloseAsync(CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();

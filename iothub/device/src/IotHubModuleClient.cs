@@ -37,6 +37,13 @@ namespace Microsoft.Azure.Devices.Client
         /// <exception cref="InvalidOperationException">Required key/value pairs were missing from the connection string.</exception>
         /// <returns>A disposable client instance.</returns>
         /// <exception cref="InvalidOperationException">A module Id was missing in the connection string. <see cref="IotHubDeviceClient"/> should be used for devices.</exception>
+        /// <example>
+        /// <code language="csharp">
+        /// await using var client = new IotHubModuleClient(
+        ///     connectionString,
+        ///     new IotHubClientOptions(new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket)));
+        /// </code>
+        /// </example>
         public IotHubModuleClient(string connectionString, IotHubClientOptions options = default)
             : this(new IotHubConnectionCredentials(connectionString), options, null)
         {
@@ -61,7 +68,14 @@ namespace Microsoft.Azure.Devices.Client
         /// <exception cref="ArgumentException">Neither shared access key, shared access signature, nor X509 certificates were presented for authentication.</exception>
         /// <exception cref="ArgumentException">Either shared access key or shared access signature were presented together with X509 certificates for authentication.</exception>
         /// <exception cref="InvalidOperationException">A module Id was missing in the provided <paramref name="authenticationMethod"/>. <see cref="IotHubDeviceClient"/> should be used for devices.</exception>
-        /// <returns>A disposable client instance.</returns>
+        /// <example>
+        /// <code language="csharp">
+        /// await using var client = new IotHubModuleClient(
+        ///     hostName,
+        ///     new ClientAuthenticationWithSharedAccessKeyRefresh(sharedAccessKey, deviceId, moduleId),
+        ///     new IotHubClientOptions(new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket)));
+        /// </code>
+        /// </example>
         public IotHubModuleClient(string hostName, IAuthenticationMethod authenticationMethod, IotHubClientOptions options = default)
             : this(new IotHubConnectionCredentials(authenticationMethod, hostName, options?.GatewayHostName), options, null)
         {
@@ -87,8 +101,13 @@ namespace Microsoft.Azure.Devices.Client
         /// Creates a disposable <c>IotHubModuleClient</c> instance in an IoT Edge deployment based on environment variables.
         /// </summary>
         /// <param name="options">The options that allow configuration of the module client instance during initialization.</param>
-        /// <exception cref="InvalidOperationException">The required environmental variables were missing. Check the exception thrown for additional details.</exception>
         /// <returns>A disposable client instance.</returns>
+        /// <exception cref="InvalidOperationException">The required environmental variables were missing. Check the exception thrown for additional details.</exception>
+        /// <example>
+        /// <code language="csharp">
+        /// await using var client = await IotHubModuleClient.CreateFromEnvironmentAsync(new IotHubClientOptions(new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket)));
+        /// </code>
+        /// </example>
         public static async Task<IotHubModuleClient> CreateFromEnvironmentAsync(IotHubClientOptions options = default)
         {
             IotHubClientOptions clientOptions = options != null
@@ -122,6 +141,11 @@ namespace Microsoft.Azure.Devices.Client
         /// <exception cref="OperationCanceledException">The operation has been canceled.</exception>
         /// <exception cref="IotHubClientException">An error occured when communicating with IoT hub service.</exception>
         /// <exception cref="ObjectDisposedException">The client has been disposed.</exception>
+        /// <example>
+        /// <code language="csharp">
+        /// await client.SendMessageToRouteAsync(outputName, new TelemetryMessage(payload), cancellationToken);
+        /// </code>
+        /// </example>
         public async Task SendMessageToRouteAsync(string outputName, TelemetryMessage message, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
@@ -163,6 +187,11 @@ namespace Microsoft.Azure.Devices.Client
         /// <exception cref="OperationCanceledException">The operation has been canceled.</exception>
         /// <exception cref="IotHubClientException">An error occured when communicating with IoT hub service.</exception>
         /// <exception cref="ObjectDisposedException">The client has been disposed.</exception>
+        /// <example>
+        /// <code language="csharp">
+        /// await client.SendMessagesToRouteAsync(outputName, new List<TelemetryMessage/> { message1, message2 }, cancellationToken);
+        /// </code>
+        /// </example>
         public async Task SendMessagesToRouteAsync(string outputName, IEnumerable<TelemetryMessage> messages, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
@@ -206,6 +235,11 @@ namespace Microsoft.Azure.Devices.Client
         /// <exception cref="OperationCanceledException">The operation has been canceled.</exception>
         /// <exception cref="IotHubClientException">An error occured when communicating with IoT hub service.</exception>
         /// <exception cref="ObjectDisposedException">The client has been disposed.</exception>
+        /// <example>
+        /// <code language="csharp">
+        /// DirectMethodResponse response = await client.InvokeMethodAsync(deviceId, new DirectMethodRequest(methodName), cancellationToken);
+        /// </code>
+        /// </example>
         public Task<DirectMethodResponse> InvokeMethodAsync(string deviceId, DirectMethodRequest methodRequest, CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNullOrWhiteSpace(deviceId, nameof(deviceId));
@@ -235,6 +269,11 @@ namespace Microsoft.Azure.Devices.Client
         /// <exception cref="OperationCanceledException">The operation has been canceled.</exception>
         /// <exception cref="IotHubClientException">An error occured when communicating with IoT hub service.</exception>
         /// <exception cref="ObjectDisposedException">The client has been disposed.</exception>
+        /// <example>
+        /// <code language="csharp">
+        /// DirectMethodResponse response = await client.InvokeMethodAsync(deviceId, moduleId, new DirectMethodRequest(methodName), cancellationToken);
+        /// </code>
+        /// </example>
         public Task<DirectMethodResponse> InvokeMethodAsync(string deviceId, string moduleId, DirectMethodRequest methodRequest, CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNullOrWhiteSpace(deviceId, nameof(deviceId));
