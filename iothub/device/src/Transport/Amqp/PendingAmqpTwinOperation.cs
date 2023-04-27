@@ -13,7 +13,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
     /// receiving link, we need a way to identify the request, when it was sent, and the task completion source to complete the
     /// waiting user's task.
     /// </summary>
-    internal class PendingAmqpTwinOperation
+    internal sealed class PendingAmqpTwinOperation
     {
         public PendingAmqpTwinOperation(TaskCompletionSource<AmqpMessage> completionTask)
         {

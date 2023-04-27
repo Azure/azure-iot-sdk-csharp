@@ -16,7 +16,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// helper functions to instantiate the abstract class Response, but this library is not in that repo yet. Because of that,
     /// we need to implement the abstract class.
     /// </summary>
-    internal class QueryResponse : Response
+    internal sealed class QueryResponse : Response
     {
         private HttpResponseMessage _httpResponse;
         private List<HttpHeader> _httpHeaders;

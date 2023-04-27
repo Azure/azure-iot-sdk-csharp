@@ -24,7 +24,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         internal delegate Task<Page<T>> AsyncPageFunc<T>(string continuationToken = default, int? pageSizeHint = default);
         internal delegate Page<T> PageFunc<T>(string continuationToken = default, int? pageSizeHint = default);
 
-        internal class FuncAsyncPageable<T> : AsyncPageable<T> where T : notnull
+        internal sealed class FuncAsyncPageable<T> : AsyncPageable<T> where T : notnull
         {
             private readonly AsyncPageFunc<T> _firstPageFunc;
             private readonly AsyncPageFunc<T> _nextPageFunc;

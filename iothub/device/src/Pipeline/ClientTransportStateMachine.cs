@@ -33,13 +33,15 @@ namespace Microsoft.Azure.Devices.Client.Transport
     /// <summary>
     /// This state machine stores the current state of the delegating pipeline and evalautes if the requested state transition is possible.
     /// </summary>
+#pragma warning disable CA1852 // used in debug for unit test mocking
     internal class ClientTransportStateMachine
+#pragma warning restore CA1852
     {
         /// <summary>
         /// This internal class is created for the purpose of evaluating if the proposed state transition is acceptable.
         /// Objects of this class are maintained in a dictionary of "acceptable" state transitions.
         /// </summary>
-        internal class StateTransition
+        internal sealed class StateTransition
         {
             private readonly ClientTransportState _currentState;
             private readonly ClientStateAction _nextAction;
