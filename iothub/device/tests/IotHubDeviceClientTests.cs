@@ -449,7 +449,10 @@ namespace Microsoft.Azure.Devices.Client.Tests
                     (payload) =>
                     {
                         isMethodHandlerCalled = true;
-                        string methodReceived = Encoding.UTF8.GetString(payload.GetPayloadAsBytes());
+                        if(payload.GetPayloadAsBytes() != null)
+                        {
+                            string methodReceived = Encoding.UTF8.GetString(payload.GetPayloadAsBytes());
+                        }
                         return Task.FromResult(_directMethodResponseWithPayload);
                     })
                 .ConfigureAwait(false);
