@@ -30,6 +30,16 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="maxRetries">The maximum number of retry attempts; use 0 for infinite retries.</param>
         /// <param name="maxWait">The maximum amount of time to wait between retries (will not exceed ~12.43 days).</param>
         /// <param name="useJitter">Whether to add a small, random adjustment to the retry delay to avoid synchronicity in clients retrying.</param>
+        /// <example>
+        /// <code language="csharp">
+        /// var exponentialBackoffRetryPolicy = new IotHubClientExponentialBackoffRetryPolicy(maxRetries, maxWait, useJitter);
+        /// 
+        /// var clientOptions = new IotHubClientOptions(new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket))
+        /// {
+        ///     RetryPolicy = exponentialBackoffRetryPolicy,
+        /// };
+        /// </code>
+        /// </example>
         public IotHubClientExponentialBackoffRetryPolicy(uint maxRetries, TimeSpan maxWait, bool useJitter = true)
             : base(maxRetries)
         {

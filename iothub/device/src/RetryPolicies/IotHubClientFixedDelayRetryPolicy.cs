@@ -22,6 +22,16 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="maxRetries">The maximum number of retry attempts; use 0 for infinite retries.</param>
         /// <param name="fixedDelay">The fixed delay to wait between retries.</param>
         /// <param name="useJitter">Whether to add a small, random adjustment to the retry delay to avoid synchronicity in retrying clients.</param>
+        /// <example>
+        /// <code language="csharp">
+        /// var fixedDelayRetryPolicy = new IotHubClientFixedDelayRetryPolicy(maxRetries, fixedDelay, useJitter);
+        /// 
+        /// var clientOptions = new IotHubClientOptions(new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket))
+        /// {
+        ///     RetryPolicy = fixedDelayRetryPolicy,
+        /// };
+        /// </code>
+        /// </example>
         public IotHubClientFixedDelayRetryPolicy(uint maxRetries, TimeSpan fixedDelay, bool useJitter = true)
             : base(maxRetries)
         {

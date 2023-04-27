@@ -18,6 +18,17 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="lastException">The exception that prompted this retry policy check.</param>
         /// <param name="retryDelay">Set this to the desired time to delay before the next attempt.</param>
         /// <returns>True if the operation should be retried; otherwise false.</returns>
+        /// <example>
+        /// <code language="csharp">
+        /// class CustomRetryPolicy : IIotHubClientRetryPolicy
+        /// {
+        ///     public bool ShouldRetry(uint currentRetryCount, Exception lastException, out TimeSpan retryDelay)
+        ///     {
+        ///         // Add custom logic as needed upon determining if it should retry
+        ///     }
+        /// }
+        /// </code>
+        /// </example>
         bool ShouldRetry(uint currentRetryCount, Exception lastException, out TimeSpan retryDelay);
     }
 }

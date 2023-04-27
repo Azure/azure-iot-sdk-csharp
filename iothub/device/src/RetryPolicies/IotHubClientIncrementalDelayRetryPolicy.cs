@@ -20,6 +20,16 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="delayIncrement">The amount to increment the delay on each additional count of retry.</param>
         /// <param name="maxDelay">The maximum amount of time to wait between retries.</param>
         /// <param name="useJitter">Whether to add a small, random adjustment to the retry delay to avoid synchronicity in clients retrying.</param>
+        /// <example>
+        /// <code language="csharp">
+        /// var incrementalDelayRetryPolicy = new IotHubClientIncrementalDelayRetryPolicy(maxRetries, delayIncrement, maxDelay, useJitter);
+        /// 
+        /// var clientOptions = new IotHubClientOptions(new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket))
+        /// {
+        ///     RetryPolicy = incrementalDelayRetryPolicy,
+        /// };
+        /// </code>
+        /// </example>
         public IotHubClientIncrementalDelayRetryPolicy(uint maxRetries, TimeSpan delayIncrement, TimeSpan maxDelay, bool useJitter = true)
             : base(maxRetries)
         {
