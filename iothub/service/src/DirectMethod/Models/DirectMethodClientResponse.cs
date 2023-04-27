@@ -24,6 +24,10 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Gets or sets the status of device method invocation.
         /// </summary>
+        /// <remarks>
+        /// Can be any status code value (int), but it is recommended to use
+        /// HTTP status codes, which are well-known and documented.
+        /// </remarks>
         [JsonProperty("status")]
         public int Status { get; protected internal set; }
 
@@ -45,6 +49,17 @@ namespace Microsoft.Azure.Devices
         /// <typeparam name="T">The type to convert to.</typeparam>
         /// <param name="value">The value of the payload.</param>
         /// <returns>True if converted, otherwise false.</returns>
+        /// <example>
+        /// <code language="csharp">
+        /// DirectMethodClientResponse methodResponse = await client.DirectMethods
+        ///     .InvokeAsync(deviceId, directMethodRequest, ct)
+        ///     .ConfigureAwait(false);
+        ///     
+        /// methodResponse.TryGetPayload(out MyCustomType customTypePayload);
+        ///     
+        /// // deserialize as needed and do work...
+        /// </code>
+        /// </example>
         public bool TryGetPayload<T>(out T value)
         {
             value = default;

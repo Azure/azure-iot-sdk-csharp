@@ -3,6 +3,7 @@
 
 using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.Text;
 using Mash.Logging;
 using Microsoft.Azure.Devices.Client;
 using static Microsoft.Azure.Devices.LongHaul.Module.LoggingConstants;
@@ -41,11 +42,12 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
         public IotHub(Logger logger, Parameters parameters)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _moduleConnectionString = parameters.ConnectionString;
+            _moduleConnectionString = parameters.GatewayHostName == null ? parameters.DeviceModuleConnectionString : parameters.EdgeModuleConnectionString;
             _clientOptions = new IotHubClientOptions(parameters.GetTransportSettings())
             {
                 PayloadConvention = parameters.GetPayloadConvention(),
                 SdkAssignsMessageId = SdkAssignsMessageId.WhenUnset,
+                GatewayHostName = parameters.GatewayHostName,
             };
             _moduleClient = null;
         }
@@ -357,7 +359,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
 
         private Task<DirectMethodResponse> DirectMethodCallback(DirectMethodRequest methodRequest)
         {
-            _logger.Trace($"Received direct method [{methodRequest.MethodName}] with payload [{methodRequest.GetPayloadAsJsonString()}].", TraceSeverity.Information);
+            _logger.Trace($"Received direct method [{methodRequest.MethodName}] with payload [{Encoding.UTF8.GetString(methodRequest.GetPayloadAsBytes())}].", TraceSeverity.Information);
 
             switch (methodRequest.MethodName)
             {

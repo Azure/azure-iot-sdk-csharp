@@ -158,10 +158,30 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The message payload, deserialized to the specified type.
         /// </summary>
+        /// <remarks>
+        /// Use this method when the payload type is known and it can be deserialized using the configured
+        /// <see cref="PayloadConvention"/>. If it is not JSON or the type is not known, use <see cref="GetPayloadAsBytes"/>.
+        /// </remarks>
         /// <typeparam name="T">The type to deserialize <paramref name="payload"/> to.</typeparam>
-        /// <param name="payload">When this method returns true, this contains the value of the message payload.
-        /// When this method returns false, this contains the default value of the type <c>T</c> passed in.</param>
+        /// <param name="payload">The value of the message payload, or default if unsuccessful.</param>
         /// <returns><c>true</c> if the message payload can be deserialized to type <c>T</c>; otherwise, <c>false</c>.</returns>
+        /// <example>
+        /// <code language="csharp">
+        /// await client.SetIncomingMessageCallbackAsync((incomingMessage) =>
+        /// {
+        ///     if (incomingMessage.TryGetPayload(out MyCustomType customTypePayload))
+        ///     {
+        ///         // do work
+        ///         // ...
+        ///         
+        ///         return Task.FromResult(MessageAcknowledgement.Complete);
+        ///     }
+        ///     
+        ///     // ...
+        /// },
+        /// cancellationToken);
+        /// </code>
+        /// </example>
         public bool TryGetPayload<T>(out T payload)
         {
             payload = default;
@@ -177,7 +197,7 @@ namespace Microsoft.Azure.Devices.Client
                 // In case the value cannot be converted using the serializer,
                 // then return false with the default value of the type <T> passed in.
                 if (Logging.IsEnabled)
-                    Logging.Info(this, $"Unable to convert payload to {typeof(T)} due to {ex}");
+                    Logging.Error(this, $"Unable to convert payload to {typeof(T)} due to {ex}", nameof(TryGetPayload));
             }
 
             return false;
@@ -186,7 +206,25 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Get the raw payload bytes.
         /// </summary>
+        /// <remarks>
+        /// Use this method when to fully control deserialization of the payload.
+        /// <para>
+        /// For JSON payloads with a known type, see <see cref="TryGetPayload{T}(out T)"/>.
+        /// </para>
+        /// </remarks>
         /// <returns>A copy of the raw payload as a byte array.</returns>
+        /// <example>
+        /// <code language="csharp">
+        /// await client.SetIncomingMessageCallbackAsync((incomingMessage) =>
+        /// {
+        ///     byte[] arr = incomingMessage.GetPayloadAsBytes();
+        ///     // deserialize as needed and do work...
+        ///     
+        ///     return Task.FromResult(MessageAcknowledgement.Complete);
+        /// },
+        /// cancellationToken);
+        /// </code>
+        /// </example>
         public byte[] GetPayloadAsBytes()
         {
             return (byte[])_payload.Clone();

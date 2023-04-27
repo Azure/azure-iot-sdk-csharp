@@ -392,7 +392,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
                 MqttApplicationMessage mqttMessage = new MqttApplicationMessageBuilder()
                     .WithTopic(topicName)
-                    .WithPayload(message.GetPayloadObjectBytes())
+                    .WithPayload(message.GetPayloadAsBytes())
                     .WithQualityOfServiceLevel(_publishingQualityOfService)
                     .Build();
 

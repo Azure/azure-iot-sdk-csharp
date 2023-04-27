@@ -22,10 +22,17 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
     {
         [Option(
             'c',
-            "ConnectionString",
+            "DeviceModuleConnectionString",
             Required = false,
-            HelpText = "The connection string for the module to simulate.")]
-        public string ConnectionString { get; set; } = Environment.GetEnvironmentVariable("IOTHUB_LONG_HAUL_MODULE_CONNECTION_STRING");
+            HelpText = "The connection string for the Device module to simulate.")]
+        public string DeviceModuleConnectionString { get; set; } = Environment.GetEnvironmentVariable("IOTHUB_LONG_HAUL_MODULE_CONNECTION_STRING");
+
+        [Option(
+            'e',
+            "EdgeModuleConnectionString",
+            Required = false,
+            HelpText = "The connection string for the Edge module to simulate.")]
+        public string EdgeModuleConnectionString { get; set; } = Environment.GetEnvironmentVariable("IOTHUB_LONG_HAUL_EDGE_MODULE_CONNECTION_STRING");
 
         [Option(
             'i',
@@ -33,6 +40,13 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
             Required = false,
             HelpText = "The instrumentation key string for application insights.")]
         public string InstrumentationKey { get; set; } = Environment.GetEnvironmentVariable("APPLICATION_INSIGHTS_INSTRUMENTATION_KEY");
+
+        [Option(
+            'g',
+            "GatewayHostName",
+            Required = false,
+            HelpText = "The gateway edge device to connect to; if defined, this app will use the EdgeModuleConnectionString, otherwise it uses the DeviceModuleConnectionString.")]
+        public string GatewayHostName { get; set; }
 
         [Option(
             't',

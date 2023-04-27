@@ -111,10 +111,38 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The direct method request payload, deserialized to the specified type.
         /// </summary>
+        /// <remarks>
+        /// Use this method when the payload type is known and it can be deserialized using the configured
+        /// <see cref="PayloadConvention"/>. If it is not JSON or the type is not known, use <see cref="GetPayloadAsBytes"/>.
+        /// </remarks>
         /// <typeparam name="T">The type to deserialize the direct method request payload to.</typeparam>
         /// <param name="payload">When this method returns true, this contains the value of the direct method request payload.
         /// When this method returns false, this contains the default value of the type <c>T</c> passed in.</param>
         /// <returns><c>true</c> if the direct method request payload can be deserialized to type <c>T</c>; otherwise, <c>false</c>.</returns>
+        /// <example>
+        /// <code language="csharp">
+        /// await client.SetDirectMethodCallbackAsync((directMethodRequest) =>
+        /// {
+        ///     if (directMethodRequest.TryGetPayload(out MyCustomType customTypePayload))
+        ///     {
+        ///         // do work
+        ///         // ...
+        ///         
+        ///         // Acknowlege the direct method call with the status code 200.  
+        ///         return Task.FromResult(new DirectMethodResponse(200));
+        ///     }
+        ///     else
+        ///     {
+        ///         // Acknowlege the direct method call the status code 400.
+        ///         return Task.FromResult(new DirectMethodResponse(400));
+        ///     }
+        ///     
+        ///     
+        ///     // ...
+        /// },
+        /// cancellationToken);
+        /// </code>
+        /// </example>
         public bool TryGetPayload<T>(out T payload)
         {
             payload = default;
@@ -129,29 +157,36 @@ namespace Microsoft.Azure.Devices.Client
                 // In case the value cannot be converted using the serializer,
                 // then return false with the default value of the type <T> passed in.
                 if (Logging.IsEnabled)
-                    Logging.Error(this, ex, nameof(TryGetPayload));
+                    Logging.Error(this, $"Unable to convert payload to {typeof(T)} due to {ex}", nameof(TryGetPayload));
             }
 
             return false;
         }
 
         /// <summary>
-        /// The command payload as a JSON string, if applicable.
-        /// </summary>
-        public string GetPayloadAsJsonString()
-        {
-            return Payload == null || Payload.Length == 0
-                ? null
-                : DefaultPayloadConvention.Encoding.GetString(Payload);
-        }
-
-        /// <summary>
         /// Get the raw payload bytes.
         /// </summary>
+        /// <remarks>
+        /// Use this method when the payload is not JSON or the type is not known or the type cannot be deserialized
+        /// using the configured <see cref="PayloadConvention"/>. Otherwise, use <see cref="TryGetPayload{T}(out T)"/>.
+        /// </remarks>
         /// <returns>A copy of the raw payload as a byte array.</returns>
+        /// <example>
+        /// <code language="csharp">
+        /// await client.SetDirectMethodCallbackAsync((directMethodRequest) =>
+        /// {
+        ///     byte[] arr = directMethodRequest.GetPayloadAsBytes();
+        ///     // deserialize as needed and do work...
+        ///     
+        ///     // Acknowlege the direct method call with the status code 200. 
+        ///     return Task.FromResult(new DirectMethodResponse(200));
+        /// },
+        /// cancellationToken);
+        /// </code>
+        /// </example>
         public byte[] GetPayloadAsBytes()
         {
-            return (byte[])Payload.Clone();
+            return Payload == null || Payload.Length==0 ? null : (byte[])Payload.Clone();
         }
     }
 }
