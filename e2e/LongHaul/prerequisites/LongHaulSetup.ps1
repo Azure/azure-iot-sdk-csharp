@@ -22,7 +22,6 @@ $startTime = (Get-Date)
 ########################################################################################################
 
 $ErrorActionPreference = "Stop"
-$WarningActionPreference = "Continue"
 
 ########################################################################################################
 # Check PowerShell version
@@ -169,8 +168,6 @@ if ($rgExists -eq "False")
     az group create --name $ResourceGroup --location $Region --output none
 }
 
-$resourceGroupId = az group show -n $ResourceGroup --query id --out tsv
-
 #######################################################################################################
 # Invoke-Deployment - Uses the .\.json template to create the necessary resources to run LongHaul tests.
 #######################################################################################################
@@ -217,13 +214,6 @@ $iotHubName = az deployment group show -g $ResourceGroup -n $deploymentName --qu
 $instrumentationKey = az deployment group show -g $ResourceGroup -n $deploymentName --query 'properties.outputs.instrumentationKey.value' --output tsv
 
 ##################################################################################################################################
-# Fetch the iothubowner policy details.
-##################################################################################################################################
-
-$iothubownerSasPolicy = "iothubowner"
-$iothubownerSasPrimaryKey = az iot hub policy show --hub-name $iotHubName --name $iothubownerSasPolicy --query 'primaryKey'
-
-##################################################################################################################################
 # Create device in IoT hub.
 ##################################################################################################################################
 
@@ -232,7 +222,7 @@ $longhaulDeviceModuleId = "LongHaulDeviceModule1"
 $longhaulEdgeDeviceId = "LongHaulEdgeDevice1"
 $longhaulEdgeModuleId = "LongHaulEdgeModule1"
 $longhaulDevice = az iot hub device-identity list -g $ResourceGroup --hub-name $iotHubName --query "[?deviceId=='$longhaulDeviceId'].deviceId" --output tsv
-$longhaulDeviceModule = az iot hub module-identity list -g $ResourceGroup --hub-name $iotHubName --query "[?moduleId=='$longhaulDeviceModuleId'].moduleId" --output tsv
+$longhaulDeviceModule = az iot hub module-identity list -g $ResourceGroup --hub-name $iotHubName --device-id $longhaulDeviceId --query "[?moduleId=='$longhaulDeviceModuleId'].moduleId" --output tsv
 $longhaulEdgeDevice = az iot hub device-identity list -g $ResourceGroup --hub-name $iotHubName --query "[?deviceId=='$longhaulEdgeDeviceId'].deviceId" --output tsv
 $longhaulEdgeModule = az iot hub module-identity list -g $ResourceGroup --hub-name $iotHubName --device-id $longhaulEdgeDeviceId --query "[?moduleId=='$longhaulEdgeModuleId'].moduleId" --output tsv
 
@@ -295,11 +285,11 @@ foreach ($kvp in $keyvaultKvps.GetEnumerator())
 # Creating a file to run to load environment variables
 ############################################################################################################################
 
-$loadScriptDir = Join-Path $PSScriptRoot "..\..\..\.." -Resolve
-$loadScriptName = "Load-$keyVaultName.ps1";
+$loadScriptDir = Join-Path $PSScriptRoot "..\..\.." -Resolve
+$loadScriptName = "Load-LongHaul-$keyVaultName.ps1";
 Write-Host "`nWriting environment loading file to $loadScriptDir\$loadScriptName.`n"
 $file = New-Item -Path $loadScriptDir -Name $loadScriptName -ItemType "file" -Force
-Add-Content -Path $file.PSPath -Value "$loadScriptDir\azure-iot-sdk-csharp\e2e\Tests\prerequisites\LoadEnvironmentVariablesFromKeyVault.ps1 -SubscriptionId $SubscriptionId -KeyVaultName $keyVaultName"
+Add-Content -Path $file.PSPath -Value "$loadScriptDir\e2e\Tests\prerequisites\LoadEnvironmentVariablesFromKeyVault.ps1 -SubscriptionId $SubscriptionId -KeyVaultName $keyVaultName"
 
 ############################################################################################################################
 # Configure environment variables
