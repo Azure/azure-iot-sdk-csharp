@@ -24,6 +24,19 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="transportSettings">The transport settings to use (i.e., <see cref="IotHubClientMqttSettings"/> or
         /// <see cref="IotHubClientAmqpSettings"/>.</param>
         /// <exception cref="ArgumentNullException"><paramref name="transportSettings"/> is null.</exception>
+        /// <example>
+        /// <code language="csharp">
+        /// await using var client = new IotHubDeviceClient(
+        ///     connectionString,
+        ///     new IotHubClientOptions(new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket))
+        ///     {
+        ///         PayloadConvention = SystemTextJsonPayloadConvention.Instance,
+        ///         GatewayHostName = "myIotEdgeGateway.contoso.com",
+        ///         SdkAssignsMessageId = SdkAssignsMessageId.WhenUnset,
+        ///         RetryPolicy = new IotHubClientFixedDelayRetryPolicy(maxRetries: 10, fixedDelay: TimeSpan.FromSeconds(3), userJitter: true),
+        ///     });
+        /// </code>
+        /// </example>
         public IotHubClientOptions(IotHubClientTransportSettings transportSettings)
         {
             TransportSettings = transportSettings ?? throw new ArgumentNullException(nameof(transportSettings));
@@ -51,14 +64,14 @@ namespace Microsoft.Azure.Devices.Client
         public IotHubClientHttpSettings HttpOperationTransportSettings { get; set; } = new IotHubClientHttpSettings();
 
         /// <summary>
-        /// The payload convention to be used to serialize and encode the payloads exchanged with the service.
+        /// The payload convention to be used to serialize and encode JSON payloads exchanged with the service.
         /// </summary>
         /// <remarks>
-        /// The payload convention defines the serializer, deserializer, encoding, and decoding to be used.
-        /// By default, the client assumes payloads are serialized using JSON and encoded to/from UTF-8;
-        /// it only needs to be set if there are objects that have special serialization rules or require a specific byte encoding.
+        /// The payload convention defines the serializer and deserializer be used. It only needs to be set if there are objects
+        /// that have special serialization rules or require a specific byte encoding.
         /// <para>
-        /// The default value is set to <see cref="DefaultPayloadConvention"/>.
+        /// The default value is set to <see cref="DefaultPayloadConvention"/> which uses
+        /// <see href="https://www.nuget.org/packages/Newtonsoft.Json"/> and UTF-8 encoding.
         /// </para>
         /// </remarks>
         public PayloadConvention PayloadConvention { get; set; } = DefaultPayloadConvention.Instance;
@@ -66,18 +79,26 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The fully-qualified DNS host name of a gateway to connect through.
         /// </summary>
+        /// <remarks>
+        /// Set this property to specify the FQDN of that gateway if the device or device module connects to IoT hub through an
+        /// IoT Edge gateway.
+        /// <para>
+        /// It can also be used for other, custom transparent or protocol gateways.
+        /// </para>
+        /// </remarks>
         public string GatewayHostName { get; set; }
 
         /// <summary>
         /// The DTDL model Id associated with the device or module client instance.
         /// </summary>
+        /// <seealso href="https://learn.microsoft.com/azure/iot-develop/concepts-modeling-guide"/>
         public string ModelId { get; set; }
 
         /// <summary>
         /// The configuration for setting <see cref="TelemetryMessage.MessageId"/> for every message sent by the device or module client instance.
         /// </summary>
         /// <remarks>
-        /// The default behavior is that a message Id is sent only if set by the user.
+        /// The default behavior is that a message Id is only sent if set by the user.
         /// </remarks>
         public SdkAssignsMessageId SdkAssignsMessageId { get; set; } = SdkAssignsMessageId.Never;
 
@@ -86,10 +107,14 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <remarks>
         /// Defaults to a nearly infinite exponential backoff.
+        /// <para>
         /// If set to null, will use <see cref="IotHubClientNoRetry"/> to perform no retries.
+        /// </para>
+        /// <para>
         /// It can be set to any of the built-in retry policies such as <see cref="IotHubClientExponentialBackoffRetryPolicy"/>,
         /// <see cref="IotHubClientFixedDelayRetryPolicy"/>, or <see cref="IotHubClientIncrementalDelayRetryPolicy"/>,
         /// or a custom one by inheriting from <see cref="IIotHubClientRetryPolicy"/>.
+        /// </para>
         /// </remarks>
         public IIotHubClientRetryPolicy RetryPolicy { get; set; } = new IotHubClientExponentialBackoffRetryPolicy(0, TimeSpan.FromHours(12), true);
 
