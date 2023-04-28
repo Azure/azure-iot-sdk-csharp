@@ -29,6 +29,13 @@ namespace Microsoft.Azure.Devices.Client
         /// or the IoT hub host name or device Id in the connection string are an empty string or consist only of white-space characters.</exception>
         /// <exception cref="ArgumentException">Neither shared access key nor shared access signature were presented for authentication.</exception>
         /// <exception cref="InvalidOperationException">A module Id was specified in the connection string. <see cref="IotHubModuleClient"/> should be used for modules.</exception>
+        /// <example>
+        /// <code language="csharp">
+        /// await using var client = new IotHubDeviceClient(
+        ///     connectionString,
+        ///     new IotHubClientOptions(new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket)));
+        /// </code>
+        /// </example>
         public IotHubDeviceClient(string connectionString, IotHubClientOptions options = default)
             : this(new IotHubConnectionCredentials(connectionString), options)
         {
@@ -55,6 +62,14 @@ namespace Microsoft.Azure.Devices.Client
         /// <exception cref="ArgumentException"><see cref="ClientAuthenticationWithX509Certificate.CertificateChain"/> is used over a protocol other than MQTT over TCP or AMQP over TCP></exception>
         /// <exception cref="IotHubClientException"><see cref="ClientAuthenticationWithX509Certificate.CertificateChain"/> could not be installed.</exception>
         /// <exception cref="InvalidOperationException">A module Id was specified in the provided <paramref name="authenticationMethod"/>. <see cref="IotHubModuleClient"/> should be used for modules.</exception>
+        /// <example>
+        /// <code language="csharp">
+        /// await using var client = new IotHubDeviceClient(
+        ///     hostName,
+        ///     new ClientAuthenticationWithSharedAccessKeyRefresh(sharedAccessKey, deviceId),
+        ///     new IotHubClientOptions(new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket)));
+        /// </code>
+        /// </example>
         public IotHubDeviceClient(string hostName, IAuthenticationMethod authenticationMethod, IotHubClientOptions options = default)
             : this(new IotHubConnectionCredentials(authenticationMethod, hostName, options?.GatewayHostName), options)
         {
@@ -87,7 +102,7 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Get a file upload SAS URI which the Azure Storage SDK can use to upload a file to blob for this device
+        /// Get a file upload SAS URI which the Azure Storage SDK can use to upload a file to blob for this device.
         /// </summary>
         /// <remarks>
         /// See <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-file-upload#initialize-a-file-upload">this documentation for more details</see>.
@@ -100,6 +115,11 @@ namespace Microsoft.Azure.Devices.Client
         /// <exception cref="OperationCanceledException">The operation has been canceled.</exception>
         /// <exception cref="IotHubClientException">An error occured when communicating with IoT hub service.</exception>
         /// <exception cref="ObjectDisposedException">The client has been disposed.</exception>
+        /// <example>
+        /// <code language="csharp">
+        /// FileUploadSasUriResponse sasUri = await client.GetFileUploadSasUriAsync(new FileUploadSasUriRequest(fileName), cancellationToken);
+        /// </code>
+        /// </example>
         public Task<FileUploadSasUriResponse> GetFileUploadSasUriAsync(
             FileUploadSasUriRequest request,
             CancellationToken cancellationToken = default)
@@ -121,6 +141,18 @@ namespace Microsoft.Azure.Devices.Client
         /// <exception cref="OperationCanceledException">The operation has been canceled.</exception>
         /// <exception cref="IotHubClientException">An error occured when communicating with IoT hub service.</exception>
         /// <exception cref="ObjectDisposedException">The client has been disposed.</exception>
+        /// <example>
+        /// <code language="csharp">
+        /// await client.CompleteFileUploadAsync(
+        ///     new FileUploadCompletionNotification(correlationId: correlationId, isSuccess: true)
+        ///     {
+        ///         // optional properties...
+        ///         StatusCode = 200,
+        ///         StatusDescription = "Success",
+        ///     },
+        ///     cancellationToken);
+        /// </code>
+        /// </example>
         public Task CompleteFileUploadAsync(FileUploadCompletionNotification notification, CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNull(notification, nameof(notification));

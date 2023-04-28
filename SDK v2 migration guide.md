@@ -9,7 +9,7 @@ Provided here are lists of the notable changes as well as a mapping from v1 to v
  - [Why the v1 SDK is being replaced](#why-the-v1-sdk-is-being-replaced)
  - [What will happen to the v1 SDK](#What-will-happen-to-the-v1-sdk)
  - [Migration guide](#migration-guide)
-   - [IoT hub device client](#iot-hub-device-client)
+   - [IoT hub device clients](#iot-hub-device-clients)
    - [IoT hub service client](#iot-hub-service-client)
    - [Device Provisioning Service (DPS) device client](#dps-device-client)
    - [DPS service client](#dps-service-client)
