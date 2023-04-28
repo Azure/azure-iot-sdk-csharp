@@ -65,7 +65,6 @@ namespace Microsoft.Azure.Devices.Client.Samples
             switch (directMethodRequest.MethodName)
             {
                 case "GetDeviceName":
-                    directMethodRequest.TryGetPayload(out string response);
                     return await GetDeviceNameAsync(directMethodRequest);
 
                 case "WriteToConsole":
