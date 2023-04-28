@@ -146,6 +146,7 @@ namespace Microsoft.Azure.Devices.Client
         /// await client.CompleteFileUploadAsync(
         ///     new FileUploadCompletionNotification(correlationId: correlationId, isSuccess: true)
         ///     {
+        ///         // optional properties...
         ///         StatusCode = 200,
         ///         StatusDescription = "Success",
         ///     },

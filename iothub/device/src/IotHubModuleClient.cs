@@ -189,7 +189,11 @@ namespace Microsoft.Azure.Devices.Client
         /// <exception cref="ObjectDisposedException">The client has been disposed.</exception>
         /// <example>
         /// <code language="csharp">
-        /// await client.SendMessagesToRouteAsync(outputName, new List<TelemetryMessage/> { message1, message2 }, cancellationToken);
+        /// var client = new IotHubModuleClient(
+        ///     connectionString,
+        ///     new IotHubClientOptions(new IotHubClientAmqpSettings())); // This operation only works over AMQP
+        ///
+        /// await client.SendMessagesToRouteAsync(outputName, new List&lt;TelemetryMessage&gt; { message1, message2 }, cancellationToken);
         /// </code>
         /// </example>
         public async Task SendMessagesToRouteAsync(string outputName, IEnumerable<TelemetryMessage> messages, CancellationToken cancellationToken = default)

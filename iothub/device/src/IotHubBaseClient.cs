@@ -99,7 +99,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </remarks>
         /// <example>
         /// <code language="csharp">
-        /// deviceClient.ConnectionStatusChangeCallback = OnConnectionStatusChanged;
+        /// client.ConnectionStatusChangeCallback = OnConnectionStatusChanged;
         /// //...
         ///
         /// public void OnConnectionStatusChanged(ConnectionStatusInfo connectionStatusInfo)
@@ -123,6 +123,8 @@ namespace Microsoft.Azure.Devices.Client
         /// This client can be re-opened after it has been closed, but cannot be re-opened after it has
         /// been disposed. Subscriptions to cloud to device messages/twin/methods do not persist when
         /// re-opening a client.
+        /// The call to open is important and may require some amount of retry above and beyond the built-in
+        /// retry policy (especially if the device is disabled or if the cancellation token is signaled).
         /// </remarks>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="OperationCanceledException">The operation has been canceled.</exception>
@@ -130,7 +132,19 @@ namespace Microsoft.Azure.Devices.Client
         /// <exception cref="ObjectDisposedException">The client has been disposed.</exception>
         /// <example>
         /// <code language="csharp">
+        /// // Initialize the client
+        /// await using var client = new IotHubDeviceClient(
+        ///     connectionString,
+        ///     new IotHubClientOptions(new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket)));
+        ///
+        /// // Subscribe to connection status change callback as this is the
+        /// // best practice so you are notified with any connection status changes.
+        /// client.ConnectionStatusChangeCallback = OnConnectionStatusChanged;
+        ///
+        /// // Call to open
         /// await client.OpenAsync(cancellationToken);
+        ///
+        /// // After completion of 3 steps above, begin device/module operations as needed, such as sending telemetry
         /// </code>
         /// </example>
         public async Task OpenAsync(CancellationToken cancellationToken = default)
@@ -224,7 +238,7 @@ namespace Microsoft.Azure.Devices.Client
         ///     connectionString,
         ///     new IotHubClientOptions(new IotHubClientAmqpSettings())); // This operation only works over AMQP
         /// 
-        /// await client.SendTelemetryAsync(new List<TelemetryMessage/> { message1, message2 }, cancellationToken);
+        /// await client.SendTelemetryAsync(new List&lt;TelemetryMessage&gt; { message1, message2 }, cancellationToken);
         /// </code>
         /// </example>
         public async Task SendTelemetryAsync(IEnumerable<TelemetryMessage> messages, CancellationToken cancellationToken = default)
@@ -272,12 +286,21 @@ namespace Microsoft.Azure.Devices.Client
         /// <exception cref="ObjectDisposedException">The client has been disposed.</exception>
         /// <example>
         /// <code language="csharp">
+        /// private static readonly SemaphoreSlim s_receiveMessageSemaphore = new(1, 1);
+        ///
         /// await client.SetIncomingMessageCallbackAsync(OnC2dMessageReceivedAsync);
         /// //...
-        /// 
-        /// Task<MessageAcknowledgement/> OnC2dMessageReceivedAsync(IncomingMessage receivedMessage)
+        ///
+        /// s_receiveMessageSemaphore.Dispose(); // Dispose the semaphore before exiting the application
+        ///
+        /// Task&lt;MessageAcknowledgement&gt; OnC2dMessageReceivedAsync(IncomingMessage receivedMessage)
         /// {
+        ///     // Allow a single thread to handle received c2d message to ensure ordering
+        ///     await s_receiveMessageSemaphore.WaitAsync(cancellationToken);
+        ///
         ///     // Add message handling logic as needed
+        ///
+        ///     s_receiveMessageSemaphore.Release();
         ///     return Task.FromResult(MessageAcknowledgement.Complete);
         /// }
         /// </code>
@@ -344,10 +367,17 @@ namespace Microsoft.Azure.Devices.Client
         /// await client.SetDirectMethodCallbackAsync(OnDirectMethodCalledAsync, cancellationToken);
         /// //...
         /// 
-        /// Task<DirectMethodResponse/> OnDirectMethodCalledAsync(DirectMethodRequest directMethodRequest)
+        /// Task&lt;DirectMethodResponse&gt; OnDirectMethodCalledAsync(DirectMethodRequest directMethodRequest)
         /// {
-        ///     // Add method request handling logic as needed
-        ///     return new DirectMethodResponse(200);
+        ///     switch (directMethodRequest.MethodName)
+        ///     {
+        ///         case "expectedMethod":
+        ///             directMethodRequest.TryGetPayload(out CustomPayload payload);
+        ///             return new DirectMethodResponse(200);
+        ///             
+        ///         default:
+        ///             return new DirectMethodResponse(400);
+        ///     }
         /// }
         /// </code>
         /// </example>
@@ -402,6 +432,8 @@ namespace Microsoft.Azure.Devices.Client
         /// <example>
         /// <code language="csharp">
         /// TwinProperties twin = await client.GetTwinPropertiesAsync(cancellationToken);
+        /// string serializedDesiredProperties = twin.Desired.GetSerializedString();
+        /// string serializedReportedProperties = twin.Reported.GetSerializedString();
         /// </code>
         /// </example>
         public async Task<TwinProperties> GetTwinPropertiesAsync(CancellationToken cancellationToken = default)
@@ -473,7 +505,10 @@ namespace Microsoft.Azure.Devices.Client
         /// 
         /// Task OnDesiredPropertyChangedAsync(DesiredProperties desiredProperties)
         /// {
-        ///     // Add received desired properties handling logic as needed
+        ///     foreach (KeyValuePair&lt;string, object&gt; desiredProperty in desiredProperties)
+        ///     {
+        ///         // Add received desired properties handling logic as needed
+        ///     }
         /// }
         /// </code>
         /// </example>

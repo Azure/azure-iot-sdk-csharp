@@ -15,11 +15,9 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <example>
         /// <code language="csharp">
-        /// var noRetry = new IotHubClientNoRetry();
-        /// 
         /// var clientOptions = new IotHubClientOptions(new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket))
         /// {
-        ///     RetryPolicy = noRetry,
+        ///     RetryPolicy = new IotHubClientNoRetry(),
         /// };
         /// </code>
         /// </example>

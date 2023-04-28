@@ -32,7 +32,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="useJitter">Whether to add a small, random adjustment to the retry delay to avoid synchronicity in clients retrying.</param>
         /// <example>
         /// <code language="csharp">
-        /// var exponentialBackoffRetryPolicy = new IotHubClientExponentialBackoffRetryPolicy(maxRetries, maxWait, useJitter);
+        /// var exponentialBackoffRetryPolicy = new IotHubClientExponentialBackoffRetryPolicy(maxRetries: 10, maxWait: TimeSpan.FromSeconds(30), useJitter: true);
         /// 
         /// var clientOptions = new IotHubClientOptions(new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket))
         /// {

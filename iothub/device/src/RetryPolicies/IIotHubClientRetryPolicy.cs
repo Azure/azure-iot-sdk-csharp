@@ -24,7 +24,7 @@ namespace Microsoft.Azure.Devices.Client
         /// {
         ///     public bool ShouldRetry(uint currentRetryCount, Exception lastException, out TimeSpan retryDelay)
         ///     {
-        ///         // Add custom logic as needed upon determining if it should retry
+        ///         // Add custom logic as needed upon determining if it should retry and set the retryDelay out parameter
         ///     }
         /// }
         /// </code>
