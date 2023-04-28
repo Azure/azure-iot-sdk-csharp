@@ -784,7 +784,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             try
             {
-                if (!_openCalled)
+                if (!_openCalled
+                    || GetClientTransportStatus() == ClientTransportStatus.Closed)
                 {
                     return;
                 }
@@ -792,8 +793,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 if (Logging.IsEnabled)
                     Logging.Enter(this, cancellationToken, nameof(CloseAsync));
 
-                _handleDisconnectCts.Cancel();
-                _cancelPendingOperationsCts.Cancel();
+                _handleDisconnectCts?.Cancel();
+                _cancelPendingOperationsCts?.Cancel();
                 await base.CloseAsync(cancellationToken).ConfigureAwait(false);
             }
             finally
@@ -859,7 +860,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         if (Logging.IsEnabled)
                             Logging.Info(this, "Race condition: Disposed during opening.", nameof(EnsureOpenedAsync));
 
-                        _handleDisconnectCts.Cancel();
+                        _handleDisconnectCts?.Cancel();
                     }
                 }
             }
@@ -930,7 +931,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         if (Logging.IsEnabled)
                             Logging.Info(this, "Race condition: Disposed during opening.", nameof(EnsureOpenedAsync));
 
-                        _handleDisconnectCts.Cancel();
+                        _handleDisconnectCts?.Cancel();
                     }
                 }
             }
@@ -1071,7 +1072,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 if (Logging.IsEnabled)
                     Logging.Info(this, "Disposed during disconnection.", nameof(HandleDisconnectAsync));
 
-                _handleDisconnectCts.Cancel();
+                _handleDisconnectCts?.Cancel();
             }
 
             try
@@ -1114,7 +1115,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
                 // always reconnect.
                 _onConnectionStatusChanged(ConnectionStatus.Disconnected_Retrying, ConnectionStatusChangeReason.Communication_Error);
-                CancellationToken cancellationToken = _handleDisconnectCts.Token;
+                CancellationToken cancellationToken = _handleDisconnectCts?.Token ?? CancellationToken.None;
 
                 // This will recover to the state before the disconnect.
                 await _internalRetryPolicy.RunWithRetryAsync(async () =>
@@ -1253,9 +1254,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             try
             {
                 if (Logging.IsEnabled)
-                {
                     Logging.Enter(this, $"{nameof(DefaultDelegatingHandler)}.Disposed={_isDisposed}; disposing={disposing}", $"{nameof(RetryDelegatingHandler)}.{nameof(Dispose)}");
-                }
 
                 if (!_isDisposed)
                 {
@@ -1266,6 +1265,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
                     if (disposing)
                     {
+                        _handleDisconnectCts?.Cancel();
+                        _cancelPendingOperationsCts?.Cancel();
+
                         var disposables = new List<IDisposable>
                         {
                             _handleDisconnectCts,
@@ -1276,9 +1278,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
                             _directMethodSubscriptionSemaphore,
                             _twinEventsSubscriptionSemaphore,
                         };
-
-                        _handleDisconnectCts?.Cancel();
-                        _cancelPendingOperationsCts?.Cancel();
 
                         foreach (IDisposable disposable in disposables)
                         {
