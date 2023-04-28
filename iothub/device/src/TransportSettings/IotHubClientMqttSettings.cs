@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.ComponentModel;
 using System.Net.Security;
 
 namespace Microsoft.Azure.Devices.Client
@@ -12,9 +13,9 @@ namespace Microsoft.Azure.Devices.Client
     public sealed class IotHubClientMqttSettings : IotHubClientTransportSettings
     {
         /// <summary>
-        /// Creates an instance of this class.
+        /// Creates an instance of this classw with a default protocol of TCP.
         /// </summary>
-        /// <param name="transportProtocol">The transport protocol; defaults to TCP.</param>
+        /// <param name="transportProtocol">The transport protocol.</param>
         public IotHubClientMqttSettings(IotHubClientTransportProtocol transportProtocol = IotHubClientTransportProtocol.Tcp)
         {
             Protocol = transportProtocol;
@@ -40,9 +41,13 @@ namespace Microsoft.Azure.Devices.Client
         /// Flag to specify if a subscription should persist across different sessions. The default value is false.
         /// </summary>
         /// <remarks>
-        /// <para>If set to false: the device will receive messages that were sent to it while it was disconnected.</para>
-        /// <para>If set to true: the device will receive only those messages that were sent to it
-        /// after it successfully subscribed to the device bound message topic.</para>
+        /// <para>
+        /// If set to false, the device will receive messages that were sent to it while it was disconnected.
+        /// </para>
+        /// <para>
+        /// If set to true, the device will receive only those messages that were sent to it after it successfully
+        /// subscribed to the device bound message topic.
+        /// </para>
         /// </remarks>
         public bool CleanSession { get; set; } // false by default
 
@@ -78,7 +83,7 @@ namespace Microsoft.Azure.Devices.Client
         /// Setting a will message is a way for clients to notify other subscribed clients about ungraceful disconnects in an appropriate way.
         /// In response to the ungraceful disconnect, the service will send the last-will message to the configured telemetry channel.
         /// The telemetry channel can be either the default Events endpoint or a custom endpoint defined by IoT hub routing.
-        /// For more details, refer to https://docs.microsoft.com/azure/iot-hub/iot-hub-mqtt-support#using-the-mqtt-protocol-directly-as-a-device.
+        /// For more details, refer to <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-mqtt-support#using-the-mqtt-protocol-directly-as-a-device"/>.
         /// </remarks>
         public IWillMessage WillMessage { get; set; }
 
@@ -93,7 +98,8 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Used by Edge runtime to specify an authentication chain for Edge-to-Edge connections.
         /// </summary>
-        internal string AuthenticationChain { get; set; }
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public string AuthenticationChain { get; set; }
 
         internal override IotHubClientTransportSettings Clone()
         {
