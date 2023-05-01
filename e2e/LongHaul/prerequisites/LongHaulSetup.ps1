@@ -19,7 +19,7 @@ $startTime = (Get-Date)
 
 ########################################################################################################
 # Set error behavior preference for the Powershell operating environment.
-# For additional reading, see https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_preference_variables.
+# For additional reading, see https://learn.microsoft.com/powershell/module/microsoft.powershell.core/about/about_preference_variables.
 ########################################################################################################
 
 $ErrorActionPreference = "Stop"
