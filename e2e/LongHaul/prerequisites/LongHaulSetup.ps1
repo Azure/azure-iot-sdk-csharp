@@ -18,7 +18,8 @@ param(
 $startTime = (Get-Date)
 
 ########################################################################################################
-# Set error and warning preferences for the script to run.
+# Set error behavior preference for the Powershell operating environment.
+# For additional reading, see https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_preference_variables.
 ########################################################################################################
 
 $ErrorActionPreference = "Stop"

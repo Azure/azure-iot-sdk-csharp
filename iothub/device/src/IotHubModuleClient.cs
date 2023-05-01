@@ -312,5 +312,15 @@ namespace Microsoft.Azure.Devices.Client
             moduleId = WebUtility.UrlEncode(moduleId);
             return new Uri(string.Format(CultureInfo.InvariantCulture, ModuleMethodUriFormat, deviceId, moduleId), UriKind.Relative);
         }
+
+        public Task InvokeMethodAsync(object edgeModuleToEdgeDeviceCallback)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task InvokeMethodAsync(object edgeModuleToEdgeDeviceCallback)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

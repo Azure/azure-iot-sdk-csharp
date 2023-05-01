@@ -5,7 +5,9 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Text;
 using Mash.Logging;
+using Microsoft.Azure.Amqp.Framing;
 using Microsoft.Azure.Devices.Client;
+using Microsoft.Extensions.Logging;
 using static Microsoft.Azure.Devices.LongHaul.Module.LoggingConstants;
 
 namespace Microsoft.Azure.Devices.LongHaul.Module
@@ -91,7 +93,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
                 _logger.Metric(ModuleClientOpenDelaySeconds, sw.Elapsed.TotalSeconds);
                 await _moduleClient.SetDirectMethodCallbackAsync(DirectMethodCallback).ConfigureAwait(false);
                 await _moduleClient.SetDesiredPropertyUpdateCallbackAsync(DesiredPropertyUpdateCallbackAsync).ConfigureAwait(false);
-                await _moduleClient.SetIncomingMessageCallbackAsync(OnM2mMessageReceivedAsync).ConfigureAwait(false);
+                await _moduleClient.SetIncomingMessageCallbackAsync(OnIncomingMessageReceivedAsync).ConfigureAwait(false);
             }
             finally
             {
@@ -103,7 +105,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
         /// Frequently send telemetry messages to the hub.
         /// </summary>
         /// <param name="ct">The cancellation token</param>
-        public async Task SendTelemetryMessagesAsync(Logger logger, CancellationToken ct)
+        public async Task SendMessagesToRouteAsync(Logger logger, CancellationToken ct)
         {
             // AMQP supports bulk telemetry sending, so we'll configure how many to send at a time.
             int maxBulkMessages = _clientOptions.TransportSettings is IotHubClientAmqpSettings
@@ -118,7 +120,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
             var sw = new Stopwatch();
             while (!ct.IsCancellationRequested)
             {
-                logger.Metric(ModuleMessageBacklog, _messagesToSend.Count);
+                logger.Metric(ModuleMessageToRouteBacklog, _messagesToSend.Count);
 
                 await Task.Delay(s_messageLoopSleepTime, ct).ConfigureAwait(false);
 
@@ -421,7 +423,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
             _logger.Metric(TotalTwinCallbacksToModuleHandled, _totalTwinCallbacksToModuleHandled);
         }
 
-        private Task<MessageAcknowledgement> OnM2mMessageReceivedAsync(IncomingMessage receivedMessage)
+        private Task<MessageAcknowledgement> OnIncomingMessageReceivedAsync(IncomingMessage receivedMessage)
         {
             _logger.Trace($"Received the M2M message with Id {receivedMessage.MessageId}", TraceSeverity.Information);
 
@@ -439,6 +441,32 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
             _logger.Metric(TotalM2mMessagesRejected, ++_totalM2mMessagesRejected);
 
             return Task.FromResult(MessageAcknowledgement.Reject);
+        }
+
+        private async Task InvokeMethodOnEdgeDevice(string deviceId, CancellationToken ct)
+        {
+            Debug.Assert(_moduleClient != null);
+            Debug.Assert(properties != null);
+
+            var DirectMethod
+
+            while (!ct.IsCancellationRequested)
+            {
+                try
+                {
+                    long version = await _moduleClient
+                        .UpdateReportedPropertiesAsync(reportedProperties, ct)
+                    .ConfigureAwait(false);
+
+                    logger.Trace($"Set the reported property with key {keyName} and value {properties} in device twin; observed version {version}.", TraceSeverity.Information);
+                    break;
+                }
+                catch (Exception ex)
+                {
+                    logger.Trace($"Exception reporting property\n{ex}", TraceSeverity.Warning);
+                    await Task.Delay(s_retryInterval, ct).ConfigureAwait(false);
+                }
+            }
         }
     }
 }
