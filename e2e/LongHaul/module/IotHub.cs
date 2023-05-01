@@ -5,9 +5,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Text;
 using Mash.Logging;
-using Microsoft.Azure.Amqp.Framing;
 using Microsoft.Azure.Devices.Client;
-using Microsoft.Extensions.Logging;
 using static Microsoft.Azure.Devices.LongHaul.Module.LoggingConstants;
 
 namespace Microsoft.Azure.Devices.LongHaul.Module
@@ -441,32 +439,6 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
             _logger.Metric(TotalM2mMessagesRejected, ++_totalM2mMessagesRejected);
 
             return Task.FromResult(MessageAcknowledgement.Reject);
-        }
-
-        private async Task InvokeMethodOnEdgeDevice(string deviceId, CancellationToken ct)
-        {
-            Debug.Assert(_moduleClient != null);
-            Debug.Assert(properties != null);
-
-            var DirectMethod
-
-            while (!ct.IsCancellationRequested)
-            {
-                try
-                {
-                    long version = await _moduleClient
-                        .UpdateReportedPropertiesAsync(reportedProperties, ct)
-                    .ConfigureAwait(false);
-
-                    logger.Trace($"Set the reported property with key {keyName} and value {properties} in device twin; observed version {version}.", TraceSeverity.Information);
-                    break;
-                }
-                catch (Exception ex)
-                {
-                    logger.Trace($"Exception reporting property\n{ex}", TraceSeverity.Warning);
-                    await Task.Delay(s_retryInterval, ct).ConfigureAwait(false);
-                }
-            }
         }
     }
 }

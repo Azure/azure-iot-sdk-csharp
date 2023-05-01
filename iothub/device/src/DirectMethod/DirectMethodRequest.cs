@@ -84,7 +84,12 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The direct method payload.
         /// </summary>
-        protected internal byte[] Payload { get; set; }
+        /// <remarks>
+        /// The direct method request payload is to be set by the client application only when using <see cref="IotHubModuleClient"/>
+        /// to invoke a direct method on an edge device or on an edge module.
+        /// </remarks>
+        [JsonProperty("payload", NullValueHandling = NullValueHandling.Include)]
+        public byte[] Payload { get; set; }
 
         /// <summary>
         /// The convention to use with the direct method payload.
