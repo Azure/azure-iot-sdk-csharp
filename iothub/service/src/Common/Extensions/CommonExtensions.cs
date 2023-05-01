@@ -245,16 +245,6 @@ namespace Microsoft.Azure.Devices.Common
         }
 
         /// <summary>
-        /// Check if the value is null or empty.
-        /// </summary>
-        /// <param name="value">The value to check.</param>
-        /// <returns>Returns true if the value is null or empty, otherwise returns false.</returns>
-        public static bool IsNullOrWhiteSpace(this string value)
-        {
-            return string.IsNullOrWhiteSpace(value);
-        }
-
-        /// <summary>
         /// Removes white spaces from a string.
         /// </summary>
         /// <param name="value">The string to remove white spaces from.</param>
