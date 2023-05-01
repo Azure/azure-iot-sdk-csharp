@@ -123,8 +123,12 @@ namespace Microsoft.Azure.Devices
             {
                 IotHubServiceErrorCode.IotHubQuotaExceeded
                     or IotHubServiceErrorCode.DeviceNotOnline
+                    or IotHubServiceErrorCode.GenericTooManyRequests
                     or IotHubServiceErrorCode.ThrottlingException
+                    or IotHubServiceErrorCode.ThrottleBacklogLimitExceeded
                     or IotHubServiceErrorCode.ThrottlingBacklogTimeout
+                    or IotHubServiceErrorCode.ThrottlingMaxActiveJobCountExceeded
+                    or IotHubServiceErrorCode.DeviceThrottlingLimitExceeded
                     or IotHubServiceErrorCode.ServerError
                     or IotHubServiceErrorCode.ServiceUnavailable
                     or IotHubServiceErrorCode.RequestTimeout
