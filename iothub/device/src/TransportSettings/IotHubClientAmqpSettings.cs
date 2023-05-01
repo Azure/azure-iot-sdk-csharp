@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.ComponentModel;
 using System.Net.Security;
 using System.Net.WebSockets;
 
@@ -13,29 +14,25 @@ namespace Microsoft.Azure.Devices.Client
     public sealed class IotHubClientAmqpSettings : IotHubClientTransportSettings
     {
         /// <summary>
-        /// Creates an instance of this class.
+        /// Creates an instance of this class with a default protocol of TCP.
         /// </summary>
-        /// <param name="transportProtocol">The transport protocol; defaults to TCP.</param>
+        /// <param name="transportProtocol">The transport protocol.</param>
         public IotHubClientAmqpSettings(IotHubClientTransportProtocol transportProtocol = IotHubClientTransportProtocol.Tcp)
         {
             Protocol = transportProtocol;
         }
 
         /// <summary>
-        /// Used by Edge runtime to specify an authentication chain for Edge-to-Edge connections
-        /// </summary>
-        internal string AuthenticationChain { get; set; }
-
-        /// <summary>
-        /// Specify client-side heartbeat interval.
-        /// The interval, that the client establishes with the service, for sending keep alive pings.
+        /// The interval that the client establishes with the service for sending keep-alive pings.
         /// </summary>
         /// <remarks>
         /// <para>
         /// The default value is 2 minutes.
         /// </para>
         /// <para>
-        /// The client will consider the connection as disconnected if the keep alive ping fails.
+        /// The client will consider the connection as disconnected if the keep-alive ping fails.
+        /// </para>
+        /// <para>
         /// Setting a very low idle timeout value can cause aggressive reconnects, and might not give the
         /// client enough time to establish a connection before disconnecting and reconnecting.
         /// </para>
@@ -51,6 +48,15 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The pre-fetch count.
         /// </summary>
+        /// <remarks>
+        /// This influences how much work the device can handle at a time and affects parallelism of messages.
+        /// If the pre-fetch count is only 1 the AMQP transport library will get one message and will not get another,
+        /// even if some are available, until the received message processing is finished.
+        /// <para>
+        /// With a default of 50, up to 50 messages (e.g., twin property updates, C2D messages) will be delivered to the client
+        /// app at a time.
+        /// </para>
+        /// </remarks>
         public uint PrefetchCount { get; set; } = 50;
 
         /// <summary>
@@ -61,7 +67,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <para>
         /// This feature is only applicable for AMQP over TCP. AMQP web socket communication does not support this feature.
         /// For users who want this support over AMQP websocket, you must instead provide a <see cref="ClientWebSocket"/>
-        /// instance with the desired callback and other websocket options (eg. proxy, keep-alive etc.) set.
+        /// instance with the desired callback and other websocket options (e.g., proxy, keep-alive, etc.) set.
         /// </para>
         /// </remarks>
         public RemoteCertificateValidationCallback RemoteCertificateValidationCallback { get; set; }
@@ -78,6 +84,12 @@ namespace Microsoft.Azure.Devices.Client
         /// If using pooling, specify connection pool settings.
         /// </summary>
         public AmqpConnectionPoolSettings ConnectionPoolSettings { get; set; }
+
+        /// <summary>
+        /// Used by Edge runtime to specify an authentication chain for Edge-to-Edge connections
+        /// </summary>
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public string AuthenticationChain { get; set; }
 
         internal override IotHubClientTransportSettings Clone()
         {
