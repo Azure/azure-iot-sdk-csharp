@@ -53,8 +53,8 @@ namespace Microsoft.Azure.Devices.Client
         /// If the pre-fetch count is only 1 the AMQP transport library will get one message and will not get another,
         /// even if some are available, until the received message processing is finished.
         /// <para>
-        /// With a default of 50, up to 50 messages (e.g., twin property updates, C2D messages, direct method calls)
-        /// will be delivered to the client app at a time.
+        /// With a default of 50, up to 50 messages (e.g., twin property updates, C2D messages) will be delivered to the client
+        /// app at a time.
         /// </para>
         /// </remarks>
         public uint PrefetchCount { get; set; } = 50;

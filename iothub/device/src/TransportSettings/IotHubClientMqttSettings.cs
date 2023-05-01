@@ -13,7 +13,7 @@ namespace Microsoft.Azure.Devices.Client
     public sealed class IotHubClientMqttSettings : IotHubClientTransportSettings
     {
         /// <summary>
-        /// Creates an instance of this classw with a default protocol of TCP.
+        /// Creates an instance of this class with a default protocol of TCP.
         /// </summary>
         /// <param name="transportProtocol">The transport protocol.</param>
         public IotHubClientMqttSettings(IotHubClientTransportProtocol transportProtocol = IotHubClientTransportProtocol.Tcp)
