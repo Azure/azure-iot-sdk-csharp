@@ -157,6 +157,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 AddCustomHeaders(msg, customHeaders);
                 if (entity != null)
                 {
+                    // Set the complete entity object into the HttpRequestMessage content. This includes the user-defined payload (if applicable)
+                    // and all associated metadata. The content is set to as per service-defined contract, i.e. UTF-8 encoded json string.
                     msg.Content = new StringContent(JsonConvert.SerializeObject(entity), Encoding.UTF8, "application/json");
                 }
 
