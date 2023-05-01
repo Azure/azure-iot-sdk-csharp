@@ -20,7 +20,8 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
         /// <summary>
         /// Initializes a new instance of the class.
         /// </summary>
-        public IotHubThrottledException() : base(isTransient: true)
+        public IotHubThrottledException()
+            : base(isTransient: true)
         {
         }
 
@@ -65,6 +66,7 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
         private IotHubThrottledException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
+            IsTransient = true;
         }
     }
 }
