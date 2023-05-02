@@ -227,7 +227,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <remarks>
         /// IotHubModuleClient instance must be already open.
         /// <para>
-        /// This method call is relevant only for IoT Edge modules.
+        /// This API call is relevant only for IoT Edge modules.
         /// </para>
         /// </remarks>
         /// <param name="deviceId">The unique identifier of the edge device to invoke the method on.</param>
@@ -236,6 +236,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns>The result of the method invocation.</returns>
         /// <exception cref="ArgumentNullException"><paramref name="deviceId"/> or <paramref name="methodRequest"/> is null.</exception>
         /// <exception cref="InvalidOperationException">The client instance is not already open.</exception>
+        /// <exception cref="InvalidOperationException">An IoT device module is used to invoke this API.</exception>
         /// <exception cref="OperationCanceledException">The operation has been canceled.</exception>
         /// <exception cref="IotHubClientException">An error occured when communicating with IoT hub service.</exception>
         /// <exception cref="ObjectDisposedException">The client has been disposed.</exception>
@@ -251,7 +252,7 @@ namespace Microsoft.Azure.Devices.Client
 
             if (!IotHubConnectionCredentials.IsEdgeModule)
             {
-                throw new InvalidOperationException("This method call is relevant only for IoT Edge modules. Please make sure your client is initialized correctly." +
+                throw new InvalidOperationException("This API call is relevant only for IoT Edge modules. Please make sure your client is initialized correctly." +
                     "For IoT device module direct method invocations, see SetDirectMethodCallbackAsync(...).");
             }
 
@@ -277,6 +278,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns>The result of the method invocation.</returns>
         /// <exception cref="ArgumentNullException"><paramref name="deviceId"/>, <paramref name="moduleId"/> or <paramref name="methodRequest"/> is null.</exception>
         /// <exception cref="InvalidOperationException">The client instance is not already open.</exception>
+        /// <exception cref="InvalidOperationException">An IoT device module is used to invoke this API.</exception>
         /// <exception cref="OperationCanceledException">The operation has been canceled.</exception>
         /// <exception cref="IotHubClientException">An error occured when communicating with IoT hub service.</exception>
         /// <exception cref="ObjectDisposedException">The client has been disposed.</exception>
@@ -293,7 +295,7 @@ namespace Microsoft.Azure.Devices.Client
 
             if (!IotHubConnectionCredentials.IsEdgeModule)
             {
-                throw new InvalidOperationException("This method call is relevant only for IoT Edge modules. Please make sure your client is initialized correctly." +
+                throw new InvalidOperationException("This API call is relevant only for IoT Edge modules. Please make sure your client is initialized correctly." +
                     "For IoT device module direct method invocations, see SetDirectMethodCallbackAsync(...).");
             }
 
