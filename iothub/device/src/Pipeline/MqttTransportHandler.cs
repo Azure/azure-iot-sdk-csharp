@@ -1158,7 +1158,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             // This message is always QoS 0, so no ack will be sent.
             receivedEventArgs.AutoAcknowledge = true;
 
-            Dictionary<string, object> desiredPropertyPatchDictionary = _payloadConvention.GetObject<Dictionary<string, object>>(receivedEventArgs.ApplicationMessage.Payload);
+            Dictionary<string, object> desiredPropertyPatchDictionary = DefaultPayloadConvention.Instance.GetObject<Dictionary<string, object>>(receivedEventArgs.ApplicationMessage.Payload);
             var desiredPropertyPatch = new DesiredProperties(desiredPropertyPatchDictionary)
             {
                 PayloadConvention = _payloadConvention,
