@@ -13,8 +13,30 @@ namespace Microsoft.Azure.Devices.Client
         /// a direct method on an edge device or an edge module connected to the same edge hub.
         /// </summary>
         /// <param name="methodName">The method name to invoke.</param>
-        /// <param name="payload">The direct method payload.</param>
-        public EdgeModuleDirectMethodRequest(string methodName, object payload = default)
+        public EdgeModuleDirectMethodRequest(string methodName)
+            : this(methodName, null)
+        {
+        }
+
+        /// <summary>
+        /// A direct method request to be initialized by the client application when using an <see cref="IotHubModuleClient"/> for invoking
+        /// a direct method on an edge device or an edge module connected to the same edge hub.
+        /// </summary>
+        /// <param name="methodName">The method name to invoke.</param>
+        /// <param name="payload">The direct method payload bytes.</param>
+        public EdgeModuleDirectMethodRequest(string methodName, byte[] payload)
+            : base(methodName)
+        {
+            Payload = payload;
+        }
+
+        /// <summary>
+        /// A direct method request to be initialized by the client application when using an <see cref="IotHubModuleClient"/> for invoking
+        /// a direct method on an edge device or an edge module connected to the same edge hub.
+        /// </summary>
+        /// <param name="methodName">The method name to invoke.</param>
+        /// <param name="payload">The direct method payload that will be serialized and encoded per <see cref="IotHubClientOptions.PayloadConvention"/>.</param>
+        public EdgeModuleDirectMethodRequest(string methodName, object payload)
             : base(methodName)
         {
             Payload = payload == null

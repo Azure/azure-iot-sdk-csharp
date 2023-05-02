@@ -186,7 +186,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </example>
         public byte[] GetPayloadAsBytes()
         {
-            return Payload == null || Payload.Length==0 ? null : (byte[])Payload.Clone();
+            return Payload == null || Payload.Length == 0 ? null : (byte[])Payload.Clone();
         }
     }
 }
