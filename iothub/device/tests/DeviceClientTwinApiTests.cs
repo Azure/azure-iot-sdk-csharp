@@ -106,7 +106,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
             };
             reported["$version"] = "1";
             reported.Add("key", "value");
-            var desired = new DesiredProperties(new Dictionary<string, object>() { { "$version", "1" } });
+            var desired = new DesiredProperties(new Dictionary<string, object>() { { "$version", "1" }, { "id", "1234" } });
             GetTwinResponse twinResponse = new GetTwinResponse
             {
                 Status = 404,
