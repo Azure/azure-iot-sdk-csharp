@@ -12,8 +12,8 @@ namespace Microsoft.Azure.Devices.Client.Samples
     public class EdgeModuleMethodSample
     {
         private readonly IotHubModuleClient _moduleClient;
-        private string _deviceId;
-        private string _moduleId;
+        private readonly string _deviceId;
+        private readonly string _moduleId;
         private readonly TimeSpan? _maxRunTime;
 
         public EdgeModuleMethodSample(IotHubModuleClient moduleClient, string deviceId, string moduleId, TimeSpan? maxRunTime)
@@ -54,7 +54,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             }
 
             // Invoking a direct method request to the module itself.
-            var directMethodRequest = new DirectMethodRequest("ModuleToModule");
+            var directMethodRequest = new EdgeModuleDirectMethodRequest("ModuleToModule");
             await _moduleClient.InvokeMethodAsync(_deviceId, _moduleId, directMethodRequest, cts.Token);
 
             // You can unsubscribe from receiving a callback for direct methods by setting a null callback handler.

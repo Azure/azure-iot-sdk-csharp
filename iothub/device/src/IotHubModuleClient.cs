@@ -241,10 +241,10 @@ namespace Microsoft.Azure.Devices.Client
         /// <exception cref="ObjectDisposedException">The client has been disposed.</exception>
         /// <example>
         /// <code language="csharp">
-        /// DirectMethodResponse response = await client.InvokeMethodAsync(deviceId, new DirectMethodRequest(methodName), cancellationToken);
+        /// DirectMethodResponse response = await client.InvokeMethodAsync(deviceId, new EdgeModuleDirectMethodRequest(methodName), cancellationToken);
         /// </code>
         /// </example>
-        public Task<DirectMethodResponse> InvokeMethodAsync(string deviceId, DirectMethodRequest methodRequest, CancellationToken cancellationToken = default)
+        public Task<DirectMethodResponse> InvokeMethodAsync(string deviceId, EdgeModuleDirectMethodRequest methodRequest, CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNullOrWhiteSpace(deviceId, nameof(deviceId));
             Argument.AssertNotNull(methodRequest, nameof(methodRequest));
@@ -275,10 +275,10 @@ namespace Microsoft.Azure.Devices.Client
         /// <exception cref="ObjectDisposedException">The client has been disposed.</exception>
         /// <example>
         /// <code language="csharp">
-        /// DirectMethodResponse response = await client.InvokeMethodAsync(deviceId, moduleId, new DirectMethodRequest(methodName), cancellationToken);
+        /// DirectMethodResponse response = await client.InvokeMethodAsync(deviceId, moduleId, new EdgeModuleDirectMethodRequest(methodName), cancellationToken);
         /// </code>
         /// </example>
-        public Task<DirectMethodResponse> InvokeMethodAsync(string deviceId, string moduleId, DirectMethodRequest methodRequest, CancellationToken cancellationToken = default)
+        public Task<DirectMethodResponse> InvokeMethodAsync(string deviceId, string moduleId, EdgeModuleDirectMethodRequest methodRequest, CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNullOrWhiteSpace(deviceId, nameof(deviceId));
             Argument.AssertNotNullOrWhiteSpace(moduleId, nameof(moduleId));
@@ -288,7 +288,7 @@ namespace Microsoft.Azure.Devices.Client
             return InvokeMethodAsync(GetModuleMethodUri(deviceId, moduleId), methodRequest, cancellationToken);
         }
 
-        private async Task<DirectMethodResponse> InvokeMethodAsync(Uri uri, DirectMethodRequest methodRequest, CancellationToken cancellationToken = default)
+        private async Task<DirectMethodResponse> InvokeMethodAsync(Uri uri, EdgeModuleDirectMethodRequest methodRequest, CancellationToken cancellationToken = default)
         {
             methodRequest.PayloadConvention = _clientOptions.PayloadConvention;
             DirectMethodResponse result = await InnerHandler.InvokeMethodAsync(methodRequest, uri, cancellationToken).ConfigureAwait(false);

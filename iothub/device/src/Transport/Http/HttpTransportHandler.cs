@@ -74,7 +74,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         // This is for invoking methods from an edge module to another edge device or edge module.
         public override async Task<DirectMethodResponse> InvokeMethodAsync(
-            DirectMethodRequest methodInvokeRequest,
+            EdgeModuleDirectMethodRequest methodInvokeRequest,
             Uri uri,
             CancellationToken cancellationToken)
         {
@@ -89,7 +89,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             };
 
             return await _httpClientHelper
-                .PostAsync<DirectMethodRequest, DirectMethodResponse>(
+                .PostAsync<EdgeModuleDirectMethodRequest, DirectMethodResponse>(
                     uri,
                     methodInvokeRequest,
                     customHeaders,

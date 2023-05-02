@@ -110,7 +110,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return ExecuteWithExceptionRemappingAsync(() => base.CompleteFileUploadAsync(notification, cancellationToken));
         }
 
-        public override Task<DirectMethodResponse> InvokeMethodAsync(DirectMethodRequest methodInvokeRequest, Uri uri, CancellationToken cancellationToken)
+        public override Task<DirectMethodResponse> InvokeMethodAsync(EdgeModuleDirectMethodRequest methodInvokeRequest, Uri uri, CancellationToken cancellationToken)
         {
             return RunWithExceptionRemappingAsync(() => base.InvokeMethodAsync(methodInvokeRequest, uri, cancellationToken));
         }

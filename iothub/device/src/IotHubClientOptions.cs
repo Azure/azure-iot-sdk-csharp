@@ -58,7 +58,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <remarks>
         /// All <see cref="IotHubDeviceClient"/> file upload operations take place over HTTP regardless of the configured protocol. 
         /// Additionally, all <see cref="IotHubModuleClient"/> direct method invoking operations (such as 
-        /// <see cref="IotHubModuleClient.InvokeMethodAsync(string, DirectMethodRequest, System.Threading.CancellationToken)"/>) 
+        /// <see cref="IotHubModuleClient.InvokeMethodAsync(string, EdgeModuleDirectMethodRequest, System.Threading.CancellationToken)"/>) 
         /// take place over HTTP as well. The settings provided in this class will be used for all these operations.
         /// </remarks>
         public IotHubClientHttpSettings HttpOperationTransportSettings { get; set; } = new IotHubClientHttpSettings();
