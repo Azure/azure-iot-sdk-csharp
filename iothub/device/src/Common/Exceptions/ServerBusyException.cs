@@ -20,7 +20,8 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
         /// <summary>
         /// Initializes a new instance of the class.
         /// </summary>
-        public ServerBusyException() : base(isTransient: true)
+        public ServerBusyException()
+            : base(isTransient: true)
         {
         }
 
@@ -29,7 +30,7 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
         /// </summary>
         /// <param name="message">The error message.</param>
         public ServerBusyException(string message)
-            : this(message, null)
+            : base(message, true)
         {
         }
 
@@ -43,6 +44,7 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
         private ServerBusyException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
+            IsTransient = true;
         }
     }
 }

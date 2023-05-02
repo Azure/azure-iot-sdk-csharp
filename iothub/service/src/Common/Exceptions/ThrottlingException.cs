@@ -13,33 +13,34 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
     public class ThrottlingException : IotHubException
     {
         /// <summary>
-        /// Creates an instance of <see cref="ThrottlingException"/> with a specified error message and marks it as non-transient.
+        /// Creates an instance of <see cref="ThrottlingException"/> with a specified error message and marks it as transient.
         /// </summary>
         /// <param name="message">The message that describes the error.</param>
         public ThrottlingException(string message)
-            : base(message)
+            : base(message, true)
         {
         }
 
         /// <summary>
         /// Creates an instance of <see cref="ThrottlingException"/> with a specified <see cref="ErrorCode"/>, error message
-        /// and marks it as non-transient.
+        /// and marks it as transient.
         /// </summary>
         /// <param name="code">The <see cref="ErrorCode"/> associated with the error.</param>
         /// <param name="message">The message that describes the error.</param>
         public ThrottlingException(ErrorCode code, string message)
             : base(code, message)
         {
+            IsTransient = true;
         }
 
         /// <summary>
         /// Creates an instance of <see cref="ThrottlingException"/> with a specified error message and
-        /// a reference to the inner exception that caused this exception, and marks it as non-transient.
+        /// a reference to the inner exception that caused this exception, and marks it as transient.
         /// </summary>
         /// <param name="message">The message that describes the error.</param>
         /// <param name="inner">The exception that is the cause of the current exception.</param>
         public ThrottlingException(string message, Exception inner)
-            : base(message, inner)
+            : base(message, inner, true)
         {
         }
 
@@ -52,11 +53,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         protected ThrottlingException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
-        }
-
-        internal ThrottlingException()
-            : base()
-        {
+            IsTransient = true;
         }
     }
 }

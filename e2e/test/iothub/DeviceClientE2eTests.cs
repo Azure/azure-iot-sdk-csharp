@@ -36,9 +36,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             finally
             {
                 await testDevice.RemoveDeviceAsync().ConfigureAwait(false);
-                testDevice.Dispose();
             }
-
         }
     }
 }
