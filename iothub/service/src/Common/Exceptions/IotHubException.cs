@@ -157,7 +157,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         /// <summary>
         /// Indicates if the error is transient and should be retried.
         /// </summary>
-        public bool IsTransient { get; private set; }
+        public bool IsTransient { get; protected set; }
 
         /// <summary>
         /// The service returned tracking Id associated with this particular error.

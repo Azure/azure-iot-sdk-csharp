@@ -22,7 +22,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         /// </summary>
         /// <param name="message">The message that describes the error.</param>
         public QuotaExceededException(string message)
-            : this(message, null)
+            : base(message, true)
         {
         }
 
@@ -48,14 +48,10 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         {
         }
 
-        internal QuotaExceededException()
-            : base()
-        {
-        }
-
         private QuotaExceededException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
+            IsTransient = true;
         }
     }
 }

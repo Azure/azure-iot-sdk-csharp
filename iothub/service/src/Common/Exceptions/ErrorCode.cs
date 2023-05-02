@@ -296,6 +296,12 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         /// IoT hub throttling limits have been exceeded for the requested operation.
         /// For more information, <see href="https://aka.ms/iothubthrottling">IoT hub quotas and throttling</see>.
         /// </summary>
+        GenericTooManyRequests = 429000,
+
+        /// <summary>
+        /// IoT hub throttling limits have been exceeded for the requested operation.
+        /// For more information, <see href="https://aka.ms/iothubthrottling">IoT hub quotas and throttling</see>.
+        /// </summary>
         ThrottlingException = 429001,
 
         /// <summary>
@@ -305,6 +311,24 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         /// </para>
         /// </summary>
         ThrottleBacklogLimitExceeded = 429002,
+
+        /// <summary>
+        /// IoT hub throttling limits have been exceeded for the requested operation.
+        /// For more information, <see href="https://aka.ms/iothubthrottling">IoT hub quotas and throttling</see>.
+        /// </summary>
+        ThrottlingBacklogTimeout = 429003,
+
+        /// <summary>
+        /// IoT hub throttling limits have been exceeded for the requested operation.
+        /// For more information, <see href="https://aka.ms/iothubthrottling">IoT hub quotas and throttling</see>.
+        /// </summary>
+        ThrottlingMaxActiveJobCountExceeded = 429004,
+
+        /// <summary>
+        /// IoT hub throttling limits have been exceeded for the requested operation.
+        /// For more information, <see href="https://aka.ms/iothubthrottling">IoT hub quotas and throttling</see>.
+        /// </summary>
+        DeviceThrottlingLimitExceeded = 429005,
 
         /// <summary>
         /// IoT hub ran into a server side issue when attempting to throttle.

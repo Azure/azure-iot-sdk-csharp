@@ -47,11 +47,6 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         {
         }
 
-        internal ServerBusyException()
-            : base()
-        {
-        }
-
         private ServerBusyException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {

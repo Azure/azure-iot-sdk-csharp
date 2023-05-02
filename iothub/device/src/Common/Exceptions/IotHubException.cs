@@ -129,7 +129,8 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
             }
         }
 
-        internal IotHubException(bool isTransient) : base()
+        internal IotHubException(bool isTransient)
+            : base()
         {
             IsTransient = isTransient;
         }
@@ -137,7 +138,7 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
         /// <summary>
         /// Indicates if the error is transient and should be retried.
         /// </summary>
-        public bool IsTransient { get; private set; }
+        public bool IsTransient { get; protected set; }
 
         /// <summary>
         /// The service returned tracking Id associated with this particular error.
