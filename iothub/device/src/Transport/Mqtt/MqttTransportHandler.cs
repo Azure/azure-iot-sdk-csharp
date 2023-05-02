@@ -397,7 +397,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     isTransient: false);
             }
 
-            if (_completionQueue.Count == 0)
+            if (_completionQueue.IsEmpty)
             {
                 throw new IotHubException("Unknown lock token.", isTransient: false);
             }
@@ -1123,7 +1123,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             Message response = null; ;
             ExceptionDispatchInfo responseException = null;
 
-            Action<Message> onTwinResponse = (Message possibleResponse) =>
+            void OnTwinResponse(Message possibleResponse)
             {
                 try
                 {
@@ -1158,11 +1158,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     responseException = ExceptionDispatchInfo.Capture(e);
                     responseReceived.Release();
                 }
-            };
+            }
 
             try
             {
-                _twinResponseEvent += onTwinResponse;
+                _twinResponseEvent += OnTwinResponse;
 
                 await SendEventAsync(request, cancellationToken).ConfigureAwait(false);
 
@@ -1181,7 +1181,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
             finally
             {
-                _twinResponseEvent -= onTwinResponse;
+                _twinResponseEvent -= OnTwinResponse;
             }
         }
 
@@ -1191,7 +1191,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             {
                 IChannel channel = null;
 
-                Func<Stream, SslStream> streamFactory = stream => new SslStream(stream, true, settings.RemoteCertificateValidationCallback);
+                SslStream StreamFactory(Stream stream) => new SslStream(stream, true, settings.RemoteCertificateValidationCallback);
 
                 List<X509Certificate> certs = settings.ClientCertificate == null
                     ? new List<X509Certificate>(0)
@@ -1222,7 +1222,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     .Option(ChannelOption.Allocator, UnpooledByteBufferAllocator.Default)
                     .Handler(new ActionChannelInitializer<ISocketChannel>(ch =>
                     {
-                        var tlsHandler = new TlsHandler(streamFactory, clientTlsSettings);
+                        var tlsHandler = new TlsHandler(StreamFactory, clientTlsSettings);
                         ch.Pipeline.AddLast(
                             tlsHandler,
                             MqttEncoder.Instance,
