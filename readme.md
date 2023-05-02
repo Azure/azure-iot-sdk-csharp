@@ -193,10 +193,11 @@ Refer to the [Azure IoT Device SDK lifecycle and support](https://learn.microsof
 
 | Release | Category | End-of-life |
 |-|-|-|
-| 1.41.3 | Active | - |
-| 2.0.0-preview004 | Preview | 2023-06-13
+| 1.42.0 | Active | - |
+| 2.0.0-preview005 | Preview | 2023-06-13
 
 ### Need help?
+
 - Have a feature request for SDKs? Please post it on [User Voice](https://feedback.azure.com/forums/321918-azure-iot) to help us prioritize.
 - Have a technical question? Ask on [Stack Overflow](https://stackoverflow.com/questions/tagged/azure-iot-hub) with tag “azure-iot-hub”.
 - Need Support? Every customer with an active Azure subscription has access to [support](https://docs.microsoft.com/azure/azure-supportability/how-to-create-azure-support-request) with guaranteed response time. Consider submitting a ticket and get assistance from Microsoft support team.
