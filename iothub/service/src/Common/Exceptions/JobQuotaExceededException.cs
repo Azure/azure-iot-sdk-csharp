@@ -15,7 +15,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         private const string DefaultErrorMessage = "Job quota has been exceeded.";
 
         /// <summary>
-        /// Creates an instance of this class with the default error message and marks it as non-transient.
+        /// Creates an instance of this class with the default error message and marks it as transient.
         /// </summary>
         public JobQuotaExceededException()
             : this(DefaultErrorMessage)
@@ -23,22 +23,25 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         }
 
         /// <summary>
-        /// Creates an instance of this class with a specified error message and marks it as non-transient.
+        /// Creates an instance of this class with a specified error message and marks it as transient.
         /// </summary>
         /// <param name="message">The message that describes the error.</param>
         public JobQuotaExceededException(string message)
-            : base(message)
+            : base(message, true)
         {
         }
 
         internal JobQuotaExceededException(string message, Exception innerException)
             : base(message, innerException)
         {
+
+            IsTransient = true;
         }
 
         private JobQuotaExceededException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
+            IsTransient = true;
         }
     }
 }

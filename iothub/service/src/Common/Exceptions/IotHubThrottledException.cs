@@ -18,38 +18,29 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
     {
         /// <summary>
         /// Creates an instance of this class with the value of the
-        /// maximum allowed count of active requests and marks it as non-transient.
+        /// maximum allowed count of active requests and marks it as transient.
         /// </summary>
         /// <param name="maximumBatchCount">The maximum allowed count of active requests.</param>
         public IotHubThrottledException(int maximumBatchCount)
-            : this($"Device Container has exceeded maximum number of allowed active requests: {maximumBatchCount}.")
+            : base($"Device Container has exceeded maximum number of allowed active requests: {maximumBatchCount}.", true)
         {
         }
 
         /// <summary>
         /// Creates an instance of this class with a specified error message and
-        /// a reference to the inner exception that caused this exception, and marks it as non-transient.
+        /// a reference to the inner exception that caused this exception, and marks it as transient.
         /// </summary>
         /// <param name="message">The message that describes the error.</param>
         /// <param name="innerException">The exception that is the cause of the current exception.</param>
         public IotHubThrottledException(string message, Exception innerException)
-            : base(message, innerException)
-        {
-        }
-
-        internal IotHubThrottledException()
-            : base()
-        {
-        }
-
-        internal IotHubThrottledException(string message)
-            : base(message)
+            : base(message, innerException, true)
         {
         }
 
         private IotHubThrottledException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
+            IsTransient = true;
         }
     }
 }

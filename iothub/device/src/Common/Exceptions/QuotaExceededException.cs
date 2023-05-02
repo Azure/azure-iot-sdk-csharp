@@ -19,7 +19,8 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
         /// <summary>
         /// Initializes a new instance of the class.
         /// </summary>
-        public QuotaExceededException() : base(isTransient: true)
+        public QuotaExceededException()
+            : base(isTransient: true)
         {
         }
 
@@ -30,7 +31,7 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
         /// understood by humans. The caller of this constructor is required to ensure that this string has
         /// been localized for the current system culture.</param>
         public QuotaExceededException(string message)
-            : this(message, null)
+            : base(message, true)
         {
         }
 

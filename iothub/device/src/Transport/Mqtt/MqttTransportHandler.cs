@@ -188,19 +188,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             else
             {
                 ClientOptions options = context.ClientOptions;
-                switch (settings.GetTransportType())
+                _channelFactory = settings.GetTransportType() switch
                 {
-                    case TransportType.Mqtt_Tcp_Only:
-                        _channelFactory = CreateChannelFactory(iotHubConnectionString, settings, context.ProductInfo, options);
-                        break;
-
-                    case TransportType.Mqtt_WebSocket_Only:
-                        _channelFactory = CreateWebSocketChannelFactory(iotHubConnectionString, settings, context.ProductInfo, options);
-                        break;
-
-                    default:
-                        throw new InvalidOperationException("Unsupported Transport Setting {0}".FormatInvariant(settings.GetTransportType()));
-                }
+                    TransportType.Mqtt_Tcp_Only => CreateChannelFactory(iotHubConnectionString, settings, context.ProductInfo, options),
+                    TransportType.Mqtt_WebSocket_Only => CreateWebSocketChannelFactory(iotHubConnectionString, settings, context.ProductInfo, options),
+                    _ => throw new InvalidOperationException("Unsupported Transport Setting {0}".FormatInvariant(settings.GetTransportType())),
+                };
             }
 
             _closeRetryPolicy = new RetryPolicy(new TransientErrorIgnoreStrategy(), 5, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
@@ -277,37 +270,35 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                 return null;
             }
-            else
+
+            try
             {
-                try
+                if (Logging.IsEnabled)
+                    Logging.Enter(
+                        this,
+                        cancellationToken, $"ReceiveAsync() called with cancellation requested state of: {cancellationToken.IsCancellationRequested}",
+                        $"{nameof(ReceiveAsync)}");
+
+                cancellationToken.ThrowIfCancellationRequested();
+
+                EnsureValidState();
+
+                if (State != TransportState.Receiving)
                 {
-                    if (Logging.IsEnabled)
-                        Logging.Enter(
-                            this,
-                            cancellationToken, $"ReceiveAsync() called with cancellation requested state of: {cancellationToken.IsCancellationRequested}",
-                            $"{nameof(ReceiveAsync)}");
-
-                    cancellationToken.ThrowIfCancellationRequested();
-
-                    EnsureValidState();
-
-                    if (State != TransportState.Receiving)
-                    {
-                        await SubscribeCloudToDeviceMessagesAsync().ConfigureAwait(false);
-                    }
-
-                    await WaitUntilC2dMessageArrivesAsync(cancellationToken).ConfigureAwait(false);
-                    return ProcessC2dMessage();
+                    await SubscribeCloudToDeviceMessagesAsync().ConfigureAwait(false);
                 }
-                finally
-                {
-                    if (Logging.IsEnabled)
-                        Logging.Exit(
-                            this,
-                            cancellationToken,
-                            $"Exiting ReceiveAsync() with cancellation requested state of: {cancellationToken.IsCancellationRequested}",
-                            $"{nameof(ReceiveAsync)}");
-                }
+
+                await WaitUntilC2dMessageArrivesAsync(cancellationToken).ConfigureAwait(false);
+                return ProcessC2dMessage();
+            }
+            finally
+            {
+                if (Logging.IsEnabled)
+                    Logging.Exit(
+                        this,
+                        cancellationToken,
+                        $"Exiting ReceiveAsync() with cancellation requested state of: {cancellationToken.IsCancellationRequested}",
+                        $"{nameof(ReceiveAsync)}");
             }
         }
 
@@ -320,6 +311,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                 return null;
             }
+
             try
             {
                 if (Logging.IsEnabled)
@@ -405,7 +397,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     isTransient: false);
             }
 
-            if (_completionQueue.Count == 0)
+            if (_completionQueue.IsEmpty)
             {
                 throw new IotHubException("Unknown lock token.", isTransient: false);
             }
@@ -444,9 +436,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             try
             {
                 if (Logging.IsEnabled)
-                {
-                    Logging.Enter(this, $"{nameof(DefaultDelegatingHandler)}.Disposed={_isDisposed}; disposing={disposing}", $"{nameof(MqttTransportHandler)}.{nameof(Dispose)}");
-                }
+                    Logging.Enter(
+                        this,
+                        $"{nameof(DefaultDelegatingHandler)}.Disposed={_isDisposed}; disposing={disposing}",
+                        $"{nameof(MqttTransportHandler)}.{nameof(Dispose)}");
 
                 if (!_isDisposed)
                 {
@@ -456,6 +449,18 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                         if (TryStop())
                         {
                             CleanUpAsync().GetAwaiter().GetResult();
+                        }
+
+                        // Log the task completion source tasks' exceptions and avoid unobserved exceptions.
+                        if (_connectCompletion.Task.Exception != null)
+                        {
+                            if (Logging.IsEnabled)
+                                Logging.Error(this, $"{_connectCompletion} has exception {_connectCompletion.Task.Exception}", nameof(Dispose));
+                        }
+                        if (_subscribeCompletionSource.Task.Exception != null)
+                        {
+                            if (Logging.IsEnabled)
+                                Logging.Error(this, $"{_subscribeCompletionSource} has exception {_subscribeCompletionSource.Task.Exception}", nameof(Dispose));
                         }
 
                         _disconnectAwaitersCancellationSource?.Dispose();
@@ -480,9 +485,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             finally
             {
                 if (Logging.IsEnabled)
-                {
-                    Logging.Exit(this, $"{nameof(DefaultDelegatingHandler)}.Disposed={_isDisposed}; disposing={disposing}", $"{nameof(MqttTransportHandler)}.{nameof(Dispose)}");
-                }
+                    Logging.Exit(
+                        this,
+                        $"{nameof(DefaultDelegatingHandler)}.Disposed={_isDisposed}; disposing={disposing}",
+                        $"{nameof(MqttTransportHandler)}.{nameof(Dispose)}");
             }
         }
 
@@ -726,8 +732,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                         break;
 
                     default:
-                        Debug.Fail($"Unknown transport state: {previousState}");
-                        throw new InvalidOperationException();
+                        string error = $"Unknown transport state: {previousState}";
+                        Debug.Fail(error);
+                        throw new InvalidOperationException(error);
                 }
 
                 await _closeRetryPolicy.RunWithRetryAsync(CleanUpImplAsync).ConfigureAwait(true);
@@ -753,6 +760,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 {
                     return previousState;
                 }
+
                 TransportState prevState;
                 if ((prevState = (TransportState)Interlocked.CompareExchange(ref _state, (int)destination, (int)previousState)) == previousState)
                 {
@@ -944,11 +952,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     Properties = JsonConvert.DeserializeObject<TwinProperties>(body),
                 };
             }
-            catch (JsonReaderException ex)
+            catch (JsonReaderException ex) when (Logging.IsEnabled)
             {
-                if (Logging.IsEnabled)
-                    Logging.Error(this, $"Failed to parse Twin JSON: {ex}. Message body: '{body}'");
-
+                Logging.Error(this, $"Failed to parse Twin JSON: {ex}. Message body: '{body}'");
                 throw;
             }
         }
@@ -1117,7 +1123,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             Message response = null; ;
             ExceptionDispatchInfo responseException = null;
 
-            Action<Message> onTwinResponse = (Message possibleResponse) =>
+            void OnTwinResponse(Message possibleResponse)
             {
                 try
                 {
@@ -1152,11 +1158,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     responseException = ExceptionDispatchInfo.Capture(e);
                     responseReceived.Release();
                 }
-            };
+            }
 
             try
             {
-                _twinResponseEvent += onTwinResponse;
+                _twinResponseEvent += OnTwinResponse;
 
                 await SendEventAsync(request, cancellationToken).ConfigureAwait(false);
 
@@ -1175,7 +1181,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
             finally
             {
-                _twinResponseEvent -= onTwinResponse;
+                _twinResponseEvent -= OnTwinResponse;
             }
         }
 
@@ -1185,7 +1191,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             {
                 IChannel channel = null;
 
-                Func<Stream, SslStream> streamFactory = stream => new SslStream(stream, true, settings.RemoteCertificateValidationCallback);
+                SslStream StreamFactory(Stream stream) => new SslStream(stream, true, settings.RemoteCertificateValidationCallback);
 
                 List<X509Certificate> certs = settings.ClientCertificate == null
                     ? new List<X509Certificate>(0)
@@ -1216,7 +1222,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     .Option(ChannelOption.Allocator, UnpooledByteBufferAllocator.Default)
                     .Handler(new ActionChannelInitializer<ISocketChannel>(ch =>
                     {
-                        var tlsHandler = new TlsHandler(streamFactory, clientTlsSettings);
+                        var tlsHandler = new TlsHandler(StreamFactory, clientTlsSettings);
                         ch.Pipeline.AddLast(
                             tlsHandler,
                             MqttEncoder.Instance,
