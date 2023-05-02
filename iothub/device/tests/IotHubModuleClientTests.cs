@@ -194,7 +194,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
         {
             // arrange
             await using var moduleClient = new IotHubModuleClient(s_fakeConnectionString);
-            var DirectMethodRequest = new DirectMethodRequest("TestMethodName")
+            var DirectMethodRequest = new EdgeModuleDirectMethodRequest("TestMethodName")
             {
                 PayloadConvention = DefaultPayloadConvention.Instance,
             };
@@ -211,7 +211,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
         {
             // arrange
             await using var moduleClient = new IotHubModuleClient(s_fakeConnectionString);
-            var DirectMethodRequest = new DirectMethodRequest("TestMethodName")
+            var DirectMethodRequest = new EdgeModuleDirectMethodRequest("TestMethodName")
             {
                 PayloadConvention = DefaultPayloadConvention.Instance,
             };
@@ -228,7 +228,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
         {
             // arrange
             await using var moduleClient = new IotHubModuleClient(s_fakeConnectionString);
-            var DirectMethodRequest = new DirectMethodRequest("TestMethodName")
+            var DirectMethodRequest = new EdgeModuleDirectMethodRequest("TestMethodName")
             {
                 PayloadConvention = DefaultPayloadConvention.Instance,
             };

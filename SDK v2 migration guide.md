@@ -223,6 +223,7 @@ The device client and module client share a lot of API surface and underlying im
 | `SetInputMessageHandlerAsync` | `SetIncomingMessageCallbackAsync` | The input parameter is deprecated; the callback can observe and filter using the `IncomingMessage.InputName` property. |
 | `ModuleClient.SendEventAsync(string outputName, ...)` | `IotHubModuleClient.SendMessageToRouteAsync(string outputName, ...)` | Change the name to be more descriptive about sending messages between Edge modules.¹ |
 | `ModuleClient.SendEventBatchAsync(string outputName, ...)` | `IotHubModuleClient.SendMessagesToRouteAsync(string outputName, ...)` | See¹ |
+| `MethodRequest` | `EdgeModuleDirectMethodRequest` | Use full name of the operation type. Inherit from `DirectMethodRequest` to create a type that is meant to be used only with `IotHubModuleClient`.  |
 
 #### Notable additions
 

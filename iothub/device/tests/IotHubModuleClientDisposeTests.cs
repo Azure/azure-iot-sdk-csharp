@@ -143,7 +143,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
         public async Task IotHubModuleClient_InvokeMethodAsync_ThrowsWhenClientIsDisposed()
         {
             using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(1));
-            Func<Task> op = async () => await s_client.InvokeMethodAsync("deviceId", new DirectMethodRequest(), cts.Token).ConfigureAwait(false);
+            Func<Task> op = async () => await s_client.InvokeMethodAsync("deviceId", new EdgeModuleDirectMethodRequest("fakeMethodName"), cts.Token).ConfigureAwait(false);
             await op.Should().ThrowAsync<ObjectDisposedException>().ConfigureAwait(false);
         }
 
@@ -151,7 +151,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
         public async Task IotHubModuleClient_InvokeMethodAsync_ToModule_ThrowsWhenClientIsDisposed()
         {
             using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(1));
-            Func<Task> op = async () => await s_client.InvokeMethodAsync("deviceId", "moduleId", new DirectMethodRequest(), cts.Token).ConfigureAwait(false);
+            Func<Task> op = async () => await s_client.InvokeMethodAsync("deviceId", "moduleId", new EdgeModuleDirectMethodRequest("fakeMethodName"), cts.Token).ConfigureAwait(false);
             await op.Should().ThrowAsync<ObjectDisposedException>().ConfigureAwait(false);
         }
     }

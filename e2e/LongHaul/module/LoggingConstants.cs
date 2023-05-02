@@ -10,7 +10,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
         public const string ModuleDisconnectedDurationSeconds = "ModuleDisconnectedDurationSeconds";
         public const string TotalTelemetryMessagesToModuleSent = "TotalTelemetryMessagesToModuleSent";
         public const string TelemetryMessageToModuleDelaySeconds = "TelemetryMessageToModuleDelaySeconds";
-        public const string ModuleMessageBacklog = "ModuleMessageBacklog";
+        public const string ModuleMessageToRouteBacklog = "ModuleMessageToRouteBacklog";
         public const string C2mDirectMethodDelaySeconds = "C2mDirectMethodDelaySeconds";
         public const string TotalTwinUpdatesToModuleReported = "TotalTwinUpdatesToModuleReported";
         public const string TotalTwinCallbacksToModuleHandled = "TotalTwinCallbacksToModuleHandled";

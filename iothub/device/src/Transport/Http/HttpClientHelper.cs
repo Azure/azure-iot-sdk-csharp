@@ -157,20 +157,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 AddCustomHeaders(msg, customHeaders);
                 if (entity != null)
                 {
-                    if (typeof(T1) == typeof(byte[]))
-                    {
-                        msg.Content = new ByteArrayContent((byte[])(object)entity);
-                    }
-                    else if (typeof(T1) == typeof(string))
-                    {
-                        // only used to send batched messages on Http runtime
-                        msg.Content = new StringContent((string)(object)entity);
-                        msg.Content.Headers.ContentType = new MediaTypeHeaderValue(CommonConstants.BatchedMessageContentType);
-                    }
-                    else
-                    {
-                        msg.Content = CreateContent(entity);
-                    }
+                    // Set the complete entity object into the HttpRequestMessage content. This includes the user-defined payload (if applicable)
+                    // and all associated metadata. The content is set as per service-defined contract, i.e. UTF-8 encoded json string.
+                    msg.Content = new StringContent(JsonConvert.SerializeObject(entity), Encoding.UTF8, "application/json");
                 }
 
                 HttpResponseMessage responseMsg;
@@ -244,11 +233,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
             Func<HttpResponseMessage, Task<Exception>> mapToExceptionFunc = errorMapping[response.StatusCode];
             Task<Exception> exception = mapToExceptionFunc(response);
             return await exception.ConfigureAwait(false);
-        }
-
-        private static StringContent CreateContent<T>(T entity)
-        {
-            return new StringContent(JsonConvert.SerializeObject(entity), Encoding.UTF8, "application/json");
         }
 
         private static async Task<T> ReadAsAsync<T>(HttpContent content, CancellationToken token)

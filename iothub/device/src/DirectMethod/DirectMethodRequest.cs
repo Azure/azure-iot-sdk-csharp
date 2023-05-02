@@ -24,12 +24,11 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Initialize an instance of this class.
         /// </summary>
-        /// <param name="methodName">The method name to invoke.</param>
         /// <remarks>
-        /// A direct method request can only be made by the service or a module;
-        /// a device client app will not need to instantiate this class.
+        /// This class can be inherited from and set by unit tests for mocking purposes.
         /// </remarks>
-        public DirectMethodRequest(string methodName)
+        /// <param name="methodName">The method name to invoke.</param>
+        protected internal DirectMethodRequest(string methodName)
         {
             MethodName = methodName;
         }
@@ -84,6 +83,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The direct method payload.
         /// </summary>
+        [JsonProperty("payload", NullValueHandling = NullValueHandling.Include)]
         protected internal byte[] Payload { get; set; }
 
         /// <summary>
@@ -186,7 +186,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </example>
         public byte[] GetPayloadAsBytes()
         {
-            return Payload == null || Payload.Length==0 ? null : (byte[])Payload.Clone();
+            return Payload == null || Payload.Length == 0 ? null : (byte[])Payload.Clone();
         }
     }
 }

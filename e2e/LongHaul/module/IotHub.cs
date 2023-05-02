@@ -91,7 +91,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
                 _logger.Metric(ModuleClientOpenDelaySeconds, sw.Elapsed.TotalSeconds);
                 await _moduleClient.SetDirectMethodCallbackAsync(DirectMethodCallback).ConfigureAwait(false);
                 await _moduleClient.SetDesiredPropertyUpdateCallbackAsync(DesiredPropertyUpdateCallbackAsync).ConfigureAwait(false);
-                await _moduleClient.SetIncomingMessageCallbackAsync(OnM2mMessageReceivedAsync).ConfigureAwait(false);
+                await _moduleClient.SetIncomingMessageCallbackAsync(OnIncomingMessageReceivedAsync).ConfigureAwait(false);
             }
             finally
             {
@@ -103,7 +103,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
         /// Frequently send telemetry messages to the hub.
         /// </summary>
         /// <param name="ct">The cancellation token</param>
-        public async Task SendTelemetryMessagesAsync(Logger logger, CancellationToken ct)
+        public async Task SendMessagesToRouteAsync(Logger logger, CancellationToken ct)
         {
             // AMQP supports bulk telemetry sending, so we'll configure how many to send at a time.
             int maxBulkMessages = _clientOptions.TransportSettings is IotHubClientAmqpSettings
@@ -118,7 +118,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
             var sw = new Stopwatch();
             while (!ct.IsCancellationRequested)
             {
-                logger.Metric(ModuleMessageBacklog, _messagesToSend.Count);
+                logger.Metric(ModuleMessageToRouteBacklog, _messagesToSend.Count);
 
                 await Task.Delay(s_messageLoopSleepTime, ct).ConfigureAwait(false);
 
@@ -421,7 +421,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
             _logger.Metric(TotalTwinCallbacksToModuleHandled, _totalTwinCallbacksToModuleHandled);
         }
 
-        private Task<MessageAcknowledgement> OnM2mMessageReceivedAsync(IncomingMessage receivedMessage)
+        private Task<MessageAcknowledgement> OnIncomingMessageReceivedAsync(IncomingMessage receivedMessage)
         {
             _logger.Trace($"Received the M2M message with Id {receivedMessage.MessageId}", TraceSeverity.Information);
 
