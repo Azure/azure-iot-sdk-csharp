@@ -708,7 +708,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                         VerboseTestLogger.WriteLine($"ProvisioningDeviceClient.RegisterAsync failed because: {ex.Message}");
                         await Task.Delay(TimeSpan.FromSeconds(2)).ConfigureAwait(false);
                     }
-                    catch (OperationCanceledException oce) when (overallCts.IsCancellationRequested)
+                    catch (OperationCanceledException oce) when (!overallCts.IsCancellationRequested)
                     {
                         // This catch statement shouldn't execute when the test itself is cancelled, but will
                         // execute when the registerAsync(cts) call times out 
