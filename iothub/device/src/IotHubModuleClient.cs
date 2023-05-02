@@ -93,7 +93,7 @@ namespace Microsoft.Azure.Devices.Client
             if (Logging.IsEnabled)
                 Logging.CreateClient(
                     this,
-                    $"HostName={IotHubConnectionCredentials.HostName};DeviceId={IotHubConnectionCredentials.DeviceId};ModuleId={IotHubConnectionCredentials.ModuleId}",
+                    $"HostName={IotHubConnectionCredentials.HostName};DeviceId={IotHubConnectionCredentials.DeviceId};ModuleId={IotHubConnectionCredentials.ModuleId};isEdgeModule={IotHubConnectionCredentials.IsEdgeModule}",
                     _clientOptions);
         }
 
@@ -227,7 +227,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <remarks>
         /// IotHubModuleClient instance must be already open.
         /// <para>
-        /// This API call is relevant only for IoT Edge modules.
+        /// This method call is relevant only for IoT Edge modules.
         /// </para>
         /// </remarks>
         /// <param name="deviceId">The unique identifier of the edge device to invoke the method on.</param>
@@ -248,6 +248,13 @@ namespace Microsoft.Azure.Devices.Client
         {
             Argument.AssertNotNullOrWhiteSpace(deviceId, nameof(deviceId));
             Argument.AssertNotNull(methodRequest, nameof(methodRequest));
+
+            if (!IotHubConnectionCredentials.IsEdgeModule)
+            {
+                throw new InvalidOperationException("This method call is relevant only for IoT Edge modules. Please make sure your client is initialized correctly." +
+                    "For IoT device module direct method invocations, see SetDirectMethodCallbackAsync(...).");
+            }
+
             cancellationToken.ThrowIfCancellationRequested();
 
             return InvokeMethodAsync(GetDeviceMethodUri(deviceId), methodRequest, cancellationToken);
@@ -283,6 +290,13 @@ namespace Microsoft.Azure.Devices.Client
             Argument.AssertNotNullOrWhiteSpace(deviceId, nameof(deviceId));
             Argument.AssertNotNullOrWhiteSpace(moduleId, nameof(moduleId));
             Argument.AssertNotNull(methodRequest, nameof(methodRequest));
+
+            if (!IotHubConnectionCredentials.IsEdgeModule)
+            {
+                throw new InvalidOperationException("This method call is relevant only for IoT Edge modules. Please make sure your client is initialized correctly." +
+                    "For IoT device module direct method invocations, see SetDirectMethodCallbackAsync(...).");
+            }
+
             cancellationToken.ThrowIfCancellationRequested();
 
             return InvokeMethodAsync(GetModuleMethodUri(deviceId, moduleId), methodRequest, cancellationToken);
