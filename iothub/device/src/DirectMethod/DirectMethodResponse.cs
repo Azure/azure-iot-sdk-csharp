@@ -70,13 +70,6 @@ namespace Microsoft.Azure.Devices.Client
         ///     // do work
         ///     // ...
         /// }
-        /// else
-        /// {
-        ///     // Get the payload as bytes
-        ///     byte[] arr = directMethodRequest.GetPayloadAsBytes();
-        ///
-        ///     // deserialize as needed and do work...
-        /// }
         ///
         /// // ...
         /// </code>
