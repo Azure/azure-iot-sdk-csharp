@@ -63,13 +63,6 @@ The API reference documentation for .NET SDK is [here][dotnet-api-reference].
 To find SDKs in other languages for Azure IoT, please refer to the [azure-iot-sdks][azure-iot-sdks] repository.
 For IoT Hub Management SDK in .NET, please visit [azure-sdk-for-net](https://github.com/Azure/azure-sdk-for-net) repository.
 
-## Need support?
-
-- Have a feature request for SDKs? Please post it on [User Voice](https://feedback.azure.com/forums/321918-azure-iot) to help us prioritize.
-- Have a technical question? Ask on [Stack Overflow](https://stackoverflow.com/questions/tagged/azure-iot-hub) with tag “azure-iot-hub”.
-- Need Support? Every customer with an active Azure subscription has access to [support](https://docs.microsoft.com/azure/azure-supportability/how-to-create-azure-support-request) with guaranteed response time. Consider submitting a ticket and get assistance from Microsoft support team.
-- Found a bug? Please help us fix it by thoroughly documenting it and filing an issue on GitHub (C, Java, .NET, Node.js, Python).
-
 ## Developing applications for Azure IoT
 
 Visit [Azure IoT Dev Center][iot-dev-center] to learn more about developing applications for Azure IoT.
@@ -192,28 +185,23 @@ A couple of examples:
 
 For additional guidance and important information about certificates, please refer to [this blog post](https://techcommunity.microsoft.com/t5/internet-of-things/azure-iot-tls-changes-are-coming-and-why-you-should-care/ba-p/1658456) from the security team.
 
-## Long-Term Support (LTS)
+## Support
 
-The project offers a Long-Term Support (LTS) releases to allow users that do not need the latest features to be shielded from unwanted changes.
+The Azure IoT Hub Device Client supported releases is outlined in the following table.
 
-LTS repo tags are to be named lts_*yyyy*-*mm*-*dd*, where *yyyy*, *mm*, and *dd* are the year, month, and day when the tag was created. An example of such a tag is *lts_2021-03-18*.
+Refer to the [Azure IoT Device SDK lifecycle and support](https://learn.microsoft.com/azure/iot/iot-device-sdks-lifecycle-and-support) for details on the different supported stages.
 
-The lifetime of an LTS release is 12 months. During this time, LTS releases may receive maintenance bug fixes that fall in these categories:
+| Release | Category | End-of-life |
+|-|-|-|
+| 1.42.0 | Active | - |
+| 2.0.0-preview005 | Preview | 2023-07-26
 
-- security bug fixes
-- critical bug fixes (e.g., unavoidable/unrecoverable crashes, significant memory leaks)
+### Need help?
 
-> No new features or improvements are in scope to be picked up in an LTS branch. A patch will not extend the maintenance or expiry date.
-
-LTS releases may include additional extended support for security bug fixes as listed in the LTS schedule.
-
-### Schedule
-
-This table shows previous LTS releases and end dates.
-
-| Release                                                                                                                        | LTS Start Date | Maintenance End Date |
-| :----------------------------------------------------------------------------------------------------------------------------: | :------------: | :------------------: |
-| [2022-06-07](https://github.com/Azure/azure-iot-sdk-csharp/releases/tag/lts_2021-3-18_patch6) <sub>patch 6 of 2021-03-18</sub> | 2021-03-18     | current              |
+- Have a feature request for SDKs? Please post it on [User Voice](https://feedback.azure.com/forums/321918-azure-iot) to help us prioritize.
+- Have a technical question? Ask on [Stack Overflow](https://stackoverflow.com/questions/tagged/azure-iot-hub) with tag “azure-iot-hub”.
+- Need Support? Every customer with an active Azure subscription has access to [support](https://docs.microsoft.com/azure/azure-supportability/how-to-create-azure-support-request) with guaranteed response time. Consider submitting a ticket and get assistance from Microsoft support team.
+- Found a bug? Please help us fix it by thoroughly documenting it and filing an issue on GitHub (C, Java, .NET, Node.js, Python).
 
 ---
 
