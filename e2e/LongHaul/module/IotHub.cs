@@ -262,11 +262,12 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
             }
         }
 
-        public async Task InvokeDirectMethodOnLeafClientThroughEdgeAsync(string deviceId, string moduleId, string methodName, Logger logger, CancellationToken ct)
+        public async Task InvokeDirectMethodOnLeafClientAsync(string deviceId, string moduleId, string methodName, Logger logger, CancellationToken ct)
         {
             Debug.Assert(_moduleClient != null);
             Debug.Assert(deviceId != null);
             Debug.Assert(moduleId != null);
+            logger.LoggerContext.Add(OperationName, ModuleToLeafClientMethod);
 
             var sw = new Stopwatch();
             while (!ct.IsCancellationRequested)

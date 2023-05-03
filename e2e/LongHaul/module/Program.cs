@@ -98,7 +98,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
                 if (parameters.GatewayHostName != null)
                 {
                     // Edge module to edge device/edge module method invocation
-                    tasksToRun.Add(iotHub.InvokeDirectMethodOnLeafClientThroughEdgeAsync(DeviceId, ModuleId, "ModuleToItself", s_logger.Clone(), cts.Token));
+                    tasksToRun.Add(iotHub.InvokeDirectMethodOnLeafClientAsync(DeviceId, ModuleId, "ModuleToItself", s_logger.Clone(), cts.Token));
                 }
 
                 await Task.WhenAll(tasksToRun).ConfigureAwait(false);

@@ -60,5 +60,6 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
         public const string TelemetryMessage = "TelemetryMessage";
         public const string ReportTwinProperties = "ReportTwinProperties";
         public const string DirectMethod = "DirectMethod";
+        public const string ModuleToLeafClientMethod = "ModuleToEdgeClientMethod";
     }
 }
