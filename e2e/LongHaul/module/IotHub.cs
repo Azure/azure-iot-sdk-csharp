@@ -276,7 +276,6 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
                     {
                         RandomId = Guid.NewGuid(),
                         CurrentTimeUtc = DateTimeOffset.UtcNow,
-                        MethodCallsCount = ++_totalMethodCallsModuleToModuleSentCount,
                     };
 
                     var directMethodRequest = new EdgeModuleDirectMethodRequest(methodName, payload)
@@ -285,14 +284,14 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
                     };
 
                     logger.Trace($"Invoking direct method for edge device: {deviceId}, edge module: {moduleId}", TraceSeverity.Information);
-                    logger.Metric(TotalDirectMethodCallsModuleToModuleSentCount, _totalMethodCallsModuleToModuleSentCount);
-
                     sw.Restart();
 
                     // Invoke the direct method asynchronously and get the response from the simulated module.
                     DirectMethodResponse response = await _moduleClient
                         .InvokeMethodAsync(deviceId, moduleId, directMethodRequest, ct)
                         .ConfigureAwait(false);
+
+                    logger.Metric(TotalDirectMethodCallsModuleToModuleSentCount, ++_totalMethodCallsModuleToModuleSentCount);
                     logger.Metric(DirectMethodModuleToModuleRoundTripSeconds, sw.Elapsed.TotalSeconds);
 
                     if (response.TryGetPayload(out CustomDirectMethodPayload responsePayload))
