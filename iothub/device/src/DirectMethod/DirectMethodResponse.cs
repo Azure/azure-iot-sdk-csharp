@@ -50,7 +50,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <see cref="PayloadConvention"/>. If it is not JSON or the type is not known, use <see cref="GetPayloadAsBytes"/>.
         /// </para>
         /// <para>
-        /// One intended usage of this method is to deserialize the direct method response received by an edge module client
+        /// One usage of this method is to deserialize the direct method response received by an edge module client
         /// after it invokes a direct method on an edge device or an edge module connected to the same edge hub.
         /// These operations are invoked using the API <see cref="IotHubModuleClient.InvokeMethodAsync(string, EdgeModuleDirectMethodRequest, System.Threading.CancellationToken)"/>
         /// and <see cref="IotHubModuleClient.InvokeMethodAsync(string, string, EdgeModuleDirectMethodRequest, System.Threading.CancellationToken)"/>.
