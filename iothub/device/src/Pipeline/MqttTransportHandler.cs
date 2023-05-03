@@ -510,7 +510,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 Logging.Enter(this, methodResponse, cancellationToken, nameof(SendMethodResponseAsync));
 
             string topic = DirectMethodsResponseTopicFormat.FormatInvariant(methodResponse.Status, methodResponse.RequestId);
-            byte[] serializedPayload = methodResponse.GetPayloadObjectBytes();
+            byte[] serializedPayload = methodResponse.GetPayloadAsBytes();
             MqttApplicationMessage mqttMessage = new MqttApplicationMessageBuilder()
                 .WithTopic(topic)
                 .WithPayload(serializedPayload)

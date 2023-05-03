@@ -37,7 +37,9 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
         private long _totalDesiredPropertiesToModuleHandled;
         private long _totalM2mMessagesCompleted;
         private long _totalM2mMessagesRejected;
-        private long _totalMethodCallsToModuleCount;
+        private long _totalMethodCallsServiceToModuleCount;
+        private long _totalMethodCallsModuleToModuleSentCount;
+        private long _totalMethodCallsModuleToModuleReceivedCount;
 
         public IotHub(Logger logger, Parameters parameters)
         {
@@ -259,6 +261,58 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
             }
         }
 
+        public async Task InvokeDirectMethodOnLeafClientThroughEdgeAsync(string deviceId, string moduleId, string methodName, Logger logger, CancellationToken ct)
+        {
+            Debug.Assert(_moduleClient != null);
+            Debug.Assert(deviceId != null);
+            Debug.Assert(moduleId != null);
+
+            var sw = new Stopwatch();
+            while (!ct.IsCancellationRequested)
+            {
+                try
+                {
+                    var payload = new CustomDirectMethodPayload
+                    {
+                        RandomId = Guid.NewGuid(),
+                        CurrentTimeUtc = DateTimeOffset.UtcNow,
+                        MethodCallsCount = ++_totalMethodCallsModuleToModuleSentCount,
+                    };
+
+                    var directMethodRequest = new EdgeModuleDirectMethodRequest(methodName, payload)
+                    {
+                        ResponseTimeout = TimeSpan.FromSeconds(30),
+                    };
+
+                    logger.Trace($"Invoking direct method for edge device: {deviceId}, edge module: {moduleId}", TraceSeverity.Information);
+                    logger.Metric(TotalDirectMethodCallsModuleToModuleSentCount, _totalMethodCallsModuleToModuleSentCount);
+
+                    sw.Restart();
+
+                    // Invoke the direct method asynchronously and get the response from the simulated module.
+                    DirectMethodResponse response = await _moduleClient
+                        .InvokeMethodAsync(deviceId, moduleId, directMethodRequest, ct)
+                        .ConfigureAwait(false);
+                    logger.Metric(DirectMethodModuleToModuleRoundTripSeconds, sw.Elapsed.TotalSeconds);
+
+                    if (response.TryGetPayload(out CustomDirectMethodPayload responsePayload))
+                    {
+                        logger.Metric(
+                            DirectMethodModuleToModuleDelaySeconds,
+                            (DateTimeOffset.UtcNow - responsePayload.CurrentTimeUtc).TotalSeconds);
+                    }
+
+                    logger.Trace($"Response status: {response.Status}, method name:{methodName}", TraceSeverity.Information);
+                    break;
+                }
+                catch (Exception ex)
+                {
+                    logger.Trace($"Exception invoking direct method from an edge module\n{ex}", TraceSeverity.Warning);
+                    await Task.Delay(s_retryInterval, ct).ConfigureAwait(false);
+                }
+            }
+        }
+
         public async ValueTask DisposeAsync()
         {
             _logger.Trace($"Disposing the {nameof(IotHub)} instance", TraceSeverity.Verbose);
@@ -372,7 +426,30 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
                             _logger.Metric(
                                 C2mDirectMethodDelaySeconds,
                                 (DateTimeOffset.UtcNow - methodPayload.CurrentTimeUtc).TotalSeconds);
-                            _logger.Metric(TotalDirectMethodCallsModuleToModuleCount, ++_totalMethodCallsToModuleCount);
+                            _logger.Metric(TotalDirectMethodCallsServiceToModuleCount, ++_totalMethodCallsServiceToModuleCount);
+
+                            // Log the current time again and send the response back to the service app.
+                            methodPayload.CurrentTimeUtc = DateTimeOffset.UtcNow;
+                            return Task.FromResult(new DirectMethodResponse(200) { Payload = methodPayload });
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.Trace($"Failed to parse the payload for direct method {methodRequest.MethodName} due to {ex}.", TraceSeverity.Error);
+                        return Task.FromResult(new DirectMethodResponse(400) { Payload = ex.Message });
+                    }
+                    break;
+
+                case "ModuleToItself":
+                    try
+                    {
+                        if (methodRequest.TryGetPayload(out CustomDirectMethodPayload methodPayload))
+                        {
+                            _logger.Trace($"Echoing back the payload of direct method.", TraceSeverity.Information);
+                            _logger.Metric(
+                                C2mDirectMethodDelaySeconds,
+                                (DateTimeOffset.UtcNow - methodPayload.CurrentTimeUtc).TotalSeconds);
+                            _logger.Metric(TotalDirectMethodCallsModuleToModuleReceivedCount, ++_totalMethodCallsModuleToModuleReceivedCount);
 
                             // Log the current time again and send the response back to the service app.
                             methodPayload.CurrentTimeUtc = DateTimeOffset.UtcNow;

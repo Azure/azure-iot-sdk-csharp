@@ -88,12 +88,20 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
 
             try
             {
-                await Task
-                    .WhenAll(
-                        systemHealthMonitor.RunAsync(cts.Token),
-                        iotHub.SendMessagesToRouteAsync(s_logger.Clone(), cts.Token),
-                        iotHub.ReportReadOnlyPropertiesAsync(s_logger.Clone(), cts.Token))
-                    .ConfigureAwait(false);
+                var tasksToRun = new List<Task>
+                {
+                    systemHealthMonitor.RunAsync(cts.Token),
+                    iotHub.SendMessagesToRouteAsync(s_logger.Clone(), cts.Token),
+                    iotHub.ReportReadOnlyPropertiesAsync(s_logger.Clone(), cts.Token)
+                };
+
+                if (parameters.GatewayHostName != null)
+                {
+                    // Edge module to edge device/edge module method invocation
+                    tasksToRun.Add(iotHub.InvokeDirectMethodOnLeafClientThroughEdgeAsync(DeviceId, ModuleId, "ModuleToItself", s_logger.Clone(), cts.Token));
+                }
+
+                await Task.WhenAll(tasksToRun).ConfigureAwait(false);
             }
             catch (TaskCanceledException) { } // user signalled an exit
             catch (AggregateException ex) when (ex.InnerException is OperationCanceledException) { } // user signaled an exit
