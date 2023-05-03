@@ -293,9 +293,9 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
                         .InvokeMethodAsync(deviceId, moduleId, directMethodRequest, ct)
                         .ConfigureAwait(false);
 
+                    sw.Stop();
                     logger.Metric(TotalDirectMethodCallsModuleToModuleSentCount, ++_totalMethodCallsModuleToModuleSentCount);
                     logger.Metric(DirectMethodModuleToModuleRoundTripSeconds, sw.Elapsed.TotalSeconds);
-                    sw.Stop();
 
                     if (response.TryGetPayload(out CustomDirectMethodPayload responsePayload))
                     {
