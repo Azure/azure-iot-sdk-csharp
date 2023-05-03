@@ -22,7 +22,7 @@ namespace Microsoft.Azure.Devices.Client
         private const string DeviceMethodUriFormat = "/twins/{0}/methods?" + ClientApiVersionHelper.ApiVersionQueryStringLatest;
 
         private const string IotDeviceModuleMethodInvokeErrorMessage = "This API call is relevant only for IoT Edge modules. Please make sure your client is initialized correctly. " +
-                    "For IoT device module direct method invocations, see SetDirectMethodCallbackAsync(...).";
+            "For IoT device module direct method invocations, see SetDirectMethodCallbackAsync(...).";
 
         /// <summary>
         /// Creates a disposable client from the specified connection string.
