@@ -834,9 +834,9 @@ namespace Microsoft.Azure.Devices.Client.Tests
             response.Payload.Should().Be(true);
             response.RequestId.Should().Be("1");
             response.PayloadConvention.Should().Be(DefaultPayloadConvention.Instance);
-            response.GetPayloadObjectBytes().Should().NotBeNull();
+            response.GetPayloadAsBytes().Should().NotBeNull();
             response.Payload = null;
-            response.GetPayloadObjectBytes().Should().BeNull();
+            response.GetPayloadAsBytes().Should().BeNull();
 
         }
 

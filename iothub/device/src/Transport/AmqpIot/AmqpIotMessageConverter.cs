@@ -231,7 +231,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         {
             AmqpMessage amqpMessage = directMethodResponse.Payload == null
                 ? AmqpMessage.Create()
-                : AmqpMessage.Create(new MemoryStream(directMethodResponse.GetPayloadObjectBytes()), true);
+                : AmqpMessage.Create(new MemoryStream(directMethodResponse.GetPayloadAsBytes()), true);
 
             PopulateAmqpMessageFromMethodResponse(amqpMessage, directMethodResponse);
             return amqpMessage;
