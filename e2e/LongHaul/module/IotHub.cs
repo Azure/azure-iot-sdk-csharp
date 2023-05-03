@@ -28,6 +28,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
 
         private static readonly TimeSpan s_messageLoopSleepTime = TimeSpan.FromSeconds(3);
         private static readonly TimeSpan s_deviceTwinUpdateInterval = TimeSpan.FromSeconds(10);
+        private static readonly TimeSpan s_moduleMethodInvocationInterval = TimeSpan.FromSeconds(10);
         private static readonly TimeSpan s_retryInterval = TimeSpan.FromSeconds(1);
         private readonly ConcurrentQueue<TelemetryMessage> _messagesToSend = new();
 
@@ -307,8 +308,9 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
                 catch (Exception ex)
                 {
                     logger.Trace($"Exception invoking direct method from an edge module\n{ex}", TraceSeverity.Warning);
-                    await Task.Delay(s_retryInterval, ct).ConfigureAwait(false);
                 }
+
+                await Task.Delay(s_moduleMethodInvocationInterval, ct).ConfigureAwait(false);
             }
         }
 
