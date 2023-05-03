@@ -173,6 +173,7 @@ Find a client you currently use below, read the table of API name changes and us
   > Be advised, subscriptions do not carry over when the client is re-opened.
   >
   > It cannot be re-opened after disposal.
+ - `DirectMethodResponse` now has a method `TryGetValue<T>` to deserialize the payload to a type of your choice. One intended usage of this method is to deserialize the direct method response received by an edge module client after it invokes a direct method on an edge device or an edge module connected to the same edge hub.
 
 #### API mapping
 
