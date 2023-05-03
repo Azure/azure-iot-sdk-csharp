@@ -25,7 +25,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
     [TestCategory("DPS")]
     public class ProvisioningE2ETests : E2EMsTestBase
     {
-        private const int PassingTimeoutMilliseconds = 60 * 1000;
+        private const int RegisterWithRetryTimeoutMilliseconds = 3 * 60 * 1000;
+        private const int RegisterTimeoutMilliseconds = 60 * 1000;
         private const int FailingTimeoutMilliseconds = 10 * 1000;
         private const int MaxTryCount = 10;
         private const string InvalidIdScope = "0neFFFFFFFF";
@@ -686,12 +687,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
             try
             {
-                using var overallCts = new CancellationTokenSource(PassingTimeoutMilliseconds);
+                using var overallCts = new CancellationTokenSource(RegisterWithRetryTimeoutMilliseconds);
 
                 // Trying to register simultaneously can cause conflicts (409). Retry in those scenarios to succeed.
                 while (true)
                 {
-                    using var attemptCts = new CancellationTokenSource(FailingTimeoutMilliseconds);
+                    using var attemptCts = new CancellationTokenSource(RegisterTimeoutMilliseconds);
                     using var opCts = CancellationTokenSource.CreateLinkedTokenSource(overallCts.Token, attemptCts.Token);
 
                     try
@@ -707,7 +708,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                         VerboseTestLogger.WriteLine($"ProvisioningDeviceClient.RegisterAsync failed because: {ex.Message}");
                         await Task.Delay(TimeSpan.FromSeconds(2)).ConfigureAwait(false);
                     }
-                    catch (OperationCanceledException oce) when (overallCts.IsCancellationRequested)
+                    catch (OperationCanceledException oce) when (!overallCts.IsCancellationRequested)
                     {
                         // This catch statement shouldn't execute when the test itself is cancelled, but will
                         // execute when the registerAsync(cts) call times out 
