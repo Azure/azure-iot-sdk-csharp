@@ -7,6 +7,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client.HsmAuthentication;
 using Microsoft.Azure.Devices.Client.HsmAuthentication.GeneratedCode;
@@ -17,7 +18,7 @@ namespace Microsoft.Azure.Devices.Client.Edge
     {
         private static readonly IIotHubClientRetryPolicy s_retryPolicy = new IotHubClientExponentialBackoffRetryPolicy(3, TimeSpan.FromSeconds(30));
 
-        public async Task<IList<X509Certificate2>> GetTrustBundleAsync(Uri providerUri, string apiVersion)
+        public async Task<IList<X509Certificate2>> GetTrustBundleAsync(Uri providerUri, string apiVersion, CancellationToken cancellationToken)
         {
             try
             {
@@ -26,7 +27,7 @@ namespace Microsoft.Azure.Devices.Client.Edge
                 {
                     BaseUrl = HttpClientHelper.GetBaseUri(providerUri)
                 };
-                TrustBundleResponse response = await GetTrustBundleWithRetryAsync(hsmHttpClient, apiVersion).ConfigureAwait(false);
+                TrustBundleResponse response = await GetTrustBundleWithRetryAsync(hsmHttpClient, apiVersion, cancellationToken).ConfigureAwait(false);
 
                 IList<X509Certificate2> certs = ParseCertificates(response.Certificate);
                 return certs;
@@ -45,13 +46,15 @@ namespace Microsoft.Azure.Devices.Client.Edge
 
         private static async Task<TrustBundleResponse> GetTrustBundleWithRetryAsync(
             HttpHsmClient hsmHttpClient,
-            string apiVersion)
+            string apiVersion,
+            CancellationToken cancellationToken)
         {
             var transientRetryPolicy = new RetryHandler(s_retryPolicy);
             return await transientRetryPolicy
                 .RunWithRetryAsync(
                     () => hsmHttpClient.TrustBundleAsync(apiVersion),
-                    (Exception ex) => ex is SwaggerException se && se.StatusCode >= 500)
+                    (Exception ex) => ex is SwaggerException se && se.StatusCode >= 500,
+                    cancellationToken)
                 .ConfigureAwait(false);
         }
 

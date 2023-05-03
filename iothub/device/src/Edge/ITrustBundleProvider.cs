@@ -4,12 +4,13 @@
 using System;
 using System.Collections.Generic;
 using System.Security.Cryptography.X509Certificates;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.Client
 {
     internal interface ITrustBundleProvider
     {
-        Task<IList<X509Certificate2>> GetTrustBundleAsync(Uri providerUri, string defaultApiVersion);
+        Task<IList<X509Certificate2>> GetTrustBundleAsync(Uri providerUri, string defaultApiVersion, CancellationToken cancellationToken);
     }
 }

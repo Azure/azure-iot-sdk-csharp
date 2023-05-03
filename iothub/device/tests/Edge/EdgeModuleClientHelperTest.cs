@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -186,11 +187,11 @@ namespace Microsoft.Azure.Devices.Client.Tests.Edge
             var options = new IotHubClientOptions(settings);
             var trustBundle = new Mock<ITrustBundleProvider>();
             trustBundle
-                .Setup(x => x.GetTrustBundleAsync(It.IsAny<Uri>(), It.IsAny<string>()))
+                .Setup(x => x.GetTrustBundleAsync(It.IsAny<Uri>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
                 .Returns(() => Task.FromResult<IList<X509Certificate2>>(new List<X509Certificate2>(0)));
             IotHubConnectionCredentials creds = EdgeModuleClientHelper.CreateIotHubConnectionCredentialsFromEnvironment();
             ICertificateValidator certValidator = await EdgeModuleClientHelper
-                .CreateCertificateValidatorFromEnvironmentAsync(trustBundle.Object, options)
+                .CreateCertificateValidatorFromEnvironmentAsync(trustBundle.Object, options, CancellationToken.None)
                 .ConfigureAwait(false);
 
             // act
@@ -223,11 +224,11 @@ namespace Microsoft.Azure.Devices.Client.Tests.Edge
             var options = new IotHubClientOptions(settings);
             var trustBundle = new Mock<ITrustBundleProvider>();
             trustBundle
-                .Setup(x => x.GetTrustBundleAsync(It.IsAny<Uri>(), It.IsAny<string>()))
+                .Setup(x => x.GetTrustBundleAsync(It.IsAny<Uri>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
                 .Returns(() => Task.FromResult<IList<X509Certificate2>>(new List<X509Certificate2>(0)));
             IotHubConnectionCredentials creds = EdgeModuleClientHelper.CreateIotHubConnectionCredentialsFromEnvironment();
             ICertificateValidator certValidator = await EdgeModuleClientHelper
-                .CreateCertificateValidatorFromEnvironmentAsync(trustBundle.Object, options)
+                .CreateCertificateValidatorFromEnvironmentAsync(trustBundle.Object, options, CancellationToken.None)
                 .ConfigureAwait(false);
 
             // act
