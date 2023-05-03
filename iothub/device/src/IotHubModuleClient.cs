@@ -21,6 +21,9 @@ namespace Microsoft.Azure.Devices.Client
         private const string ModuleMethodUriFormat = "/twins/{0}/modules/{1}/methods?" + ClientApiVersionHelper.ApiVersionQueryStringLatest;
         private const string DeviceMethodUriFormat = "/twins/{0}/methods?" + ClientApiVersionHelper.ApiVersionQueryStringLatest;
 
+        private const string IotDeviceModuleMethodInvokeErrorMessage = "This API call is relevant only for IoT Edge modules. Please make sure your client is initialized correctly. " +
+                    "For IoT device module direct method invocations, see SetDirectMethodCallbackAsync(...).";
+
         /// <summary>
         /// Creates a disposable client from the specified connection string.
         /// </summary>
@@ -252,8 +255,7 @@ namespace Microsoft.Azure.Devices.Client
 
             if (!IotHubConnectionCredentials.IsEdgeModule)
             {
-                throw new InvalidOperationException("This API call is relevant only for IoT Edge modules. Please make sure your client is initialized correctly." +
-                    "For IoT device module direct method invocations, see SetDirectMethodCallbackAsync(...).");
+                throw new InvalidOperationException(IotDeviceModuleMethodInvokeErrorMessage);
             }
 
             cancellationToken.ThrowIfCancellationRequested();
@@ -295,8 +297,7 @@ namespace Microsoft.Azure.Devices.Client
 
             if (!IotHubConnectionCredentials.IsEdgeModule)
             {
-                throw new InvalidOperationException("This API call is relevant only for IoT Edge modules. Please make sure your client is initialized correctly." +
-                    "For IoT device module direct method invocations, see SetDirectMethodCallbackAsync(...).");
+                throw new InvalidOperationException(IotDeviceModuleMethodInvokeErrorMessage);
             }
 
             cancellationToken.ThrowIfCancellationRequested();
