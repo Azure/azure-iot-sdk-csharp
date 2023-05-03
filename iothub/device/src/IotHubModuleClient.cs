@@ -104,21 +104,26 @@ namespace Microsoft.Azure.Devices.Client
         /// Creates a disposable <c>IotHubModuleClient</c> instance in an IoT Edge deployment based on environment variables.
         /// </summary>
         /// <param name="options">The options that allow configuration of the module client instance during initialization.</param>
+        /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <returns>A disposable client instance.</returns>
         /// <exception cref="InvalidOperationException">The required environmental variables were missing. Check the exception thrown for additional details.</exception>
+        /// <exception cref="OperationCanceledException">The operation has been canceled.</exception>
         /// <example>
         /// <code language="csharp">
         /// await using var client = await IotHubModuleClient.CreateFromEnvironmentAsync(new IotHubClientOptions(new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket)));
         /// </code>
         /// </example>
-        public static async Task<IotHubModuleClient> CreateFromEnvironmentAsync(IotHubClientOptions options = default)
+        public static async Task<IotHubModuleClient> CreateFromEnvironmentAsync(IotHubClientOptions options = default, CancellationToken cancellationToken = default)
         {
             IotHubClientOptions clientOptions = options != null
                 ? options.Clone()
                 : new();
 
             IotHubConnectionCredentials iotHubConnectionCredentials = EdgeModuleClientHelper.CreateIotHubConnectionCredentialsFromEnvironment();
-            ICertificateValidator certificateValidator = await EdgeModuleClientHelper.CreateCertificateValidatorFromEnvironmentAsync(new TrustBundleProvider(), clientOptions);
+            ICertificateValidator certificateValidator = await EdgeModuleClientHelper.CreateCertificateValidatorFromEnvironmentAsync(
+                new TrustBundleProvider(),
+                clientOptions,
+                cancellationToken);
 
             return new IotHubModuleClient(iotHubConnectionCredentials, options, certificateValidator);
         }

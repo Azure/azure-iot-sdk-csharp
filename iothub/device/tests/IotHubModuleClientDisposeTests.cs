@@ -27,7 +27,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
             string testSharedAccessKey = Convert.ToBase64String(rndBytes);
             var csBuilder = new IotHubConnectionString(
                 "contoso.azure-devices.net",
-                null,
+                "my-gateway",
                 "deviceId",
                 "moduleId",
                 null,
