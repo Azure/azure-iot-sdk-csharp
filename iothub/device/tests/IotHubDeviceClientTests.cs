@@ -22,7 +22,10 @@ namespace Microsoft.Azure.Devices.Client.Tests
         private const string FakeDeviceId = "fake";
         private const string FakeSharedAccessKey = "dGVzdFN0cmluZzE=";
         private const string FakeSharedAccessKeyName = "AllAccessKey";
+        private const string FakeGatewayHostNameOptions = "my-custom-gateway-options";
+        private const string FakeGatewayHostNameCs = "my-custom-gateway-cs";
         private static readonly string s_fakeConnectionString = $"HostName={FakeHostName};SharedAccessKeyName={FakeSharedAccessKeyName};DeviceId={FakeDeviceId};SharedAccessKey={FakeSharedAccessKey}";
+        private static readonly string s_fakeConnectionStringWithGatewayHostName = $"GatewayHostName={FakeGatewayHostNameCs};HostName={FakeHostName};SharedAccessKeyName={FakeSharedAccessKeyName};DeviceId={FakeDeviceId};SharedAccessKey={FakeSharedAccessKey}";
 
         private static readonly IotHubConnectionCredentials s_iotHubConnectionCredentials = new(s_fakeConnectionString);
 
@@ -1628,6 +1631,42 @@ namespace Microsoft.Azure.Devices.Client.Tests
 
             // assert
             act.Should().NotThrowAsync();
+        }
+
+        [TestMethod]
+        public async Task IotHubDeviceClient_CreateFromConnectionString_WithoutWithGatewayHostname_UseIotHubClientOptionsGatewayHostName()
+        {
+            // arrange
+            var clientOptions = new IotHubClientOptions
+            {
+                GatewayHostName = FakeGatewayHostNameOptions,
+            };
+
+            // act
+            await using var deviceClient = new IotHubDeviceClient(s_fakeConnectionString, clientOptions);
+
+            // assert
+            deviceClient.IotHubConnectionCredentials.IotHubHostName.Should().Be(FakeHostName);
+            deviceClient.IotHubConnectionCredentials.GatewayHostName.Should().Be(FakeGatewayHostNameOptions);
+            deviceClient.IotHubConnectionCredentials.HostName.Should().Be(FakeGatewayHostNameOptions);
+        }
+
+        [TestMethod]
+        public async Task IotHubDeviceClient_CreateFromConnectionString_WithGatewayHostname_OverrideIotHubClientOptionsGatewayHostName()
+        {
+            // arrange
+            var clientOptions = new IotHubClientOptions
+            {
+                GatewayHostName = FakeGatewayHostNameOptions,
+            };
+
+            // act
+            await using var deviceClient = new IotHubDeviceClient(s_fakeConnectionStringWithGatewayHostName, clientOptions);
+
+            // assert
+            deviceClient.IotHubConnectionCredentials.IotHubHostName.Should().Be(FakeHostName);
+            deviceClient.IotHubConnectionCredentials.GatewayHostName.Should().Be(FakeGatewayHostNameCs);
+            deviceClient.IotHubConnectionCredentials.HostName.Should().Be(FakeGatewayHostNameCs);
         }
 
         private class TestDeviceAuthenticationWithTokenRefresh : ClientAuthenticationWithTokenRefresh

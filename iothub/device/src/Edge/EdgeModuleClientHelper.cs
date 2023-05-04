@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client.HsmAuthentication;
 using static System.Runtime.InteropServices.RuntimeInformation;
@@ -84,7 +85,8 @@ namespace Microsoft.Azure.Devices.Client
 
         internal static async Task<ICertificateValidator> CreateCertificateValidatorFromEnvironmentAsync(
             ITrustBundleProvider trustBundleProvider, 
-            IotHubClientOptions options)
+            IotHubClientOptions options,
+            CancellationToken cancellationToken)
         {
             Debug.Assert(options != null);
 
@@ -122,7 +124,7 @@ namespace Microsoft.Azure.Devices.Client
             if (!string.IsNullOrEmpty(gateway))
             {
                 IList<X509Certificate2> certs = await trustBundleProvider
-                    .GetTrustBundleAsync(new Uri(edgeWorkloadUri), EdgeHsmApiVersion)
+                    .GetTrustBundleAsync(new Uri(edgeWorkloadUri), EdgeHsmApiVersion, cancellationToken)
                     .ConfigureAwait(false);
                 certificateValidator = CreateCertificateValidator(certs, options);
             }

@@ -21,6 +21,9 @@ namespace Microsoft.Azure.Devices.Client
         private const string ModuleMethodUriFormat = "/twins/{0}/modules/{1}/methods?" + ClientApiVersionHelper.ApiVersionQueryStringLatest;
         private const string DeviceMethodUriFormat = "/twins/{0}/methods?" + ClientApiVersionHelper.ApiVersionQueryStringLatest;
 
+        private const string IotDeviceModuleMethodInvokeErrorMessage = "This API call is relevant only for IoT Edge modules. Please make sure your client is initialized correctly with a gateway hostname. " +
+            "For subscribing to IoT device module direct method invocations, see SetDirectMethodCallbackAsync(...).";
+
         /// <summary>
         /// Creates a disposable client from the specified connection string.
         /// </summary>
@@ -45,7 +48,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </code>
         /// </example>
         public IotHubModuleClient(string connectionString, IotHubClientOptions options = default)
-            : this(new IotHubConnectionCredentials(connectionString), options, null)
+            : this(new IotHubConnectionCredentials(connectionString, options?.GatewayHostName), options, null)
         {
         }
 
@@ -93,7 +96,7 @@ namespace Microsoft.Azure.Devices.Client
             if (Logging.IsEnabled)
                 Logging.CreateClient(
                     this,
-                    $"HostName={IotHubConnectionCredentials.HostName};DeviceId={IotHubConnectionCredentials.DeviceId};ModuleId={IotHubConnectionCredentials.ModuleId}",
+                    $"HostName={IotHubConnectionCredentials.HostName};DeviceId={IotHubConnectionCredentials.DeviceId};ModuleId={IotHubConnectionCredentials.ModuleId};isEdgeModule={IotHubConnectionCredentials.IsEdgeModule}",
                     _clientOptions);
         }
 
@@ -101,21 +104,26 @@ namespace Microsoft.Azure.Devices.Client
         /// Creates a disposable <c>IotHubModuleClient</c> instance in an IoT Edge deployment based on environment variables.
         /// </summary>
         /// <param name="options">The options that allow configuration of the module client instance during initialization.</param>
+        /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <returns>A disposable client instance.</returns>
         /// <exception cref="InvalidOperationException">The required environmental variables were missing. Check the exception thrown for additional details.</exception>
+        /// <exception cref="OperationCanceledException">The operation has been canceled.</exception>
         /// <example>
         /// <code language="csharp">
         /// await using var client = await IotHubModuleClient.CreateFromEnvironmentAsync(new IotHubClientOptions(new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket)));
         /// </code>
         /// </example>
-        public static async Task<IotHubModuleClient> CreateFromEnvironmentAsync(IotHubClientOptions options = default)
+        public static async Task<IotHubModuleClient> CreateFromEnvironmentAsync(IotHubClientOptions options = default, CancellationToken cancellationToken = default)
         {
             IotHubClientOptions clientOptions = options != null
                 ? options.Clone()
                 : new();
 
             IotHubConnectionCredentials iotHubConnectionCredentials = EdgeModuleClientHelper.CreateIotHubConnectionCredentialsFromEnvironment();
-            ICertificateValidator certificateValidator = await EdgeModuleClientHelper.CreateCertificateValidatorFromEnvironmentAsync(new TrustBundleProvider(), clientOptions);
+            ICertificateValidator certificateValidator = await EdgeModuleClientHelper.CreateCertificateValidatorFromEnvironmentAsync(
+                new TrustBundleProvider(),
+                clientOptions,
+                cancellationToken);
 
             return new IotHubModuleClient(iotHubConnectionCredentials, options, certificateValidator);
         }
@@ -236,6 +244,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns>The result of the method invocation.</returns>
         /// <exception cref="ArgumentNullException"><paramref name="deviceId"/> or <paramref name="methodRequest"/> is null.</exception>
         /// <exception cref="InvalidOperationException">The client instance is not already open.</exception>
+        /// <exception cref="InvalidOperationException">An IoT device module is used to invoke this API.</exception>
         /// <exception cref="OperationCanceledException">The operation has been canceled.</exception>
         /// <exception cref="IotHubClientException">An error occured when communicating with IoT hub service.</exception>
         /// <exception cref="ObjectDisposedException">The client has been disposed.</exception>
@@ -248,6 +257,12 @@ namespace Microsoft.Azure.Devices.Client
         {
             Argument.AssertNotNullOrWhiteSpace(deviceId, nameof(deviceId));
             Argument.AssertNotNull(methodRequest, nameof(methodRequest));
+
+            if (!IotHubConnectionCredentials.IsEdgeModule)
+            {
+                throw new InvalidOperationException(IotDeviceModuleMethodInvokeErrorMessage);
+            }
+
             cancellationToken.ThrowIfCancellationRequested();
 
             return InvokeMethodAsync(GetDeviceMethodUri(deviceId), methodRequest, cancellationToken);
@@ -270,6 +285,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns>The result of the method invocation.</returns>
         /// <exception cref="ArgumentNullException"><paramref name="deviceId"/>, <paramref name="moduleId"/> or <paramref name="methodRequest"/> is null.</exception>
         /// <exception cref="InvalidOperationException">The client instance is not already open.</exception>
+        /// <exception cref="InvalidOperationException">An IoT device module is used to invoke this API.</exception>
         /// <exception cref="OperationCanceledException">The operation has been canceled.</exception>
         /// <exception cref="IotHubClientException">An error occured when communicating with IoT hub service.</exception>
         /// <exception cref="ObjectDisposedException">The client has been disposed.</exception>
@@ -283,6 +299,12 @@ namespace Microsoft.Azure.Devices.Client
             Argument.AssertNotNullOrWhiteSpace(deviceId, nameof(deviceId));
             Argument.AssertNotNullOrWhiteSpace(moduleId, nameof(moduleId));
             Argument.AssertNotNull(methodRequest, nameof(methodRequest));
+
+            if (!IotHubConnectionCredentials.IsEdgeModule)
+            {
+                throw new InvalidOperationException(IotDeviceModuleMethodInvokeErrorMessage);
+            }
+
             cancellationToken.ThrowIfCancellationRequested();
 
             return InvokeMethodAsync(GetModuleMethodUri(deviceId, moduleId), methodRequest, cancellationToken);
