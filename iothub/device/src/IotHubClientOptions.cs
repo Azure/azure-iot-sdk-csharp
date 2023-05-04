@@ -86,7 +86,7 @@ namespace Microsoft.Azure.Devices.Client
         /// It can also be used for other, custom transparent or protocol gateways.
         /// </para>
         /// <para>
-        /// If the client uses a connection string based authentication mechanism, and has a gateway hostname specified in the connection string
+        /// If the client uses a connection string-based authentication mechanism, and has a gateway hostname specified in the connection string
         /// then the value set in options will be ignored.
         /// </para>
         /// </remarks>
