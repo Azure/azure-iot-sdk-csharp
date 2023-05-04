@@ -1,7 +1,7 @@
 # Long haul test results
 
-This document describes long haul test results for Azure IoT SDK for C# v2. The results are based on 4 IoT Hub devices (MQTT/TCP, MQTT/WS, AMQP/TCP, AMQP/WS) and 2 IoT Edge modules (MQTT/TCP, AMQP/TCP). These tests ran for 64 hours and were stopped manually.
-These long haul tests are based on executing different operations like C2D messages, direct method, telemetry messages, feedback messages and file uploads to service client. Each of these operations is executed over regular intervals and logs the accumulated total count of the operations and the time it takes for successful completion. The graphs used here are results of Kusto queries executed over these collected logs.
+This document describes long haul test results for Azure IoT SDK for C# v2. The results are based on 4 IoT Hub devices (MQTT/TCP, MQTT/WS, AMQP/TCP, AMQP/WS) and 2 IoT Edge modules (MQTT/TCP, AMQP/TCP). These tests ran for 64 hours.
+These long haul tests are based on executing different operations like c2d messages, direct method, telemetry messages, feedback messages and file uploads to service client. Each of these operations is executed over regular intervals and logs the accumulated total count of the operations and the time it takes for successful completion. The graphs used here are results of Kusto queries executed over these collected logs.
 
 ## Table of contents
 
@@ -13,20 +13,20 @@ These long haul tests are based on executing different operations like C2D messa
 
 ### Garbage collector available bytes
 
-The tests keep track of total available garbage collector bytes. This allows for detecting any memory leaks increasing memory used over time in the program. No significant memory leaks were observed during the tests. The screenshot below shows data from garbage collector over all the 4 devices used in the tests.
+The tests keep track of total available garbage collector bytes. This allows for detecting any memory leaks in the program. No significant memory leaks were observed during the tests. The screenshot below shows data from garbage collector over all the 4 devices used in the tests.
 The data shows consistent size of available garbage collector bytes.
 
 ![_](GCbytes.png)
 
 ### Desired twin and C2D messages handled
 
-Each device in the test receives desired twin properties updates and C2D messages every 3 seconds from a service app. The screenshot below shows data collected over all 4 devices used in the tests. The graph is not a linear curve due a bug in MQTT implementation where desired twin properties and C2D messages were not being parsed correctly. This test helped us find and resolve the issue.
+Each device in the test receives desired twin properties updates and C2D messages every 3 seconds from service. The screenshot below shows data collected over all 4 devices used in the tests. The graph is not a linear curve due a bug in MQTT implementation where desired twin properties and c2d messages were not being parsed correctly. This test helped us find and resolve the issue.
 
 ![_](c2d,twin.png)
 
-### Reported twin and telemetry sent
+### Reported twin and Telemetry sent
 
-Each device requests reported twin properties every 10 seconds and sends telemetry message to service every 3 seconds. The graph for both is linear and the difference in slope is due to the difference in time interval for both operations.
+Each device requests reported twin properties every 10 seconds and sends telemetry message to service every 3 seconds. The graph for both is linear and the difference in gradient is due to the difference in time interval for both operations.
 
 ![_](twin,telemetry.png)
 
@@ -56,13 +56,13 @@ Each device logs the time (seconds) it takes to successfully receive reported tw
 
 ### Direct method delay
 
-Each device logs the time (seconds) it takes to successfully receive direct method from a service app. The graph below observes time < 1s to receive direct method with exceptions where a device was reconnecting and the delay was ~5-6 seconds.
+Each device logs the time (seconds) it takes to successfully receive direct method from service. The graph below observes time < 1s to receive direct method with exceptions where a device was reconnecting and the delay was ~5-6 seconds.
 
 ![_](DirectMethodDelay.png)
 
 ### C2D message delay
 
-Each device logs the time (seconds) it takes to successfully receive C2D message from a service app. The graph below observes time < 1s to receive C2D message with exceptions where a device was reconnecting and the delay was ~5-6 seconds.
+Each device logs the time (seconds) it takes to successfully receive c2d message from service. The graph below observes time < 1s to receive c2d message with exceptions where a device was reconnecting and the delay was ~5-6 seconds.
 
 ![_](c2dDelay.png)
 
@@ -71,7 +71,7 @@ Each device logs the time (seconds) it takes to successfully receive C2D message
 
 ### Garbage collector available bytes
 
-The tests keep track of total available garbage collector bytes. This allows for detecting any memory leaks increasing memory used over time in the program. No significant memory leaks were observed during the tests. The screenshot below shows data from garbage collector over 2 edge modules used in the tests.
+The tests keep track of total available garbage collector bytes. This allows for detecting any memory leaks in the program. No significant memory leaks were observed during the tests. The screenshot below shows data from garbage collector over 2 edge modules used in the tests.
 The data shows consistent size of available garbage collector bytes.
 
 ![_](moduleGCbytes.png)
@@ -90,7 +90,7 @@ Each edge module creates and sends telemetry messages to service every 3 seconds
 
 ### Telemetry sent, Reported twin and Desired twin updates
 
-Each edge module sends telemetry message to service, receives desired twin properties update and requests reported twin properties. The graph shows linear curves for all the metrics with difference in slope due to interval difference for the operations.
+Each edge module sends telemetry message to service, receives desired twin properties update and requests reported twin properties. The graph shows linear curves for all the metrics with difference in gradient due to interval difference for the operations.
 
 ![_](Moduletwin%2Ctelemetry%2CdesiredProp.png)
 
@@ -108,7 +108,7 @@ Each edge module logs the time (seconds) it takes to successfully receive report
 
 ### Direct method delay
 
-Each edge module logs the time (seconds) it takes to successfully receive direct method from a service app. The graph below observes time < 1s to receive direct method with exceptions where an edge module was reconnecting.
+Each edge module logs the time (seconds) it takes to successfully receive direct method from service. The graph below observes time < 1s to receive direct method with exceptions where an edge module was reconnecting.
 
 ![_](ModuleDirectMethodDelay.png)
 
@@ -116,20 +116,20 @@ Each edge module logs the time (seconds) it takes to successfully receive direct
 
 ### Garbage collector available bytes
 
-The tests keep track of total available garbage collector bytes. This allows for detecting any memory leaks increasing memory used over time in the program. No significant memory leaks were observed during the tests. The screenshot below shows data from garbage collector over service client used in the tests.
+The tests keep track of total available garbage collector bytes. This allows for detecting any memory leaks in the program. No significant memory leaks were observed during the tests. The screenshot below shows data from garbage collector over service client used in the tests.
 The data shows consistent size of available garbage collector bytes. The range of garbage collector size if comparatively larger as the service client was responsible for executing operations over all IoT Hub devices and IoT Edge modules. 
 
 ![_](serviceGCbytes.png)
 
 ### Service client operations over IoT Hub devices
 
-The service client executes C2D messages, desired twin properties updates, direct methods, receives feedback messages and receives file upload notifications from each IoT Hub device. The graph below shows data from all these operations and all operations show consistent behavior over long period of time.
+The service client executes c2d messages, desired twin properties updates, direct methods, receives feedback messages and receives file upload notifications from each IoT Hub device. The graph below shows data from all these operations and all operations show consistent behavior over long period of time.
 
 ![_](ServiceoperationCount.png)
 
-### C2D message round trip delay over IoT Hub devices
+### c2d message round trip delay over IoT Hub devices
 
-The service client logs the round trip time (seconds) it takes each C2D message. The graph below observes time < 1s for C2D message round trip.
+The service client logs the round trip time (seconds) it takes each c2d message. The graph below observes time < 1s for c2d message round trip.
 
 ![_](Servicec2dRoundTripDelay.png)
 
