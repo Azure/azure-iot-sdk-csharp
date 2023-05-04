@@ -900,12 +900,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     : new ProvisioningClientOptions(new ProvisioningClientAmqpSettings(ProvisioningClientTransportProtocol.WebSocket)),
 
                 IotHubClientMqttSettings => transportSettings.Protocol == IotHubClientTransportProtocol.Tcp
-                    ? new ProvisioningClientOptions(new ProvisioningClientMqttSettings(ProvisioningClientTransportProtocol.Tcp)
-                    {
-#if NET472
-                        RemoteCertificateValidationCallback = null,
-#endif
-                    })
+                    ? new ProvisioningClientOptions(new ProvisioningClientMqttSettings(ProvisioningClientTransportProtocol.Tcp))
                     : new ProvisioningClientOptions(new ProvisioningClientMqttSettings(ProvisioningClientTransportProtocol.WebSocket)
                     {
 #if NET472
