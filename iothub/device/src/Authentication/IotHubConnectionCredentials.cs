@@ -27,23 +27,23 @@ namespace Microsoft.Azure.Devices.Client
         /// The authentication method that is used. It includes <see cref="ClientAuthenticationWithSharedAccessKeyRefresh"/>, <see cref="ClientAuthenticationWithSharedAccessSignature"/>,
         /// <see cref="ClientAuthenticationWithX509Certificate"/> or <see cref="EdgeModuleAuthenticationWithHsm"/>.
         /// </param>
-        /// <param name="hostName">The fully-qualified DNS host name of IoT hub.</param>
+        /// <param name="iotHubHostName">The fully-qualified DNS host name of IoT hub.</param>
         /// <param name="gatewayHostName">The fully-qualified DNS host name of the gateway (optional).</param>
         /// <returns>A new instance of the <c>IotHubConnectionCredentials</c> class with a populated connection string.</returns>
-        /// <exception cref="ArgumentNullException"><paramref name="hostName"/>, device Id or <paramref name="authenticationMethod"/> is null.</exception>
-        /// <exception cref="ArgumentException"><paramref name="hostName"/> or device Id are an empty string or consist only of white-space characters.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="iotHubHostName"/>, device Id or <paramref name="authenticationMethod"/> is null.</exception>
+        /// <exception cref="ArgumentException"><paramref name="iotHubHostName"/> or device Id are an empty string or consist only of white-space characters.</exception>
         /// <exception cref="ArgumentException"><see cref="ClientAuthenticationWithX509Certificate.CertificateChain"/> is used over a protocol other than MQTT over TCP or AMQP over TCP.</exception>
         /// <exception cref="FormatException">Neither shared access key, shared access signature or X509 certificates were presented for authentication.</exception>
         /// <exception cref="FormatException">Either shared access key or shared access signature where presented together with X509 certificates for authentication.</exception>
         /// <exception cref="IotHubClientException"><see cref="ClientAuthenticationWithX509Certificate.CertificateChain"/> could not be installed.</exception>
-        public IotHubConnectionCredentials(IAuthenticationMethod authenticationMethod, string hostName, string gatewayHostName = null)
+        public IotHubConnectionCredentials(IAuthenticationMethod authenticationMethod, string iotHubHostName, string gatewayHostName = default)
         {
             Argument.AssertNotNull(authenticationMethod, nameof(authenticationMethod));
-            Argument.AssertNotNullOrWhiteSpace(hostName, nameof(hostName));
+            Argument.AssertNotNullOrWhiteSpace(iotHubHostName, nameof(iotHubHostName));
 
-            IotHubHostName = hostName;
+            IotHubHostName = iotHubHostName;
             GatewayHostName = gatewayHostName;
-            HostName = gatewayHostName ?? hostName;
+            HostName = gatewayHostName ?? iotHubHostName;
 
             AuthenticationMethod = authenticationMethod;
             IotHubConnectionCredentials iotHubConnectionCredentials = this;
@@ -58,12 +58,13 @@ namespace Microsoft.Azure.Devices.Client
         /// Creates an instance of this class using a connection string.
         /// </summary>
         /// <param name="iotHubConnectionString">The IoT hub device connection string.</param>
+        /// <param name="gatewayHostName">The fully-qualified DNS host name of the gateway (optional).</param>
         /// <returns>A new instance of this class.</returns>
         /// <exception cref="ArgumentNullException"><paramref name="iotHubConnectionString"/>, IoT hub host name or device Id is null.</exception>
         /// <exception cref="ArgumentException"><paramref name="iotHubConnectionString"/>, IoT hub host name or device Id are an empty string or consist only of white-space characters.</exception>
         /// <exception cref="FormatException">Neither shared access key nor shared access signature were presented for authentication.</exception>
         /// <exception cref="FormatException">Either shared access key or shared access signature where presented together with X509 certificates for authentication.</exception>
-        public IotHubConnectionCredentials(string iotHubConnectionString)
+        public IotHubConnectionCredentials(string iotHubConnectionString, string gatewayHostName = default)
         {
             Argument.AssertNotNullOrWhiteSpace(iotHubConnectionString, nameof(iotHubConnectionString));
 
@@ -71,7 +72,7 @@ namespace Microsoft.Azure.Devices.Client
             IotHubConnectionString parsedConnectionString = IotHubConnectionStringParser.Parse(iotHubConnectionString);
             AuthenticationMethod = GetAuthenticationMethodFromConnectionString(parsedConnectionString);
 
-            PopulatePropertiesFromConnectionString(parsedConnectionString);
+            PopulatePropertiesFromConnectionString(parsedConnectionString, gatewayHostName);
             SetAuthenticationModel();
             SetTokenRefresherIfApplicable();
 
@@ -249,10 +250,10 @@ namespace Microsoft.Azure.Devices.Client
                 : hashCode * -1521134295 + field.GetHashCode();
         }
 
-        private void PopulatePropertiesFromConnectionString(IotHubConnectionString iotHubConnectionString)
+        private void PopulatePropertiesFromConnectionString(IotHubConnectionString iotHubConnectionString, string gatewayHostName)
         {
             IotHubHostName = iotHubConnectionString.IotHubHostName;
-            GatewayHostName = iotHubConnectionString.GatewayHostName;
+            GatewayHostName = iotHubConnectionString.GatewayHostName ?? gatewayHostName;
             HostName = GatewayHostName ?? IotHubHostName;
             DeviceId = iotHubConnectionString.DeviceId;
             ModuleId = iotHubConnectionString.ModuleId;

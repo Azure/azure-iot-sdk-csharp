@@ -48,7 +48,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </code>
         /// </example>
         public IotHubModuleClient(string connectionString, IotHubClientOptions options = default)
-            : this(new IotHubConnectionCredentials(connectionString), options, null)
+            : this(new IotHubConnectionCredentials(connectionString, options?.GatewayHostName), options, null)
         {
         }
 
