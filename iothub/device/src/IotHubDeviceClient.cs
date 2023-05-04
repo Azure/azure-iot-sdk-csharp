@@ -37,7 +37,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </code>
         /// </example>
         public IotHubDeviceClient(string connectionString, IotHubClientOptions options = default)
-            : this(new IotHubConnectionCredentials(connectionString), options)
+            : this(new IotHubConnectionCredentials(connectionString, options?.GatewayHostName), options)
         {
         }
 

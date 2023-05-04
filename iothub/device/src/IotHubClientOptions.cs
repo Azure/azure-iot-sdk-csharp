@@ -85,6 +85,10 @@ namespace Microsoft.Azure.Devices.Client
         /// <para>
         /// It can also be used for other, custom transparent or protocol gateways.
         /// </para>
+        /// <para>
+        /// If the client uses a connection string badsed authentication mechanism, and has a gateway hostname specified in the connection string
+        /// then the value set in options will be ignored.
+        /// </para>
         /// </remarks>
         public string GatewayHostName { get; set; }
 
