@@ -486,7 +486,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         public override async Task<DirectMethodResponse> InvokeMethodAsync(EdgeModuleDirectMethodRequest methodInvokeRequest, Uri uri, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, methodInvokeRequest.RequestId, uri, cancellationToken, nameof(InvokeMethodAsync));
+                Logging.Enter(this, methodInvokeRequest.MethodName, uri, cancellationToken, nameof(InvokeMethodAsync));
 
             try
             {
@@ -502,7 +502,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, methodInvokeRequest.RequestId, uri, cancellationToken, nameof(InvokeMethodAsync));
+                    Logging.Exit(this, methodInvokeRequest.MethodName, uri, cancellationToken, nameof(InvokeMethodAsync));
             }
         }
 
