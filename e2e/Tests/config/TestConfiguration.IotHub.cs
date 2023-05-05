@@ -66,7 +66,9 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             public static string DeviceConnectionStringInvalidServiceCertificate => GetValue("IOTHUB_DEVICE_CONN_STRING_INVALIDCERT", string.Empty);
 
-            public static string ProxyServerAddress => GetValue("PROXY_SERVER_ADDRESS");
+#pragma warning disable CA2211 // Non-constant fields should not be visible
+            public static string ProxyServerAddress = "";//> GetValue("PROXY_SERVER_ADDRESS");
+#pragma warning restore CA2211 // Non-constant fields should not be visible
 
             /// <summary>
             /// A proxy server that should not exist (on local host)
