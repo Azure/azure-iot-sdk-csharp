@@ -114,7 +114,7 @@ namespace Microsoft.Azure.Devices
         /// does not support this feature.
         /// </para>
         /// </remarks>
-        public RemoteCertificateValidationCallback RemoteCertificateValidationCallback { get; set; } = DefaultRemoteCertificateValidation;
+        public RemoteCertificateValidationCallback RemoteCertificateValidationCallback { get; set; }
 
         /// <summary>
         /// Sets the retry policy used in the operation retries.
@@ -125,17 +125,6 @@ namespace Microsoft.Azure.Devices
         /// or a custom one by inheriting from <see cref="IIotHubServiceRetryPolicy"/>.
         /// </remarks>
         public IIotHubServiceRetryPolicy RetryPolicy { get; set; } = new IotHubServiceExponentialBackoffRetryPolicy(0, TimeSpan.FromHours(12), true);
-
-        // The default remote certificate validation callback. It returns false if any SSL level exceptions occurred
-        // during the handshake.
-        private static bool DefaultRemoteCertificateValidation(
-            object sender,
-            X509Certificate certificate,
-            X509Chain chain,
-            SslPolicyErrors sslPolicyErrors)
-        {
-            return sslPolicyErrors == SslPolicyErrors.None;
-        }
 
         internal IotHubServiceClientOptions Clone()
         {

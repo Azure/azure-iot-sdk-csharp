@@ -88,18 +88,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// </para>
         /// </remarks>
         /// <seealso href="https://learn.microsoft.com/dotnet/api/system.net.websockets.clientwebsocketoptions.remotecertificatevalidationcallback"/>
-        public RemoteCertificateValidationCallback RemoteCertificateValidationCallback { get; set; } = DefaultRemoteCertificateValidation;
-
-        // The default remote certificate validation callback. It returns false if any SSL level exceptions occurred
-        // during the handshake.
-        internal static bool DefaultRemoteCertificateValidation(
-            object sender,
-            X509Certificate certificate,
-            X509Chain chain,
-            SslPolicyErrors sslPolicyErrors)
-        {
-            return sslPolicyErrors == SslPolicyErrors.None;
-        }
+        public RemoteCertificateValidationCallback RemoteCertificateValidationCallback { get; set; }
 
         /// <inheritdoc/>
         [EditorBrowsable(EditorBrowsableState.Never)]
