@@ -72,23 +72,10 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
             IotHubServiceClient serviceClient = TestDevice.ServiceClient;
             await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix, ct: ct);
-            var methodInvocation = new DirectMethodServiceRequest("someDirectMethod")
-            {
-                Payload = Encoding.UTF8.GetBytes("abc"),
-            };
+            var methodInvocation = new DirectMethodServiceRequest("someDirectMethod");
 
             IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient();
             await testDevice.OpenWithRetryAsync(ct);
-            await testDevice.DeviceClient.SetDirectMethodCallbackAsync((request) =>
-            {
-                if (request.TryGetPayload(out string payload))
-                {
-                    Console.WriteLine($"payload: {payload}");
-                }
-                return Task.FromResult(new DirectMethodResponse(200));
-            });
-
-            _ = await serviceClient.DirectMethods.InvokeAsync(testDevice.Id, methodInvocation);
 
             // act
             Func<Task> act = async () => await serviceClient.DirectMethods.InvokeAsync(testDevice.Id, methodInvocation);
