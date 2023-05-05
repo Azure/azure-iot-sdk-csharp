@@ -904,6 +904,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     : new ProvisioningClientOptions(new ProvisioningClientMqttSettings(ProvisioningClientTransportProtocol.WebSocket)
                     {
 #if NET472
+                        // MQTTNET doesn't support setting this callback on older .NET framework versions
+                        // https://github.com/dotnet/MQTTnet/blob/99f4f46062611cd08e18b82515962b69e8c619e4/Source/MQTTnet/Implementations/MqttWebSocketChannel.cs#L222
                         RemoteCertificateValidationCallback = null,
 #endif
                     }),
