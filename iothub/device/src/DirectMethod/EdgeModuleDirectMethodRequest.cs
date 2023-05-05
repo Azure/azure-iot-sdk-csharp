@@ -11,8 +11,6 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     public class EdgeModuleDirectMethodRequest
     {
-        private readonly object _payload;
-
         /// <summary>
         /// A direct method request to be initialized by the client application when using an <see cref="IotHubModuleClient"/> for invoking
         /// a direct method on an edge device or an edge module connected to the same edge hub.
@@ -28,23 +26,11 @@ namespace Microsoft.Azure.Devices.Client
         /// a direct method on an edge device or an edge module connected to the same edge hub.
         /// </summary>
         /// <param name="methodName">The method name to invoke.</param>
-        /// <param name="binaryPayload">The direct method payload bytes.</param>
-        public EdgeModuleDirectMethodRequest(string methodName, byte[] binaryPayload)
-        {
-            MethodName = methodName;
-            _payload = binaryPayload;
-        }
-
-        /// <summary>
-        /// A direct method request to be initialized by the client application when using an <see cref="IotHubModuleClient"/> for invoking
-        /// a direct method on an edge device or an edge module connected to the same edge hub.
-        /// </summary>
-        /// <param name="methodName">The method name to invoke.</param>
-        /// <param name="payload">The direct method payload that will be serialized and encoded per <see cref="IotHubClientOptions.PayloadConvention"/>.</param>
+        /// <param name="payload">The direct method payload that will be serialized using <see cref="DefaultPayloadConvention"/>.</param>
         public EdgeModuleDirectMethodRequest(string methodName, object payload)
         {
             MethodName = methodName;
-            _payload = payload;
+            Payload = payload;
         }
 
         /// <summary>
@@ -94,13 +80,7 @@ namespace Microsoft.Azure.Devices.Client
         /// The direct method payload.
         /// </summary>
         [JsonProperty("payload", NullValueHandling = NullValueHandling.Include)]
-        internal byte[] Payload => _payload is byte[] payloadAsByteArray
-            ? payloadAsByteArray
-            : PayloadConvention.GetObjectBytes(_payload);
-        // We cannot convert to bytes and then serialize the bytes again to send via the HTTP layer.
-        // We have 2 levels of serialization => top method request = service defined = newtonsoft, inner payload = user convention defined
-        // One approach is similar to the IWritablePropertyResponse implementation, but that isn't elegant
-        // Service client requires everything to be serialized using Newtonsoft
+        internal object Payload { get; private set; }
 
         /// <summary>
         /// Method timeout, in seconds.
