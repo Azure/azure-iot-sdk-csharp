@@ -97,6 +97,10 @@ namespace Microsoft.Azure.Devices.Client
         internal byte[] Payload => _payload is byte[] payloadAsByteArray
             ? payloadAsByteArray
             : PayloadConvention.GetObjectBytes(_payload);
+        // We cannot convert to bytes and then serialize the bytes again to send via the HTTP layer.
+        // We have 2 levels of serialization => top method request = service defined = newtonsoft, inner payload = user convention defined
+        // One approach is similar to the IWritablePropertyResponse implementation, but that isn't elegant
+        // Service client requires everything to be serialized using Newtonsoft
 
         /// <summary>
         /// Method timeout, in seconds.
