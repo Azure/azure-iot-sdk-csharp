@@ -61,12 +61,16 @@ namespace Microsoft.Azure.Devices
             {
                 SslProtocols = options.SslProtocols,
                 CheckCertificateRevocationList = options.CertificateRevocationCheck,
-                ServerCertificateCustomValidationCallback = (httpRequest, certificate, chain, policyErrors) =>
-                {
-                    return options.RemoteCertificateValidationCallback.Invoke(httpRequest, certificate, chain, policyErrors);
-                },
             };
 #pragma warning restore CA2000 // Dispose objects before losing scope
+
+            if (options.RemoteCertificateValidationCallback != null)
+            {
+                httpMessageHandler.ServerCertificateCustomValidationCallback = (httpRequest, certificate, chain, policyErrors) =>
+                {
+                    return options.RemoteCertificateValidationCallback.Invoke(httpRequest, certificate, chain, policyErrors);
+                };
+            }
 
             if (options.Proxy != null)
             {

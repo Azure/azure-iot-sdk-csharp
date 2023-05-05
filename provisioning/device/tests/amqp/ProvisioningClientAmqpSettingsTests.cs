@@ -45,19 +45,5 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
             amqpSettings.CertificateRevocationCheck = false;
             amqpSettings.Should().NotBeEquivalentTo(clone);
         }
-
-        [TestMethod]
-        [DataRow(SslPolicyErrors.None)]
-        [DataRow(SslPolicyErrors.RemoteCertificateNotAvailable)]
-        [DataRow(SslPolicyErrors.RemoteCertificateNameMismatch)]
-        [DataRow(SslPolicyErrors.RemoteCertificateChainErrors)]
-        public void DefaultRemoteCertificateValidation_DifferentSslPolicyErrors(SslPolicyErrors sslPolicyErrors)
-        {
-            // arrange - act
-            var validation = ProvisioningClientTransportSettings.DefaultRemoteCertificateValidation("sender", null, null, sslPolicyErrors);
-
-            // assert
-            validation.Should().Be(sslPolicyErrors == SslPolicyErrors.None);
-        }
     }
 }
