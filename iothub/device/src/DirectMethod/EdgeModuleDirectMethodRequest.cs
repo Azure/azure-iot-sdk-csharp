@@ -96,7 +96,7 @@ namespace Microsoft.Azure.Devices.Client
         [JsonProperty("payload", NullValueHandling = NullValueHandling.Include)]
         internal byte[] Payload => _payload is byte[] payloadAsByteArray
             ? payloadAsByteArray
-            : PayloadConvention.GetObjectBytes(Payload);
+            : PayloadConvention.GetObjectBytes(_payload);
 
         /// <summary>
         /// Method timeout, in seconds.

@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -40,7 +41,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
-        public async Task DirectMethodsClient_InvokeAsycn_ModuleDoesNotExist()
+        public async Task DirectMethodsClient_InvokeAsync_ModuleDoesNotExist()
         {
             // arrange
             IotHubServiceClient serviceClient = TestDevice.ServiceClient;
@@ -71,10 +72,23 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
             IotHubServiceClient serviceClient = TestDevice.ServiceClient;
             await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix, ct: ct);
-            var methodInvocation = new DirectMethodServiceRequest("someDirectMethod");
+            var methodInvocation = new DirectMethodServiceRequest("someDirectMethod")
+            {
+                Payload = Encoding.UTF8.GetBytes("abc"),
+            };
 
             IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient();
             await testDevice.OpenWithRetryAsync(ct);
+            await testDevice.DeviceClient.SetDirectMethodCallbackAsync((request) =>
+            {
+                if (request.TryGetPayload(out string payload))
+                {
+                    Console.WriteLine($"payload: {payload}");
+                }
+                return Task.FromResult(new DirectMethodResponse(200));
+            });
+
+            _ = await serviceClient.DirectMethods.InvokeAsync(testDevice.Id, methodInvocation);
 
             // act
             Func<Task> act = async () => await serviceClient.DirectMethods.InvokeAsync(testDevice.Id, methodInvocation);
