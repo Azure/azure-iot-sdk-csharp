@@ -416,7 +416,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
 
         private Task<DirectMethodResponse> DirectMethodCallback(DirectMethodRequest methodRequest)
         {
-            _logger.Trace($"Received direct method [{methodRequest.MethodName}] with payload [{Encoding.UTF8.GetString(methodRequest.GetPayloadAsBytes())}].", TraceSeverity.Information);
+            _logger.Trace($"Received direct method [{methodRequest.MethodName}] with payload [{Encoding.UTF8.GetString(methodRequest.PayloadBytes)}].", TraceSeverity.Information);
 
             switch (methodRequest.MethodName)
             {
@@ -443,7 +443,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
                     }
                     break;
 
-                case "ModuleToItself":
+                case "ModuleToModule":
                     try
                     {
                         if (methodRequest.TryGetPayload(out CustomDirectMethodPayload methodPayload))
