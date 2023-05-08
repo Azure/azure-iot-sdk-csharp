@@ -30,7 +30,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <exception cref="ArgumentException">Neither shared access key nor shared access signature were presented for authentication.</exception>
         /// <exception cref="InvalidOperationException">A module Id was specified in the connection string. <see cref="IotHubModuleClient"/> should be used for modules.</exception>
         /// <exception cref="InvalidOperationException">Different gateway hostnames were specified through the connection string and <see cref="IotHubClientOptions.GatewayHostName"/>.
-        /// It is recommended to not hand edit connection strings but instead use <see cref="IotHubClientOptions"/> to specify values for the additional fields.</exception>
+        /// It is recommended to use <see cref="IotHubClientOptions"/> to specify values for the additional fields rather than hand edit connection strings.</exception>
         /// <example>
         /// <code language="csharp">
         /// await using var client = new IotHubDeviceClient(
