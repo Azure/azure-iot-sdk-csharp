@@ -79,7 +79,7 @@ namespace Microsoft.Azure.Devices.Client
             {
                 if (parsedConnectionString.GatewayHostName != gatewayHostName)
                 {
-                    throw new InvalidOperationException("Different gateway hostnames are supplied through the connection string and IotHubClientOptions. Please supply the gateway hostname through one argument only.");
+                    throw new InvalidOperationException("Different gateway host names were supplied through the connection string and IotHubClientOptions. Please supply the gateway host name through one argument only.");
                 }
             }
 
