@@ -41,7 +41,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns>A disposable client instance.</returns>
         /// <exception cref="InvalidOperationException">A module Id was missing in the connection string. <see cref="IotHubDeviceClient"/> should be used for devices.</exception>
         /// <exception cref="InvalidOperationException">Different gateway hostnames were specified through the connection string and <see cref="IotHubClientOptions.GatewayHostName"/>.
-        /// It is recommended to not hand edit connection strings but instead use <see cref="IotHubClientOptions"/> to specify values for the additional fields.</exception>
+        /// It is recommended to use <see cref="IotHubClientOptions"/> to specify values for the additional fields rather than hand edit connection strings.</exception>
         /// <example>
         /// <code language="csharp">
         /// await using var client = new IotHubModuleClient(
