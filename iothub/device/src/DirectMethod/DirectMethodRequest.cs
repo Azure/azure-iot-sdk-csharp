@@ -39,7 +39,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The method name to invoke.
         /// </summary>
-        public string MethodName { get; private set; }
+        public string MethodName { get; }
 
         /// <summary>
         /// The request Id for the transport layer.

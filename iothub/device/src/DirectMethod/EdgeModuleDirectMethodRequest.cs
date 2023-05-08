@@ -37,7 +37,7 @@ namespace Microsoft.Azure.Devices.Client
         /// The method name to invoke.
         /// </summary>
         [JsonProperty("methodName")]
-        public string MethodName { get; private set; }
+        public string MethodName { get; }
 
         /// <summary>
         /// The amount of time given to the service to connect to the device.
@@ -80,7 +80,7 @@ namespace Microsoft.Azure.Devices.Client
         /// The direct method payload.
         /// </summary>
         [JsonProperty("payload", NullValueHandling = NullValueHandling.Include)]
-        internal object Payload { get; private set; }
+        internal object Payload { get; }
 
         /// <summary>
         /// Method timeout, in seconds.
