@@ -63,7 +63,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <exception cref="ArgumentNullException"><paramref name="iotHubConnectionString"/>, IoT hub host name or device Id is null.</exception>
         /// <exception cref="ArgumentException"><paramref name="iotHubConnectionString"/>, IoT hub host name or device Id are an empty string or consist only of white-space characters.</exception>
         /// <exception cref="InvalidOperationException">Different gateway hostnames were specified through the connection string and <see cref="IotHubClientOptions.GatewayHostName"/>.
-        /// It is recommended to not hand edit connection strings but instead use <see cref="IotHubClientOptions"/> to specify values for the additional fields.</exception>
+        /// It is recommended to use <see cref="IotHubClientOptions"/> to specify values for the additional fields rather than hand edit connection strings.</exception>
         /// <exception cref="FormatException">Neither shared access key nor shared access signature were presented for authentication.</exception>
         /// <exception cref="FormatException">Either shared access key or shared access signature where presented together with X509 certificates for authentication.</exception>
         public IotHubConnectionCredentials(string iotHubConnectionString, string gatewayHostName = default)
