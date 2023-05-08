@@ -29,6 +29,8 @@ namespace Microsoft.Azure.Devices.Client
         /// or the IoT hub host name or device Id in the connection string are an empty string or consist only of white-space characters.</exception>
         /// <exception cref="ArgumentException">Neither shared access key nor shared access signature were presented for authentication.</exception>
         /// <exception cref="InvalidOperationException">A module Id was specified in the connection string. <see cref="IotHubModuleClient"/> should be used for modules.</exception>
+        /// <exception cref="InvalidOperationException">Different gateway hostnames were specified through the connection string and <see cref="IotHubClientOptions.GatewayHostName"/>.
+        /// It is recommended to use <see cref="IotHubClientOptions"/> to specify values for the additional fields rather than hand edit connection strings.</exception>
         /// <example>
         /// <code language="csharp">
         /// await using var client = new IotHubDeviceClient(

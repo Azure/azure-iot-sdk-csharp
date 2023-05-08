@@ -62,6 +62,8 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns>A new instance of this class.</returns>
         /// <exception cref="ArgumentNullException"><paramref name="iotHubConnectionString"/>, IoT hub host name or device Id is null.</exception>
         /// <exception cref="ArgumentException"><paramref name="iotHubConnectionString"/>, IoT hub host name or device Id are an empty string or consist only of white-space characters.</exception>
+        /// <exception cref="InvalidOperationException">Different gateway hostnames were specified through the connection string and <see cref="IotHubClientOptions.GatewayHostName"/>.
+        /// It is recommended to use <see cref="IotHubClientOptions"/> to specify values for the additional fields rather than hand edit connection strings.</exception>
         /// <exception cref="FormatException">Neither shared access key nor shared access signature were presented for authentication.</exception>
         /// <exception cref="FormatException">Either shared access key or shared access signature where presented together with X509 certificates for authentication.</exception>
         public IotHubConnectionCredentials(string iotHubConnectionString, string gatewayHostName = default)
@@ -70,8 +72,18 @@ namespace Microsoft.Azure.Devices.Client
 
             // We'll parse the connection string and use that to build an auth method
             IotHubConnectionString parsedConnectionString = IotHubConnectionStringParser.Parse(iotHubConnectionString);
-            AuthenticationMethod = GetAuthenticationMethodFromConnectionString(parsedConnectionString);
 
+            // The gateway hostname shouldn't be specified in both the connection string and in IotHubClientOptions
+            // If they are specified in both places then they should always be equal (case-sensitive and culture-insensitive comparison).
+            if (!string.IsNullOrWhiteSpace(parsedConnectionString.GatewayHostName) && !string.IsNullOrWhiteSpace(gatewayHostName))
+            {
+                if (parsedConnectionString.GatewayHostName != gatewayHostName)
+                {
+                    throw new InvalidOperationException("Different gateway host names were supplied through the connection string and IotHubClientOptions. Please supply the gateway host name through one argument only.");
+                }
+            }
+
+            AuthenticationMethod = GetAuthenticationMethodFromConnectionString(parsedConnectionString);
             PopulatePropertiesFromConnectionString(parsedConnectionString, gatewayHostName);
             SetAuthenticationModel();
             SetTokenRefresherIfApplicable();
