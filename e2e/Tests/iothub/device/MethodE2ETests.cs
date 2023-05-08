@@ -300,7 +300,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 {
                     // This test only verifies that unsubscripion works.
                     // For this reason, the direct method subscription callback does not implement any method-specific dispatcher.
-                    VerboseTestLogger.WriteLine($"{nameof(SendMethodAndUnsubscribeAsync)}: DeviceClient method: {request.MethodName} {request.ResponseTimeout}.");
+                    VerboseTestLogger.WriteLine($"{nameof(SendMethodAndUnsubscribeAsync)}: DeviceClient method: {request.MethodName}.");
                     var response = new DirectMethodResponse(200)
                     {
                         Payload = s_deviceResponsePayload,

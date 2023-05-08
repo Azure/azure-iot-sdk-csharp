@@ -49,7 +49,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
             await _moduleClient.SetDirectMethodCallbackAsync(
                 (request) =>
                 {
-                    VerboseTestLogger.WriteLine($"{nameof(SetModuleReceiveMethodAndRespondAsync)}: ModuleClient {_testDeviceId}:{_testModuleId} callback method: {request.MethodName} with timeout {request.ResponseTimeout}.");
+                    VerboseTestLogger.WriteLine($"{nameof(SetModuleReceiveMethodAndRespondAsync)}: ModuleClient {_testDeviceId}:{_testModuleId} callback method: {request.MethodName}.");
                     try
                     {
                         request.MethodName.Should().Be(ExpectedDirectMethodRequest.MethodName, "The expected method name should match what was sent from service");

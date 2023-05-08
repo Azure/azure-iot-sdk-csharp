@@ -19,9 +19,13 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
         public const string TotalM2mMessagesRejected = "TotalM2mMessagesRejected";
         public const string M2mMessageOperationSeconds = "M2mMessageOperationSeconds";
         public const string ReportedTwinUpdateToModuleOperationSeconds = "ReportedTwinUpdateToModuleOperationSeconds";
-        public const string TotalDirectMethodCallsModuleToModuleCount = "TotalDirectMethodCallsModuleToModuleCount";
+        public const string TotalDirectMethodCallsServiceToModuleCount = "TotalDirectMethodCallsServiceToModuleCount";
+        public const string TotalDirectMethodCallsModuleToModuleSentCount = "TotalDirectMethodCallsModuleToModuleSentCount";
+        public const string TotalDirectMethodCallsModuleToModuleReceivedCount = "TotalDirectMethodCallsModuleToModuleReceivedCount";
         public const string ModuleClientCloseDelaySeconds = "ModuleClientCloseDelaySeconds";
         public const string ModuleClientOpenDelaySeconds = "ModuleClientOpenDelaySeconds";
+        public const string DirectMethodModuleToModuleRoundTripSeconds = "DirectMethodModuleToModuleRoundTripSeconds";
+        public const string DirectMethodModuleToModuleDelaySeconds = "DirectMethodModuleToModuleDelaySeconds";
 
         // Event names
 
@@ -56,5 +60,6 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
         public const string TelemetryMessage = "TelemetryMessage";
         public const string ReportTwinProperties = "ReportTwinProperties";
         public const string DirectMethod = "DirectMethod";
+        public const string ModuleToLeafClientMethod = "ModuleToEdgeClientMethod";
     }
 }

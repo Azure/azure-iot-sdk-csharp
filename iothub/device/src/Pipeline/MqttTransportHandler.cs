@@ -510,7 +510,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 Logging.Enter(this, methodResponse, cancellationToken, nameof(SendMethodResponseAsync));
 
             string topic = DirectMethodsResponseTopicFormat.FormatInvariant(methodResponse.Status, methodResponse.RequestId);
-            byte[] serializedPayload = methodResponse.GetPayloadObjectBytes();
+            byte[] serializedPayload = methodResponse.GetPayloadAsBytes();
             MqttApplicationMessage mqttMessage = new MqttApplicationMessageBuilder()
                 .WithTopic(topic)
                 .WithPayload(serializedPayload)
@@ -1141,11 +1141,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
             string requestId = queryStringKeyValuePairs.Get(RequestIdTopicKey);
             string methodName = tokens[3];
 
-            var methodRequest = new DirectMethodRequest(methodName)
+            var methodRequest = new DirectMethodRequest(methodName, payload)
             {
                 PayloadConvention = _payloadConvention,
                 RequestId = requestId,
-                Payload = payload,
             };
 
             // We are intentionally not awaiting _methodListener callback. The direct method response

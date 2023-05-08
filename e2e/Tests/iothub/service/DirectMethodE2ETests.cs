@@ -40,7 +40,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
-        public async Task DirectMethodsClient_InvokeAsycn_ModuleDoesNotExist()
+        public async Task DirectMethodsClient_InvokeAsync_ModuleDoesNotExist()
         {
             // arrange
             IotHubServiceClient serviceClient = TestDevice.ServiceClient;

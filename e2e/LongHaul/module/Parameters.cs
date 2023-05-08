@@ -35,6 +35,22 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
         public string EdgeModuleConnectionString { get; set; } = Environment.GetEnvironmentVariable("IOTHUB_LONG_HAUL_EDGE_MODULE_CONNECTION_STRING");
 
         [Option(
+            'd',
+            "EdgeDeviceId",
+            Required = false,
+            HelpText = "Relevent only for edge module operations. This parameter is for the ID of the edge device that will be used for edge module to edge device method invocations. " +
+            "If not set, the module client will invoke the method on itself..")]
+        public string EdgeDeviceIdForM2mMethodInvocation { get; set; }
+
+        [Option(
+            'm',
+            "EdgeModuleId",
+            Required = false,
+            HelpText = "Relevent only for edge module operations. This parameter is for the ID of the edge module that will be used for edge module to edge module method invocations. " +
+            "If not set, the module client will invoke the method on itself..")]
+        public string EdgeModuleIdForM2mMethodInvocation { get; set; }
+
+        [Option(
             'i',
             "InstrumentationKey",
             Required = false,

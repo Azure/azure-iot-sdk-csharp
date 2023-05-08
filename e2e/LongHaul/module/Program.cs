@@ -40,7 +40,9 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
                     Environment.Exit(1);
                 });
 
-            s_logger = InitializeLogging(parameters);
+            var connectionStringHelper = new IotHubConnectionStringHelper(parameters.GatewayHostName == null ? parameters.DeviceModuleConnectionString : parameters.EdgeModuleConnectionString);
+
+            s_logger = InitializeLogging(parameters, connectionStringHelper);
             s_port = PortFilter(parameters);
 
             s_logger.Event(StartingRun);
@@ -88,12 +90,22 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
 
             try
             {
-                await Task
-                    .WhenAll(
-                        systemHealthMonitor.RunAsync(cts.Token),
-                        iotHub.SendMessagesToRouteAsync(s_logger.Clone(), cts.Token),
-                        iotHub.ReportReadOnlyPropertiesAsync(s_logger.Clone(), cts.Token))
-                    .ConfigureAwait(false);
+                var tasksToRun = new List<Task>
+                {
+                    systemHealthMonitor.RunAsync(cts.Token),
+                    iotHub.SendMessagesToRouteAsync(s_logger.Clone(), cts.Token),
+                    iotHub.ReportReadOnlyPropertiesAsync(s_logger.Clone(), cts.Token)
+                };
+
+                if (parameters.GatewayHostName != null)
+                {
+                    // Edge module to edge device/edge module method invocation
+                    string m2MMethodDeviceId = parameters.EdgeDeviceIdForM2mMethodInvocation ?? connectionStringHelper.DeviceId;
+                    string m2MMethodModuleId = parameters.EdgeModuleIdForM2mMethodInvocation ?? connectionStringHelper.ModuleId;
+                    tasksToRun.Add(iotHub.InvokeDirectMethodOnLeafClientAsync(m2MMethodDeviceId, m2MMethodModuleId, "ModuleToModule", s_logger.Clone(), cts.Token));
+                }
+
+                await Task.WhenAll(tasksToRun).ConfigureAwait(false);
             }
             catch (TaskCanceledException) { } // user signalled an exit
             catch (AggregateException ex) when (ex.InnerException is OperationCanceledException) { } // user signaled an exit
@@ -112,9 +124,8 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
             s_aiLoggingProvider.Dispose();
         }
 
-        private static Logger InitializeLogging(Parameters parameters)
+        private static Logger InitializeLogging(Parameters parameters, IotHubConnectionStringHelper helper)
         {
-            var helper = new IotHubConnectionStringHelper(parameters.GatewayHostName == null ? parameters.DeviceModuleConnectionString : parameters.EdgeModuleConnectionString);
             var logBuilder = new LoggingBuilder
             {
                 AppContext =

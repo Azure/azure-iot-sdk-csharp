@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Client
 {
@@ -14,6 +13,8 @@ namespace Microsoft.Azure.Devices.Client
     /// </remarks>
     public class DirectMethodRequest
     {
+        private readonly byte[] _payload;
+
         /// <summary>
         /// For serialization.
         /// </summary>
@@ -28,47 +29,17 @@ namespace Microsoft.Azure.Devices.Client
         /// This class can be inherited from and set by unit tests for mocking purposes.
         /// </remarks>
         /// <param name="methodName">The method name to invoke.</param>
-        protected internal DirectMethodRequest(string methodName)
+        /// <param name="payload">The direct method payload.</param>
+        protected internal DirectMethodRequest(string methodName, byte[] payload = default)
         {
             MethodName = methodName;
+            _payload = payload;
         }
 
         /// <summary>
         /// The method name to invoke.
         /// </summary>
-        [JsonProperty("methodName")]
-        public string MethodName { get; private set; }
-
-        /// <summary>
-        /// The amount of time given to the service to connect to the device.
-        /// </summary>
-        /// <remarks>
-        /// A timeout may occur if this value is set to zero and the target device is not connected to
-        /// the cloud.
-        /// If the value is greater than zero, it may also occur if the cloud fails to deliver the request to
-        /// the target device.
-        /// <para>
-        /// This value is propagated to the service in terms of seconds, so this value does not have a level of
-        /// precision below seconds. For example, a value of <c>TimeSpan.FromMilliseconds(500)</c> will be
-        /// interpreted as 0 seconds (using <c>ConnectTimeout.TotalSeconds</c>).
-        /// </para>
-        /// </remarks>
-        [JsonIgnore]
-        public TimeSpan? ConnectionTimeout { get; set; }
-
-        /// <summary>
-        /// The amount of time given to the device to process and respond to the command request.
-        /// </summary>
-        /// <remarks>
-        /// This timeout may happen if the target device is slow in handling the direct method.
-        /// <para>
-        /// This value is propagated to the service in terms of seconds, so this value does not have a level of
-        /// precision below seconds. For example, setting this value to TimeSpan.FromMilliseconds(500) will result
-        /// in this request having a timeout of 0 seconds.
-        /// </para>
-        /// </remarks>
-        [JsonIgnore]
-        public TimeSpan? ResponseTimeout { get; set; }
+        public string MethodName { get; }
 
         /// <summary>
         /// The request Id for the transport layer.
@@ -77,36 +48,12 @@ namespace Microsoft.Azure.Devices.Client
         /// This value is not part of the JSON payload. It is received as topic string parameter over MQTT and as a
         /// property over AMQP, and would likely only be interesting to a device app for diagnostics.
         /// </remarks>
-        [JsonIgnore]
         public string RequestId { get; protected internal set; }
-
-        /// <summary>
-        /// The direct method payload.
-        /// </summary>
-        [JsonProperty("payload", NullValueHandling = NullValueHandling.Include)]
-        protected internal byte[] Payload { get; set; }
 
         /// <summary>
         /// The convention to use with the direct method payload.
         /// </summary>
-        [JsonIgnore]
         protected internal PayloadConvention PayloadConvention { get; set; }
-
-        /// <summary>
-        /// Method timeout, in seconds.
-        /// </summary>
-        [JsonProperty("responseTimeoutInSeconds", NullValueHandling = NullValueHandling.Ignore)]
-        internal int? ResponseTimeoutInSeconds => ResponseTimeout.HasValue && ResponseTimeout > TimeSpan.Zero
-            ? (int)ResponseTimeout.Value.TotalSeconds
-            : null;
-
-        /// <summary>
-        /// Connection timeout, in seconds.
-        /// </summary>
-        [JsonProperty("connectTimeoutInSeconds", NullValueHandling = NullValueHandling.Ignore)]
-        internal int? ConnectionTimeoutInSeconds => ConnectionTimeout.HasValue && ConnectionTimeout > TimeSpan.Zero
-            ? (int)ConnectionTimeout.Value.TotalSeconds
-            : null;
 
         /// <summary>
         /// The direct method request payload, deserialized to the specified type.
@@ -149,7 +96,7 @@ namespace Microsoft.Azure.Devices.Client
 
             try
             {
-                payload = PayloadConvention.GetObject<T>(Payload);
+                payload = PayloadConvention.GetObject<T>(_payload);
                 return true;
             }
             catch (Exception ex)
@@ -186,7 +133,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </example>
         public byte[] GetPayloadAsBytes()
         {
-            return Payload == null || Payload.Length == 0 ? null : (byte[])Payload.Clone();
+            return _payload == null || _payload.Length == 0 ? null : (byte[])_payload.Clone();
         }
     }
 }

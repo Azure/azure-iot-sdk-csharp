@@ -173,6 +173,7 @@ Find a client you currently use below, read the table of API name changes and us
   > Be advised, subscriptions do not carry over when the client is re-opened.
   >
   > It cannot be re-opened after disposal.
+ - `DirectMethodResponse` now has a method `TryGetValue<T>` to deserialize the payload to a type of your choice. One usage of this method is to deserialize the direct method response received by an edge module client after it invokes a direct method on an edge device or an edge module connected to the same edge hub.
 
 #### API mapping
 
@@ -223,7 +224,7 @@ The device client and module client share a lot of API surface and underlying im
 | `SetInputMessageHandlerAsync` | `SetIncomingMessageCallbackAsync` | The input parameter is deprecated; the callback can observe and filter using the `IncomingMessage.InputName` property. |
 | `ModuleClient.SendEventAsync(string outputName, ...)` | `IotHubModuleClient.SendMessageToRouteAsync(string outputName, ...)` | Change the name to be more descriptive about sending messages between Edge modules.¹ |
 | `ModuleClient.SendEventBatchAsync(string outputName, ...)` | `IotHubModuleClient.SendMessagesToRouteAsync(string outputName, ...)` | See¹ |
-| `MethodRequest` | `EdgeModuleDirectMethodRequest` | Use full name of the operation type. Inherit from `DirectMethodRequest` to create a type that is meant to be used only with `IotHubModuleClient`.  |
+| `MethodRequest` | `EdgeModuleDirectMethodRequest` | Use full name of the operation type. Create a type that is meant to be used only with `IotHubModuleClient` for invoking methods on an edge device or an edge module connected to the same edge hub.  |
 
 #### Notable additions
 
