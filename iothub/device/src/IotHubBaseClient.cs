@@ -447,7 +447,14 @@ namespace Microsoft.Azure.Devices.Client
         /// Push reported property changes up to the service.
         /// </summary>
         /// <remarks>
+        /// <para>
         /// The client instance must be already open.
+        /// </para>
+        /// <para>
+        /// For clients communicating with IoT hub via IoT Edge, since the patch isn't applied immediately an updated version number is not returned.
+        /// You can call <see cref="GetTwinPropertiesAsync(CancellationToken)"/> and verify <see cref="PropertyCollection.Version"/>
+        /// from <see cref="TwinProperties.Reported"/> to check if your patch is successfully applied.
+        /// </para>
         /// </remarks>
         /// <param name="reportedProperties">Reported properties to push</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
