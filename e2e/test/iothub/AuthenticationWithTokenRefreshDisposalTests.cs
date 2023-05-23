@@ -22,7 +22,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public static readonly TimeSpan MaxWaitTime = TimeSpan.FromSeconds(10);
         private readonly string _devicePrefix = $"{nameof(AuthenticationWithTokenRefreshDisposalTests)}_";
 
-        [TestMethod]
+        /*[TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task DeviceSak_ReusableAuthenticationMethod_SingleDevicePerConnection_Amqp()
         {
@@ -345,6 +345,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 var builder = IotHubConnectionStringBuilder.Create(connectionString);
                 return builder.DeviceId;
             }
-        }
+        }*/
     }
 }

@@ -24,7 +24,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
         Device
     }
 
-    public class TestDevice : IDisposable
+    public sealed class TestDevice : IDisposable
     {
         private const int MaxRetryCount = 5;
         private static readonly HashSet<Type> s_throttlingExceptions = new() { typeof(ThrottlingException), };
@@ -39,10 +39,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
 
         private X509Certificate2 _authCertificate;
 
-        private TestDevice(Device device, Client.IAuthenticationMethod authenticationMethod)
+        private TestDevice(Device device/*, Client.IAuthenticationMethod authenticationMethod*/)
         {
             Device = device;
-            AuthenticationMethod = authenticationMethod;
+            //AuthenticationMethod = authenticationMethod;
         }
 
         /// <summary>
@@ -75,10 +75,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
             // Delete existing devices named this way and create a new one.
             using var rm = RegistryManager.CreateFromConnectionString(TestConfiguration.IotHub.ConnectionString);
 
-            Client.IAuthenticationMethod auth = null;
+            //Client.IAuthenticationMethod auth = null;
 
             var requestDevice = new Device(deviceName);
-            X509Certificate2 authCertificate = null;
+            /*X509Certificate2 authCertificate = null;
 
             if (type == TestDeviceType.X509)
             {
@@ -94,7 +94,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                 authCertificate = TestConfiguration.IotHub.GetCertificateWithPrivateKey();
                 auth = new DeviceAuthenticationWithX509Certificate(deviceName, authCertificate);
 #pragma warning restore CA2000 // Dispose objects before losing scope - X509Certificate and DeviceAuthenticationWithX509Certificate are disposed when TestDevice is disposed.
-            }
+            }*/
 
             Device device = null;
 
@@ -127,9 +127,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
 
             return device == null
                 ? throw new Exception($"Exhausted attempts for creating device {device.Id}, requests got throttled.")
-                : new TestDevice(device, auth)
+                : new TestDevice(device/*, auth*/)
                 {
-                    _authCertificate = authCertificate,
+                   // _authCertificate = authCertificate,
                 };
         }
 
@@ -160,22 +160,22 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
         /// </summary>
         public Device Device { get; private set; }
 
-        public Client.IAuthenticationMethod AuthenticationMethod { get; private set; }
+        //public Client.IAuthenticationMethod AuthenticationMethod { get; private set; }
 
         public DeviceClient CreateDeviceClient(Client.TransportType transport, ClientOptions options = default)
         {
             DeviceClient deviceClient = null;
 
-            if (AuthenticationMethod == null)
-            {
+            /*if (AuthenticationMethod == null)
+            {*/
                 deviceClient = DeviceClient.CreateFromConnectionString(ConnectionString, transport, options);
                 VerboseTestLogger.WriteLine($"{nameof(CreateDeviceClient)}: Created {nameof(DeviceClient)} {Device.Id} from connection string");
-            }
+           /* }
             else
             {
                 deviceClient = DeviceClient.Create(TestDevice.IotHubHostName, AuthenticationMethod, transport, options);
                 VerboseTestLogger.WriteLine($"{nameof(CreateDeviceClient)}: Created {nameof(DeviceClient)} {Device.Id} from IAuthenticationMethod");
-            }
+            }*/
 
             return deviceClient;
         }
@@ -184,13 +184,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
         {
             DeviceClient deviceClient = null;
 
-            if (AuthenticationMethod == null)
+            /*if (AuthenticationMethod == null)
             {
                 if (authScope == ConnectionStringAuthScope.Device)
-                {
+                {*/
                     deviceClient = DeviceClient.CreateFromConnectionString(ConnectionString, transportSettings, options);
                     VerboseTestLogger.WriteLine($"{nameof(CreateDeviceClient)}: Created {nameof(DeviceClient)} {Device.Id} from device connection string");
-                }
+                /*}
                 else
                 {
                     deviceClient = DeviceClient.CreateFromConnectionString(TestConfiguration.IotHub.ConnectionString, Device.Id, transportSettings, options);
@@ -201,7 +201,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
             {
                 deviceClient = DeviceClient.Create(IotHubHostName, AuthenticationMethod, transportSettings, options);
                 VerboseTestLogger.WriteLine($"{nameof(CreateDeviceClient)}: Created {nameof(DeviceClient)} {Device.Id} from IAuthenticationMethod");
-            }
+            }*/
 
             return deviceClient;
         }
@@ -234,11 +234,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
             }
             _authCertificate = null;
 
-            if (AuthenticationMethod is DeviceAuthenticationWithX509Certificate x509Auth)
+            /*if (AuthenticationMethod is DeviceAuthenticationWithX509Certificate x509Auth)
             {
                 x509Auth?.Dispose();
             }
-            AuthenticationMethod = null;
+            AuthenticationMethod = null;*/
         }
     }
 }

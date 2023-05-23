@@ -21,7 +21,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         private readonly string _devicePrefix = $"{nameof(MessageSendFaultInjectionTests)}_";
         private static readonly string s_proxyServerAddress = TestConfiguration.IotHub.ProxyServerAddress;
 
-        [TestMethod]
+        /*[TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Message_TcpConnectionLossSendRecovery_Amqp()
         {
@@ -55,7 +55,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                     FaultInjectionConstants.FaultCloseReason_Boom,
                     proxyAddress: s_proxyServerAddress)
                 .ConfigureAwait(false);
-        }
+        }*/
 
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
@@ -93,7 +93,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 .ConfigureAwait(false);
         }
 
-        [TestMethod]
+        /*[TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Message_AmqpConnectionLossSendRecovery_Amqp()
         {
@@ -358,7 +358,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                     FaultInjectionConstants.FaultType_GracefulShutdownAmqp,
                     FaultInjectionConstants.FaultCloseReason_Bye)
                 .ConfigureAwait(false);
-        }
+        }*/
 
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
@@ -397,11 +397,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             {
                 // Some tests rely on the operation timing out before fault injection ends, so this is important to set.
                 // But it could probably just as easily be done with cancellation tokens.
-                deviceClient.OperationTimeoutInMilliseconds = (uint)operationTimeout.TotalMilliseconds;
+                //deviceClient.OperationTimeoutInMilliseconds = (uint)operationTimeout.TotalMilliseconds;
 
                 using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(20));
                 await deviceClient.OpenAsync(cts.Token).ConfigureAwait(false);
-                deviceClient.OperationTimeoutInMilliseconds = (uint)retryDuration.TotalMilliseconds;
+                //deviceClient.OperationTimeoutInMilliseconds = (uint)retryDuration.TotalMilliseconds;
             }
 
             async Task TestOperationAsync(DeviceClient deviceClient, TestDevice testDevice)

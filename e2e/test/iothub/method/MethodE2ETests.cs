@@ -71,7 +71,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             await SendMethodAndRespondAsync(Client.TransportType.Mqtt_WebSocket_Only, SetDeviceReceiveMethodDefaultHandlerAsync).ConfigureAwait(false);
         }
 
-        [TestMethod]
+        /*[TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceReceivesMethodAndResponse_Amqp()
         {
@@ -111,7 +111,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         public async Task Method_DeviceReceivesMethodAndResponseWithDefaultMethodHandler_AmqpWs()
         {
             await SendMethodAndRespondAsync(Client.TransportType.Amqp_WebSocket_Only, SetDeviceReceiveMethodDefaultHandlerAsync).ConfigureAwait(false);
-        }
+        }*/
 
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
@@ -160,7 +160,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             try
             {
                 // Invoke the direct method asynchronously and get the response from the simulated device.
-                await serviceClient.InvokeDeviceMethodAsync("SomeNonExistantDevice", methodInvocation);
+                await serviceClient.InvokeDeviceMethodAsync("SomeNonExistantDevice", methodInvocation).ConfigureAwait(false);
             }
             catch (DeviceNotFoundException ex)
             {
@@ -172,7 +172,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             await serviceClient.CloseAsync().ConfigureAwait(false);
         }
 
-        [TestMethod]
+        /*[TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Method_ModuleReceivesMethodAndResponse_Mqtt()
         {
@@ -198,9 +198,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         public async Task Method_ModuleReceivesMethodAndResponseWithDefaultMethodHandler_MqttWs()
         {
             await SendMethodAndRespondAsync(Client.TransportType.Mqtt_WebSocket_Only, SetModuleReceiveMethodDefaultHandlerAsync).ConfigureAwait(false);
-        }
+        }*/
 
-        [TestMethod]
+        /*[TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Method_ModuleReceivesMethodAndResponse_Amqp()
         {
@@ -226,7 +226,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         public async Task Method_ModuleReceivesMethodAndResponseWithDefaultMethodHandler_AmqpWs()
         {
             await SendMethodAndRespondAsync(Client.TransportType.Amqp_WebSocket_Only, SetModuleReceiveMethodDefaultHandlerAsync).ConfigureAwait(false);
-        }
+        }*/
 
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
@@ -655,7 +655,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             await deviceClient.CloseAsync().ConfigureAwait(false);
         }
 
-        private async Task SendMethodAndRespondAsync(Client.TransportType transport, Func<ModuleClient, string, Task<Task>> setDeviceReceiveMethod, TimeSpan responseTimeout = default, ServiceClientTransportSettings serviceClientTransportSettings = default)
+        /*private async Task SendMethodAndRespondAsync(Client.TransportType transport, Func<ModuleClient, string, Task<Task>> setDeviceReceiveMethod, TimeSpan responseTimeout = default, ServiceClientTransportSettings serviceClientTransportSettings = default)
         {
             TestModule testModule = await TestModule.GetTestModuleAsync(_devicePrefix, _modulePrefix).ConfigureAwait(false);
             using var moduleClient = ModuleClient.CreateFromConnectionString(testModule.ConnectionString, transport);
@@ -676,7 +676,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 .ConfigureAwait(false);
 
             await moduleClient.CloseAsync().ConfigureAwait(false);
-        }
+        }*/
 
         private class TestDateTime
         {

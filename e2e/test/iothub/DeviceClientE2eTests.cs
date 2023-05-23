@@ -19,11 +19,11 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             // arrange
 
-            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(nameof(DeviceClient_CloseAsync_CanBeCalledTwice));
+            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(nameof(DeviceClient_CloseAsync_CanBeCalledTwice)).ConfigureAwait(false);
 
             try
             {
-                using Client.DeviceClient client = testDevice.CreateDeviceClient(Client.TransportType.Amqp_Tcp_Only);
+                using Client.DeviceClient client = testDevice.CreateDeviceClient(Client.TransportType.Mqtt_Tcp_Only);
                 await client.OpenAsync().ConfigureAwait(false);
                 await client.CloseAsync().ConfigureAwait(false);
 

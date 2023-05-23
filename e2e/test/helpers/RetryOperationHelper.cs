@@ -12,7 +12,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
     /// <summary>
     /// A helper class with methods that aid in retrying operations.
     /// </summary>
-    public class RetryOperationHelper
+    public static class RetryOperationHelper
     {
         /// <summary>
         /// Rety an async operation based on the retry strategy supplied.

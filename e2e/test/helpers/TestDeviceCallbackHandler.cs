@@ -11,7 +11,7 @@ using Microsoft.Azure.Devices.Client;
 
 namespace Microsoft.Azure.Devices.E2ETests.Helpers
 {
-    public class TestDeviceCallbackHandler : IDisposable
+    public sealed class TestDeviceCallbackHandler : IDisposable
     {
         private readonly DeviceClient _deviceClient;
         private readonly TestDevice _testDevice;
@@ -23,9 +23,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
         private ExceptionDispatchInfo _twinExceptionDispatch;
         private string _expectedTwinPropertyValue;
 
-        private readonly SemaphoreSlim _receivedMessageCallbackSemaphore = new(0, 1);
+        /*private readonly SemaphoreSlim _receivedMessageCallbackSemaphore = new(0, 1);
         private ExceptionDispatchInfo _receiveMessageExceptionDispatch;
-        private Message _expectedMessageSentByService;
+        private Message _expectedMessageSentByService;*/
 
         public TestDeviceCallbackHandler(DeviceClient deviceClient, TestDevice testDevice)
         {
@@ -39,11 +39,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
             set => Volatile.Write(ref _expectedTwinPropertyValue, value);
         }
 
-        public Message ExpectedMessageSentByService
+        /*public Message ExpectedMessageSentByService
         {
             get => Volatile.Read(ref _expectedMessageSentByService);
             set => Volatile.Write(ref _expectedMessageSentByService, value);
-        }
+        }*/
 
         public async Task SetDeviceReceiveMethodAsync(string methodName, string deviceResponseJson, string expectedServiceRequestJson)
         {
@@ -91,7 +91,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
 
                     try
                     {
-                        string propertyValue = patch[expectedPropName];
+                        string propertyValue = (string)patch[expectedPropName];
                         propertyValue.Should().Be(ExpectedTwinPropertyValue, "The property value should match what was set by service");
                         context.Should().Be(userContext, "The context should match what was set by service");
                     }
@@ -115,7 +115,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
             _twinExceptionDispatch?.Throw();
         }
 
-        public async Task SetMessageReceiveCallbackHandlerAsync()
+        /*public async Task SetMessageReceiveCallbackHandlerAsync()
         {
             await _deviceClient
                 .SetReceiveMessageHandlerAsync(
@@ -145,19 +145,19 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                     },
                     null)
                 .ConfigureAwait(false);
-        }
+        }*/
 
-        public async Task WaitForReceiveMessageCallbackAsync(CancellationToken ct)
+        /*public async Task WaitForReceiveMessageCallbackAsync(CancellationToken ct)
         {
             await _receivedMessageCallbackSemaphore.WaitAsync(ct).ConfigureAwait(false);
             _receiveMessageExceptionDispatch?.Throw();
-        }
+        }*/
 
         public void Dispose()
         {
             _methodCallbackSemaphore?.Dispose();
             _twinCallbackSemaphore?.Dispose();
-            _receivedMessageCallbackSemaphore?.Dispose();
+            //_receivedMessageCallbackSemaphore?.Dispose();
         }
     }
 }

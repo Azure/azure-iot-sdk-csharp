@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
 using FluentAssertions;
@@ -161,7 +162,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
             extractCertificateCmdProcess.WaitForExit();
             extractCertificateCmdProcess.ExitCode.Should().Be(0, $"\"{extractCertificate}\" exited with error {extractCertificateCmdProcess.StandardError.ReadToEnd()}.");
 
-            return pfxCertificate.Subject.ToString();
+            return pfxCertificate.Subject.ToString(CultureInfo.InvariantCulture);
         }
 
         internal static X509Certificate2 CreateX509Certificate2FromPfxFile(string subjectName, DirectoryInfo certificateFolder)

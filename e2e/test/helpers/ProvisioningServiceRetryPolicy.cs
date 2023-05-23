@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Provisioning.Service;
 
@@ -37,7 +38,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                 bool retryAfterPresent = httpHeaders.TryGetValue(RetryAfterKey, out string retryAfter);
 
                 retryInterval = retryAfterPresent
-                    ? TimeSpan.FromSeconds(Convert.ToDouble(retryAfter))
+                    ? TimeSpan.FromSeconds(Convert.ToDouble(retryAfter, CultureInfo.InvariantCulture))
                     : s_defaultRetryInterval;
 
                 return true;
