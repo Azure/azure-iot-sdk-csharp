@@ -19,9 +19,9 @@ namespace Microsoft.Azure.Devices.E2ETests
     [TestCategory("IoTHub")]
     public class DeviceTokenRefreshE2ETests : E2EMsTestBase
     {
-        private readonly string DevicePrefix = $"{nameof(DeviceTokenRefreshE2ETests)}_";
+        //private readonly string DevicePrefix = $"{nameof(DeviceTokenRefreshE2ETests)}_";
 
-        private const int IoTHubServerTimeAllowanceSeconds = 5 * 60;
+        //private const int IoTHubServerTimeAllowanceSeconds = 5 * 60;
 
         /*[TestMethod]
         [Timeout(TestTimeoutMilliseconds)]

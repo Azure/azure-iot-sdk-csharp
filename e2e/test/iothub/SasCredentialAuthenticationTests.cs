@@ -178,7 +178,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             await serviceClient.OpenAsync().ConfigureAwait(false);
             using var message = new Message(Encoding.ASCII.GetBytes("Hello, Cloud!"));
 
-            await serviceClient.SendAsync(testDevice.Id, message);
+            await serviceClient.SendAsync(testDevice.Id, message).ConfigureAwait(false);
 
             // cleanup
             await testDevice.RemoveDeviceAsync().ConfigureAwait(false);
@@ -206,7 +206,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 await serviceClient.OpenAsync().ConfigureAwait(false);
                 Assert.Fail("The SAS token is expired so the call should fail with an exception");
             }
-            catch (AmqpException ex) when (ex.Error.Description.Contains("401"))
+            catch (AmqpException ex) when (ex.Error.Description.Contains("401", StringComparison.InvariantCulture))
             {
                 // Expected to get an unauthorized exception.
             }
@@ -215,7 +215,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             sasCredential.Update(signature);
             await serviceClient.OpenAsync().ConfigureAwait(false);
             using var message = new Message(Encoding.ASCII.GetBytes("Hello, Cloud!"));
-            await serviceClient.SendAsync(testDevice.Id, message);
+            await serviceClient.SendAsync(testDevice.Id, message).ConfigureAwait(false);
 
             // cleanup
             await testDevice.RemoveDeviceAsync().ConfigureAwait(false);

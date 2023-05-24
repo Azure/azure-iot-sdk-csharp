@@ -12,7 +12,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Azure.Devices.Client;
-using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Devices.Client.Transport.Mqtt;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -24,7 +23,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
     [TestCategory("IoTHub")]
     public partial class MessageSendE2ETests : E2EMsTestBase
     {
-        private const int MessageBatchCount = 5;
+        //private const int MessageBatchCount = 5;
 
         // The maximum message size for device to cloud messages is 256 KB. We are allowing 1 KB of buffer for message header information etc.
         private const int LargeMessageSizeInBytes = 255 * 1024;
@@ -37,7 +36,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         private const int OverlyExceedAllowedMessageSizeInBytes = 3000 * 1024;
 
         private readonly string _devicePrefix = $"{nameof(MessageSendE2ETests)}_";
-        private readonly string _modulePrefix = $"{nameof(MessageSendE2ETests)}_";
+        //private readonly string _modulePrefix = $"{nameof(MessageSendE2ETests)}_";
         private static readonly string s_proxyServerAddress = TestConfiguration.IotHub.ProxyServerAddress;
 
         /*[TestMethod]
@@ -561,12 +560,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             return message;
         }
 
-        private class CustomHttpMessageHandler : HttpMessageHandler
+        /*private class CustomHttpMessageHandler : HttpMessageHandler
         {
             protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
             {
                 throw new NotImplementedException("Deliberately not implemented for test purposes");
             }
-        }
+        }*/
     }
 }

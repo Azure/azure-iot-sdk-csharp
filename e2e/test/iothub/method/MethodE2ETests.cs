@@ -24,7 +24,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         public const string ServiceRequestJson = "{\"a\":123}";
 
         private readonly string _devicePrefix = $"{nameof(MethodE2ETests)}_dev_";
-        private readonly string _modulePrefix = $"{nameof(MethodE2ETests)}_mod_";
+        //private readonly string _modulePrefix = $"{nameof(MethodE2ETests)}_mod_";
         private const string MethodName = "MethodE2ETest";
 
         private static readonly TimeSpan s_defaultMethodTimeoutMinutes = TimeSpan.FromMinutes(1);

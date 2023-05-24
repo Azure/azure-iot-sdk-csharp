@@ -6,7 +6,7 @@ using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.E2ETests.Helpers
 {
-    internal class TemperatureControllerTwin
+    public class TemperatureControllerTwin
     {
         [JsonProperty("$dtId")]
         public string Id { get; set; }
@@ -24,7 +24,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
         public Thermostat Thermostat2 { get; set; }
     }
 
-    internal class TemperatureControllerMetadata
+    public class TemperatureControllerMetadata
     {
         [JsonProperty("$model")]
         public string ModelId { get; set; }
@@ -33,7 +33,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
         public ReportedPropertyMetadata SerialNumber { get; set; }
     }
 
-    internal class Thermostat
+    public class Thermostat
     {
         [JsonProperty("$metadata")]
         public ThermostatComponentMetadata Metadata { get; set; }
@@ -45,7 +45,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
         public double TargetTemperature { get; set; }
     }
 
-    internal class ThermostatComponentMetadata
+    public class ThermostatComponentMetadata
     {
         [JsonProperty("maxTempSinceLastReboot")]
         public ReportedPropertyMetadata MaxTempSinceLastReboot { get; set; }

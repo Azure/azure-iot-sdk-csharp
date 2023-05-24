@@ -9,6 +9,13 @@
     <RootDir>$(MSBuildProjectDirectory)\..\..</RootDir>
     <!-- Suppress framework end of life warnings as we have to keep supporting these frameworks for our customers -->
     <CheckEolTargetFramework>false</CheckEolTargetFramework>
+    <NeutralLanguage>en</NeutralLanguage>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net7.0|AnyCPU'">
+    <LangVersion>10.0</LangVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net7.0|AnyCPU'">
+    <LangVersion>10.0</LangVersion>
   </PropertyGroup>
 
   <!-- All Platforms -->

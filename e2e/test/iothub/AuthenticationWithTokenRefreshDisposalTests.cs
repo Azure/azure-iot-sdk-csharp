@@ -19,8 +19,8 @@ namespace Microsoft.Azure.Devices.E2ETests
     [TestCategory("IoTHub")]
     public class AuthenticationWithTokenRefreshDisposalTests : E2EMsTestBase
     {
-        public static readonly TimeSpan MaxWaitTime = TimeSpan.FromSeconds(10);
-        private readonly string _devicePrefix = $"{nameof(AuthenticationWithTokenRefreshDisposalTests)}_";
+        //public static readonly TimeSpan MaxWaitTime = TimeSpan.FromSeconds(10);
+        //private readonly string _devicePrefix = $"{nameof(AuthenticationWithTokenRefreshDisposalTests)}_";
 
         /*[TestMethod]
         [Timeout(TestTimeoutMilliseconds)]

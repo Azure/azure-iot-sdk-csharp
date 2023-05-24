@@ -18,7 +18,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
     [TestCategory("IoTHub")]
     public class TwinFaultInjectionTests : E2EMsTestBase
     {
-        private static readonly string s_devicePrefix = $"{nameof(TwinFaultInjectionTests)}_";
+        private const string s_devicePrefix = $"{nameof(TwinFaultInjectionTests)}_";
 
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]

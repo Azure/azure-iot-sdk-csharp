@@ -6,10 +6,10 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Net;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Azure.Devices.Client;
-using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Devices.Client.Transport.Mqtt;
 
 // If you see intermittent failures on devices that are created by this file, check to see if you have multiple suites
@@ -68,7 +68,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
         {
             VerboseTestLogger.WriteLine($"{nameof(ActivateFaultInjectionAsync)}: Requesting fault injection type={faultType} reason={reason}, delay={faultDelay}s, duration={DefaultFaultDuration}s");
 
-            uint oldTimeout = deviceClient.OperationTimeoutInMilliseconds;
+            //uint oldTimeout = deviceClient.OperationTimeoutInMilliseconds;
 
             try
             {
@@ -78,40 +78,40 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                     || transport == Client.TransportType.Mqtt_Tcp_Only
                     || transport == Client.TransportType.Mqtt_WebSocket_Only)
                 {
-                    deviceClient.OperationTimeoutInMilliseconds = (uint)faultDelay.TotalMilliseconds;
+                    //deviceClient.OperationTimeoutInMilliseconds = (uint)faultDelay.TotalMilliseconds;
                 }
-
+                using var cts = new CancellationTokenSource((int)faultDelay.TotalMilliseconds);
                 using Client.Message faultInjectionMessage = ComposeErrorInjectionProperties(
                     faultType,
                     reason,
                     faultDelay,
                     faultDuration);
 
-                await deviceClient.SendEventAsync(faultInjectionMessage).ConfigureAwait(false);
+                await deviceClient.SendEventAsync(faultInjectionMessage, cts.Token).ConfigureAwait(false);
             }
-            catch (IotHubCommunicationException ex)
+            /*catch (IotHubCommunicationException ex)
             {
                 VerboseTestLogger.WriteLine($"{nameof(ActivateFaultInjectionAsync)}: {ex}");
 
                 // For quota injection, the fault is only seen for the original HTTP request.
-                if (transport == Client.TransportType.Http1)
+                *//*if (transport == Client.TransportType.Http1)
                 {
                     throw;
-                }
+                }*//*
             }
             catch (TimeoutException ex)
             {
                 VerboseTestLogger.WriteLine($"{nameof(ActivateFaultInjectionAsync)}: {ex}");
 
                 // For quota injection, the fault is only seen for the original HTTP request.
-                if (transport == Client.TransportType.Http1)
+                *//*if (transport == Client.TransportType.Http1)
                 {
                     throw;
-                }
-            }
+                }*//*
+            }*/
             finally
             {
-                deviceClient.OperationTimeoutInMilliseconds = oldTimeout;
+                //deviceClient.OperationTimeoutInMilliseconds = oldTimeout;
                 VerboseTestLogger.WriteLine($"{nameof(ActivateFaultInjectionAsync)}: Fault injection requested.");
             }
         }
@@ -244,7 +244,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
         {
             return transportType switch
             {
-                Client.TransportType.Http1 => new Http1TransportSettings
+                /*Client.TransportType.Http1 => new Http1TransportSettings
                 {
                     Proxy = proxyAddress == null ? null : new WebProxy(proxyAddress),
                 },
@@ -252,7 +252,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                 Client.TransportType.Amqp_WebSocket_Only => new AmqpTransportSettings(transportType)
                 {
                     Proxy = proxyAddress == null ? null : new WebProxy(proxyAddress),
-                },
+                },*/
                 Client.TransportType.Mqtt or Client.TransportType.Mqtt_Tcp_Only => new MqttTransportSettings(transportType),
                 Client.TransportType.Mqtt_WebSocket_Only => new MqttTransportSettings(transportType)
                 {

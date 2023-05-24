@@ -57,7 +57,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
             try
             {
                 await s_semaphore.WaitAsync().ConfigureAwait(false);
-                TestDevice ret = await CreateDeviceAsync(type, prefix).ConfigureAwait(false);
+                TestDevice ret = await CreateDeviceAsync(/*type, */prefix).ConfigureAwait(false);
 
                 VerboseTestLogger.WriteLine($"{nameof(GetTestDeviceAsync)}: Using device {ret.Id}.");
                 return ret;
@@ -68,7 +68,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
             }
         }
 
-        private static async Task<TestDevice> CreateDeviceAsync(TestDeviceType type, string prefix)
+        private static async Task<TestDevice> CreateDeviceAsync(/*TestDeviceType type, */string prefix)
         {
             string deviceName = "E2E_" + prefix + Guid.NewGuid();
 
@@ -180,7 +180,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
             return deviceClient;
         }
 
-        public DeviceClient CreateDeviceClient(ITransportSettings[] transportSettings, ConnectionStringAuthScope authScope = ConnectionStringAuthScope.Device, ClientOptions options = default)
+        public DeviceClient CreateDeviceClient(ITransportSettings[] transportSettings, ClientOptions options = default)
         {
             DeviceClient deviceClient = null;
 

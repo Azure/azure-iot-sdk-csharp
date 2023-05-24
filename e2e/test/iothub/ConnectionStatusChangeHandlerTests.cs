@@ -16,8 +16,8 @@ namespace Microsoft.Azure.Devices.E2ETests
     [TestCategory("IoTHub")]
     public class ConnectionStatusChangeHandlerTests : E2EMsTestBase
     {
-        private readonly string DevicePrefix = $"{nameof(ConnectionStatusChangeHandlerTests)}_Device";
-        private readonly string ModulePrefix = $"{nameof(ConnectionStatusChangeHandlerTests)}";
+        //private readonly string DevicePrefix = $"{nameof(ConnectionStatusChangeHandlerTests)}_Device";
+        //private readonly string ModulePrefix = $"{nameof(ConnectionStatusChangeHandlerTests)}";
 
        /* [TestMethod]
         [Timeout(ConnectionStateChangeTestTimeoutMilliseconds)]
@@ -95,7 +95,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .ConfigureAwait(false);
         }*/
 
-        private async Task DeviceClient_Gives_ConnectionStatus_DeviceDisabled_Base(
+        /*private async Task DeviceClient_Gives_ConnectionStatus_DeviceDisabled_Base(
             Client.TransportType protocol,
             Func<RegistryManager, string, Task> registryManagerOperation)
         {
@@ -148,7 +148,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             deviceDisabledReceivedCount.Should().Be(1);
             status.Should().Be(ConnectionStatus.Disconnected);
             statusChangeReason.Should().Be(ConnectionStatusChangeReason.Device_Disabled);
-        }
+        }*/
 
         /*private async Task ModuleClient_Gives_ConnectionStatus_DeviceDisabled_Base(
             Client.TransportType protocol,

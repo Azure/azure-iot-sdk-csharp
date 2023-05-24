@@ -7,7 +7,7 @@ using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.E2ETests.Helpers
 {
-    internal class ThermostatTwin
+    public class ThermostatTwin
     {
         [JsonProperty("$dtId")]
         public string Id { get; set; }
@@ -22,7 +22,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
         public double TargetTemperature { get; set; }
     }
 
-    internal class ThermostatMetadata
+    public class ThermostatMetadata
     {
         [JsonProperty("$model")]
         public string ModelId { get; set; }
@@ -34,7 +34,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
         public WritableProperty TargetTemperature { get; set; }
     }
 
-    internal class ReportedPropertyMetadata
+    public class ReportedPropertyMetadata
     {
         [JsonProperty("lastUpdateTime")]
         public DateTimeOffset LastUpdateTime { get; set; }
