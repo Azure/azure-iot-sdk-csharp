@@ -28,11 +28,13 @@ namespace Microsoft.Azure.Devices.Client.Transport
     internal sealed class MqttTransportHandler : TransportHandlerBase, IDisposable
     {
         private const int ProtocolGatewayPort = 8883;
+        private const int MessageQueueSize = 10;
 
         private const string DeviceToCloudMessagesTopicFormat = "devices/{0}/messages/events/";
         private const string ModuleToCloudMessagesTopicFormat = "devices/{0}/modules/{1}/messages/events/";
         private readonly string _deviceToCloudMessagesTopic;
         private readonly string _moduleToCloudMessagesTopic;
+        private readonly ConcurrentQueue<IncomingMessage> _messageQueue;
 
         // Topic names for receiving cloud-to-device messages.
 
@@ -103,6 +105,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         private readonly Timer _twinTimeoutTimer;
 
         private bool _isSubscribedToTwinResponses;
+        private bool _isDeviceReceiveMessageCallbackSet;
 
         private readonly string _deviceId;
         private readonly string _moduleId;
@@ -178,6 +181,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             var mqttFactory = new MqttFactory(new MqttLogger());
             _mqttClient = mqttFactory.CreateMqttClient();
             _mqttClientOptionsBuilder = new MqttClientOptionsBuilder();
+            _messageQueue = new ConcurrentQueue<IncomingMessage>();
 
             _hostName = context.IotHubConnectionCredentials.HostName;
             _connectionCredentials = context.IotHubConnectionCredentials;
@@ -579,6 +583,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         await SubscribeAsync(_moduleEventMessageTopic, cancellationToken).ConfigureAwait(false);
                     }
                 }
+                _isDeviceReceiveMessageCallbackSet = true;
             }
             catch (Exception ex) when (ex is not IotHubClientException && ex is not OperationCanceledException)
             {
@@ -591,6 +596,26 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 if (Logging.IsEnabled)
                     Logging.Exit(this, cancellationToken, nameof(EnableReceiveMessageAsync));
+            }
+        }
+
+        public override async Task EnsurePendingMessagesAreDeliveredAsync(CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            // If the device connects with a CleanSession flag set to false, we will need to deliver the messages
+            // that were sent before the client had subscribed to the C2D message receive topic.
+            if (!_mqttTransportSettings.CleanSession)
+            {
+                IncomingMessage message = null;
+                // Received C2D messages are enqueued into _messageQueue.
+                while (!_messageQueue.IsEmpty)
+                {
+                    if(_messageQueue.TryDequeue(out message))
+                    {
+                        await HandleReceivedCloudToDeviceMessageAsync(message).ConfigureAwait(false);
+                    }
+                }
             }
         }
 
@@ -616,6 +641,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         await UnsubscribeAsync(_moduleEventMessageTopic, cancellationToken).ConfigureAwait(false);
                     }
                 }
+                _isDeviceReceiveMessageCallbackSet = false;
             }
             catch (Exception ex) when (ex is not IotHubClientException && ex is not OperationCanceledException)
             {
@@ -1054,6 +1080,20 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return Task.CompletedTask;
         }
 
+        private IncomingMessage ProcessC2DMessage(MqttApplicationMessageReceivedEventArgs receivedEventArgs)
+        {
+            byte[] payload = receivedEventArgs.ApplicationMessage.Payload;
+
+            var receivedCloudToDeviceMessage = new IncomingMessage(payload)
+            {
+                PayloadConvention = _payloadConvention,
+            };
+
+            PopulateMessagePropertiesFromMqttMessage(receivedCloudToDeviceMessage, receivedEventArgs.ApplicationMessage);
+
+            return receivedCloudToDeviceMessage;
+        }
+
         private async Task HandleReceivedMessageAsync(MqttApplicationMessageReceivedEventArgs receivedEventArgs)
         {
             receivedEventArgs.AutoAcknowledge = false;
@@ -1061,7 +1101,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             if (topic.StartsWith(_deviceBoundMessagesTopic, StringComparison.InvariantCulture))
             {
-                await HandleReceivedCloudToDeviceMessageAsync(receivedEventArgs).ConfigureAwait(false);
+                await HandleReceivedCloudToDeviceMessageAsync(ProcessC2DMessage(receivedEventArgs)).ConfigureAwait(false);
+                await receivedEventArgs.AcknowledgeAsync(CancellationToken.None).ConfigureAwait(false);
             }
             else if (topic.StartsWith(TwinDesiredPropertiesPatchTopic, StringComparison.InvariantCulture))
             {
@@ -1088,18 +1129,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
-        private async Task HandleReceivedCloudToDeviceMessageAsync(MqttApplicationMessageReceivedEventArgs receivedEventArgs)
+        private async Task HandleReceivedCloudToDeviceMessageAsync(IncomingMessage receivedCloudToDeviceMessage)
         {
-            byte[] payload = receivedEventArgs.ApplicationMessage.Payload;
-
-            var receivedCloudToDeviceMessage = new IncomingMessage(payload)
-            {
-                PayloadConvention = _payloadConvention,
-            };
-
-            PopulateMessagePropertiesFromMqttMessage(receivedCloudToDeviceMessage, receivedEventArgs.ApplicationMessage);
-
-            if (_messageReceivedListener != null)
+            if (_messageReceivedListener != null && _isDeviceReceiveMessageCallbackSet)
             {
                 MessageAcknowledgement acknowledgementType = await _messageReceivedListener.Invoke(receivedCloudToDeviceMessage);
 
@@ -1108,18 +1140,13 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     if (Logging.IsEnabled)
                         Logging.Error(this, "Cannot 'reject' or 'abandon' a received message over MQTT. Message will be acknowledged as 'complete' instead.");
                 }
-
-                // Note that MQTT does not support Abandon or Reject, so always Complete by acknowledging the message like this.
-                try
+            }
+            else if(!_isDeviceReceiveMessageCallbackSet)
+            {
+                _messageQueue.Enqueue(receivedCloudToDeviceMessage);
+                while(_messageQueue.Count > MessageQueueSize)
                 {
-                    await receivedEventArgs.AcknowledgeAsync(CancellationToken.None).ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    // This likely happened because the connection was lost. The service will re-send this message so the user
-                    // can acknowledge it on the new connection.
-                    if (Logging.IsEnabled)
-                        Logging.Error(this, $"Failed to send the acknowledgement for a received cloud to device message {ex}"); ;
+                    _messageQueue.TryDequeue(out _);
                 }
             }
             else if (Logging.IsEnabled)

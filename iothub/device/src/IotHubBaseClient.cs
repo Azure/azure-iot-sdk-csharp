@@ -338,6 +338,10 @@ namespace Microsoft.Azure.Devices.Client
             finally
             {
                 _receiveMessageSemaphore.Release();
+                if (messageCallback != null)
+                {
+                    await InnerHandler.EnsurePendingMessagesAreDeliveredAsync(cancellationToken).ConfigureAwait(false);
+                }
 
                 if (Logging.IsEnabled)
                     Logging.Exit(this, messageCallback, nameof(SetIncomingMessageCallbackAsync));
@@ -780,18 +784,7 @@ namespace Microsoft.Azure.Devices.Client
 
             try
             {
-                Func<IncomingMessage, Task<MessageAcknowledgement>> callback = _receiveMessageCallback;
-
-                if (callback != null)
-                {
-                    return await callback.Invoke(message).ConfigureAwait(false);
-                }
-
-                // The SDK should only receive messages when the user sets a listener, so this should never happen.
-                if (Logging.IsEnabled)
-                    Logging.Error(this, $"Received a message when no listener was set. Abandoning message with message Id: {message.MessageId}.", nameof(OnMessageReceivedAsync));
-
-                return MessageAcknowledgement.Abandon;
+                return await _receiveMessageCallback.Invoke(message).ConfigureAwait(false);
             }
             catch (Exception ex)
             {

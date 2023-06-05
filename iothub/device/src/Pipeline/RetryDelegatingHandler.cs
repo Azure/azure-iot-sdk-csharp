@@ -221,6 +221,43 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
+        // This is to ensure that if device connects over MQTT with CleanSession flag set to false,
+        // then any message sent while the device was disconnected is delivered on the callback.
+        public override async Task EnsurePendingMessagesAreDeliveredAsync(CancellationToken cancellationToken)
+        {
+            try
+            {
+                if (Logging.IsEnabled)
+                    Logging.Enter(this, cancellationToken, nameof(EnsurePendingMessagesAreDeliveredAsync));
+
+                await _internalRetryHandler
+                    .RunWithRetryAsync(
+                        async () =>
+                        {
+                            // Wait to acquire the _cloudToDeviceMessageSubscriptionSemaphore. This ensures that concurrently invoked API calls are invoked in a thread-safe manner.
+                            await _cloudToDeviceMessageSubscriptionSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+                            try
+                            {
+                                // Ensure that a callback for receiving messages has been previously set.
+                                Debug.Assert(_deviceReceiveMessageEnabled);
+                                await base.EnsurePendingMessagesAreDeliveredAsync(cancellationToken).ConfigureAwait(false);
+                            }
+                            finally
+                            {
+                                _cloudToDeviceMessageSubscriptionSemaphore?.Release();
+                            }
+                        },
+                        cancellationToken)
+                    .ConfigureAwait(false);
+            }
+            finally
+            {
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, cancellationToken, nameof(EnsurePendingMessagesAreDeliveredAsync));
+            }
+        }
+
         public override async Task DisableReceiveMessageAsync(CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
