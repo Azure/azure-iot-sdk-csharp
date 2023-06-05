@@ -1147,6 +1147,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 while(_messageQueue.Count > MessageQueueSize)
                 {
                     _messageQueue.TryDequeue(out _);
+                    if (Logging.IsEnabled)
+                    {
+                        Logging.Info(this, $"Queue size of {MessageQueueSize} for C2D messages has been reached, removing oldest queued C2D message. " +
+                            $"To avoid losing further messages, set SetIncomingMessageCallbackAsync() to process the messages.");
+                    }
                 }
             }
             else if (Logging.IsEnabled)
