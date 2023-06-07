@@ -96,6 +96,15 @@ namespace Microsoft.Azure.Devices.Client
         public RemoteCertificateValidationCallback RemoteCertificateValidationCallback { get; set; }
 
         /// <summary>
+        /// C2D message queue size when callback has not been set.
+        /// </summary>
+        /// <remarks>
+        /// If C2D message callback is not set, messages from service are received and stored in a queue until a callback is set. 
+        /// If the number of messages sent is greater than queue size, older messages are removed as latest messages are added.
+        /// </remarks>
+        public int MessageQueueSize { get; set; } = 10;
+
+        /// <summary>
         /// Used by Edge runtime to specify an authentication chain for Edge-to-Edge connections.
         /// </summary>
         [EditorBrowsable(EditorBrowsableState.Never)]
@@ -116,6 +125,7 @@ namespace Microsoft.Azure.Devices.Client
                 WillMessage = WillMessage,
                 RemoteCertificateValidationCallback = RemoteCertificateValidationCallback,
                 AuthenticationChain = AuthenticationChain,
+                MessageQueueSize = MessageQueueSize,
             };
         }
     }

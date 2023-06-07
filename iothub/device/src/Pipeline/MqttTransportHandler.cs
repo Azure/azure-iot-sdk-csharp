@@ -28,7 +28,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
     internal sealed class MqttTransportHandler : TransportHandlerBase, IDisposable
     {
         private const int ProtocolGatewayPort = 8883;
-        private const int MessageQueueSize = 10;
 
         private const string DeviceToCloudMessagesTopicFormat = "devices/{0}/messages/events/";
         private const string ModuleToCloudMessagesTopicFormat = "devices/{0}/modules/{1}/messages/events/";
@@ -106,6 +105,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         private bool _isSubscribedToTwinResponses;
         private bool _isDeviceReceiveMessageCallbackSet;
+        private int _messageQueueSize;
 
         private readonly string _deviceId;
         private readonly string _moduleId;
@@ -185,6 +185,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             _hostName = context.IotHubConnectionCredentials.HostName;
             _connectionCredentials = context.IotHubConnectionCredentials;
+            _messageQueueSize = _mqttTransportSettings.MessageQueueSize;
 
             if (_mqttTransportSettings.Protocol == IotHubClientTransportProtocol.Tcp)
             {
@@ -1101,6 +1102,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             if (topic.StartsWith(_deviceBoundMessagesTopic, StringComparison.InvariantCulture))
             {
+                // If C2D message callback is not set, messages are added to a queue to be processed later.
+                // However, the messages are still being ack'ed right away.
                 await HandleReceivedCloudToDeviceMessageAsync(ProcessC2DMessage(receivedEventArgs)).ConfigureAwait(false);
                 await receivedEventArgs.AcknowledgeAsync(CancellationToken.None).ConfigureAwait(false);
             }
@@ -1144,13 +1147,13 @@ namespace Microsoft.Azure.Devices.Client.Transport
             else if(!_isDeviceReceiveMessageCallbackSet)
             {
                 _messageQueue.Enqueue(receivedCloudToDeviceMessage);
-                while(_messageQueue.Count > MessageQueueSize)
+                while(_messageQueue.Count > _messageQueueSize)
                 {
                     _messageQueue.TryDequeue(out _);
                     if (Logging.IsEnabled)
                     {
-                        Logging.Info(this, $"Queue size of {MessageQueueSize} for C2D messages has been reached, removing oldest queued C2D message. " +
-                            $"To avoid losing further messages, set SetIncomingMessageCallbackAsync() to process the messages.");
+                        Logging.Info(this, $"Queue size of {_messageQueueSize} for C2D messages has been reached, removing oldest queued C2D message. " +
+                            $"To avoid losing further messages, set SetIncomingMessageCallbackAsync() to process the messages or increase message queue size in IotHubClientMqttSettings.");
                     }
                 }
             }
