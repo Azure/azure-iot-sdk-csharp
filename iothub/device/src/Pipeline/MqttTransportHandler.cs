@@ -185,7 +185,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             _hostName = context.IotHubConnectionCredentials.HostName;
             _connectionCredentials = context.IotHubConnectionCredentials;
-            _messageQueueSize = _mqttTransportSettings.MessageQueueSize;
+            _messageQueueSize = _mqttTransportSettings.IncomingMessageQueueSize;
 
             if (_mqttTransportSettings.Protocol == IotHubClientTransportProtocol.Tcp)
             {
