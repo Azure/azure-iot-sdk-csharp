@@ -112,9 +112,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
             // re-open the client under test.
             await deviceClient.OpenAsync(ct).ConfigureAwait(false);
-            await Task.Delay(10000, ct).ConfigureAwait(false);
-            await deviceHandler.SetIncomingMessageCallbackHandlerAndCompleteMessageAsync<string>(ct).ConfigureAwait(false);
             deviceHandler.ExpectedOutgoingMessage = firstMsg;
+            await deviceHandler.SetIncomingMessageCallbackHandlerAndCompleteMessageAsync<string>(ct).ConfigureAwait(false);
 
             // Now, set a callback on the device client to receive C2D messages.
             await deviceHandler.WaitForIncomingMessageCallbackAsync(ct).ConfigureAwait(false);
