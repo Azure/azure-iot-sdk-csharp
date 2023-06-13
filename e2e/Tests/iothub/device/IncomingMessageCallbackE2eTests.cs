@@ -80,6 +80,45 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             await ReceiveMessageAfterOpenCloseOpenAsync(new IotHubClientMqttSettings(), ct).ConfigureAwait(false);
         }
 
+        [TestMethod]
+        public async Task DeviceReceiveMessageSetCallbackAfterReconnect_Mqtt()
+        {
+            // Setting up one cancellation token for the complete test flow
+            using var cts = new CancellationTokenSource(s_testTimeout);
+            CancellationToken ct = cts.Token;
+
+            await ReceiveMessageSetCallbackAfterReconnect(new IotHubClientMqttSettings(), ct).ConfigureAwait(false);
+        }
+
+        private static async Task ReceiveMessageSetCallbackAfterReconnect(IotHubClientTransportSettings transportSettings, CancellationToken ct)
+        {
+            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(s_devicePrefix, ct: ct).ConfigureAwait(false);
+            IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(new IotHubClientOptions(transportSettings));
+            await testDevice.OpenWithRetryAsync(ct).ConfigureAwait(false);
+            using var deviceHandler = new TestDeviceCallbackHandler(deviceClient, testDevice.Id);
+
+            IotHubServiceClient serviceClient = TestDevice.ServiceClient;
+
+            await serviceClient.Messages.OpenAsync(ct).ConfigureAwait(false);
+
+            await deviceHandler.SetIncomingMessageCallbackHandlerAndCompleteMessageAsync<string>(ct).ConfigureAwait(false);
+            await deviceClient.CloseAsync(ct).ConfigureAwait(false);
+
+
+            // Now, send a message to the device from the service.
+            OutgoingMessage firstMsg = OutgoingMessageHelper.ComposeTestMessage(out string _, out string _);
+            await serviceClient.Messages.SendAsync(testDevice.Id, firstMsg, ct).ConfigureAwait(false);
+            VerboseTestLogger.WriteLine($"Sent C2D message from service, messageId={firstMsg.MessageId} - to be received on callback");
+
+            // re-open the client under test.
+            await deviceClient.OpenAsync(ct).ConfigureAwait(false);
+            deviceHandler.ExpectedOutgoingMessage = firstMsg;
+            await deviceHandler.SetIncomingMessageCallbackHandlerAndCompleteMessageAsync<string>(ct).ConfigureAwait(false);
+
+            // Now, set a callback on the device client to receive C2D messages.
+            await deviceHandler.WaitForIncomingMessageCallbackAsync(ct).ConfigureAwait(false);
+        }
+
         private static async Task ReceiveMessageUsingCallbackAndUnsubscribeAsync(IotHubClientTransportSettings transportSettings, CancellationToken ct)
         {
             await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(s_devicePrefix, ct: ct).ConfigureAwait(false);

@@ -277,6 +277,11 @@ namespace Microsoft.Azure.Devices.Client
         /// This user-supplied callback is awaited by the SDK. All of requests will be processed as they arrive.
         /// Exceptions thrown within the callback will be caught and logged by the SDK internally.
         /// </para>
+        /// <para>
+        /// For MQTT, if the callback is not set and client connects with <see cref="IotHubClientMqttSettings.CleanSession" /> set to <c>false</c>,
+        /// cloud-to-device messages are stored in a message queue and not processed until callback is set. 
+        /// The size of the queue can be set using <see cref="IotHubClientMqttSettings.IncomingMessageQueueSize"/>.
+        /// </para>
         /// </remarks>
         /// <param name="messageCallback">The callback to be invoked when a cloud-to-device message is received by the client.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
@@ -338,6 +343,10 @@ namespace Microsoft.Azure.Devices.Client
             finally
             {
                 _receiveMessageSemaphore.Release();
+                if (messageCallback != null)
+                {
+                    await InnerHandler.EnsurePendingMessagesAreDeliveredAsync(cancellationToken).ConfigureAwait(false);
+                }
 
                 if (Logging.IsEnabled)
                     Logging.Exit(this, messageCallback, nameof(SetIncomingMessageCallbackAsync));
@@ -780,18 +789,7 @@ namespace Microsoft.Azure.Devices.Client
 
             try
             {
-                Func<IncomingMessage, Task<MessageAcknowledgement>> callback = _receiveMessageCallback;
-
-                if (callback != null)
-                {
-                    return await callback.Invoke(message).ConfigureAwait(false);
-                }
-
-                // The SDK should only receive messages when the user sets a listener, so this should never happen.
-                if (Logging.IsEnabled)
-                    Logging.Error(this, $"Received a message when no listener was set. Abandoning message with message Id: {message.MessageId}.", nameof(OnMessageReceivedAsync));
-
-                return MessageAcknowledgement.Abandon;
+                return await _receiveMessageCallback.Invoke(message).ConfigureAwait(false);
             }
             catch (Exception ex)
             {

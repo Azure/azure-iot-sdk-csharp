@@ -96,6 +96,16 @@ namespace Microsoft.Azure.Devices.Client
         public RemoteCertificateValidationCallback RemoteCertificateValidationCallback { get; set; }
 
         /// <summary>
+        /// Cloud-to-device message queue size for storing offline messages when the client connects with <see cref="CleanSession" /> set to <c>false</c>.
+        /// </summary>
+        /// <remarks>
+        /// If incoming message callback is not set, messages from service are received and stored in a queue until a callback is set. 
+        /// If the number of messages sent is greater than queue size, older messages are removed as newer messages are added. 
+        /// Setting this to a low value can cause offline undelivered messages to get lost.
+        /// </remarks>
+        public int IncomingMessageQueueSize { get; set; } = 10;
+
+        /// <summary>
         /// Used by Edge runtime to specify an authentication chain for Edge-to-Edge connections.
         /// </summary>
         [EditorBrowsable(EditorBrowsableState.Never)]
@@ -116,6 +126,7 @@ namespace Microsoft.Azure.Devices.Client
                 WillMessage = WillMessage,
                 RemoteCertificateValidationCallback = RemoteCertificateValidationCallback,
                 AuthenticationChain = AuthenticationChain,
+                IncomingMessageQueueSize = IncomingMessageQueueSize,
             };
         }
     }
