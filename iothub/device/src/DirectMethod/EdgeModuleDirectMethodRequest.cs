@@ -27,7 +27,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <param name="methodName">The method name to invoke.</param>
         /// <param name="payload">The direct method payload that will be serialized using <see cref="DefaultPayloadConvention"/>.</param>
-        public EdgeModuleDirectMethodRequest(string methodName, object payload)
+        public EdgeModuleDirectMethodRequest(string methodName, byte[] payload)
         {
             MethodName = methodName;
             Payload = payload;
@@ -80,7 +80,7 @@ namespace Microsoft.Azure.Devices.Client
         /// The direct method payload.
         /// </summary>
         [JsonProperty("payload", NullValueHandling = NullValueHandling.Include)]
-        internal object Payload { get; }
+        internal byte[] Payload { get; }
 
         /// <summary>
         /// Method timeout, in seconds.
