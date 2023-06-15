@@ -111,9 +111,9 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns><c>true</c> if the direct method request payload can be deserialized to type <c>T</c>; otherwise, <c>false</c>.</returns>
         /// <example>
         /// <code language="csharp">
-        /// await client.SetDirectMethodCallbackAsync((directMethodRequest) =>
+        /// await client.SetDirectMethodCallbackAsync((edgeModuleDirectMethodRequest) =>
         /// {
-        ///     if (directMethodRequest.TryGetPayload(out MyCustomType customTypePayload))
+        ///     if (edgeModuleDirectMethodRequest.TryGetPayload(out MyCustomType customTypePayload))
         ///     {
         ///         // do work
         ///         // ...
@@ -160,9 +160,9 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns>A copy of the raw payload as a byte array.</returns>
         /// <example>
         /// <code language="csharp">
-        /// await client.SetDirectMethodCallbackAsync((directMethodRequest) =>
+        /// await client.SetDirectMethodCallbackAsync((edgeModuleDirectMethodRequest) =>
         /// {
-        ///     byte[] arr = directMethodRequest.GetPayloadAsBytes();
+        ///     byte[] arr = edgeModuleDirectMethodRequest.GetPayloadAsBytes();
         ///     // deserialize as needed and do work...
         ///     
         ///     // Acknowlege the direct method call with the status code 200. 
