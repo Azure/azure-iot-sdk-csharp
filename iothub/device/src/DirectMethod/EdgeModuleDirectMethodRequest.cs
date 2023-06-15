@@ -97,5 +97,29 @@ namespace Microsoft.Azure.Devices.Client
         internal int? ConnectionTimeoutInSeconds => ConnectionTimeout.HasValue && ConnectionTimeout > TimeSpan.Zero
             ? (int)ConnectionTimeout.Value.TotalSeconds
             : null;
+
+        // TODO -- doc comment
+        public bool TryGetPayload<T>(out T payload)
+        {
+            payload = default;
+
+            try
+            {
+                payload = PayloadConvention.GetObject<T>(Payload);
+                return true;
+            }
+            catch (Exception ex) when (Logging.IsEnabled)
+            {
+                Logging.Error(this, $"Unable to convert payload to {typeof(T)} due to {ex}", nameof(TryGetPayload));
+            }
+
+            return false;
+        }
+
+        // TODO -- doc comment
+        public byte[] GetPayloadAsBytes()
+        {
+            return Payload == null || Payload.Length == 0 ? null : (byte[])Payload.Clone();
+        }
     }
 }
