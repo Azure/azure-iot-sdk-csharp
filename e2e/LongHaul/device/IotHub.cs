@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using Azure.Storage.Blobs.Models;
 using Azure.Storage.Blobs.Specialized;
 using Mash.Logging;
+using Newtonsoft.Json;
 using Microsoft.Azure.Devices.Client;
 using static Microsoft.Azure.Devices.LongHaul.Device.LoggingConstants;
 
@@ -472,20 +473,20 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
 
                             // Log the current time again and send the response back to the service app.
                             methodPayload.SentOnUtc = DateTimeOffset.UtcNow;
-                            return Task.FromResult(new DirectMethodResponse(200) { Payload = methodPayload });
+                            return Task.FromResult(new DirectMethodResponse(200) { Payload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(methodPayload)) });
                         }
                     }
                     catch (Exception ex)
                     {
                         _logger.Trace($"Failed to parse the payload for direct method {methodRequest.MethodName} due to {ex}.", TraceSeverity.Error);
-                        return Task.FromResult(new DirectMethodResponse(400) { Payload = ex.Message });
+                        return Task.FromResult(new DirectMethodResponse(400) { Payload = Encoding.UTF8.GetBytes(ex.Message) });
                     }
                     break;
             }
 
             string unsupportedMessage = $"The direct method [{methodRequest.MethodName}] is not supported.";
             _logger.Trace(unsupportedMessage, TraceSeverity.Warning);
-            return Task.FromResult(new DirectMethodResponse(400) { Payload = unsupportedMessage });
+            return Task.FromResult(new DirectMethodResponse(400) { Payload = Encoding.UTF8.GetBytes(unsupportedMessage) });
         }
 
         private async Task DesiredPropertyUpdateCallbackAsync(DesiredProperties properties)

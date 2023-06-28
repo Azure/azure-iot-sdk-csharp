@@ -6,6 +6,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Text;
 using System.Threading.Tasks;
 using CommandLine;
 using Newtonsoft.Json;
@@ -46,7 +47,7 @@ namespace Microsoft.Azure.Devices.Samples.InvokeDeviceMethod
         {
             var methodInvocation = new DirectMethodServiceRequest("SetTelemetryInterval")
             {
-                Payload = "10",
+                Payload = Encoding.UTF8.GetBytes("10"),
                 ResponseTimeout = TimeSpan.FromSeconds(30),
             };
 

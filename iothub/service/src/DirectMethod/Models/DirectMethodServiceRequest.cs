@@ -33,7 +33,7 @@ namespace Microsoft.Azure.Devices
         /// The payload to have serialized and send as JSON.
         /// </summary>
         [JsonProperty("payload")]
-        public object Payload { get; set; }
+        public byte[] Payload { get; set; }
 
         /// <summary>
         /// The amount of time given to the service to connect to the device.

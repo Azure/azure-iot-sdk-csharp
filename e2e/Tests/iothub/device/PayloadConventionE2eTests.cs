@@ -3,6 +3,7 @@
 
 using System;
 using System.Threading;
+using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Azure.Devices.Client;
@@ -115,16 +116,17 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 GuidProperty = guid,
             };
 
-            var responsePayload = new StjCustomPayload
-            {
-                StringProperty = foo,
-                GuidProperty = guid,
-            };
+            byte[] responsePayload = Encoding.Unicode.GetBytes(JsonConvert.SerializeObject(
+                new StjCustomPayload
+                {
+                    StringProperty = foo,
+                    GuidProperty = guid,
+                }));
 
             var directMethodRequest = new DirectMethodServiceRequest(MethodName)
             {
                 ResponseTimeout = s_defaultMethodResponseTimeout,
-                Payload = requestPayload,
+                Payload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(requestPayload)),
             };
 
             // act and assert
@@ -179,7 +181,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             var directMethodRequest = new DirectMethodServiceRequest(MethodName)
             {
                 ResponseTimeout = s_defaultMethodResponseTimeout,
-                Payload = payload,
+                Payload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(payload)),
             };
 
             // act and assert
@@ -193,7 +195,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                         messageReceived.TrySetResult(true);
                         var response = new DirectMethodResponse(200)
                         {
-                            Payload = payload,
+                            Payload = Encoding.Unicode.GetBytes(JsonConvert.SerializeObject(payload)),
                         };
                         return Task.FromResult(response);
                     },

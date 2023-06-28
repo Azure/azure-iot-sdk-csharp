@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text;
 using Azure;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -219,7 +220,7 @@ namespace Microsoft.Azure.Devices.Tests
             var cloudToDeviceMethodScheduledJob = new CloudToDeviceMethodScheduledJob(
                 new DirectMethodServiceRequest("testMethod")
                 {
-                    Payload = "testPayload"
+                    Payload = Encoding.UTF8.GetBytes("testPayload")
                 }
             );
 

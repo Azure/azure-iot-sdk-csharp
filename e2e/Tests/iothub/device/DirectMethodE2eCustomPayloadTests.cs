@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Text;
 using FluentAssertions;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
@@ -146,12 +147,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             await testDevice.OpenWithRetryAsync(ct).ConfigureAwait(false);
 
             using var testDeviceCallbackHandler = new TestDeviceCallbackHandler(deviceClient, testDevice.Id);
-            await testDeviceCallbackHandler.SetDeviceReceiveMethodAndRespondAsync<T>(directMethodResponseFromClient, ct);
+            await testDeviceCallbackHandler.SetDeviceReceiveMethodAndRespondAsync<T>(
+                Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(directMethodResponseFromClient)), ct);
 
             var directMethodRequest = new DirectMethodServiceRequest(MethodName)
             {
                 ResponseTimeout = s_defaultMethodResponseTimeout,
-                Payload = directMethodRequestFromService,
+                Payload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(directMethodRequestFromService)),
             };
             testDeviceCallbackHandler.ExpectedDirectMethodRequest = directMethodRequest;
 

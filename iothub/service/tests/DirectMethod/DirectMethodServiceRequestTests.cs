@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Text;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -49,13 +50,13 @@ namespace Microsoft.Azure.Devices.Tests.DirectMethod
             {
                 ConnectionTimeout = expectedTimeout,
                 ResponseTimeout = expectedTimeout,
-                Payload = "test"
+                Payload = Encoding.UTF8.GetBytes("test")
             };
 
             // act + assert
             dcmr.ConnectionTimeout.Should().Be(expectedTimeout);
             dcmr.ResponseTimeout.Should().Be(expectedTimeout);
-            dcmr.Payload.Should().Be("test");
+            Encoding.UTF8.GetString(dcmr.Payload).Should().Be("test");
 
             dcmr.ResponseTimeoutInSeconds.Should().Be(1);
             dcmr.ConnectionTimeoutInSeconds.Should().Be(1);
@@ -68,7 +69,7 @@ namespace Microsoft.Azure.Devices.Tests.DirectMethod
             var expectedTimeout = TimeSpan.FromSeconds(1);
             var dcmr = new DirectMethodServiceRequest("123")
             {
-                Payload = "test"
+                Payload = Encoding.UTF8.GetBytes("test")
             };
 
             dcmr.ResponseTimeoutInSeconds.Should().Be(null);

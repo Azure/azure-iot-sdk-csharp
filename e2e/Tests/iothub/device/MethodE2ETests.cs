@@ -5,6 +5,7 @@ using System;
 using System.Globalization;
 using System.Net;
 using System.Threading;
+using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
 using FluentAssertions.Execution;
@@ -155,7 +156,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             CancellationToken ct = cts.Token;
 
             var date = new DateTimeOffset(638107582284599400, TimeSpan.FromHours(1));
-            var responsePayload = new TestDateTime { Iso8601String = date.ToString("o", CultureInfo.InvariantCulture) };
+            byte[] responsePayload = Encoding.Unicode.GetBytes(
+                JsonConvert.SerializeObject(new TestDateTime { Iso8601String = date.ToString("o", CultureInfo.InvariantCulture) }));
 
             const string methodName = "GetDateTime";
             bool deviceMethodCalledSuccessfully = false;
@@ -196,7 +198,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
 
                 deviceMethodCalledSuccessfully.Should().BeTrue();
                 flag.Should().BeTrue();
-                responsePayload.Should().BeEquivalentTo(actualPayload);
+                responsePayload.Should().BeEquivalentTo(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(actualPayload)));
                 act.Should().NotThrow();
             }
             finally
@@ -303,7 +305,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                     VerboseTestLogger.WriteLine($"{nameof(SendMethodAndUnsubscribeAsync)}: DeviceClient method: {request.MethodName}.");
                     var response = new DirectMethodResponse(200)
                     {
-                        Payload = s_deviceResponsePayload,
+                        Payload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(s_deviceResponsePayload)),
                     };
 
                     return Task.FromResult(response);
@@ -327,11 +329,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             await deviceClient.OpenAsync(ct).ConfigureAwait(false);
 
             using var testDeviceCallbackHandler = new TestDeviceCallbackHandler(deviceClient, testDevice.Id);
-            await testDeviceCallbackHandler.SetDeviceReceiveMethodAndRespondAsync<DirectMethodRequestPayload>(s_deviceResponsePayload, ct);
+            await testDeviceCallbackHandler.SetDeviceReceiveMethodAndRespondAsync<DirectMethodRequestPayload>(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(s_deviceResponsePayload)), ct);
 
             var directMethodRequest = new DirectMethodServiceRequest(MethodName)
             {
-                Payload = s_serviceRequestPayload,
+                Payload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(s_serviceRequestPayload)),
                 ResponseTimeout = s_defaultMethodResponseTimeout,
             };
             testDeviceCallbackHandler.ExpectedDirectMethodRequest = directMethodRequest;
@@ -359,11 +361,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             await deviceClient.OpenAsync(ct).ConfigureAwait(false);
 
             using var testDeviceCallbackHandler = new TestDeviceCallbackHandler(deviceClient, testDevice.Id);
-            await testDeviceCallbackHandler.SetDeviceReceiveMethodAndRespondAsync<DirectMethodRequestPayload>(s_deviceResponsePayload, ct);
+            await testDeviceCallbackHandler.SetDeviceReceiveMethodAndRespondAsync<DirectMethodRequestPayload>(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(s_deviceResponsePayload)), ct);
 
             var directMethodRequest = new DirectMethodServiceRequest(MethodName)
             {
-                Payload = s_serviceRequestPayload,
+                Payload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(s_serviceRequestPayload)),
                 ResponseTimeout = s_defaultMethodResponseTimeout,
             };
             testDeviceCallbackHandler.ExpectedDirectMethodRequest = directMethodRequest;
@@ -401,11 +403,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             await moduleClient.OpenAsync(ct).ConfigureAwait(false);
 
             using var testModuleCallbackHandler = new TestModuleCallbackHandler(moduleClient, testModule.DeviceId, testModule.Id);
-            await testModuleCallbackHandler.SetModuleReceiveMethodAndRespondAsync<DirectMethodRequestPayload>(s_deviceResponsePayload, ct);
+            await testModuleCallbackHandler.SetModuleReceiveMethodAndRespondAsync<DirectMethodRequestPayload>(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(s_deviceResponsePayload)), ct);
 
             var directMethodRequest = new DirectMethodServiceRequest(MethodName)
             {
-                Payload = s_serviceRequestPayload,
+                Payload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(s_serviceRequestPayload)),
                 ResponseTimeout = s_defaultMethodResponseTimeout,
             };
             testModuleCallbackHandler.ExpectedDirectMethodRequest = directMethodRequest;

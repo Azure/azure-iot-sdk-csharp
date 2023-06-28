@@ -44,7 +44,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
             _methodCallbackSemaphore?.Dispose();
         }
 
-        internal async Task SetModuleReceiveMethodAndRespondAsync<T>(object moduleResponsePayload, CancellationToken ct)
+        internal async Task SetModuleReceiveMethodAndRespondAsync<T>(byte[] moduleResponsePayload, CancellationToken ct)
         {
             await _moduleClient.SetDirectMethodCallbackAsync(
                 (request) =>
@@ -54,7 +54,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                     {
                         request.MethodName.Should().Be(ExpectedDirectMethodRequest.MethodName, "The expected method name should match what was sent from service");
 
-                        var expectedRequestPayload = (T)ExpectedDirectMethodRequest.Payload;
+                        byte[] expectedRequestPayload = ExpectedDirectMethodRequest.Payload;
                         request.TryGetPayload(out T actualRequestPayload).Should().BeTrue();
                         actualRequestPayload.Should().BeEquivalentTo(expectedRequestPayload, "The expected method data should match what was sent from service");
 

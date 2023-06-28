@@ -31,7 +31,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
 
         private readonly DirectMethodResponse _directMethodResponseWithPayload = new(200)
         {
-            Payload = 123,
+            Payload = Encoding.Unicode.GetBytes("123"),
         };
 
         private readonly DirectMethodResponse _directMethodResponseWithEmptyByteArrayPayload = new(200)
@@ -744,7 +744,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
             bool isMethodHandlerCalled = false;
             var response = new DirectMethodResponse(200)
             {
-                Payload = true,
+                Payload = Encoding.UTF8.GetBytes("true"),
                 PayloadConvention = DefaultPayloadConvention.Instance,
             };
             await deviceClient
@@ -772,7 +772,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
                 Times.AtLeastOnce);
             isMethodHandlerCalled.Should().BeTrue();
             response.Status.Should().Be(200);
-            response.Payload.Should().Be(true);
+            Encoding.UTF8.GetString(response.Payload).Should().Be("true");
             response.RequestId.Should().Be("1");
             response.PayloadConvention.Should().Be(DefaultPayloadConvention.Instance);
             response.GetPayloadAsBytes().Should().NotBeNull();
