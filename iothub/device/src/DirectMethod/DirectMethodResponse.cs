@@ -29,7 +29,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <remarks>
         /// The payload can be null or primitive type (e.g., string, int/array/list/dictionary/custom type)
         /// </remarks>
-        public object Payload { get; set; }
+        public byte[] Payload { get; set; }
 
         /// <summary>
         /// The request Id for the transport layer.
@@ -92,35 +92,6 @@ namespace Microsoft.Azure.Devices.Client
             }
 
             return false;
-        }
-
-        /// <summary>
-        /// Get the raw payload bytes.
-        /// </summary>
-        /// <remarks>
-        /// Use this method when the payload is not JSON or the type is not known or the type cannot be deserialized
-        /// using the configured <see cref="PayloadConvention"/>. Otherwise, use <see cref="TryGetPayload{T}(out T)"/>.
-        /// </remarks>
-        /// <returns>A copy of the raw payload as a byte array.</returns>
-        /// <example>
-        /// <code language="csharp">
-        /// DirectMethodResponse response = await client
-        ///     .InvokeMethodAsync(deviceId, moduleId, directMethodRequest, cancellationToken)
-        ///     .ConfigureAwait(false);
-        ///
-        /// // Get the payload as bytes
-        /// byte[] arr = directMethodRequest.GetPayloadAsBytes();
-        ///
-        /// // deserialize as needed and do work...
-        ///
-        /// // ...
-        /// </code>
-        /// </example>
-        public byte[] GetPayloadAsBytes()
-        {
-            return Payload == null
-                ? null
-                : PayloadConvention.GetObjectBytes(Payload);
         }
     }
 }
