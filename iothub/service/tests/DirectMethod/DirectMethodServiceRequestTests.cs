@@ -5,6 +5,7 @@ using System;
 using System.Text;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Tests.DirectMethod
 {
@@ -74,6 +75,24 @@ namespace Microsoft.Azure.Devices.Tests.DirectMethod
 
             dcmr.ResponseTimeoutInSeconds.Should().Be(null);
             dcmr.ConnectionTimeoutInSeconds.Should().Be(null);
+        }
+
+        [TestMethod]
+        public void DirectMethodServiceRequest_SerializesCorrectly()
+        {
+            // arrange
+            var directMethodServiceRequest = new DirectMethodServiceRequest("testMethod")
+            {
+                Payload = Encoding.UTF8.GetBytes("testPayload")
+            };
+
+            // act
+            string serializedDirectMethodServiceRequest = JsonConvert.SerializeObject(directMethodServiceRequest);
+            DirectMethodServiceRequest deserializedRequest = JsonConvert.DeserializeObject<DirectMethodServiceRequest>(serializedDirectMethodServiceRequest);
+
+            // assert
+            deserializedRequest.Should().BeEquivalentTo(directMethodServiceRequest);
+            deserializedRequest.Payload.Should().BeEquivalentTo(Encoding.UTF8.GetBytes("testPayload"));
         }
     }
 }

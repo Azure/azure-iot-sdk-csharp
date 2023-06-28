@@ -27,6 +27,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <param name="methodName">The method name to invoke.</param>
         /// <param name="payload">The direct method payload that will be serialized using <see cref="DefaultPayloadConvention"/>.</param>
+        [JsonConstructor]
         public EdgeModuleDirectMethodRequest(string methodName, byte[] payload)
         {
             MethodName = methodName;

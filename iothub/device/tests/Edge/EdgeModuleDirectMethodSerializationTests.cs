@@ -25,14 +25,10 @@ namespace Microsoft.Azure.Devices.Client.Tests.Edge
 
             // act
             string edgeDirectMethodJson = JsonConvert.SerializeObject(edgeDirectMethod, Formatting.None);
-
+            EdgeModuleDirectMethodRequest deserializedEdgeDirectMethod = JsonConvert.DeserializeObject<EdgeModuleDirectMethodRequest>(edgeDirectMethodJson);
             // assert
-            edgeDirectMethodJson.Should().Be("test");
-        }
-
-        [TestMethod]
-        public void EdgeModuleDirectMethodSerialization_DesrializesCorrectly()
-        {
+            deserializedEdgeDirectMethod.Should().BeEquivalentTo(edgeDirectMethod);
+            deserializedEdgeDirectMethod.Payload.Should().BeEquivalentTo(payload);
         }
     }
 }

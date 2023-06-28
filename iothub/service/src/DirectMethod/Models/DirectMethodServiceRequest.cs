@@ -17,6 +17,7 @@ namespace Microsoft.Azure.Devices
         /// <param name="methodName">The method name to run.</param>
         /// <exception cref="ArgumentNullException">When <paramref name="methodName"/> is null.</exception>
         /// <exception cref="ArgumentException">When <paramref name="methodName"/> is empty or white space.</exception>
+        [JsonConstructor]
         public DirectMethodServiceRequest(string methodName)
         {
             Argument.AssertNotNullOrWhiteSpace(methodName, nameof(methodName));
