@@ -81,7 +81,7 @@ namespace Microsoft.Azure.Devices.Client
         /// The direct method payload.
         /// </summary>
         [JsonProperty("payload", NullValueHandling = NullValueHandling.Include)]
-        internal byte[] Payload { get; }
+        internal byte[] Payload { get; set; }
 
         /// <summary>
         /// Method timeout, in seconds.
