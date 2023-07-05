@@ -50,15 +50,7 @@ namespace Microsoft.Azure.Devices.Client
 
             foreach (KeyValuePair<string, object> property in properties)
             {
-                // Ignore the version entry since we've already saved it off.
-                if (property.Key == VersionName)
-                {
-                    // no-op
-                }
-                else
-                {
-                    _properties.Add(property.Key, property.Value);
-                }
+                _properties.Add(property.Key, property.Value);
             }
         }
 

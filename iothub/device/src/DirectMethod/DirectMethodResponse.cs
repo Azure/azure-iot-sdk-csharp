@@ -30,9 +30,6 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The optional direct method payload.
         /// </summary>
-        /// <remarks>
-        /// The payload can be null or primitive type (e.g., string, int/array/list/dictionary/custom type)
-        /// </remarks>
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public byte[] Payload { get; set; }
 
