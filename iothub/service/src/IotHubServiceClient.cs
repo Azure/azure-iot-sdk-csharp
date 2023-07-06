@@ -163,7 +163,7 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Subclient of <see cref="IotHubServiceClient"/> to directly invoke direct methods on devices and modules in IoT hub.
         /// </summary>
-        /// <seealso href="https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-direct-methods"/>
+        /// <seealso href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-direct-methods"/>
         public DirectMethodsClient DirectMethods { get; protected set; }
 
         /// <summary>

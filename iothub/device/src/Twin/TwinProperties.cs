@@ -25,13 +25,13 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The collection of desired property update requests received from service.
         /// </summary>
-        [JsonProperty("desiredProperties")]
+        [JsonProperty("desired")]
         public DesiredProperties Desired { get; }
 
         /// <summary>
         /// The collection of twin properties reported by the client.
         /// </summary>
-        [JsonProperty("reportedProperties")]
+        [JsonProperty("reported")]
         public ReportedProperties Reported { get; }
 
         /// <summary>
