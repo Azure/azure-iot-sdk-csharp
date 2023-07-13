@@ -178,8 +178,15 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
 
             VerboseTestLogger.WriteLine($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Method response status: {methodResponse.Status} for device {deviceId}.");
             methodResponse.Status.Should().Be(200);
-            methodResponse.TryGetPayload(out T actualClientResponsePayload).Should().BeTrue();
-            JsonConvert.SerializeObject(actualClientResponsePayload).Should().BeEquivalentTo(JsonConvert.SerializeObject(expectedClientResponsePayload));
+            methodResponse.TryGetPayload(out byte[] actualClientResponsePayload).Should().BeTrue();
+
+            // Remove escaped backslashes that Newtonsoft adds to the json representation.
+            string stringPayload = JsonConvert.SerializeObject(Encoding.UTF8.GetString(actualClientResponsePayload))
+                .Replace("\\", "");
+
+            // Remove padding of extra double quotes that Newtonsoft adds to the json representation.
+            stringPayload = stringPayload.Substring(1, stringPayload.Length - 2);
+            stringPayload.Should().BeEquivalentTo(JsonConvert.SerializeObject(expectedClientResponsePayload));
         }
     }
 }
