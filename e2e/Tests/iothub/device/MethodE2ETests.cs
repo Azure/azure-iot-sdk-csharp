@@ -156,7 +156,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             CancellationToken ct = cts.Token;
 
             var date = new DateTimeOffset(638107582284599400, TimeSpan.FromHours(1));
-            byte[] responsePayload = Encoding.Unicode.GetBytes(
+            byte[] responsePayload = Encoding.UTF8.GetBytes(
                 JsonConvert.SerializeObject(new TestDateTime { Iso8601String = date.ToString("o", CultureInfo.InvariantCulture) }));
 
             const string methodName = "GetDateTime";
@@ -191,14 +191,16 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 DirectMethodClientResponse response = await serviceClient.DirectMethods
                     .InvokeAsync(testDevice.Id, directMethodRequest, ct)
                     .ConfigureAwait(false);
-                bool flag = response.TryGetPayload(out TestDateTime actualPayload);
-                Action act = () => DateTimeOffset.ParseExact(actualPayload.Iso8601String, "o", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);
+                bool flag = response.TryGetPayload(out byte[] actualPayload);
+                string jsonPayload = Encoding.UTF8.GetString(actualPayload);
+                TestDateTime actualPayloadDateTime = JsonConvert.DeserializeObject<TestDateTime>(jsonPayload);
+                Action act = () => DateTimeOffset.ParseExact(actualPayloadDateTime.Iso8601String, "o", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);
 
                 // assert
 
                 deviceMethodCalledSuccessfully.Should().BeTrue();
                 flag.Should().BeTrue();
-                responsePayload.Should().BeEquivalentTo(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(actualPayload)));
+                jsonPayload.Should().BeEquivalentTo(JsonConvert.SerializeObject(actualPayloadDateTime));
                 act.Should().NotThrow();
             }
             finally
