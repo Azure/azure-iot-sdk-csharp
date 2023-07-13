@@ -3,6 +3,7 @@
 
 using System;
 using System.Runtime.ExceptionServices;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -55,8 +56,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                         request.MethodName.Should().Be(ExpectedDirectMethodRequest.MethodName, "The expected method name should match what was sent from service");
 
                         byte[] expectedRequestPayload = ExpectedDirectMethodRequest.Payload;
-                        request.TryGetPayload(out T actualRequestPayload).Should().BeTrue();
-                        actualRequestPayload.Should().BeEquivalentTo(expectedRequestPayload, "The expected method data should match what was sent from service");
+                        string expectedRequestPayloadString = Encoding.UTF8.GetString(expectedRequestPayload);
+                        request.TryGetPayload(out byte[] actualRequestPayload).Should().BeTrue();
+                        string jsonString = Encoding.UTF8.GetString(actualRequestPayload);
+                        jsonString.Should().BeEquivalentTo(expectedRequestPayloadString, "The expected method data should match what was sent from service");
 
                         var response = new DirectMethodResponse(200)
                         {
