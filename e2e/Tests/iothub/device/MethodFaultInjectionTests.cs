@@ -184,8 +184,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                     VerboseTestLogger.WriteLine($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Method status: {clientResponse.Status} for device {deviceId}.");
 
                     clientResponse.Status.Should().Be(200);
-                    clientResponse.TryGetPayload(out T actualClientResponsePayload).Should().BeTrue();
-                    JsonConvert.SerializeObject(actualClientResponsePayload).Should().Be(JsonConvert.SerializeObject(expectedClientResponsePayload));
+                    clientResponse.TryGetPayload(out byte[] actualClientResponsePayload).Should().BeTrue();
+                    string jsonPayload = Encoding.UTF8.GetString(actualClientResponsePayload);
+                    jsonPayload.Should().Be(JsonConvert.SerializeObject(expectedClientResponsePayload));
 
                     done = true;
                 }
