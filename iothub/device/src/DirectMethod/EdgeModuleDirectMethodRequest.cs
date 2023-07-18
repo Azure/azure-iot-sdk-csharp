@@ -84,6 +84,11 @@ namespace Microsoft.Azure.Devices.Client
         internal byte[] Payload { get; set; }
 
         /// <summary>
+        /// An overloaded way of storing the direct method payload instead of as a byte array.
+        /// </summary>
+        internal object PayloadObject { get; set; }
+
+        /// <summary>
         /// Method timeout, in seconds.
         /// </summary>
         [JsonProperty("responseTimeoutInSeconds", NullValueHandling = NullValueHandling.Ignore)]

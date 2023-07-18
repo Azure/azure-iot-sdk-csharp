@@ -34,6 +34,14 @@ namespace Microsoft.Azure.Devices.Client
         public byte[] Payload { get; set; }
 
         /// <summary>
+        /// An overload of the optional direct method payload to be used in place of a byte array.
+        /// </summary>
+        /// <remarks>
+        /// The payload can be null or primitive type (e.g., string, int/array/list/dictionary/custom type)
+        /// </remarks>
+        public object PayloadAsObject { get; set; }
+
+        /// <summary>
         /// The request Id for the transport layer.
         /// </summary>
         [JsonProperty]
