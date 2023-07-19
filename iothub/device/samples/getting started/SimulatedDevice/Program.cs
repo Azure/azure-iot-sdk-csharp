@@ -64,7 +64,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
         }
         private static Task<DirectMethodResponse> DirectMethodCallback(DirectMethodRequest methodRequest)
         {
-            Console.WriteLine($"Received direct method [{methodRequest.MethodName}] with payload [{Encoding.UTF8.GetString(methodRequest.GetPayloadAsBytes())}].");
+            Console.WriteLine($"Received direct method [{methodRequest.MethodName}] with payload [{Encoding.UTF8.GetString(methodRequest.GetPayload())}].");
 
             switch (methodRequest.MethodName)
             {

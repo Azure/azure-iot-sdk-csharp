@@ -31,13 +31,13 @@ namespace Microsoft.Azure.Devices
         public string MethodName { get; }
 
         /// <summary>
-        /// The payload to have serialized and sent as JSON.
+        /// The serialized and encoded payload bytes.
         /// </summary>
         [JsonProperty("payload")]
         public byte[] Payload { get; set; }
 
         /// <summary>
-        /// An overload for the payload to have serialized and sent as JSON.
+        /// The payload to have serialized and sent as JSON.
         /// </summary>
         public object PayloadAsObject { get; set; }
 
