@@ -217,6 +217,62 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             await messageReceived.WaitAsync(ct).ConfigureAwait(false);
         }
 
+
+        [TestMethod]
+        public async Task Device_DirectMethod_DefaultPayloadConvention_PayloadAsObject()
+        {
+            // arrange
+            using var cts = new CancellationTokenSource(s_testTimeout);
+            CancellationToken ct = cts.Token;
+            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(s_devicePrefix).ConfigureAwait(false);
+            PayloadConvention convention = DefaultPayloadConvention.Instance;
+            var options = new IotHubClientOptions(new IotHubClientAmqpSettings())
+            {
+                PayloadConvention = convention
+            };
+            IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(options);
+            await testDevice.OpenWithRetryAsync(ct).ConfigureAwait(false);
+
+            var payload = new NjCustomPayload
+            {
+                StringProperty = "foo",
+                GuidProperty = Guid.NewGuid().ToString(),
+            };
+
+            var directMethodRequest = new DirectMethodServiceRequest(MethodName)
+            {
+                ResponseTimeout = s_defaultMethodResponseTimeout,
+                PayloadAsObject = payload,
+            };
+
+            // act and assert
+            var messageReceived = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            await deviceClient
+                .SetDirectMethodCallbackAsync((msg) =>
+                {
+                    msg.TryGetPayload(out NjCustomPayload actual).Should().BeTrue();
+                    actual.StringProperty.Should().Be(payload.StringProperty);
+                    actual.GuidProperty.Should().Be(payload.GuidProperty);
+                    messageReceived.TrySetResult(true);
+                    var response = new DirectMethodResponse(200)
+                    {
+                        PayloadAsObject = payload,
+                    };
+                    return Task.FromResult(response);
+                },
+                    ct)
+                .ConfigureAwait(false);
+
+            IotHubServiceClient serviceClient = TestDevice.ServiceClient;
+            DirectMethodClientResponse methodResponse = await serviceClient.DirectMethods
+                .InvokeAsync(testDevice.Id, directMethodRequest, ct)
+                .ConfigureAwait(false);
+            methodResponse.Status.Should().Be(200);
+            methodResponse.TryGetPayload(out NjCustomPayload actualClientResponsePayload).Should().BeTrue();
+            actualClientResponsePayload.Should().BeEquivalentTo(directMethodRequest.PayloadAsObject);
+            await messageReceived.WaitAsync(ct).ConfigureAwait(false);
+        }
+
         [TestMethod]
         public async Task Device_IncomingMessage_SystemTextJsonConvention_Payload()
         {

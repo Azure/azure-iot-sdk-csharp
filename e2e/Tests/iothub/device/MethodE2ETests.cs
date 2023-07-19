@@ -191,16 +191,14 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 DirectMethodClientResponse response = await serviceClient.DirectMethods
                     .InvokeAsync(testDevice.Id, directMethodRequest, ct)
                     .ConfigureAwait(false);
-                bool flag = response.TryGetPayload(out byte[] actualPayload);
+                response.TryGetPayload(out byte[] actualPayload).Should().BeTrue();
                 string jsonPayload = Encoding.UTF8.GetString(actualPayload);
-                TestDateTime actualPayloadDateTime = JsonConvert.DeserializeObject<TestDateTime>(jsonPayload);
-                Action act = () => DateTimeOffset.ParseExact(actualPayloadDateTime.Iso8601String, "o", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);
+                Action act = () => DateTimeOffset.ParseExact(JsonConvert.DeserializeObject<TestDateTime>(jsonPayload).Iso8601String, "o", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);
 
                 // assert
 
                 deviceMethodCalledSuccessfully.Should().BeTrue();
-                flag.Should().BeTrue();
-                jsonPayload.Should().BeEquivalentTo(JsonConvert.SerializeObject(actualPayloadDateTime));
+                jsonPayload.Should().BeEquivalentTo(JsonConvert.SerializeObject(responsePayload));
                 act.Should().NotThrow();
             }
             finally
