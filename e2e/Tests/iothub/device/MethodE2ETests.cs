@@ -198,7 +198,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 // assert
 
                 deviceMethodCalledSuccessfully.Should().BeTrue();
-                jsonPayload.Should().BeEquivalentTo(JsonConvert.SerializeObject(responsePayload));
+                jsonPayload.Should().BeEquivalentTo(Encoding.UTF8.GetString(responsePayload));
                 act.Should().NotThrow();
             }
             finally

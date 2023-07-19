@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Text;
 using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices
@@ -39,7 +40,11 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// The payload to have serialized and sent as JSON.
         /// </summary>
-        public object PayloadAsObject { get; set; }
+        public object PayloadAsObject
+        {
+            get => JsonConvert.DeserializeObject(Encoding.UTF8.GetString(Payload));
+            set => Payload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(value));
+        }
 
         /// <summary>
         /// The amount of time given to the service to connect to the device.

@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
@@ -39,8 +40,11 @@ namespace Microsoft.Azure.Devices.Client
         /// <remarks>
         /// The payload can be null or primitive type (e.g., string, int/array/list/dictionary/custom type)
         /// </remarks>
-        public object PayloadAsObject { get; set; }
-
+        public object PayloadAsObject
+        {
+            get => JsonConvert.DeserializeObject(Encoding.UTF8.GetString(Payload));
+            set => Payload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(value));
+        }
         /// <summary>
         /// The request Id for the transport layer.
         /// </summary>

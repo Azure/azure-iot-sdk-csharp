@@ -10,6 +10,7 @@ using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Devices.E2ETests.Twins
 {
@@ -269,7 +270,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 .ConfigureAwait(false);
             methodResponse.Status.Should().Be(200);
             methodResponse.TryGetPayload(out NjCustomPayload actualClientResponsePayload).Should().BeTrue();
-            actualClientResponsePayload.Should().BeEquivalentTo(directMethodRequest.PayloadAsObject);
+            var expectedPayload = (JObject)directMethodRequest.PayloadAsObject;
+
+            string stringProp = (string)expectedPayload["string"];
+            string guidProp = (string)expectedPayload["guid"];
+            actualClientResponsePayload.StringProperty.Should().BeEquivalentTo(stringProp);
+            actualClientResponsePayload.GuidProperty.Should().BeEquivalentTo(guidProp);
+
             await messageReceived.WaitAsync(ct).ConfigureAwait(false);
         }
 

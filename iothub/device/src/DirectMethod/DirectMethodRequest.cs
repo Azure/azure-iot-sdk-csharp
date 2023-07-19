@@ -2,6 +2,8 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Text;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Client
 {
@@ -96,7 +98,17 @@ namespace Microsoft.Azure.Devices.Client
 
             try
             {
-                payload = PayloadConvention.GetObject<T>(_payload);
+                if (typeof(T) == typeof(byte[]))
+                {
+                    payload = PayloadConvention.GetObject<T>(_payload);
+                    return true;
+                }
+
+                // If not deserializing into byte[], an extra layer of decoding is needed
+                var bytes = PayloadConvention.GetObject<byte[]>(_payload);
+                var test3 = Encoding.UTF8.GetString(bytes);
+                payload = JsonConvert.DeserializeObject<T>(test3);
+
                 return true;
             }
             catch (Exception ex)
