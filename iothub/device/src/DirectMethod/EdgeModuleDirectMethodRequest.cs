@@ -86,7 +86,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// An overloaded way of storing the direct method payload instead of as a byte array.
         /// </summary>
-        internal object PayloadObject { get; set; }
+        internal object PayloadAsObject { get; set; }
 
         /// <summary>
         /// Method timeout, in seconds.

@@ -473,7 +473,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Device
 
                             // Log the current time again and send the response back to the service app.
                             methodPayload.SentOnUtc = DateTimeOffset.UtcNow;
-                            return Task.FromResult(new DirectMethodResponse(200) { Payload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(methodPayload)) });
+                            return Task.FromResult(new DirectMethodResponse(200) { PayloadAsObject = methodPayload });
                         }
                     }
                     catch (Exception ex)

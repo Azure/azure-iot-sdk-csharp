@@ -80,9 +80,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                         request.MethodName.Should().Be(ExpectedDirectMethodRequest.MethodName, "The expected method name should match what was sent from service");
 
                         byte[] expectedRequestPayload = ExpectedDirectMethodRequest.Payload;
-                        string expectedRequestPayloadAsJson = Encoding.UTF8.GetString(expectedRequestPayload);
-                        request.TryGetPayload(out byte[] actualRequestPayload).Should().BeTrue();
-                        actualRequestPayload.Should().BeEquivalentTo(expectedRequestPayload, "The expected method data should match what was sent from service");
+                        request.GetPayloadAsBytes().Should().BeEquivalentTo(expectedRequestPayload, "The expected method data should match what was sent from service");
 
                         var response = new DirectMethodResponse(200)
                         {
