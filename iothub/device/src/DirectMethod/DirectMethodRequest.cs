@@ -105,7 +105,6 @@ namespace Microsoft.Azure.Devices.Client
                 }
 
                 // If not deserializing into byte[], an extra layer of decoding is needed
-
                 payload = JsonConvert.DeserializeObject<T>(Encoding.UTF8.GetString(PayloadConvention.GetObject<byte[]>(_payload)));
 
                 return true;
@@ -144,11 +143,6 @@ namespace Microsoft.Azure.Devices.Client
         public byte[] GetPayload()
         {
             return TryGetPayload(out byte[] payload) ? payload : (byte[])_payload.Clone();
-        }
-
-        internal static string MultipleDecode(byte[] bytes)
-        {
-            return Encoding.UTF8.GetString(JsonConvert.DeserializeObject<byte[]>(Encoding.UTF8.GetString(bytes)));
         }
     }
 }
