@@ -22,7 +22,8 @@ namespace Microsoft.Azure.Devices
         public DirectMethodServiceRequest(string methodName)
         {
             Argument.AssertNotNullOrWhiteSpace(methodName, nameof(methodName));
-            MethodName= methodName;
+            MethodName = methodName;
+            Payload = Array.Empty<byte>();
         }
 
         /// <summary>
