@@ -63,7 +63,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <remarks>
         /// <para>
         /// Use this method when the payload type is known and it can be deserialized using the configured
-        /// <see cref="PayloadConvention"/>. If it is not JSON or the type is not known, use <see cref="GetPayloadAsBytes"/>.
+        /// <see cref="PayloadConvention"/>. If it is not JSON or the type is not known, use <see cref="Payload"/>.
         /// </para>
         /// <para>
         /// One usage of this method is to deserialize the direct method response received by an edge module client
@@ -96,7 +96,7 @@ namespace Microsoft.Azure.Devices.Client
 
             try
             {
-                payload = PayloadConvention.GetObject<T>(GetPayloadAsBytes());
+                payload = PayloadConvention.GetObject<T>(Payload);
                 return true;
             }
             catch (Exception ex)
@@ -108,35 +108,6 @@ namespace Microsoft.Azure.Devices.Client
             }
 
             return false;
-        }
-
-        /// <summary>
-        /// Get the raw payload bytes.
-        /// </summary>
-        /// <remarks>
-        /// Use this method when the payload is not JSON or the type is not known or the type cannot be deserialized
-        /// using the configured <see cref="PayloadConvention"/>. Otherwise, use <see cref="TryGetPayload{T}(out T)"/>.
-        /// </remarks>
-        /// <returns>A copy of the raw payload as a byte array.</returns>
-        /// <example>
-        /// <code language="csharp">
-        /// DirectMethodResponse response = await client
-        ///     .InvokeMethodAsync(deviceId, moduleId, directMethodRequest, cancellationToken)
-        ///     .ConfigureAwait(false);
-        ///
-        /// // Get the payload as bytes
-        /// byte[] arr = directMethodRequest.GetPayloadAsBytes();
-        ///
-        /// // deserialize as needed and do work...
-        ///
-        /// // ...
-        /// </code>
-        /// </example>
-        public byte[] GetPayloadAsBytes()
-        {
-            return Payload == null
-                ? null
-                : PayloadConvention.GetObjectBytes(Payload);
         }
     }
 }

@@ -191,8 +191,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 DirectMethodClientResponse response = await serviceClient.DirectMethods
                     .InvokeAsync(testDevice.Id, directMethodRequest, ct)
                     .ConfigureAwait(false);
-                response.TryGetPayload(out byte[] actualPayload).Should().BeTrue();
-                string jsonPayload = Encoding.UTF8.GetString(actualPayload);
+                string jsonPayload = response.PayloadAsString;
                 Action act = () => DateTimeOffset.ParseExact(JsonConvert.DeserializeObject<TestDateTime>(jsonPayload).Iso8601String, "o", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);
 
                 // assert
@@ -283,8 +282,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
 
             VerboseTestLogger.WriteLine($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Method status: {response.Status}.");
             response.Status.Should().Be(200);
-            response.TryGetPayload(out byte[] actual).Should().BeTrue();
-            string jsonString = Encoding.UTF8.GetString(actual);
+            string jsonString = response.PayloadAsString;
             jsonString.Should().Be(JsonConvert.SerializeObject(respJson));
         }
 

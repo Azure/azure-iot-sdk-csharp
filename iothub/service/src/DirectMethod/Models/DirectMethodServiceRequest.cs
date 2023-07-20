@@ -41,6 +41,7 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// The payload to have serialized and sent as JSON.
         /// </summary>
+        [JsonIgnore]
         public object PayloadAsObject
         {
             get => JsonConvert.DeserializeObject(Encoding.UTF8.GetString(Payload));

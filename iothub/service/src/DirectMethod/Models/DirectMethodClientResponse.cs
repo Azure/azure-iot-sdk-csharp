@@ -75,26 +75,13 @@ namespace Microsoft.Azure.Devices
 
             try
             {
-                if (typeof(T) == typeof(byte[]))
-                {
-                    value = JsonConvert.DeserializeObject<T>(PayloadAsString);
-                    return true;
-                }
-
-                // If not deserializing into byte[], an extra layer of decoding is needed
-                string decodedPayload = MultipleDecode(PayloadAsBytes);
-                value = JsonConvert.DeserializeObject<T>(decodedPayload);
+                value = JsonConvert.DeserializeObject<T>(Encoding.UTF8.GetString(PayloadAsBytes));
                 return true;
             }
             catch (JsonSerializationException)
             {
                 return false;
             }
-        }
-
-        internal static string MultipleDecode(byte[] bytes)
-        {
-            return Encoding.UTF8.GetString(JsonConvert.DeserializeObject<byte[]>(Encoding.UTF8.GetString(bytes)));
         }
     }
 }
