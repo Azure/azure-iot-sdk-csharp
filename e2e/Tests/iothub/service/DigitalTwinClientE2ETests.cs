@@ -101,8 +101,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 .InvokeCommandAsync(deviceId, commandName, requestOptions)
                 .ConfigureAwait(false);
             commandResponse.Status.Should().Be(expectedCommandStatus);
-            string payloadString = Encoding.UTF8.GetString(Convert.FromBase64String(commandResponse.Payload.Trim('"')));
-            payloadString.Should().Be(commandName);
+            commandResponse.Payload.Should().Be(commandName);
         }
 
         [TestMethod]
@@ -197,8 +196,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 .ConfigureAwait(false);
 
             rootCommandResponse.Status.Should().Be(expectedCommandStatus);
-            string rootCommandPayloadString = Encoding.UTF8.GetString(Convert.FromBase64String(rootCommandResponse.Payload.Trim('"')));
-            rootCommandPayloadString.Should().Be(rootCommandName);
+            rootCommandResponse.Payload.Should().Be(rootCommandName);
 
             // Invoke the command "getMaxMinReport" under component "thermostat1" on the digital twin.
             DateTimeOffset since = DateTimeOffset.Now.Subtract(TimeSpan.FromMinutes(1));
@@ -211,8 +209,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 .ConfigureAwait(false);
 
             componentCommandResponse.Status.Should().Be(expectedCommandStatus);
-            string payloadString = Encoding.UTF8.GetString(Convert.FromBase64String(componentCommandResponse.Payload.Trim('"')));
-            payloadString.Should().Be(componentCommandNamePnp);
+            componentCommandResponse.Payload.Should().Be(componentCommandNamePnp);
         }
     }
 }
