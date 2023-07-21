@@ -102,7 +102,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             using var cts = new CancellationTokenSource(s_testTimeout);
             CancellationToken ct = cts.Token;
 
-            await SendMethodAndRespondAsync(new IotHubClientAmqpSettings(IotHubClientTransportProtocol.Tcp), true, false, ct).ConfigureAwait(false);
+            await SendMethodAndRespondAsync(new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket), true, false, ct).ConfigureAwait(false);
         }
 
         [TestMethod]
