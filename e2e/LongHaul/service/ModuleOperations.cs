@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Text;
 using Mash.Logging;
 using Newtonsoft.Json;
 using static Microsoft.Azure.Devices.LongHaul.Service.LoggingConstants;
@@ -49,7 +50,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Service
 
                 var methodInvocation = new DirectMethodServiceRequest("EchoPayload")
                 {
-                    Payload = payload,
+                    Payload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(payload)),
                     ResponseTimeout = TimeSpan.FromSeconds(30),
                 };
 

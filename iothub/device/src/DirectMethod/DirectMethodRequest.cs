@@ -2,6 +2,8 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Text;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Client
 {
@@ -60,7 +62,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <remarks>
         /// Use this method when the payload type is known and it can be deserialized using the configured
-        /// <see cref="PayloadConvention"/>. If it is not JSON or the type is not known, use <see cref="GetPayloadAsBytes"/>.
+        /// <see cref="PayloadConvention"/>. If it is not JSON or the type is not known, use <see cref="GetPayload"/>.
         /// </remarks>
         /// <typeparam name="T">The type to deserialize the direct method request payload to.</typeparam>
         /// <param name="payload">When this method returns true, this contains the value of the direct method request payload.
@@ -96,7 +98,14 @@ namespace Microsoft.Azure.Devices.Client
 
             try
             {
-                payload = PayloadConvention.GetObject<T>(_payload);
+                if (typeof(T) == typeof(byte[]))
+                {
+                    payload = PayloadConvention.GetObject<T>(_payload);
+                    return true;
+                }
+
+                // If not deserializing into byte[], an extra layer of decoding is needed
+                payload = JsonConvert.DeserializeObject<T>(Encoding.UTF8.GetString(PayloadConvention.GetObject<byte[]>(_payload)));
                 return true;
             }
             catch (Exception ex)
@@ -111,13 +120,12 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Get the raw payload bytes.
+        /// Get the payload of the direct method.
         /// </summary>
         /// <remarks>
-        /// Use this method when the payload is not JSON or the type is not known or the type cannot be deserialized
-        /// using the configured <see cref="PayloadConvention"/>. Otherwise, use <see cref="TryGetPayload{T}(out T)"/>.
+        /// This method returns the payload decoded into a byte array to then be further deserialized.
         /// </remarks>
-        /// <returns>A copy of the raw payload as a byte array.</returns>
+        /// <returns>The payload decoded into a byte array or the raw bytes themselves if not possible.</returns>
         /// <example>
         /// <code language="csharp">
         /// await client.SetDirectMethodCallbackAsync((directMethodRequest) =>
@@ -131,9 +139,9 @@ namespace Microsoft.Azure.Devices.Client
         /// cancellationToken);
         /// </code>
         /// </example>
-        public byte[] GetPayloadAsBytes()
+        public byte[] GetPayload()
         {
-            return _payload == null || _payload.Length == 0 ? null : (byte[])_payload.Clone();
+            return _payload == null || _payload.Length == 0 ? null : PayloadConvention.GetObject<byte[]>(_payload);
         }
     }
 }

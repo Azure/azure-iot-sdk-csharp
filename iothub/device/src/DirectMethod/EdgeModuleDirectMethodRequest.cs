@@ -27,7 +27,8 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <param name="methodName">The method name to invoke.</param>
         /// <param name="payload">The direct method payload that will be serialized using <see cref="DefaultPayloadConvention"/>.</param>
-        public EdgeModuleDirectMethodRequest(string methodName, object payload)
+        [JsonConstructor]
+        public EdgeModuleDirectMethodRequest(string methodName, byte[] payload)
         {
             MethodName = methodName;
             Payload = payload;
@@ -80,7 +81,12 @@ namespace Microsoft.Azure.Devices.Client
         /// The direct method payload.
         /// </summary>
         [JsonProperty("payload", NullValueHandling = NullValueHandling.Include)]
-        internal object Payload { get; }
+        internal byte[] Payload { get; set; }
+
+        /// <summary>
+        /// An overloaded way of storing the direct method payload instead of as a byte array.
+        /// </summary>
+        internal object PayloadAsObject { get; set; }
 
         /// <summary>
         /// Method timeout, in seconds.
@@ -97,5 +103,83 @@ namespace Microsoft.Azure.Devices.Client
         internal int? ConnectionTimeoutInSeconds => ConnectionTimeout.HasValue && ConnectionTimeout > TimeSpan.Zero
             ? (int)ConnectionTimeout.Value.TotalSeconds
             : null;
+
+        /// <summary>
+        /// The direct method request payload, deserialized to the specified type.
+        /// </summary>
+        /// <remarks>
+        /// Use this method when the payload type is known and it can be deserialized using the configured
+        /// <see cref="PayloadConvention"/>. If it is not JSON or the type is not known, use <see cref="GetPayloadAsBytes"/>.
+        /// </remarks>
+        /// <typeparam name="T">The type to deserialize the direct method request payload to.</typeparam>
+        /// <param name="payload">When this method returns true, this contains the value of the direct method request payload.
+        /// When this method returns false, this contains the default value of the type <c>T</c> passed in.</param>
+        /// <returns><c>true</c> if the direct method request payload can be deserialized to type <c>T</c>; otherwise, <c>false</c>.</returns>
+        /// <example>
+        /// <code language="csharp">
+        /// await client.SetDirectMethodCallbackAsync((edgeModuleDirectMethodRequest) =>
+        /// {
+        ///     if (edgeModuleDirectMethodRequest.TryGetPayload(out MyCustomType customTypePayload))
+        ///     {
+        ///         // do work
+        ///         // ...
+        ///         
+        ///         // Acknowlege the direct method call with the status code 200.  
+        ///         return Task.FromResult(new DirectMethodResponse(200));
+        ///     }
+        ///     else
+        ///     {
+        ///         // Acknowlege the direct method call the status code 400.
+        ///         return Task.FromResult(new DirectMethodResponse(400));
+        ///     }
+        ///     
+        ///     
+        ///     // ...
+        /// },
+        /// cancellationToken);
+        /// </code>
+        /// </example>
+        public bool TryGetPayload<T>(out T payload)
+        {
+            payload = default;
+
+            try
+            {
+                payload = PayloadConvention.GetObject<T>(Payload);
+                return true;
+            }
+            catch (Exception ex) when (Logging.IsEnabled)
+            {
+                Logging.Error(this, $"Unable to convert payload to {typeof(T)} due to {ex}", nameof(TryGetPayload));
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Get the raw payload bytes.
+        /// </summary>
+        /// <remarks>
+        /// Use this method when the payload is not JSON or the type is not known or the type cannot be deserialized
+        /// using the configured <see cref="PayloadConvention"/>. Otherwise, use <see cref="TryGetPayload{T}(out T)"/>.
+        /// </remarks>
+        /// <returns>A copy of the raw payload as a byte array.</returns>
+        /// <example>
+        /// <code language="csharp">
+        /// await client.SetDirectMethodCallbackAsync((edgeModuleDirectMethodRequest) =>
+        /// {
+        ///     byte[] arr = edgeModuleDirectMethodRequest.GetPayloadAsBytes();
+        ///     // deserialize as needed and do work...
+        ///     
+        ///     // Acknowlege the direct method call with the status code 200. 
+        ///     return Task.FromResult(new DirectMethodResponse(200));
+        /// },
+        /// cancellationToken);
+        /// </code>
+        /// </example>
+        public byte[] GetPayloadAsBytes()
+        {
+            return Payload == null || Payload.Length == 0 ? null : (byte[])Payload.Clone();
+        }
     }
 }

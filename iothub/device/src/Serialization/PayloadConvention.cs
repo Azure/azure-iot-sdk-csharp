@@ -8,7 +8,7 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     /// <remarks>
     /// For binary payloads for operations that support them, the client app should instead use
-    /// <see cref="IncomingMessage.GetPayloadAsBytes"/> and <see cref="DirectMethodRequest.GetPayloadAsBytes"/>.
+    /// <see cref="IncomingMessage.GetPayloadAsBytes"/> and <see cref="DirectMethodRequest.GetPayload"/>.
     /// </remarks>
     public abstract class PayloadConvention
     {

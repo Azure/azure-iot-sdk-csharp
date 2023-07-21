@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Text;
 using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices
@@ -17,10 +18,12 @@ namespace Microsoft.Azure.Devices
         /// <param name="methodName">The method name to run.</param>
         /// <exception cref="ArgumentNullException">When <paramref name="methodName"/> is null.</exception>
         /// <exception cref="ArgumentException">When <paramref name="methodName"/> is empty or white space.</exception>
+        [JsonConstructor]
         public DirectMethodServiceRequest(string methodName)
         {
             Argument.AssertNotNullOrWhiteSpace(methodName, nameof(methodName));
-            MethodName= methodName;
+            MethodName = methodName;
+            Payload = Array.Empty<byte>();
         }
 
         /// <summary>
@@ -30,10 +33,20 @@ namespace Microsoft.Azure.Devices
         public string MethodName { get; }
 
         /// <summary>
-        /// The payload to have serialized and send as JSON.
+        /// The serialized and encoded payload bytes.
         /// </summary>
         [JsonProperty("payload")]
-        public object Payload { get; set; }
+        public byte[] Payload { get; set; }
+
+        /// <summary>
+        /// The payload to have serialized and sent as JSON.
+        /// </summary>
+        [JsonIgnore]
+        public object PayloadAsObject
+        {
+            get => JsonConvert.DeserializeObject(Encoding.UTF8.GetString(Payload));
+            set => Payload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(value));
+        }
 
         /// <summary>
         /// The amount of time given to the service to connect to the device.

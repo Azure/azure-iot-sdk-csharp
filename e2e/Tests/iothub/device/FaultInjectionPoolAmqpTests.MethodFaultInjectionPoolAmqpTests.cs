@@ -4,6 +4,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Text;
 using FluentAssertions;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
@@ -103,7 +104,8 @@ namespace Microsoft.Azure.Devices.E2ETests
             async Task InitOperationAsync(TestDevice _, TestDeviceCallbackHandler testDeviceCallbackHandler, CancellationToken ct)
             {
                 await testDeviceCallbackHandler
-                    .SetDeviceReceiveMethodAndRespondAsync<DirectMethodRequestPayload>(s_deviceResponsePayload, ct)
+                    .SetDeviceReceiveMethodAndRespondAsync<DirectMethodRequestPayload>(
+                        Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(s_deviceResponsePayload)), ct)
                     .ConfigureAwait(false);
             }
 
@@ -114,7 +116,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                 var directMethodRequest = new DirectMethodServiceRequest(MethodName)
                 {
-                    Payload = s_serviceRequestPayload,
+                    Payload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(s_serviceRequestPayload)),
                     ResponseTimeout = s_defaultMethodResponseTimeout,
                 };
                 testDeviceCallbackHandler.ExpectedDirectMethodRequest = directMethodRequest;
@@ -158,8 +160,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             VerboseTestLogger.WriteLine($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Method response status: {methodResponse.Status} for device {deviceId}.");
             methodResponse.Status.Should().Be(200);
-            methodResponse.TryGetPayload(out T actualClientResponsePayload).Should().BeTrue();
-            JsonConvert.SerializeObject(actualClientResponsePayload).Should().BeEquivalentTo(JsonConvert.SerializeObject(expectedClientResponsePayload));
+            methodResponse.PayloadAsString.Should().BeEquivalentTo(JsonConvert.SerializeObject(expectedClientResponsePayload));
         }
     }
 }

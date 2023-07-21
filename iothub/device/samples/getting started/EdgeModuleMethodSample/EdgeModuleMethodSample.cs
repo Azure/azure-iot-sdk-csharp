@@ -86,7 +86,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
         private Task<DirectMethodResponse> WriteToConsoleAsync(DirectMethodRequest directMethodRequest)
         {
             Console.WriteLine($"\t *** {directMethodRequest.MethodName} was called.");
-            Console.WriteLine($"\t{Encoding.UTF8.GetString(directMethodRequest.GetPayloadAsBytes())}\n");
+            Console.WriteLine($"\t{Encoding.UTF8.GetString(directMethodRequest.GetPayload())}\n");
 
             var directMethodResponse = new DirectMethodResponse(200);
 

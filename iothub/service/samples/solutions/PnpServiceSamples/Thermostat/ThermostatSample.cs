@@ -4,6 +4,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using System.Text;
 using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Samples
@@ -77,7 +78,7 @@ namespace Microsoft.Azure.Devices.Samples
             var commandInvocation = new DirectMethodServiceRequest(getMaxMinReportCommandName)
             {
                 ResponseTimeout = TimeSpan.FromSeconds(30),
-                Payload = DateTimeOffset.Now.Subtract(TimeSpan.FromMinutes(2)),
+                Payload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(DateTimeOffset.Now.Subtract(TimeSpan.FromMinutes(2)))),
             };
 
             _logger.LogDebug($"Invoke the {getMaxMinReportCommandName} command on {_deviceId} device twin.");

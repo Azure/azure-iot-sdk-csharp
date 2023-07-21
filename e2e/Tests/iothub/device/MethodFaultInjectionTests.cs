@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics;
 using System.Net;
 using System.Runtime.ExceptionServices;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -183,8 +184,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                     VerboseTestLogger.WriteLine($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Method status: {clientResponse.Status} for device {deviceId}.");
 
                     clientResponse.Status.Should().Be(200);
-                    clientResponse.TryGetPayload(out T actualClientResponsePayload).Should().BeTrue();
-                    JsonConvert.SerializeObject(actualClientResponsePayload).Should().Be(JsonConvert.SerializeObject(expectedClientResponsePayload));
+                    string jsonPayload = clientResponse.PayloadAsString;
+                    jsonPayload.Should().Be(JsonConvert.SerializeObject(expectedClientResponsePayload));
 
                     done = true;
                 }
@@ -213,7 +214,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             {
                 await testDevice.DeviceClient.OpenAsync(ct).ConfigureAwait(false);
                 await testDeviceCallbackHandler
-                    .SetDeviceReceiveMethodAndRespondAsync<DirectMethodRequestPayload>(s_deviceResponsePayload, ct)
+                    .SetDeviceReceiveMethodAndRespondAsync<DirectMethodRequestPayload>(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(s_deviceResponsePayload)), ct)
                     .ConfigureAwait(false);
             }
 
@@ -222,7 +223,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             {
                 var directMethodRequest = new DirectMethodServiceRequest(MethodName)
                 {
-                    Payload = s_serviceRequestPayload,
+                    Payload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(s_serviceRequestPayload)),
                     ResponseTimeout = s_defaultMethodResponseTimeout,
                 };
                 testDeviceCallbackHandler.ExpectedDirectMethodRequest = directMethodRequest;

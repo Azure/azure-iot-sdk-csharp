@@ -5,9 +5,11 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Client.Samples
 {
@@ -245,7 +247,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                             $" maxTemp={report.maxTemp}, minTemp={report.minTemp}, avgTemp={report.avgTemp}, startTime={report.startTime.LocalDateTime}, " +
                             $"endTime={report.endTime.LocalDateTime}");
 
-                        return Task.FromResult(new DirectMethodResponse((int)StatusCode.Completed) { Payload = report });
+                        return Task.FromResult(new DirectMethodResponse((int)StatusCode.Completed) { Payload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(report)) });
                     }
 
                     _logger.LogDebug($"Command: component=\"{componentName}\", no relevant readings found since {sinceInDateTimeOffset.LocalDateTime}, " +

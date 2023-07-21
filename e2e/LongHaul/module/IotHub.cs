@@ -5,6 +5,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Text;
 using Mash.Logging;
+using Newtonsoft.Json;
 using Microsoft.Azure.Devices.Client;
 using static Microsoft.Azure.Devices.LongHaul.Module.LoggingConstants;
 
@@ -280,7 +281,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
                         CurrentTimeUtc = DateTimeOffset.UtcNow,
                     };
 
-                    var directMethodRequest = new EdgeModuleDirectMethodRequest(methodName, payload)
+                    var directMethodRequest = new EdgeModuleDirectMethodRequest(methodName, Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(payload)))
                     {
                         ResponseTimeout = TimeSpan.FromSeconds(30),
                     };
@@ -416,7 +417,7 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
 
         private Task<DirectMethodResponse> DirectMethodCallback(DirectMethodRequest methodRequest)
         {
-            _logger.Trace($"Received direct method [{methodRequest.MethodName}] with payload [{Encoding.UTF8.GetString(methodRequest.GetPayloadAsBytes())}].", TraceSeverity.Information);
+            _logger.Trace($"Received direct method [{methodRequest.MethodName}] with payload [{Encoding.UTF8.GetString(methodRequest.GetPayload())}].", TraceSeverity.Information);
 
             switch (methodRequest.MethodName)
             {
@@ -433,13 +434,13 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
 
                             // Log the current time again and send the response back to the service app.
                             methodPayload.CurrentTimeUtc = DateTimeOffset.UtcNow;
-                            return Task.FromResult(new DirectMethodResponse(200) { Payload = methodPayload });
+                            return Task.FromResult(new DirectMethodResponse(200) { PayloadAsObject = methodPayload });
                         }
                     }
                     catch (Exception ex)
                     {
                         _logger.Trace($"Failed to parse the payload for direct method {methodRequest.MethodName} due to {ex}.", TraceSeverity.Error);
-                        return Task.FromResult(new DirectMethodResponse(400) { Payload = ex.Message });
+                        return Task.FromResult(new DirectMethodResponse(400) { Payload = Encoding.UTF8.GetBytes(ex.Message) });
                     }
                     break;
 
@@ -456,20 +457,20 @@ namespace Microsoft.Azure.Devices.LongHaul.Module
 
                             // Log the current time again and send the response back to the service app.
                             methodPayload.CurrentTimeUtc = DateTimeOffset.UtcNow;
-                            return Task.FromResult(new DirectMethodResponse(200) { Payload = methodPayload });
+                            return Task.FromResult(new DirectMethodResponse(200) { Payload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(methodPayload)) });
                         }
                     }
                     catch (Exception ex)
                     {
                         _logger.Trace($"Failed to parse the payload for direct method {methodRequest.MethodName} due to {ex}.", TraceSeverity.Error);
-                        return Task.FromResult(new DirectMethodResponse(400) { Payload = ex.Message });
+                        return Task.FromResult(new DirectMethodResponse(400) { Payload = Encoding.UTF8.GetBytes(ex.Message) });
                     }
                     break;
             }
 
             string unsupportedMessage = $"The direct method [{methodRequest.MethodName}] is not supported.";
             _logger.Trace(unsupportedMessage, TraceSeverity.Warning);
-            return Task.FromResult(new DirectMethodResponse(400) { Payload = unsupportedMessage });
+            return Task.FromResult(new DirectMethodResponse(400) { Payload = Encoding.UTF8.GetBytes(unsupportedMessage) });
         }
 
         private async Task DesiredPropertyUpdateCallbackAsync(DesiredProperties properties)

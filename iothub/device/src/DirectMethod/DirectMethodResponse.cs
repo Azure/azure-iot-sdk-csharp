@@ -2,6 +2,9 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Text;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 
 namespace Microsoft.Azure.Devices.Client
 {
@@ -13,6 +16,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Initializes an instance of this class.
         /// </summary>
+        [JsonConstructor]
         public DirectMethodResponse(int status)
         {
             Status = status;
@@ -21,24 +25,36 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The status of direct method response.
         /// </summary>
+        [JsonProperty]
         public int Status { get; set; }
 
         /// <summary>
         /// The optional direct method payload.
         /// </summary>
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public byte[] Payload { get; set; }
+
+        /// <summary>
+        /// An overload of the optional direct method payload to be used in place of a byte array.
+        /// </summary>
         /// <remarks>
         /// The payload can be null or primitive type (e.g., string, int/array/list/dictionary/custom type)
         /// </remarks>
-        public object Payload { get; set; }
-
+        public object PayloadAsObject
+        {
+            get => JsonConvert.DeserializeObject(Encoding.UTF8.GetString(Payload));
+            set => Payload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(value));
+        }
         /// <summary>
         /// The request Id for the transport layer.
         /// </summary>
+        [JsonProperty]
         internal string RequestId { get; set; }
 
         /// <summary>
         /// The convention to use with the direct method payload.
         /// </summary>
+        [JsonIgnore]
         protected internal PayloadConvention PayloadConvention { get; set; }
 
         /// <summary>
@@ -47,7 +63,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <remarks>
         /// <para>
         /// Use this method when the payload type is known and it can be deserialized using the configured
-        /// <see cref="PayloadConvention"/>. If it is not JSON or the type is not known, use <see cref="GetPayloadAsBytes"/>.
+        /// <see cref="PayloadConvention"/>. If it is not JSON or the type is not known, use <see cref="Payload"/>.
         /// </para>
         /// <para>
         /// One usage of this method is to deserialize the direct method response received by an edge module client
@@ -80,7 +96,7 @@ namespace Microsoft.Azure.Devices.Client
 
             try
             {
-                payload = PayloadConvention.GetObject<T>(GetPayloadAsBytes());
+                payload = PayloadConvention.GetObject<T>(Payload);
                 return true;
             }
             catch (Exception ex)
@@ -92,35 +108,6 @@ namespace Microsoft.Azure.Devices.Client
             }
 
             return false;
-        }
-
-        /// <summary>
-        /// Get the raw payload bytes.
-        /// </summary>
-        /// <remarks>
-        /// Use this method when the payload is not JSON or the type is not known or the type cannot be deserialized
-        /// using the configured <see cref="PayloadConvention"/>. Otherwise, use <see cref="TryGetPayload{T}(out T)"/>.
-        /// </remarks>
-        /// <returns>A copy of the raw payload as a byte array.</returns>
-        /// <example>
-        /// <code language="csharp">
-        /// DirectMethodResponse response = await client
-        ///     .InvokeMethodAsync(deviceId, moduleId, directMethodRequest, cancellationToken)
-        ///     .ConfigureAwait(false);
-        ///
-        /// // Get the payload as bytes
-        /// byte[] arr = directMethodRequest.GetPayloadAsBytes();
-        ///
-        /// // deserialize as needed and do work...
-        ///
-        /// // ...
-        /// </code>
-        /// </example>
-        public byte[] GetPayloadAsBytes()
-        {
-            return Payload == null
-                ? null
-                : PayloadConvention.GetObjectBytes(Payload);
         }
     }
 }

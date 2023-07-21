@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Text;
 using Azure;
 using FluentAssertions;
 using Microsoft.Azure.Devices.Client;
@@ -84,7 +85,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                     if (request.MethodName == commandName)
                     {
                         response.Status = expectedCommandStatus;
-                        response.Payload = request.MethodName;
+                        response.Payload = Encoding.UTF8.GetBytes(request.MethodName);
                     }
 
                     return Task.FromResult(response);
@@ -100,7 +101,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 .InvokeCommandAsync(deviceId, commandName, requestOptions)
                 .ConfigureAwait(false);
             commandResponse.Status.Should().Be(expectedCommandStatus);
-            commandResponse.Payload.Should().Be(JsonConvert.SerializeObject(commandName));
+            commandResponse.Payload.Should().Be(commandName);
         }
 
         [TestMethod]
@@ -178,7 +179,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                         || request.MethodName == componentCommandNamePnp)
                     {
                         response.Status = expectedCommandStatus;
-                        response.Payload = request.MethodName;
+                        response.Payload = Encoding.UTF8.GetBytes(request.MethodName);
                     }
 
                     return Task.FromResult(response);
@@ -195,7 +196,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 .ConfigureAwait(false);
 
             rootCommandResponse.Status.Should().Be(expectedCommandStatus);
-            rootCommandResponse.Payload.Should().Be(JsonConvert.SerializeObject(rootCommandName));
+            rootCommandResponse.Payload.Should().Be(rootCommandName);
 
             // Invoke the command "getMaxMinReport" under component "thermostat1" on the digital twin.
             DateTimeOffset since = DateTimeOffset.Now.Subtract(TimeSpan.FromMinutes(1));
@@ -208,7 +209,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 .ConfigureAwait(false);
 
             componentCommandResponse.Status.Should().Be(expectedCommandStatus);
-            componentCommandResponse.Payload.Should().Be(JsonConvert.SerializeObject(componentCommandNamePnp));
+            componentCommandResponse.Payload.Should().Be(componentCommandNamePnp);
         }
     }
 }

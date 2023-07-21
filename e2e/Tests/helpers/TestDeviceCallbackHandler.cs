@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.ExceptionServices;
 using System.Threading;
+using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Azure.Devices.Client;
@@ -68,7 +69,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
         }
 
         // Set a direct method callback that expects a request with payload of type T.
-        internal async Task SetDeviceReceiveMethodAndRespondAsync<T>(object deviceResponsePayload, CancellationToken ct = default)
+        internal async Task SetDeviceReceiveMethodAndRespondAsync<T>(byte[] deviceResponsePayload, CancellationToken ct = default)
         {
             await _deviceClient.SetDirectMethodCallbackAsync(
                 (request) =>
@@ -78,9 +79,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                     {
                         request.MethodName.Should().Be(ExpectedDirectMethodRequest.MethodName, "The expected method name should match what was sent from service");
 
-                        var expectedRequestPayload = (T)ExpectedDirectMethodRequest.Payload;
-                        request.TryGetPayload(out T actualRequestPayload).Should().BeTrue();
-                        actualRequestPayload.Should().BeEquivalentTo(expectedRequestPayload, "The expected method data should match what was sent from service");
+                        byte[] expectedRequestPayload = ExpectedDirectMethodRequest.Payload;
+                        request.GetPayload().Should().BeEquivalentTo(expectedRequestPayload, "The expected method data should match what was sent from service");
 
                         var response = new DirectMethodResponse(200)
                         {

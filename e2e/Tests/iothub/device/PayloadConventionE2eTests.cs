@@ -3,12 +3,14 @@
 
 using System;
 using System.Threading;
+using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Devices.E2ETests.Twins
 {
@@ -115,16 +117,17 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 GuidProperty = guid,
             };
 
-            var responsePayload = new StjCustomPayload
-            {
-                StringProperty = foo,
-                GuidProperty = guid,
-            };
+            byte[] responsePayload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(
+                new StjCustomPayload
+                {
+                    StringProperty = foo,
+                    GuidProperty = guid,
+                }));
 
             var directMethodRequest = new DirectMethodServiceRequest(MethodName)
             {
                 ResponseTimeout = s_defaultMethodResponseTimeout,
-                Payload = requestPayload,
+                Payload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(requestPayload)),
             };
 
             // act and assert
@@ -132,9 +135,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             await deviceClient
                 .SetDirectMethodCallbackAsync((msg) =>
                     {
-                        msg.TryGetPayload(out StjCustomPayload actual).Should().BeTrue();
-                        actual.StringProperty.Should().Be(requestPayload.StringProperty);
-                        actual.GuidProperty.Should().Be(requestPayload.GuidProperty);
+                        msg.TryGetPayload(out byte[] actual).Should().BeTrue();
+                        string jsonPayload = Encoding.UTF8.GetString(actual);
+                        NjCustomPayload deserializedServicePayload = JsonConvert.DeserializeObject<NjCustomPayload>(jsonPayload);
+                        deserializedServicePayload.StringProperty.Should().Be(requestPayload.StringProperty);
+                        deserializedServicePayload.GuidProperty.Should().Be(requestPayload.GuidProperty);
                         messageReceived.TrySetResult(true);
                         var response = new DirectMethodResponse(200)
                         {
@@ -150,8 +155,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 .InvokeAsync(testDevice.Id, directMethodRequest, ct)
                 .ConfigureAwait(false);
             methodResponse.Status.Should().Be(200);
-            methodResponse.TryGetPayload(out NjCustomPayload actualClientResponsePayload).Should().BeTrue();
-            JsonConvert.SerializeObject(actualClientResponsePayload).Should().BeEquivalentTo(JsonConvert.SerializeObject(directMethodRequest.Payload));
+            JsonConvert.DeserializeObject<StjCustomPayload>(methodResponse.PayloadAsString).StringProperty.Should().Be(foo);
+            JsonConvert.DeserializeObject<StjCustomPayload>(methodResponse.PayloadAsString).GuidProperty.Should().Be(guid);
             await messageReceived.WaitAsync(ct).ConfigureAwait(false);
         }
 
@@ -175,11 +180,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 StringProperty = "foo",
                 GuidProperty = Guid.NewGuid().ToString(),
             };
-
+            
             var directMethodRequest = new DirectMethodServiceRequest(MethodName)
             {
                 ResponseTimeout = s_defaultMethodResponseTimeout,
-                Payload = payload,
+                Payload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(payload)),
             };
 
             // act and assert
@@ -187,13 +192,15 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             await deviceClient
                 .SetDirectMethodCallbackAsync((msg) =>
                     {
-                        msg.TryGetPayload(out NjCustomPayload actual).Should().BeTrue();
-                        actual.StringProperty.Should().Be(payload.StringProperty);
-                        actual.GuidProperty.Should().Be(payload.GuidProperty);
+                        msg.TryGetPayload(out byte[] actual).Should().BeTrue();
+                        string jsonPayload = Encoding.UTF8.GetString(actual);
+                        NjCustomPayload deserializedServicePayload = JsonConvert.DeserializeObject<NjCustomPayload>(jsonPayload);
+                        deserializedServicePayload.StringProperty.Should().Be(payload.StringProperty);
+                        deserializedServicePayload.GuidProperty.Should().Be(payload.GuidProperty);
                         messageReceived.TrySetResult(true);
                         var response = new DirectMethodResponse(200)
                         {
-                            Payload = payload,
+                            Payload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(payload)),
                         };
                         return Task.FromResult(response);
                     },
@@ -205,8 +212,69 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 .InvokeAsync(testDevice.Id, directMethodRequest, ct)
                 .ConfigureAwait(false);
             methodResponse.Status.Should().Be(200);
+            methodResponse.PayloadAsString.Should().BeEquivalentTo(Encoding.UTF8.GetString(directMethodRequest.Payload));
+            await messageReceived.WaitAsync(ct).ConfigureAwait(false);
+        }
+
+
+        [TestMethod]
+        public async Task Device_DirectMethod_DefaultPayloadConvention_PayloadAsObject()
+        {
+            // arrange
+            using var cts = new CancellationTokenSource(s_testTimeout);
+            CancellationToken ct = cts.Token;
+            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(s_devicePrefix).ConfigureAwait(false);
+            PayloadConvention convention = DefaultPayloadConvention.Instance;
+            var options = new IotHubClientOptions(new IotHubClientAmqpSettings())
+            {
+                PayloadConvention = convention
+            };
+            IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient(options);
+            await testDevice.OpenWithRetryAsync(ct).ConfigureAwait(false);
+
+            var payload = new NjCustomPayload
+            {
+                StringProperty = "foo",
+                GuidProperty = Guid.NewGuid().ToString(),
+            };
+
+            var directMethodRequest = new DirectMethodServiceRequest(MethodName)
+            {
+                ResponseTimeout = s_defaultMethodResponseTimeout,
+                PayloadAsObject = payload,
+            };
+
+            // act and assert
+            var messageReceived = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            await deviceClient
+                .SetDirectMethodCallbackAsync((msg) =>
+                {
+                    msg.TryGetPayload(out NjCustomPayload actual).Should().BeTrue();
+                    actual.StringProperty.Should().Be(payload.StringProperty);
+                    actual.GuidProperty.Should().Be(payload.GuidProperty);
+                    messageReceived.TrySetResult(true);
+                    var response = new DirectMethodResponse(200)
+                    {
+                        PayloadAsObject = payload,
+                    };
+                    return Task.FromResult(response);
+                },
+                    ct)
+                .ConfigureAwait(false);
+
+            IotHubServiceClient serviceClient = TestDevice.ServiceClient;
+            DirectMethodClientResponse methodResponse = await serviceClient.DirectMethods
+                .InvokeAsync(testDevice.Id, directMethodRequest, ct)
+                .ConfigureAwait(false);
+            methodResponse.Status.Should().Be(200);
             methodResponse.TryGetPayload(out NjCustomPayload actualClientResponsePayload).Should().BeTrue();
-            JsonConvert.SerializeObject(actualClientResponsePayload).Should().BeEquivalentTo(JsonConvert.SerializeObject(directMethodRequest.Payload));
+            var expectedPayload = (JObject)directMethodRequest.PayloadAsObject;
+
+            string stringProp = (string)expectedPayload["string"];
+            string guidProp = (string)expectedPayload["guid"];
+            actualClientResponsePayload.StringProperty.Should().BeEquivalentTo(stringProp);
+            actualClientResponsePayload.GuidProperty.Should().BeEquivalentTo(guidProp);
+
             await messageReceived.WaitAsync(ct).ConfigureAwait(false);
         }
 

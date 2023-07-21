@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -40,6 +41,9 @@ namespace Microsoft.Azure.Devices
         [JsonIgnore]
         public string PayloadAsString => JsonPayload.Value<string>();
 
+        [JsonIgnore]
+        internal byte[] PayloadAsBytes => Encoding.UTF8.GetBytes(PayloadAsString);
+
         [JsonProperty("payload")]
         internal JRaw JsonPayload { get; set; }
 
@@ -71,7 +75,7 @@ namespace Microsoft.Azure.Devices
 
             try
             {
-                value = JsonConvert.DeserializeObject<T>(JsonPayload.Value<string>());
+                value = JsonConvert.DeserializeObject<T>(Encoding.UTF8.GetString(PayloadAsBytes));
                 return true;
             }
             catch (JsonSerializationException)
