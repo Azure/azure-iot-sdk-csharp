@@ -22,7 +22,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
             // arrange
             var directMethodResponse = new DirectMethodResponse(200)
             {
-                Payload = Encoding.UTF8.GetBytes("testPayload")
+                Payload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject("testPayload"))
             };
 
             // act
@@ -31,7 +31,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
 
             // assert
             deserializedResponse.Should().BeEquivalentTo(directMethodResponse);
-            deserializedResponse.Payload.Should().BeEquivalentTo(Encoding.UTF8.GetBytes("testPayload"));
+            deserializedResponse.Payload.Should().BeEquivalentTo(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject("testPayload")));
         }
     }
 }

@@ -81,9 +81,9 @@ namespace Microsoft.Azure.Devices.Tests.DirectMethod
         public void DirectMethodServiceRequest_SerializesCorrectly()
         {
             // arrange
-            var directMethodServiceRequest = new DirectMethodServiceRequest("testMethod")
+            var directMethodServiceRequest = new DirectMethodServiceRequest(JsonConvert.SerializeObject("testMethod"))
             {
-                Payload = Encoding.UTF8.GetBytes("testPayload")
+                Payload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject("testPayload"))
             };
 
             // act
@@ -92,7 +92,7 @@ namespace Microsoft.Azure.Devices.Tests.DirectMethod
 
             // assert
             deserializedRequest.Should().BeEquivalentTo(directMethodServiceRequest);
-            deserializedRequest.Payload.Should().BeEquivalentTo(Encoding.UTF8.GetBytes("testPayload"));
+            deserializedRequest.Payload.Should().BeEquivalentTo(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject("testPayload")));
         }
     }
 }

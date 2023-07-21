@@ -359,9 +359,9 @@ namespace Microsoft.Azure.Devices.Client.Tests
             };
 
             const string methodName = "TestMethodName";
-            var methodBody = new CustomDirectMethodPayload { Grade = "good" };
+            byte[] methodBody = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(new CustomDirectMethodPayload { Grade = "good" }));
             await moduleClient.SetDirectMethodCallbackAsync(methodCallback).ConfigureAwait(false);
-            var directMethodRequest = new DirectMethodRequest(methodName, DefaultPayloadConvention.Instance.GetObjectBytes(methodBody))
+            var directMethodRequest = new DirectMethodRequest(methodName, Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(methodBody)))
             {
                 PayloadConvention = DefaultPayloadConvention.Instance,
             };
@@ -376,7 +376,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
 
             methodCallbackCalled.Should().BeTrue();
             methodName.Should().Be(actualMethodName);
-            methodBody.Should().BeEquivalentTo(actualMethodBody);
+            Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(actualMethodBody)).Should().BeEquivalentTo(methodBody);
 
             // arrange
             methodCallbackCalled = false;

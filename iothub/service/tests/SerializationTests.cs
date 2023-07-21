@@ -220,7 +220,7 @@ namespace Microsoft.Azure.Devices.Tests
             var cloudToDeviceMethodScheduledJob = new CloudToDeviceMethodScheduledJob(
                 new DirectMethodServiceRequest("testMethod")
                 {
-                    Payload = Encoding.UTF8.GetBytes("testPayload")
+                    Payload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject("testPayload"))
                 }
             );
 
