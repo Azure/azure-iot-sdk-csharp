@@ -141,12 +141,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </example>
         public byte[] GetPayload()
         {
-            if (_payload == null)
-            {
-                return null;
-            }
-
-            return TryGetPayload(out byte[] payload) ? payload : (byte[])_payload;
+            return _payload == null || _payload.Length == 0 ? null : PayloadConvention.GetObject<byte[]>(_payload);
         }
     }
 }
