@@ -3,6 +3,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Text;
 using System.Threading.Tasks;
 using System;
+using FluentAssertions;
+using Microsoft.Azure.Devices.Client.Authentication;
 
 namespace Microsoft.Azure.Devices.Client.Tests.OnBehalfOf
 {
@@ -22,7 +24,7 @@ namespace Microsoft.Azure.Devices.Client.Tests.OnBehalfOf
 
             var edgeHubCs = await EdgeHubConnectionSettingsBuilder.Build(edgeDevice);
 
-            IAuthenticationMethod leafAuth = new ClientAuthenticationWithSharedAccessKeyRefreshBehalfOf(
+            IAuthenticationMethod leafAuth = new ClientAuthenticationForEdgeHubOnBehalfOf(
                 edgeHubCs.SharedAccessKey!,
                 edgeHubCs.DeviceId!,
                 leafDeviceId,
@@ -45,10 +47,10 @@ namespace Microsoft.Azure.Devices.Client.Tests.OnBehalfOf
             long tick = Environment.TickCount;
             await leafClient.UpdateReportedPropertiesAsync(new ReportedProperties { ["tick"] = tick });
             var twin = await leafClient.GetTwinPropertiesAsync();
-            Assert.NotNull(twin);
-            Assert.NotNull(twin.Reported);
-            Assert.NotNull(twin.Reported["tick"]);
-            Assert.Equal(tick, twin.Reported["tick"]);
+            twin.Should().NotBeNull();
+            twin.Reported.Should().NotBeNull();
+            twin.Reported["tick"].Should().NotBeNull();
+            tick.Should().Be((long)twin.Reported["tick"]);
             await leafClient.CloseAsync();
         }
 
@@ -65,7 +67,7 @@ namespace Microsoft.Azure.Devices.Client.Tests.OnBehalfOf
 
             var edgeHubCs = await EdgeHubConnectionSettingsBuilder.Build(edgeDevice);
 
-            IAuthenticationMethod leafAuth = new ClientAuthenticationWithSharedAccessKeyRefreshBehalfOf(
+            IAuthenticationMethod leafAuth = new ClientAuthenticationForEdgeHubOnBehalfOf(
                 edgeHubCs.SharedAccessKey!,
                 edgeHubCs.DeviceId!,
                 leafDeviceId,
@@ -88,10 +90,10 @@ namespace Microsoft.Azure.Devices.Client.Tests.OnBehalfOf
             long tick = Environment.TickCount;
             await leafClient.UpdateReportedPropertiesAsync(new ReportedProperties { ["tick"] = tick });
             var twin = await leafClient.GetTwinPropertiesAsync();
-            Assert.NotNull(twin);
-            Assert.NotNull(twin.Reported);
-            Assert.NotNull(twin.Reported["tick"]);
-            Assert.Equal(tick, twin.Reported["tick"]);
+            twin.Should().NotBeNull();
+            twin.Reported.Should().NotBeNull();
+            twin.Reported["tick"].Should().NotBeNull();
+            tick.Should().Be((long)twin.Reported["tick"]);
             await leafClient.CloseAsync();
         }
 
@@ -108,7 +110,7 @@ namespace Microsoft.Azure.Devices.Client.Tests.OnBehalfOf
 
             var edgeHubCs = await EdgeHubConnectionSettingsBuilder.Build(edgeDevice);
 
-            IAuthenticationMethod leafAuth = new ClientAuthenticationWithSharedAccessKeyRefreshBehalfOf(
+            IAuthenticationMethod leafAuth = new ClientAuthenticationForEdgeHubOnBehalfOf(
                 edgeHubCs.SharedAccessKey!,
                 edgeHubCs.DeviceId!,
                 edgeDeviceId,
@@ -131,10 +133,10 @@ namespace Microsoft.Azure.Devices.Client.Tests.OnBehalfOf
             long tick = Environment.TickCount;
             await leafClient.UpdateReportedPropertiesAsync(new ReportedProperties { ["tick"] = tick });
             var twin = await leafClient.GetTwinPropertiesAsync();
-            Assert.NotNull(twin);
-            Assert.NotNull(twin.Reported);
-            Assert.NotNull(twin.Reported["tick"]);
-            Assert.Equal(tick, twin.Reported["tick"]);
+            twin.Should().NotBeNull();
+            twin.Reported.Should().NotBeNull();
+            twin.Reported["tick"].Should().NotBeNull();
+            tick.Should().Be((long)twin.Reported["tick"]);
             await leafClient.CloseAsync();
         }
     }
