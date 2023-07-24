@@ -8,11 +8,10 @@ namespace Microsoft.Azure.Devices.Client.Authentication
 {
     /// <summary>
     /// Authentication method that generates shared access signature (SAS) token with refresh, based on a provided shared access key (SAK).
-    /// Build for On Behalf of scenarios only. 
+    /// Build for gateway scenarios when one client authenticates on behalf of the other only.
     /// </summary>
     public class ClientAuthenticationForEdgeHubOnBehalfOf  : ClientAuthenticationWithSharedAccessKeyRefresh
     {
-#nullable enable
         /// <summary>
         /// Creates an instance of this class.
         /// </summary>
@@ -32,7 +31,7 @@ namespace Microsoft.Azure.Devices.Client.Authentication
         string sharedAccessKey,
             string parentDeviceId,
             string deviceId,
-            string? moduleId = null,
+            string moduleId = null,
             TimeSpan sasTokenTimeToLive = default,
             int sasTokenRenewalBuffer = default)
             : base(
