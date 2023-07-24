@@ -15,9 +15,9 @@ namespace Microsoft.Azure.Devices.Client.Authentication
         /// <summary>
         /// Creates an instance of this class.
         /// </summary>
-        /// <param name="sharedAccessKey">Shared access key value.</param>
-        /// <param name="parentDeviceId">Identifier of the parent device.</param>
-        /// <param name="deviceId">Device identifier.</param>
+        /// <param name="sharedAccessKey">Shared access key value for the higher-layer parent device.</param>
+        /// <param name="parentDeviceId">Identifier of the higher-layer parent device that connects directly to IoT Hub.</param>
+        /// <param name="deviceId">Device identifier of the lower-layer device that authenticates through the parent IoT device.</param>
         /// <param name="moduleId">Module identifier.</param>
         /// <param name="sasTokenTimeToLive">
         /// The suggested time to live value for the generated SAS tokens.
