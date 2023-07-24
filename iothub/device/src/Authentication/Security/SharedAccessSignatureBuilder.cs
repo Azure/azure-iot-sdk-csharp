@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Net;
+using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.Azure.Devices.Client.Utilities;
@@ -16,7 +17,6 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     internal sealed class SharedAccessSignatureBuilder
     {
-        private const int DEFAULT_TOKEN_EXPIRY_MINS = 60;
         private string _key;
 
         /// <summary>
@@ -152,32 +152,24 @@ namespace Microsoft.Azure.Devices.Client
             return Sign($"{encodedURI}\n{expiry}", key);
         }
 
-        internal static string GetToken(string encodedURI, string key, long expiry = 0)
+        internal static string GetToken(string encodedURI, string key, long expiry = 0, int defaultTimeToLive = 60)
         {
-            long expiryValue = (expiry == 0) ? DateTimeOffset.UtcNow.AddMinutes(DEFAULT_TOKEN_EXPIRY_MINS).ToUnixTimeSeconds() : expiry;
+            long expiryValue = (expiry == 0) ? DateTimeOffset.UtcNow.AddMinutes(defaultTimeToLive).ToUnixTimeSeconds() : expiry;
             string sig = WebUtility.UrlEncode(Sign($"{encodedURI}\n{expiryValue}", key));
 
             return $"SharedAccessSignature sr={encodedURI}&sig={sig}&se={expiryValue}";
         }
 
-        internal static string GetDeviceToken(string hostname, string deviceId, string key, long expiry = 0)
-        {
-            return GetToken(GetDeviceResourceURI(hostname, deviceId), key, expiry);
-        }
-
-        internal static string GetDeviceToken(string hostname, string deviceId, string moduleId, string key, long expiry = 0)
+        internal static string GetDeviceToken(string hostname, string deviceId, string key, string moduleId = null, long expiry = 0)
         {
             return GetToken(GetDeviceResourceURI(hostname, deviceId, moduleId), key, expiry);
         }
 
-        private static string GetDeviceResourceURI(string hostname, string deviceId)
-        {
-            return WebUtility.UrlEncode(FormattableString.Invariant($"{hostname}/devices/{WebUtility.UrlEncode(deviceId)}"));
-        }
-
         private static string GetDeviceResourceURI(string hostname, string deviceId, string moduleId)
         {
-            return WebUtility.UrlEncode(FormattableString.Invariant($"{hostname}/devices/{WebUtility.UrlEncode(deviceId)}/modules/{WebUtility.UrlEncode(moduleId)}"));
+            return moduleId == null
+                ? WebUtility.UrlEncode(FormattableString.Invariant($"{hostname}/devices/{WebUtility.UrlEncode(deviceId)}"))
+                : WebUtility.UrlEncode(FormattableString.Invariant($"{hostname}/devices/{WebUtility.UrlEncode(deviceId)}/modules/{WebUtility.UrlEncode(moduleId)}"));
         }
     }
 }
