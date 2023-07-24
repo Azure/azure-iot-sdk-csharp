@@ -52,7 +52,7 @@ namespace Microsoft.Azure.Devices.Client.Authentication
         ///<inheritdoc/>
         protected override Task<string> SafeCreateNewTokenAsync(string iotHub, TimeSpan suggestedTimeToLive)
         {
-            string sasToken = SharedAccessSignatureBuilder.GetDeviceToken(iotHub, ParentDeviceId, "$edgeHub", SharedAccessKey);
+            string sasToken = SharedAccessSignatureBuilder.GetDeviceToken(iotHub, ParentDeviceId, SharedAccessKey, "$edgeHub");
             return Task.FromResult(sasToken);
         }
     }
