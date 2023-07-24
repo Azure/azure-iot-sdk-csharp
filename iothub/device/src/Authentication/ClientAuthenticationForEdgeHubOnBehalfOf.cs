@@ -10,7 +10,7 @@ namespace Microsoft.Azure.Devices.Client.Authentication
     /// Authentication method that generates shared access signature (SAS) token with refresh, based on a provided shared access key (SAK).
     /// Build for On Behalf of scenarios only. 
     /// </summary>
-    public class ClientAuthenticationWithSharedAccessKeyRefreshBehalfOf : ClientAuthenticationWithSharedAccessKeyRefresh
+    public class ClientAuthenticationForEdgeHubOnBehalfOf  : ClientAuthenticationWithSharedAccessKeyRefresh
     {
 #nullable enable
         /// <summary>
@@ -28,7 +28,7 @@ namespace Microsoft.Azure.Devices.Client.Authentication
         /// The time buffer before expiry when the token should be renewed, expressed as a percentage of the time to live.
         /// The default behavior is that the token will be renewed when it has 15% or less of its lifespan left.
         /// </param>        
-        public ClientAuthenticationWithSharedAccessKeyRefreshBehalfOf(
+        public ClientAuthenticationForEdgeHubOnBehalfOf (
         string sharedAccessKey,
             string parentDeviceId,
             string deviceId,
