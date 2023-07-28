@@ -580,7 +580,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 // This is used to ensure that when IotHubServiceNoRetry() policy is enabled, we should not be retrying.
                 // This exception is not returned to the user.
                 var networkException = new IotHubClientException("", IotHubClientErrorCode.NetworkErrors);
-                if (!_retryPolicy.ShouldRetry(0, networkException, out TimeSpan delay))
+                if (!_retryPolicy.ShouldRetry(1, networkException, out TimeSpan delay))
                 {
                     if (Logging.IsEnabled)
                         Logging.Info(this, "Transport disconnected: closed by application.", nameof(HandleDisconnectAsync));
