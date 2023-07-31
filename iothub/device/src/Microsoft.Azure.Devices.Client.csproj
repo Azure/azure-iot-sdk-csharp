@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0</TargetFrameworks>
     <LangVersion>9.0</LangVersion>
@@ -28,7 +28,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <Version>2.0.0-preview005</Version>
+    <Version>2.0.0-preview006</Version>
     <Title>Microsoft Azure IoT Device Client SDK</Title>
     <IncludeSource>True</IncludeSource>
     <IncludeSymbols>True</IncludeSymbols>
