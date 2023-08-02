@@ -96,7 +96,7 @@ namespace Microsoft.Azure.Devices.Client.Tests.OnBehalfOf
             string edgeDeviceId = "test-edge-device";
             string edgeModuleId = "test-edge-module";
 
-            var edgeHubCs = new IotHubConnectionString("e4k-hub.azure-devices.net", null, "test-edge-device", "$edgeHub", null, _testKey, null);
+            var edgeHubCs = new IotHubConnectionString("e4k-hub.azure-devices.net", null, edgeDeviceId, edgeModuleId, null, _testKey, null);
 
             IAuthenticationMethod leafAuth = new ClientAuthenticationForEdgeHubOnBehalfOf(
                 edgeHubCs.SharedAccessKey!,
