@@ -8,6 +8,7 @@ using Microsoft.Azure.Devices.Client.Authentication;
 
 namespace Microsoft.Azure.Devices.Client.Tests.OnBehalfOf
 {
+    [TestClass]
     public class EdgeDeviceOnBehalfOfTests
     {
         private static string _testKey => Convert.ToBase64String(Encoding.UTF8.GetBytes(Guid.Empty.ToString("N")));
@@ -17,12 +18,7 @@ namespace Microsoft.Azure.Devices.Client.Tests.OnBehalfOf
         {
             string leafDeviceId = "test-leaf-device";
 
-            DeviceConnectionSettings edgeDevice = new DeviceConnectionSettings("e4k-hub.azure-devices.net", "test-edge-device")
-            {
-                SharedAccessKey = _testKey
-            };
-
-            var edgeHubCs = await EdgeHubConnectionSettingsBuilder.Build(edgeDevice);
+            var edgeHubCs = new IotHubConnectionString("e4k-hub.azure-devices.net", null, "test-edge-device", "$edgeHub", null, _testKey, null);
 
             IAuthenticationMethod leafAuth = new ClientAuthenticationForEdgeHubOnBehalfOf(
                 edgeHubCs.SharedAccessKey!,
@@ -32,7 +28,7 @@ namespace Microsoft.Azure.Devices.Client.Tests.OnBehalfOf
                 TimeSpan.FromMinutes(10),
                 5);
 
-            IotHubDeviceClient leafClient = new(edgeHubCs.HostName, leafAuth,
+            IotHubDeviceClient leafClient = new(edgeHubCs.IotHubHostName, leafAuth,
                 new IotHubClientOptions(
                     new IotHubClientAmqpSettings
                     {
@@ -52,6 +48,7 @@ namespace Microsoft.Azure.Devices.Client.Tests.OnBehalfOf
             twin.Reported["tick"].Should().NotBeNull();
             tick.Should().Be((long)twin.Reported["tick"]);
             await leafClient.CloseAsync();
+            await leafClient.DisposeAsync();
         }
 
         [TestMethod]
@@ -60,12 +57,7 @@ namespace Microsoft.Azure.Devices.Client.Tests.OnBehalfOf
             string leafDeviceId = "test-leaf-device";
             string edgeModuleId = "test-leaf-device-module";
 
-            DeviceConnectionSettings edgeDevice = new DeviceConnectionSettings("e4k-hub.azure-devices.net", "test-edge-device")
-            {
-                SharedAccessKey = _testKey
-            };
-
-            var edgeHubCs = await EdgeHubConnectionSettingsBuilder.Build(edgeDevice);
+            var edgeHubCs = new IotHubConnectionString("e4k-hub.azure-devices.net", null, "test-edge-device", "$edgeHub", null, _testKey, null);
 
             IAuthenticationMethod leafAuth = new ClientAuthenticationForEdgeHubOnBehalfOf(
                 edgeHubCs.SharedAccessKey!,
@@ -75,7 +67,7 @@ namespace Microsoft.Azure.Devices.Client.Tests.OnBehalfOf
                 TimeSpan.FromMinutes(10),
                 5);
 
-            IotHubModuleClient leafClient = new(edgeHubCs.HostName, leafAuth,
+            IotHubModuleClient leafClient = new(edgeHubCs.IotHubHostName, leafAuth,
                 new IotHubClientOptions(
                     new IotHubClientAmqpSettings
                     {
@@ -95,6 +87,7 @@ namespace Microsoft.Azure.Devices.Client.Tests.OnBehalfOf
             twin.Reported["tick"].Should().NotBeNull();
             tick.Should().Be((long)twin.Reported["tick"]);
             await leafClient.CloseAsync();
+            await leafClient.DisposeAsync();
         }
 
         [TestMethod]
@@ -103,12 +96,7 @@ namespace Microsoft.Azure.Devices.Client.Tests.OnBehalfOf
             string edgeDeviceId = "test-edge-device";
             string edgeModuleId = "test-edge-module";
 
-            DeviceConnectionSettings edgeDevice = new DeviceConnectionSettings("e4k-hub.azure-devices.net", edgeDeviceId)
-            {
-                SharedAccessKey = _testKey
-            };
-
-            var edgeHubCs = await EdgeHubConnectionSettingsBuilder.Build(edgeDevice);
+            var edgeHubCs = new IotHubConnectionString("e4k-hub.azure-devices.net", null, "test-edge-device", "$edgeHub", null, _testKey, null);
 
             IAuthenticationMethod leafAuth = new ClientAuthenticationForEdgeHubOnBehalfOf(
                 edgeHubCs.SharedAccessKey!,
@@ -118,7 +106,7 @@ namespace Microsoft.Azure.Devices.Client.Tests.OnBehalfOf
                 TimeSpan.FromMinutes(10),
                 5);
 
-            IotHubModuleClient leafClient = new(edgeHubCs.HostName, leafAuth,
+            IotHubModuleClient leafClient = new(edgeHubCs.IotHubHostName, leafAuth,
                 new IotHubClientOptions(
                     new IotHubClientAmqpSettings
                     {
@@ -138,6 +126,7 @@ namespace Microsoft.Azure.Devices.Client.Tests.OnBehalfOf
             twin.Reported["tick"].Should().NotBeNull();
             tick.Should().Be((long)twin.Reported["tick"]);
             await leafClient.CloseAsync();
+            await leafClient.DisposeAsync();
         }
     }
 }
