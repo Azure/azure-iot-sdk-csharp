@@ -17,8 +17,9 @@ namespace Microsoft.Azure.Devices.Client.Tests.OnBehalfOf
         public async Task ConnectDeviceOnBehalfOf()
         {
             string leafDeviceId = "test-leaf-device";
+            string edgeDeviceId = "test-edge-device";
 
-            var edgeHubCs = new IotHubConnectionString("e4k-hub.azure-devices.net", null, "test-edge-device", "$edgeHub", null, _testKey, null);
+            var edgeHubCs = new IotHubConnectionString("e4k-hub.azure-devices.net", null, edgeDeviceId, "$edgeHub", null, _testKey, null);
 
             IAuthenticationMethod leafAuth = new ClientAuthenticationForEdgeHubOnBehalfOf(
                 edgeHubCs.SharedAccessKey!,
@@ -56,8 +57,9 @@ namespace Microsoft.Azure.Devices.Client.Tests.OnBehalfOf
         {
             string leafDeviceId = "test-leaf-device";
             string edgeModuleId = "test-leaf-device-module";
+            string edgeDeviceId = "test-edge-device";
 
-            var edgeHubCs = new IotHubConnectionString("e4k-hub.azure-devices.net", null, "test-edge-device", "$edgeHub", null, _testKey, null);
+            var edgeHubCs = new IotHubConnectionString("e4k-hub.azure-devices.net", null, edgeDeviceId, edgeModuleId, null, _testKey, null);
 
             IAuthenticationMethod leafAuth = new ClientAuthenticationForEdgeHubOnBehalfOf(
                 edgeHubCs.SharedAccessKey!,
