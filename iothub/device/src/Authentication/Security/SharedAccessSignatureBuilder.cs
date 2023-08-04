@@ -145,5 +145,30 @@ namespace Microsoft.Azure.Devices.Client
             using var algorithm = new HMACSHA256(Convert.FromBase64String(key));
             return Convert.ToBase64String(algorithm.ComputeHash(Encoding.UTF8.GetBytes(requestString)));
         }
+
+        internal static string GetSignature(string encodedURI, string key, long expiry)
+        {
+            return Sign($"{encodedURI}\n{expiry}", key);
+        }
+
+        internal static string GetToken(string encodedURI, string key, long expiry = 0, int defaultTimeToLive = 60)
+        {
+            long expiryValue = (expiry == 0) ? DateTimeOffset.UtcNow.AddMinutes(defaultTimeToLive).ToUnixTimeSeconds() : expiry;
+            string sig = WebUtility.UrlEncode(Sign($"{encodedURI}\n{expiryValue}", key));
+
+            return $"SharedAccessSignature sr={encodedURI}&sig={sig}&se={expiryValue}";
+        }
+
+        internal static string GetDeviceToken(string hostname, string deviceId, string key, string moduleId = null, long expiry = 0)
+        {
+            return GetToken(GetDeviceResourceURI(hostname, deviceId, moduleId), key, expiry);
+        }
+
+        private static string GetDeviceResourceURI(string hostname, string deviceId, string moduleId)
+        {
+            return moduleId == null
+                ? WebUtility.UrlEncode(FormattableString.Invariant($"{hostname}/devices/{WebUtility.UrlEncode(deviceId)}"))
+                : WebUtility.UrlEncode(FormattableString.Invariant($"{hostname}/devices/{WebUtility.UrlEncode(deviceId)}/modules/{WebUtility.UrlEncode(moduleId)}"));
+        }
     }
 }
