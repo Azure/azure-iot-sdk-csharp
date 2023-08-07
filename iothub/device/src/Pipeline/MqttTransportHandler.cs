@@ -1389,6 +1389,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     })
                 .Count();
 
+            _mqttClient.DisconnectedAsync -= HandleDisconnectionAsync;
+            _mqttClient.ApplicationMessageReceivedAsync -= HandleReceivedMessageAsync;
+
             if (Logging.IsEnabled)
                 Logging.Error(this, $"Removed {canceledOperations} twin responses", nameof(RemoveOldOperations));
         }
