@@ -1077,7 +1077,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 // cancel these operations so the client can retry once reconnected.
                 RemoveOldOperations(TimeSpan.Zero);
 
-                _mqttClient.DisconnectedAsync -= HandleDisconnectionAsync;
                 _mqttClient.ApplicationMessageReceivedAsync -= HandleReceivedMessageAsync;
             }
 
