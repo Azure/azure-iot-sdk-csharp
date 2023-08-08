@@ -1076,6 +1076,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 // During a disconnection, any pending twin updates won't be received, so we'll preemptively
                 // cancel these operations so the client can retry once reconnected.
                 RemoveOldOperations(TimeSpan.Zero);
+
+                _mqttClient.DisconnectedAsync -= HandleDisconnectionAsync;
+                _mqttClient.ApplicationMessageReceivedAsync -= HandleReceivedMessageAsync;
             }
 
             return Task.CompletedTask;
@@ -1388,9 +1391,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         return true;
                     })
                 .Count();
-
-            _mqttClient.DisconnectedAsync -= HandleDisconnectionAsync;
-            _mqttClient.ApplicationMessageReceivedAsync -= HandleReceivedMessageAsync;
 
             if (Logging.IsEnabled)
                 Logging.Error(this, $"Removed {canceledOperations} twin responses", nameof(RemoveOldOperations));
