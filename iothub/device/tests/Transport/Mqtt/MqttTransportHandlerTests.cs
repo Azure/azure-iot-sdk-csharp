@@ -9,7 +9,6 @@ using MQTTnet.Client;
 namespace Microsoft.Azure.Devices.Client.Tests.Transport.Mqtt
 {
     [TestClass]
-    [TestCategory("Unit")]
     public class MqttTransportHandlerTests
     {
         [TestMethod]
@@ -28,7 +27,7 @@ namespace Microsoft.Azure.Devices.Client.Tests.Transport.Mqtt
         }
 
         [TestMethod]
-        public async Task mqtt()
+        public async Task MqttTransportHandler_Disconnect_UnhooksMessageProcessorHandler()
         {
             var cancellationToken = new CancellationToken();
             var options = new MqttClientOptions();
