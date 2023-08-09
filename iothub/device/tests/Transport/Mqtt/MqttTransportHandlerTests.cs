@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client.Transport;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -7,6 +8,8 @@ using MQTTnet.Client;
 
 namespace Microsoft.Azure.Devices.Client.Tests.Transport.Mqtt
 {
+    [TestClass]
+    [TestCategory("Unit")]
     public class MqttTransportHandlerTests
     {
         [TestMethod]
@@ -22,6 +25,20 @@ namespace Microsoft.Azure.Devices.Client.Tests.Transport.Mqtt
             await mqttTransportHandler.OpenAsync(cancellationToken);
 
             mockMqttClient.Verify(p => p.ConnectAsync(It.IsAny<MqttClientOptions>(), cancellationToken));
+        }
+
+        [TestMethod]
+        public async Task mqtt()
+        {
+            var cancellationToken = new CancellationToken();
+            var options = new MqttClientOptions();
+
+            var mockMqttClient = new Mock<IMqttClient>();
+            using MqttTransportHandler mqttTransportHandler = CreateTransportHandler(mockMqttClient.Object);
+            await mqttTransportHandler.OpenAsync(cancellationToken);
+            mockMqttClient.VerifyAdd(p => p.ApplicationMessageReceivedAsync += It.IsAny<Func<MqttApplicationMessageReceivedEventArgs, Task>>());
+            mockMqttClient.Raise(p => p.DisconnectedAsync += null, It.IsAny<Func<MqttClientDisconnectedEventArgs, Task>>());
+            mockMqttClient.VerifyRemove(p => p.ApplicationMessageReceivedAsync -= It.IsAny<Func<MqttApplicationMessageReceivedEventArgs, Task>>());
         }
 
         internal static MqttTransportHandler CreateTransportHandler(IMqttClient mockMqttClient)

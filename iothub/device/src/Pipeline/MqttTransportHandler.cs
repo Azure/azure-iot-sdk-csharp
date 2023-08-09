@@ -1069,16 +1069,13 @@ namespace Microsoft.Azure.Devices.Client.Transport
             if (Logging.IsEnabled)
                 Logging.Info(this, $"MQTT connection was lost {disconnectedEventArgs.Exception}", nameof(HandleDisconnectionAsync));
 
-            if (disconnectedEventArgs.ClientWasConnected)
-            {
-                OnTransportDisconnected();
+            OnTransportDisconnected();
 
-                // During a disconnection, any pending twin updates won't be received, so we'll preemptively
-                // cancel these operations so the client can retry once reconnected.
-                RemoveOldOperations(TimeSpan.Zero);
+            // During a disconnection, any pending twin updates won't be received, so we'll preemptively
+            // cancel these operations so the client can retry once reconnected.
+            RemoveOldOperations(TimeSpan.Zero);
 
-                _mqttClient.ApplicationMessageReceivedAsync -= HandleReceivedMessageAsync;
-            }
+            _mqttClient.ApplicationMessageReceivedAsync -= HandleReceivedMessageAsync;
 
             return Task.CompletedTask;
         }
