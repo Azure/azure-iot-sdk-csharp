@@ -191,5 +191,34 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 return _result.Body;
             }
         }
+
+        public static async Task<DeviceOnboardingOperationStatus> OnboardingOperationStatusLookupAsync(
+            this IRuntimeRegistration operations,
+            string registrationId,
+            string operationId,
+            CancellationToken cancellationToken = default(CancellationToken))
+        {
+            using (Rest.HttpOperationResponse<DeviceOnboardingOperationStatus> _result = await operations.OnboardingOperationStatusLookupWithHttpMessagesAsync(
+                                                        registrationId,
+                                                        operationId,
+                                                        null,
+                                                        cancellationToken).ConfigureAwait(false))
+            {
+                return _result.Body;
+            }
+        }
+
+        public static async Task<DeviceOnboardingOperationStatus> OnboardDeviceAsync(
+            this IRuntimeRegistration operations,
+            string registrationId,
+            OnboardingRequest request = default(OnboardingRequest),
+            CancellationToken cancellationToken = default(CancellationToken))
+        {
+            using (Rest.HttpOperationResponse<DeviceOnboardingOperationStatus> _result = await operations.OnboardDeviceWithHttpMessagesAsync(registrationId, request, null, cancellationToken).ConfigureAwait(false))
+            {
+                _result.Body.RetryAfter = _result.Response.Headers.RetryAfter?.Delta;
+                return _result.Body;
+            }
+        }
     }
 }

@@ -151,5 +151,21 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
             return _transport.RegisterAsync(request, cancellationToken);
         }
+
+        /// <summary>
+        /// Onboards the current device using Device Provisioning Service
+        /// </summary>
+        /// <param name="publicKey">Public key of Arc enabled device</param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public Task<DeviceOnboardingResult> OnboardAsync(string publicKey, CancellationToken cancellationToken = default)
+        {
+            var request = new ProvisioningTransportOnboardRequest(_globalDeviceEndpoint, _security, publicKey)
+            {
+                ProductInfo = ProductInfo,
+            };
+
+            return _transport.OnboardAsync(request, cancellationToken);
+        }
     }
 }

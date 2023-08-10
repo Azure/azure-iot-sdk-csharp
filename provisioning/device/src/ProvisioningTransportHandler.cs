@@ -99,6 +99,19 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         }
 
         /// <summary>
+        /// Onboards a device
+        /// </summary>
+        /// <param name="request"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public virtual Task<DeviceOnboardingResult> OnboardAsync(
+            ProvisioningTransportOnboardRequest request,
+            CancellationToken cancellationToken)
+        {
+            return _innerHandler.OnboardAsync(request, cancellationToken);
+        }
+
+        /// <summary>
         /// Releases the unmanaged resources and disposes of the managed resources used by the invoker.
         /// </summary>
         public void Dispose()

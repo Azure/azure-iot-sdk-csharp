@@ -117,5 +117,17 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             bool? forceRegistration = default(bool?),
             Dictionary<string, List<string>> customHeaders = null,
             CancellationToken cancellationToken = default(CancellationToken));
+
+        Task<HttpOperationResponse<DeviceOnboardingOperationStatus>> OnboardingOperationStatusLookupWithHttpMessagesAsync(
+            string registrationId,
+            string operationId,
+            Dictionary<string, List<string>> customHeaders = null,
+            CancellationToken cancellationToken = default(CancellationToken));
+
+        Task<HttpOperationResponse<DeviceOnboardingOperationStatus>> OnboardDeviceWithHttpMessagesAsync(
+            string registrationId,
+            OnboardingRequest request = default(OnboardingRequest),
+            Dictionary<string, List<string>> customHeaders = null,
+            CancellationToken cancellationToken = default(CancellationToken));
     }
 }

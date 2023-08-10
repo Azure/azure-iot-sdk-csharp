@@ -572,5 +572,274 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
             return result;
         }
+
+        public async Task<HttpOperationResponse<DeviceOnboardingOperationStatus>> OnboardingOperationStatusLookupWithHttpMessagesAsync(
+            string registrationId,
+            string operationId,
+            Dictionary<string, List<string>> customHeaders = null,
+            CancellationToken cancellationToken = default)
+        {
+            if (registrationId == null)
+            {
+                throw new ValidationException(ValidationRules.CannotBeNull, "registrationId");
+            }
+            if (operationId == null)
+            {
+                throw new ValidationException(ValidationRules.CannotBeNull, "operationId");
+            }
+
+            // Tracing
+            bool shouldTrace = ServiceClientTracing.IsEnabled;
+            string invocationId = null;
+
+            if (shouldTrace)
+            {
+                invocationId = ServiceClientTracing.NextInvocationId.ToString(CultureInfo.InvariantCulture);
+                var tracingParameters = new Dictionary<string, object>
+                {
+                    { "registrationId", registrationId },
+                    { "operationId", operationId },
+                    { "cancellationToken", cancellationToken }
+                };
+                ServiceClientTracing.Enter(invocationId, this, "OperationStatusLookup", tracingParameters);
+            }
+
+            // Construct URL
+            string baseUrl = Client.BaseUri.AbsoluteUri;
+            string url = new Uri(
+                new Uri(baseUrl + (baseUrl.EndsWith("/", StringComparison.Ordinal) ? "" : "/")),
+                $"devices/{Uri.EscapeDataString(registrationId)}/operations/{Uri.EscapeDataString(operationId)}").ToString();
+
+            // Create HTTP transport objects
+            var httpRequest = new HttpRequestMessage
+            {
+                Method = new HttpMethod("GET"),
+                RequestUri = new Uri(url)
+            };
+
+            // Set Headers
+            if (customHeaders != null)
+            {
+                foreach (KeyValuePair<string, List<string>> header in customHeaders)
+                {
+                    if (httpRequest.Headers.Contains(header.Key))
+                    {
+                        httpRequest.Headers.Remove(header.Key);
+                    }
+                    httpRequest.Headers.TryAddWithoutValidation(header.Key, header.Value);
+                }
+            }
+
+            // Serialize Request
+            string requestContent = null;
+
+            // Set Credentials
+            if (Client.Credentials != null)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                await Client.Credentials.ProcessHttpRequestAsync(httpRequest, cancellationToken).ConfigureAwait(false);
+            }
+
+            // Send Request
+            if (shouldTrace)
+                ServiceClientTracing.SendRequest(invocationId, httpRequest);
+
+            cancellationToken.ThrowIfCancellationRequested();
+            HttpResponseMessage httpResponse = await Client.HttpClient.SendAsync(httpRequest, cancellationToken).ConfigureAwait(false);
+
+            if (shouldTrace)
+                ServiceClientTracing.ReceiveResponse(invocationId, httpResponse);
+
+            HttpStatusCode statusCode = httpResponse.StatusCode;
+            cancellationToken.ThrowIfCancellationRequested();
+            string responseContent;
+            if ((int)statusCode != 200 && (int)statusCode != 202)
+            {
+                var ex = new HttpOperationException(string.Format(CultureInfo.InvariantCulture, "Operation returned an invalid status code '{0}'", statusCode));
+                responseContent = httpResponse.Content == null
+                    ? string.Empty
+                    : await httpResponse.Content.ReadHttpContentAsStringAsync(cancellationToken).ConfigureAwait(false);
+                ex.Request = new HttpRequestMessageWrapper(httpRequest, requestContent);
+                ex.Response = new HttpResponseMessageWrapper(httpResponse, responseContent);
+
+                if (shouldTrace)
+                    ServiceClientTracing.Error(invocationId, ex);
+
+                httpRequest.Dispose();
+                httpResponse?.Dispose();
+                throw ex;
+            }
+
+            // Create Result
+            var result = new HttpOperationResponse<DeviceOnboardingOperationStatus>
+            {
+                Request = httpRequest,
+                Response = httpResponse
+            };
+
+            // Deserialize 200 Response
+            if ((int)statusCode == 200)
+            {
+                responseContent = await httpResponse.Content.ReadHttpContentAsStringAsync(cancellationToken).ConfigureAwait(false);
+                try
+                {
+                    result.Body = SafeJsonConvert.DeserializeObject<DeviceOnboardingOperationStatus>(responseContent, Client.DeserializationSettings);
+                }
+                catch (JsonException ex)
+                {
+                    httpRequest.Dispose();
+                    httpResponse?.Dispose();
+                    throw new SerializationException("Unable to deserialize the response.", responseContent, ex);
+                }
+            }
+
+            // Deserialize 202 Response
+            if ((int)statusCode == 202)
+            {
+                responseContent = await httpResponse.Content.ReadHttpContentAsStringAsync(cancellationToken).ConfigureAwait(false);
+                try
+                {
+                    result.Body = SafeJsonConvert.DeserializeObject<DeviceOnboardingOperationStatus>(responseContent, Client.DeserializationSettings);
+                }
+                catch (JsonException ex)
+                {
+                    httpRequest.Dispose();
+                    httpResponse?.Dispose();
+                    throw new SerializationException("Unable to deserialize the response.", responseContent, ex);
+                }
+            }
+
+            if (shouldTrace)
+                ServiceClientTracing.Exit(invocationId, result);
+
+            return result;
+        }
+
+        public async Task<HttpOperationResponse<DeviceOnboardingOperationStatus>> OnboardDeviceWithHttpMessagesAsync(
+            string registrationId,
+            OnboardingRequest request = default,
+            Dictionary<string, List<string>> customHeaders = null,
+            CancellationToken cancellationToken = default)
+        {
+            if (registrationId == null)
+            {
+                throw new ValidationException(ValidationRules.CannotBeNull, "registrationId");
+            }
+
+            // Tracing
+            bool shouldTrace = ServiceClientTracing.IsEnabled;
+            string invocationId = null;
+            if (shouldTrace)
+            {
+                invocationId = ServiceClientTracing.NextInvocationId.ToString(CultureInfo.InvariantCulture);
+                var tracingParameters = new Dictionary<string, object>
+                {
+                    { "registrationId", registrationId },
+                    { "request", request },
+                    { "cancellationToken", cancellationToken }
+                };
+                ServiceClientTracing.Enter(invocationId, this, "RegisterDevice", tracingParameters);
+            }
+
+            // Construct URL
+            string baseUrl = Client.BaseUri.AbsoluteUri;
+            string url = new Uri(
+                    new Uri(baseUrl + (baseUrl.EndsWith("/", StringComparison.Ordinal) ? "" : "/")),
+                    $"devices:onboard")
+                .ToString();
+
+            // Create HTTP transport objects
+            var httpRequest = new HttpRequestMessage
+            {
+                Method = new HttpMethod("POST"),
+                RequestUri = new Uri(url)
+            };
+
+            // Set Headers
+            if (customHeaders != null)
+            {
+                foreach (KeyValuePair<string, List<string>> header in customHeaders)
+                {
+                    if (httpRequest.Headers.Contains(header.Key))
+                    {
+                        httpRequest.Headers.Remove(header.Key);
+                    }
+                    httpRequest.Headers.TryAddWithoutValidation(header.Key, header.Value);
+                }
+            }
+
+            // Serialize Request
+            string requestContent = null;
+            if (request != null)
+            {
+                requestContent = SafeJsonConvert.SerializeObject(request, Client.SerializationSettings);
+                httpRequest.Content = new StringContent(requestContent, Encoding.UTF8);
+                httpRequest.Content.Headers.ContentType = MediaTypeHeaderValue.Parse("application/json; charset=utf-8");
+            }
+            // Set Credentials
+            if (Client.Credentials != null)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                await Client.Credentials.ProcessHttpRequestAsync(httpRequest, cancellationToken).ConfigureAwait(false);
+            }
+
+            // Send Request
+            if (shouldTrace)
+                ServiceClientTracing.SendRequest(invocationId, httpRequest);
+
+            cancellationToken.ThrowIfCancellationRequested();
+            HttpResponseMessage httpResponse = await Client.HttpClient.SendAsync(httpRequest, cancellationToken).ConfigureAwait(false);
+
+            if (shouldTrace)
+                ServiceClientTracing.ReceiveResponse(invocationId, httpResponse);
+
+            HttpStatusCode statusCode = httpResponse.StatusCode;
+            cancellationToken.ThrowIfCancellationRequested();
+            string responseContent;
+            if ((int)statusCode != 202)
+            {
+                var ex = new HttpOperationException(string.Format(CultureInfo.InvariantCulture, "Operation returned an invalid status code '{0}'", statusCode));
+                responseContent = httpResponse.Content != null
+                    ? await httpResponse.Content.ReadHttpContentAsStringAsync(cancellationToken).ConfigureAwait(false)
+                    : string.Empty;
+                ex.Request = new HttpRequestMessageWrapper(httpRequest, requestContent);
+                ex.Response = new HttpResponseMessageWrapper(httpResponse, responseContent);
+
+                if (shouldTrace)
+                    ServiceClientTracing.Error(invocationId, ex);
+
+                httpRequest.Dispose();
+                httpResponse?.Dispose();
+                throw ex;
+            }
+
+            // Create Result
+            var result = new HttpOperationResponse<DeviceOnboardingOperationStatus>
+            {
+                Request = httpRequest,
+                Response = httpResponse
+            };
+
+            // Deserialize Response
+            if ((int)statusCode == 202)
+            {
+                responseContent = await httpResponse.Content.ReadHttpContentAsStringAsync(cancellationToken).ConfigureAwait(false);
+                try
+                {
+                    result.Body = SafeJsonConvert.DeserializeObject<DeviceOnboardingOperationStatus>(responseContent, Client.DeserializationSettings);
+                }
+                catch (JsonException ex)
+                {
+                    httpRequest.Dispose();
+                    httpResponse?.Dispose();
+                    throw new SerializationException("Unable to deserialize the response.", responseContent, ex);
+                }
+            }
+
+            if (shouldTrace)
+                ServiceClientTracing.Exit(invocationId, result);
+
+            return result;
+        }
     }
 }
