@@ -34,7 +34,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// <summary> Initializes a new instance of Device. </summary>
         /// <param name="registrationId"> The registrationId. </param>
         /// <param name="onboardingStatus"> The status of the onboarding process. </param>
-        public Device(string registrationId, DeviceOnboardingStatus onboardingStatus)
+        public Device(string registrationId, string onboardingStatus)
         {
             RegistrationId = registrationId;
             OnboardingStatus = onboardingStatus;
@@ -43,6 +43,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// <summary> The registrationId. </summary>
         public string RegistrationId { get; }
         /// <summary> The status of the onboarding process. </summary>
-        public DeviceOnboardingStatus OnboardingStatus { get; }
+        public string OnboardingStatus { get; }
     }
 }

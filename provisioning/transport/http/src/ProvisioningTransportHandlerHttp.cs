@@ -343,18 +343,18 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                     Port = Port,
                 };
 
-                using DeviceProvisioningServiceRuntimeClient client = authStrategy.CreateClient(builder.Uri, httpClientHandler);
+                using EdgeProvisioningService client = authStrategy.CreateOnboardingClient(builder.Uri, httpClientHandler);
                 client.HttpClient.DefaultRequestHeaders.Add("User-Agent", request.ProductInfo);
                 if (Logging.IsEnabled)
                     Logging.Info(this, $"Uri: {builder.Uri}; User-Agent: {request.ProductInfo}");
 
                 string registrationId = request.Security.GetRegistrationID();
 
-                OnboardingRequest onboardRequest = new OnboardingRequest(registrationId, new ArcEnabledDeviceMetadata(request.PublicKey));
+                OnboardingRequest onboardRequest = new OnboardingRequest(registrationId, new HybridComputeMachineMetadata(request.PublicKey));
 
-                DeviceOnboardingOperationStatus operation = await client.RuntimeRegistration
-                    .OnboardDeviceAsync(
-                        registrationId,
+                OnboardOperationStatusResponse operation = await client.Devices
+                    .OnboardAsync(
+                        "v1",
                         onboardRequest,
                         cancellationToken: cancellationToken)
                     .ConfigureAwait(false);
@@ -369,21 +369,21 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                         "",
                         "X509",
                         operation.Id,
-                        operation.RetryAfter,
+                        null,
                         operation.Status.ToString());
 
                 // Poll with operationId until registration complete.
                 while (operation.Status == OperationState.InProgress)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    TimeSpan? serviceRecommendedDelay = operation.RetryAfter;
+                    TimeSpan? serviceRecommendedDelay = null;
                     if (serviceRecommendedDelay != null
                         && serviceRecommendedDelay?.TotalSeconds < s_defaultOperationPoolingIntervalMilliseconds.TotalSeconds)
                     {
                         if (Logging.IsEnabled)
                             Logging.Error(
                                 this,
-                                $"Service recommended unexpected retryAfter of {operation.RetryAfter?.TotalSeconds}, defaulting to delay of {s_defaultOperationPoolingIntervalMilliseconds}",
+                                $"Service recommended unexpected retryAfter of {null}, defaulting to delay of {s_defaultOperationPoolingIntervalMilliseconds}",
                                 nameof(OnboardAsync));
 
                         serviceRecommendedDelay = s_defaultOperationPoolingIntervalMilliseconds;
@@ -396,7 +396,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                     try
                     {
                         operation = await client
-                            .RuntimeRegistration.OnboardingOperationStatusLookupAsync(
+                            .Devices.GetOperationStatusAsync(
+                                "v1",
                                 registrationId,
                                 operationId,
                                 cancellationToken: cancellationToken)
@@ -409,18 +410,18 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
                         try
                         {
-                            ProvisioningErrorDetailsHttp errorDetails = JsonConvert.DeserializeObject<ProvisioningErrorDetailsHttp>(ex.Response.Content);
+                            AzureCoreFoundationsErrorResponse errorDetails = JsonConvert.DeserializeObject<AzureCoreFoundationsErrorResponse>(ex.Response.Content);
 
                             if (isTransient)
                             {
-                                serviceRecommendedDelay = errorDetails.RetryAfter;
+                                serviceRecommendedDelay = null;
                             }
                             else
                             {
                                 if (Logging.IsEnabled)
                                     Logging.Error(this, $"{nameof(ProvisioningTransportHandlerHttp)} threw exception {ex}", nameof(OnboardAsync));
 
-                                throw new ProvisioningTransportException(ex.Response.Content, ex, isTransient, errorDetails);
+                                throw new ProvisioningTransportException(ex.Response.Content, ex, isTransient);
                             }
                         }
                         catch (JsonException jex)
@@ -444,7 +445,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                             this,
                             registrationId,
                             operation.Id,
-                            operation.RetryAfter,
+                            null,
                             operation.Status.ToString(),
                             attempts);
 
@@ -463,8 +464,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
                 try
                 {
-                    ProvisioningErrorDetailsHttp errorDetails = JsonConvert.DeserializeObject<ProvisioningErrorDetailsHttp>(ex.Response.Content);
-                    throw new ProvisioningTransportException(ex.Response.Content, ex, isTransient, errorDetails);
+                    AzureCoreFoundationsError errorDetails = JsonConvert.DeserializeObject<AzureCoreFoundationsError>(ex.Response.Content);
+                    throw new ProvisioningTransportException(ex.Response.Content, ex, isTransient);
                 }
                 catch (JsonException jex)
                 {
@@ -514,13 +515,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 result?.Payload?.ToString(CultureInfo.InvariantCulture));
         }
 
-        private static DeviceOnboardingResult ConvertToOnboardingResult(DeviceOnboardingOperationStatus result)
+        private static DeviceOnboardingResult ConvertToOnboardingResult(OnboardOperationStatusResponse result)
         {
             return new DeviceOnboardingResult(
                 result.Id,
                 new Device(
                     result.Result.RegistrationId, 
-                    result.Result.OnboardingStatus)
+                    result.Status)
                 );
         }
     }

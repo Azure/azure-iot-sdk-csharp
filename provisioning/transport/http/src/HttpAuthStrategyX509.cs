@@ -31,6 +31,17 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 new ApiVersionDelegatingHandler());
         }
 
+        public override EdgeProvisioningService CreateOnboardingClient(Uri uri, HttpClientHandler httpClientHandler)
+        {
+            _certificate = _security.GetAuthenticationCertificate();
+
+            return new EdgeProvisioningService(
+                uri,
+                new CertificateChainCredentials(new[] { _certificate }),
+                httpClientHandler,
+                new ApiVersionDelegatingHandler());
+        }
+
         public override DeviceRegistration CreateDeviceRegistration()
         {
             Debug.Assert(_certificate != null);

@@ -10,15 +10,16 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Models
     using System.Linq;
 
     /// <summary>
-    /// The response metadata.
+    /// The DeviceRegistryDevice request metadata.
     /// </summary>
-    [Newtonsoft.Json.JsonObject("ResponseMetadata")]
-    public partial class ResponseMetadata
+    [Newtonsoft.Json.JsonObject("DeviceRegistryDeviceMetadata")]
+    public partial class DeviceRegistryDeviceMetadata : ResourceMetadata
     {
         /// <summary>
-        /// Initializes a new instance of the ResponseMetadata class.
+        /// Initializes a new instance of the DeviceRegistryDeviceMetadata
+        /// class.
         /// </summary>
-        public ResponseMetadata()
+        public DeviceRegistryDeviceMetadata()
         {
             CustomInit();
         }

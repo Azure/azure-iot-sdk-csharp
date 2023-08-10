@@ -36,6 +36,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             return new DeviceRegistration(_security.GetRegistrationID());
         }
 
+        public override EdgeProvisioningService CreateOnboardingClient(Uri uri, HttpClientHandler httpClientHandler)
+        {
+            throw new NotImplementedException();
+        }
+
         public override void SaveCredentials(RegistrationOperationStatus status)
         {
 

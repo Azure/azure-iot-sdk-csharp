@@ -11,27 +11,27 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Models
     using System.Linq;
 
     /// <summary>
-    /// The device object.
+    /// A response containing error details.
     /// </summary>
-    public partial class Device
+    public partial class AzureCoreFoundationsErrorResponse
     {
         /// <summary>
-        /// Initializes a new instance of the Device class.
+        /// Initializes a new instance of the AzureCoreFoundationsErrorResponse
+        /// class.
         /// </summary>
-        public Device()
+        public AzureCoreFoundationsErrorResponse()
         {
             CustomInit();
         }
 
         /// <summary>
-        /// Initializes a new instance of the Device class.
+        /// Initializes a new instance of the AzureCoreFoundationsErrorResponse
+        /// class.
         /// </summary>
-        /// <param name="registrationId">The registrationId.</param>
-        /// <param name="resourceMetadata">The response metadata.</param>
-        public Device(string registrationId, ResponseMetadata resourceMetadata)
+        /// <param name="error">The error object.</param>
+        public AzureCoreFoundationsErrorResponse(AzureCoreFoundationsError error)
         {
-            RegistrationId = registrationId;
-            ResourceMetadata = resourceMetadata;
+            Error = error;
             CustomInit();
         }
 
@@ -41,16 +41,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Models
         partial void CustomInit();
 
         /// <summary>
-        /// Gets the registrationId.
+        /// Gets or sets the error object.
         /// </summary>
-        [JsonProperty(PropertyName = "registrationId")]
-        public string RegistrationId { get; private set; }
-
-        /// <summary>
-        /// Gets or sets the response metadata.
-        /// </summary>
-        [JsonProperty(PropertyName = "resourceMetadata")]
-        public ResponseMetadata ResourceMetadata { get; set; }
+        [JsonProperty(PropertyName = "error")]
+        public AzureCoreFoundationsError Error { get; set; }
 
         /// <summary>
         /// Validate the object.
@@ -60,9 +54,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Models
         /// </exception>
         public virtual void Validate()
         {
-            if (ResourceMetadata == null)
+            if (Error == null)
             {
-                throw new ValidationException(ValidationRules.CannotBeNull, "ResourceMetadata");
+                throw new ValidationException(ValidationRules.CannotBeNull, "Error");
+            }
+            if (Error != null)
+            {
+                Error.Validate();
             }
         }
     }

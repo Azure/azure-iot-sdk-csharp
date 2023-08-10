@@ -11,27 +11,28 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Models
     using System.Linq;
 
     /// <summary>
-    /// The device object.
+    /// The HybridComputeMachine onboarding request metadata.
     /// </summary>
-    public partial class Device
+    [Newtonsoft.Json.JsonObject("HybridComputeMachineMetadata")]
+    public partial class HybridComputeMachineMetadata : ResourceMetadata
     {
         /// <summary>
-        /// Initializes a new instance of the Device class.
+        /// Initializes a new instance of the HybridComputeMachineMetadata
+        /// class.
         /// </summary>
-        public Device()
+        public HybridComputeMachineMetadata()
         {
             CustomInit();
         }
 
         /// <summary>
-        /// Initializes a new instance of the Device class.
+        /// Initializes a new instance of the HybridComputeMachineMetadata
+        /// class.
         /// </summary>
-        /// <param name="registrationId">The registrationId.</param>
-        /// <param name="resourceMetadata">The response metadata.</param>
-        public Device(string registrationId, ResponseMetadata resourceMetadata)
+        /// <param name="publicKey">The Arc for Servers public key.</param>
+        public HybridComputeMachineMetadata(string publicKey)
         {
-            RegistrationId = registrationId;
-            ResourceMetadata = resourceMetadata;
+            PublicKey = publicKey;
             CustomInit();
         }
 
@@ -41,16 +42,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Models
         partial void CustomInit();
 
         /// <summary>
-        /// Gets the registrationId.
+        /// Gets or sets the Arc for Servers public key.
         /// </summary>
-        [JsonProperty(PropertyName = "registrationId")]
-        public string RegistrationId { get; private set; }
-
-        /// <summary>
-        /// Gets or sets the response metadata.
-        /// </summary>
-        [JsonProperty(PropertyName = "resourceMetadata")]
-        public ResponseMetadata ResourceMetadata { get; set; }
+        [JsonProperty(PropertyName = "publicKey")]
+        public string PublicKey { get; set; }
 
         /// <summary>
         /// Validate the object.
@@ -60,9 +55,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Models
         /// </exception>
         public virtual void Validate()
         {
-            if (ResourceMetadata == null)
+            if (PublicKey == null)
             {
-                throw new ValidationException(ValidationRules.CannotBeNull, "ResourceMetadata");
+                throw new ValidationException(ValidationRules.CannotBeNull, "PublicKey");
             }
         }
     }
