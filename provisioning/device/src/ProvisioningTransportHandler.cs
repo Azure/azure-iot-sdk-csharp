@@ -110,6 +110,15 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         {
             return _innerHandler.OnboardAsync(request, cancellationToken);
         }
+        
+        /// <summary>
+        /// Issue challenge
+        /// </summary>
+        /// <returns></returns>
+        public virtual Task<string> IssueChallengeAsync(ProvisioningTransportIssueChallengeRequest request, CancellationToken cancellationToken)
+        {
+            return _innerHandler.IssueChallengeAsync(request, cancellationToken);
+        }
 
         /// <summary>
         /// Releases the unmanaged resources and disposes of the managed resources used by the invoker.

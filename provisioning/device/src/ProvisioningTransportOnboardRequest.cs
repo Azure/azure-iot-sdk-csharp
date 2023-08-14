@@ -8,33 +8,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
     /// <summary>
     /// Represents a Provisioning onboard message.
     /// </summary>
-    public class ProvisioningTransportOnboardRequest
+    public class ProvisioningTransportOnboardRequest : ProvisioningTransportRequest
     {
-        private readonly ProductInfo _productInfo = new ProductInfo();
-
-        /// <summary>
-        /// The Global Device Endpoint for this message.
-        /// </summary>
-        public string GlobalDeviceEndpoint { get; private set; }
-
-        /// <summary>
-        /// The SecurityProvider used to authenticate the client.
-        /// </summary>
-        public SecurityProvider Security { get; private set; }
-
         /// <summary>
         /// The Arc for Servers public key.
         /// </summary>
         public string PublicKey { get; private set; }
-
-        /// <summary>
-        /// The Product Information sent to the Provisioning Service. The application can specify extra information.
-        /// </summary>
-        public string ProductInfo
-        {
-            get => _productInfo.ToString();
-            set => _productInfo.Extra = value;
-        }
 
         /// <summary>
         /// Creates a new instance of the ProvisioningTransportOnboardRequest class.
@@ -46,9 +25,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             string globalDeviceEndpoint,
             SecurityProvider security,
             string publicKey)
+            : base(globalDeviceEndpoint, security)
         {
-            GlobalDeviceEndpoint = globalDeviceEndpoint;
-            Security = security;
             PublicKey = publicKey;
         }
     }

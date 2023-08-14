@@ -6,6 +6,7 @@
 
 namespace Microsoft.Azure.Devices.Discovery.Client.Transport.Http
 {
+    using Microsoft.Azure.Devices.Provisioning.Client.Transport.Models;
     using Microsoft.Rest;
     using Models;
     using Newtonsoft.Json;
