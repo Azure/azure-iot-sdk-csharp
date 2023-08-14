@@ -167,5 +167,33 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
             return _transport.OnboardAsync(request, cancellationToken);
         }
+
+        /// <summary>
+        /// Gets challenge string to decrypt to onboard device
+        /// </summary>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        /// <exception cref="NotSupportedException">Security provider must be TPM</exception>
+        public Task<string> IssueChallengeAsync(CancellationToken cancellationToken = default)
+        {
+            if (_security is SecurityProviderTpm securityProviderTpm)
+            {
+                var request = new ProvisioningTransportIssueChallengeRequest(
+                    _globalDeviceEndpoint, 
+                    _security, 
+                    securityProviderTpm.GetRegistrationID(), 
+                    Convert.ToBase64String(securityProviderTpm.GetEndorsementKey()), 
+                    Convert.ToBase64String(securityProviderTpm.GetStorageRootKey()))
+                {
+                    ProductInfo = ProductInfo,
+                };
+
+                return _transport.IssueChallengeAsync(request, cancellationToken);
+            }
+            else
+            {
+                throw new NotSupportedException($"{nameof(_security)} must be of type {nameof(SecurityProviderTpm)}");
+            }
+        }
     }
 }

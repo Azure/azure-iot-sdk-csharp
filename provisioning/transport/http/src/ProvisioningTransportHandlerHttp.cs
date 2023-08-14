@@ -504,7 +504,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         public override async Task<string> IssueChallengeAsync(ProvisioningTransportIssueChallengeRequest request, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"{nameof(ProvisioningTransportHandlerHttp)}.{nameof(OnboardAsync)}");
+                Logging.Enter(this, $"{nameof(ProvisioningTransportHandlerHttp)}.{nameof(IssueChallengeAsync)}");
 
             if (request == null)
             {
@@ -529,7 +529,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                     httpClientHandler.UseProxy = Proxy != null;
                     httpClientHandler.Proxy = Proxy;
                     if (Logging.IsEnabled)
-                        Logging.Info(this, $"{nameof(OnboardAsync)} Setting HttpClientHandler.Proxy");
+                        Logging.Info(this, $"{nameof(IssueChallengeAsync)} Setting HttpClientHandler.Proxy");
                 }
 
                 var builder = new UriBuilder
@@ -557,7 +557,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             catch (HttpOperationException ex)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"{nameof(ProvisioningTransportHandlerHttp)} threw exception {ex}", nameof(OnboardAsync));
+                    Logging.Error(this, $"{nameof(ProvisioningTransportHandlerHttp)} threw exception {ex}", nameof(IssueChallengeAsync));
 
                 bool isTransient = ex.Response.StatusCode >= HttpStatusCode.InternalServerError
                     || (int)ex.Response.StatusCode == 429;
@@ -573,7 +573,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                         Logging.Error(
                             this,
                             $"{nameof(ProvisioningTransportHandlerHttp)} server returned malformed error response. Parsing error: {jex}. Server response: {ex.Response.Content}",
-                            nameof(OnboardAsync));
+                            nameof(IssueChallengeAsync));
 
                     throw new ProvisioningTransportException(
                         $"HTTP transport exception: malformed server error message: '{ex.Response.Content}'",
@@ -584,14 +584,14 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             catch (Exception ex) when (!(ex is ProvisioningTransportException))
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"{nameof(ProvisioningTransportHandlerHttp)} threw exception {ex}", nameof(OnboardAsync));
+                    Logging.Error(this, $"{nameof(ProvisioningTransportHandlerHttp)} threw exception {ex}", nameof(IssueChallengeAsync));
 
                 throw new ProvisioningTransportException($"HTTP transport exception", ex, true);
             }
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, $"{nameof(ProvisioningTransportHandlerHttp)}.{nameof(OnboardAsync)}");
+                    Logging.Exit(this, $"{nameof(ProvisioningTransportHandlerHttp)}.{nameof(IssueChallengeAsync)}");
             }
         }
 
