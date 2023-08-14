@@ -27,6 +27,7 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport.Http
         /// </param>
         /// <param name='body'>
         /// </param>
+        /// <param name="credentials"></param>
         /// <param name='customHeaders'>
         /// The headers that will be added to request.
         /// </param>
@@ -42,7 +43,7 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport.Http
         /// <exception cref="Microsoft.Rest.ValidationException">
         /// Thrown when a required parameter is null
         /// </exception>
-        Task<HttpOperationResponse<BootstrapResponse,DiscoveryRegistrationsGetOnboardingInfoHeaders>> GetOnboardingInfoWithHttpMessagesAsync(string apiVersion, BootstrapRequest body, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        Task<HttpOperationResponse<BootstrapResponse,DiscoveryRegistrationsGetOnboardingInfoHeaders>> GetOnboardingInfoWithHttpMessagesAsync(string apiVersion, BootstrapRequest body, TokenCredentials credentials, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
         /// <summary>
         /// Issue TPM Challenge. Will return an encrypted nonce, that can be
         /// used to sign a SAS Token for the GetOnboardingInfo request.

@@ -55,6 +55,7 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport.Http
         /// </param>
         /// <param name='body'>
         /// </param>
+        /// <param name="credentials"></param>
         /// <param name='customHeaders'>
         /// Headers that will be added to request.
         /// </param>
@@ -76,7 +77,7 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport.Http
         /// <return>
         /// A response object containing the response body and response headers.
         /// </return>
-        public async Task<HttpOperationResponse<BootstrapResponse,DiscoveryRegistrationsGetOnboardingInfoHeaders>> GetOnboardingInfoWithHttpMessagesAsync(string apiVersion, BootstrapRequest body, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<HttpOperationResponse<BootstrapResponse,DiscoveryRegistrationsGetOnboardingInfoHeaders>> GetOnboardingInfoWithHttpMessagesAsync(string apiVersion, BootstrapRequest body, TokenCredentials credentials, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (apiVersion == null)
             {
@@ -143,7 +144,13 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport.Http
 
             // Serialize Request
             string _requestContent = null;
-            if(body != null)
+            // Set Credentials
+            if (credentials != null)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                await credentials.ProcessHttpRequestAsync(_httpRequest, cancellationToken).ConfigureAwait(false);
+            }
+            if (body != null)
             {
                 _requestContent = Rest.Serialization.SafeJsonConvert.SerializeObject(body, Client.SerializationSettings);
                 _httpRequest.Content = new StringContent(_requestContent, System.Text.Encoding.UTF8);
