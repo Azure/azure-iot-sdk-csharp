@@ -90,8 +90,8 @@
       <Link>Common\device\provisioning\transport\SymmetricKeyRegistrationResult.cs</Link>
     </Compile>
     <Compile Include="$(Common)\DefaultWebProxySettings.cs" />
-    <Compile Include="$(Generated)\Models\*.*">
-      <Link>Generated\Models\%(FileName)%(Extension)</Link>
+    <Compile Include="$(Generated)\Models\DeviceRegistration.cs">
+      <Link>Generated\Models\DeviceRegistration.cs</Link>
     </Compile>
     <Compile Include="$(Common)\HttpContentExtensions.cs">
       <LinkBase>Common</LinkBase>

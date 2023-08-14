@@ -211,10 +211,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "prerequisites", "prerequisi
 		e2e\test\prerequisites\E2ETestsSetup\test-resources.json = e2e\test\prerequisites\E2ETestsSetup\test-resources.json
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "discovery", "discovery", "{A69BBA7C-2FB2-4109-BF1D-DF76E5AE12B8}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Azure.Devices.Discovery.Transport.Http", "provisioning\transport\http\discovery\Microsoft.Azure.Devices.Discovery.Transport.Http.csproj", "{85638B4A-2082-4A45-8CF2-1556E7A578D2}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -448,10 +444,6 @@ Global
 		{184F07FC-A5CA-43F5-8742-0B6DF6825A1F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{184F07FC-A5CA-43F5-8742-0B6DF6825A1F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{184F07FC-A5CA-43F5-8742-0B6DF6825A1F}.Release|Any CPU.Build.0 = Release|Any CPU
-		{85638B4A-2082-4A45-8CF2-1556E7A578D2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{85638B4A-2082-4A45-8CF2-1556E7A578D2}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{85638B4A-2082-4A45-8CF2-1556E7A578D2}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{85638B4A-2082-4A45-8CF2-1556E7A578D2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -544,8 +536,6 @@ Global
 		{89643F18-7B22-41BD-8342-49251943C984} = {4CF9A9B8-9D3F-44F6-B965-DF2B7EEA024E}
 		{184F07FC-A5CA-43F5-8742-0B6DF6825A1F} = {89643F18-7B22-41BD-8342-49251943C984}
 		{CA137E4E-4684-442D-92FC-20ADACCB5D62} = {9C260BF0-1CCA-45A2-AAB8-6419291B8B88}
-		{A69BBA7C-2FB2-4109-BF1D-DF76E5AE12B8} = {EEFED918-4D98-4DB9-9C36-117056A46CED}
-		{85638B4A-2082-4A45-8CF2-1556E7A578D2} = {A69BBA7C-2FB2-4109-BF1D-DF76E5AE12B8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {AF61665D-340A-494B-9705-571456BDC752}
