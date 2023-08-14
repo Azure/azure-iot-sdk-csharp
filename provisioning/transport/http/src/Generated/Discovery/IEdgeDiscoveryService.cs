@@ -6,7 +6,6 @@
 
 namespace Microsoft.Azure.Devices.Discovery.Client.Transport.Http
 {
-    using Microsoft.Rest;
     using Models;
     using Newtonsoft.Json;
 
@@ -28,12 +27,6 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport.Http
         /// Gets or sets json deserialization settings.
         /// </summary>
         JsonSerializerSettings DeserializationSettings { get; }
-
-        /// <summary>
-        /// Subscription credentials which uniquely identify client
-        /// subscription.
-        /// </summary>
-        ServiceClientCredentials Credentials { get; }
 
 
         /// <summary>
