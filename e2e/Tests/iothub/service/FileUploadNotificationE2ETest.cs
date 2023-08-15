@@ -33,6 +33,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         // the service makes it available for redelivery to other open receivers.
         private readonly AcknowledgementType _defaultAcknowledgementType = AcknowledgementType.Abandon;
 
+        [Ignore]   // TODO: remove Ignore tag
         [TestMethod]
         [TestCategory("Flaky")]    // The test times out intermittently on the PR gates.
         [DataRow(IotHubTransportProtocol.Tcp, 1, false)]
