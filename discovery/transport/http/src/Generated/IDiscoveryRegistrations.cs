@@ -6,10 +6,8 @@
 
 namespace Microsoft.Azure.Devices.Discovery.Client.Transport.Http
 {
-    using Microsoft.Azure.Devices.Provisioning.Client.Transport.Models;
     using Microsoft.Rest;
     using Models;
-    using System.Collections;
     using System.Collections.Generic;
     using System.Threading;
     using System.Threading.Tasks;

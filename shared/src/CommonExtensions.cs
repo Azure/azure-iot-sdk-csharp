@@ -4,9 +4,12 @@
 using System;
 using System.Text.RegularExpressions;
 
-namespace Microsoft.Azure.Devices.Provisioning.Client.Extensions
+namespace Microsoft.Azure.Devices.Common
 {
-    internal static class CommonExtensions
+    /// <summary>
+    /// Commong string extensions
+    /// </summary>
+    public static class CommonExtensions
     {
         // The following regex expression minifies a json string.
         // It makes sure that space characters within sentences are preserved, and all other space characters are discarded.
@@ -22,7 +25,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Extensions
         /// </summary>
         /// <param name="input">The string to be formatted.</param>
         /// <returns>The input string, with extra white space removed. </returns>
-        internal static string TrimWhiteSpace(this string input)
+        public static string TrimWhiteSpace(this string input)
         {
             return s_trimWhiteSpace.Replace(input, "$1");
         }
@@ -32,7 +35,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Extensions
         /// </summary>
         /// <param name="argumentValue">The argument value.</param>
         /// <param name="argumentName">The argument name.</param>
-        internal static void ThrowIfNullOrWhiteSpace(this string argumentValue, string argumentName)
+        public static void ThrowIfNullOrWhiteSpace(this string argumentValue, string argumentName)
         {
             if (string.IsNullOrWhiteSpace(argumentValue))
             {

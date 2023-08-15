@@ -4,12 +4,12 @@
 using System;
 using Newtonsoft.Json;
 
-namespace Microsoft.Azure.Devices.Provisioning.Client
+namespace Microsoft.Azure.Devices.Common
 {
     /// <summary>
     /// A class to initialize JsonSerializerSettings which can be applied to the project.
     /// </summary>
-    internal static class JsonSerializerSettingsInitializer
+    public static class JsonSerializerSettingsInitializer
     {
         /// <summary>
         /// A static instance of JsonSerializerSettings which sets DateParseHandling to None.
@@ -28,7 +28,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// <summary>
         /// Returns JsonSerializerSettings Func delegate
         /// </summary>
-        internal static Func<JsonSerializerSettings> GetJsonSerializerSettingsDelegate()
+        public static Func<JsonSerializerSettings> GetJsonSerializerSettingsDelegate()
         {
             return () => s_settings;
         }

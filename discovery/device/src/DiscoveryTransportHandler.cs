@@ -8,20 +8,20 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Shared;
 
-namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
+namespace Microsoft.Azure.Devices.Discovery.Client.Transport
 {
     /// <summary>
     /// Represents the interface for a Provisioning Transport Handler.
     /// </summary>
-    public abstract class ProvisioningTransportHandler : IDisposable
+    public abstract class DiscoveryTransportHandler : IDisposable
     {
-        private ProvisioningTransportHandler _innerHandler;
+        private DiscoveryTransportHandler _innerHandler;
         private int _port;
 
         /// <summary>
         /// Creates an instance of the ProvisioningTransportHandler class.
         /// </summary>
-        public ProvisioningTransportHandler() { }
+        public DiscoveryTransportHandler() { }
 
         /// <summary>
         /// Gets or sets the proxy for Provisioning Client operations.
@@ -37,7 +37,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         /// <summary>
         /// Gets or sets the inner handler.
         /// </summary>
-        public ProvisioningTransportHandler InnerHandler
+        public DiscoveryTransportHandler InnerHandler
         {
             get => _innerHandler;
             set
@@ -71,44 +71,23 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 _port = value;
             }
         }
-
+        
         /// <summary>
-        /// Registers a device described by the message.
+        /// Issue challenge
         /// </summary>
-        /// <param name="message">The provisioning message.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>The registration result.</returns>
-        public virtual Task<DeviceRegistrationResult> RegisterAsync(
-            ProvisioningTransportRegisterMessage message,
-            CancellationToken cancellationToken)
-        {
-            return _innerHandler.RegisterAsync(message, cancellationToken);
-        }
-
-        /// <summary>
-        /// Registers a device described by the message.
-        /// </summary>
-        /// <param name="message">The provisioning message.</param>
-        /// <param name="timeout">The maximum amount of time to allow this operation to run for before timing out.</param>
-        /// <returns>The registration result.</returns>
-        public virtual Task<DeviceRegistrationResult> RegisterAsync(
-            ProvisioningTransportRegisterMessage message,
-            TimeSpan timeout)
-        {
-            return _innerHandler.RegisterAsync(message, timeout);
-        }
-
-        /// <summary>
-        /// Onboards a device
-        /// </summary>
-        /// <param name="request"></param>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual Task<DeviceOnboardingResult> OnboardAsync(
-            ProvisioningTransportOnboardRequest request,
-            CancellationToken cancellationToken)
+        public virtual Task<string> IssueChallengeAsync(DiscoveryTransportIssueChallengeRequest request, CancellationToken cancellationToken)
         {
-            return _innerHandler.OnboardAsync(request, cancellationToken);
+            return _innerHandler.IssueChallengeAsync(request, cancellationToken);
+        }
+
+        /// <summary>
+        /// Issue challenge
+        /// </summary>
+        /// <returns></returns>
+        public virtual Task<string> GetOnboardingInfoAsync(DiscoveryTransportIssueChallengeRequest request, CancellationToken cancellationToken)
+        {
+            return _innerHandler.GetOnboardingInfoAsync(request, cancellationToken);
         }
 
         /// <summary>
