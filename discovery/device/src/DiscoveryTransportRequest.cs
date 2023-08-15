@@ -20,7 +20,7 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport
         /// <summary>
         /// The SecurityProvider used to authenticate the client.
         /// </summary>
-        public SecurityProvider Security { get; private set; }
+        public SecurityProviderTpm Security { get; private set; }
 
         /// <summary>
         /// The Product Information sent to the Provisioning Service. The application can specify extra information.
@@ -38,7 +38,7 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport
         /// <param name="security">The SecurityProvider used to authenticate the client.</param>
         protected DiscoveryTransportRequest(
             string globalDeviceEndpoint,
-            SecurityProvider security)
+            SecurityProviderTpm security)
         {
             GlobalDeviceEndpoint = globalDeviceEndpoint;
             Security = security;

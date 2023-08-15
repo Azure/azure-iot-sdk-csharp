@@ -11,37 +11,12 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport
     public class DiscoveryTransportIssueChallengeRequest : DiscoveryTransportRequest
     {
         /// <summary>
-        /// The Arc for Servers public key.
-        /// </summary>
-        public string RegistrationId { get; private set; }
-        /// <summary>
         /// 
         /// </summary>
-        public string EndorsementKey { get; private set; }
-        /// <summary>
-        /// 
-        /// </summary>
-        public string StorageRootKey { get; private set; }
-
-        /// <summary>
-        /// Creates a new instance of the ProvisioningTransportIssueChallengeRequest class.
-        /// </summary>
-        /// <param name="globalDeviceEndpoint">The Global Device Endpoint for this message.</param>
-        /// <param name="security">The SecurityProvider used to authenticate the client.</param>
-        /// <param name="registrationId"></param>
-        /// <param name="endorsementKey"></param>
-        /// <param name="storageRootKey"></param>
-        public DiscoveryTransportIssueChallengeRequest(
-            string globalDeviceEndpoint,
-            SecurityProvider security,
-            string registrationId,
-            string endorsementKey,
-            string storageRootKey)
-            : base(globalDeviceEndpoint, security)
+        /// <param name="globalDeviceEndpoint"></param>
+        /// <param name="security"></param>
+        public DiscoveryTransportIssueChallengeRequest(string globalDeviceEndpoint, SecurityProviderTpm security) : base(globalDeviceEndpoint, security)
         {
-            RegistrationId = registrationId;
-            EndorsementKey = endorsementKey;
-            StorageRootKey = storageRootKey;
         }
     }
 }

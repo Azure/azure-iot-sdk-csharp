@@ -7,8 +7,10 @@ using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Azure.Devices.Common;
 using Microsoft.Azure.Devices.Discovery.Client.Transport.Http;
 using Microsoft.Azure.Devices.Discovery.Client.Transport.Http.Models;
+using Microsoft.Azure.Devices.Provisioning.Client.Transport;
 using Microsoft.Azure.Devices.Shared;
 using Microsoft.Rest;
 using Newtonsoft.Json;
@@ -51,6 +53,8 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport
 
             try
             {
+                var securityProvider = request.Security;
+
                 using var httpClientHandler = new HttpClientHandler()
                 {
                     // Cannot specify a specific protocol here, as desired due to an error:
@@ -82,7 +86,7 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport
 
                 string registrationId = request.Security.GetRegistrationID();
 
-                var onboardRequest = new ChallengeRequest(request.RegistrationId, request.EndorsementKey, request.StorageRootKey);
+                var onboardRequest = new ChallengeRequest(registrationId, Convert.ToBase64String(securityProvider.GetEndorsementKey()), Convert.ToBase64String(securityProvider.GetStorageRootKey()));
 
                 Challenge challenge = await client.DiscoveryRegistrations
                     .IssueChallengeAsync("v1", onboardRequest, cancellationToken)
@@ -135,7 +139,7 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport
         /// Issue challenge
         /// </summary>
         /// <returns></returns>
-        public override async Task<string> GetOnboardingInfoAsync(DiscoveryTransportIssueChallengeRequest request, CancellationToken cancellationToken)
+        public override async Task<string> GetOnboardingInfoAsync(DiscoveryTransportGetOnboardingInfoRequest request, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"{nameof(DiscoveryTransportHandlerHttp)}.{nameof(IssueChallengeAsync)}");
@@ -149,6 +153,8 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport
 
             try
             {
+                var securityProvider = request.Security;
+
                 using var httpClientHandler = new HttpClientHandler()
                 {
                     // Cannot specify a specific protocol here, as desired due to an error:
@@ -178,12 +184,17 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport
                 if (Logging.IsEnabled)
                     Logging.Info(this, $"Uri: {builder.Uri}; User-Agent: {request.ProductInfo}");
 
-                string registrationId = request.Security.GetRegistrationID();
+                string registrationId = securityProvider.GetRegistrationID();
 
-                var onboardInfoRequest = new BootstrapRequest(request.RegistrationId, request.EndorsementKey, request.StorageRootKey, "CSR");
+                var onboardInfoRequest = new BootstrapRequest(registrationId, Convert.ToBase64String(securityProvider.GetEndorsementKey()), Convert.ToBase64String(securityProvider.GetStorageRootKey()), request.Csr);
+
+                string sasToken = ProvisioningSasBuilder.ExtractServiceAuthKey(
+                            securityProvider,
+                            client.BaseUri.GetTarget(),
+                            Convert.FromBase64String(request.Nonce));
 
                 BootstrapResponse onboardInfo = await client.DiscoveryRegistrations
-                    .GetOnboardingInfoAsync("v1", onboardInfoRequest,"token", cancellationToken)
+                    .GetOnboardingInfoAsync("v1", onboardInfoRequest, sasToken, cancellationToken)
                     .ConfigureAwait(false);
 
                 return onboardInfo.ProvisioningEndpoint;

@@ -85,7 +85,7 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport
         /// Issue challenge
         /// </summary>
         /// <returns></returns>
-        public virtual Task<string> GetOnboardingInfoAsync(DiscoveryTransportIssueChallengeRequest request, CancellationToken cancellationToken)
+        public virtual Task<string> GetOnboardingInfoAsync(DiscoveryTransportGetOnboardingInfoRequest request, CancellationToken cancellationToken)
         {
             return _innerHandler.GetOnboardingInfoAsync(request, cancellationToken);
         }

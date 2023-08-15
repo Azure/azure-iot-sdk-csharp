@@ -62,6 +62,9 @@
     <Compile Include="$(Common)\device\provisioning\transport\RetryJitter.cs">
       <Link>Common\device\provisioning\transport\RetryJitter.cs</Link>
     </Compile>
+    <Compile Include="$(Common)\device\provisioning\transport\ProvisioningSasBuilder.cs">
+        <Link>Common\device\provisioning\transport\ProvisioningSasBuilder.cs</Link>
+    </Compile>
     <Compile Include="$(Common)\DefaultWebProxySettings.cs" />
     <Compile Include="$(Common)\HttpContentExtensions.cs">
       <LinkBase>Common</LinkBase>

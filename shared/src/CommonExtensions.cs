@@ -43,5 +43,24 @@ namespace Microsoft.Azure.Devices.Common
                 throw new ArgumentNullException(argumentName, errorMessage);
             }
         }
+
+        /// <summary>
+        /// Get hostname
+        /// </summary>
+        /// <param name="requestUri"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentException"></exception>
+        public static string GetTarget(this Uri requestUri)
+        {
+            var requestUriLocalPath = requestUri.LocalPath;
+            requestUriLocalPath = requestUriLocalPath.TrimStart('/');
+            string[] parameters = requestUriLocalPath.Split('/');
+            if (parameters.Length <= 3)
+            {
+                throw new ArgumentException($"Invalid RequestUri LocalPath");
+            }
+
+            return string.Concat(parameters[0], "/", parameters[1], "/", parameters[2]);
+        }
     }
 }

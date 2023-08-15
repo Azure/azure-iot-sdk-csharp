@@ -6,6 +6,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Azure.Devices.Common;
 using Microsoft.Azure.Devices.Shared;
 using Newtonsoft.Json;
 
@@ -40,7 +41,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 {
                     if (result is Action<string> setSasToken)
                     {
-                        string target = GetTarget(request.RequestUri.LocalPath);
+                        string target = request.RequestUri.GetTarget();
                         string responseContent = await response.Content.ReadHttpContentAsStringAsync(cancellationToken).ConfigureAwait(false);
                         TpmChallenge challenge = JsonConvert.DeserializeObject<TpmChallenge>(responseContent);
 
@@ -63,18 +64,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 Logging.Exit(this, $"{request.RequestUri}", nameof(SendAsync));
 
             return response;
-        }
-
-        private static string GetTarget(string requestUriLocalPath)
-        {
-            requestUriLocalPath = requestUriLocalPath.TrimStart('/');
-            string[] parameters = requestUriLocalPath.Split('/');
-            if (parameters.Length <= 3)
-            {
-                throw new ArgumentException($"Invalid RequestUri LocalPath");
-            }
-
-            return string.Concat(parameters[0], "/" , parameters[1], "/", parameters[2]);
         }
     }
 }

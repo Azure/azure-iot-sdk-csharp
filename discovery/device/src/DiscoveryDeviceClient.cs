@@ -72,16 +72,42 @@ namespace Microsoft.Azure.Devices.Discovery.Client
             if (_security is SecurityProviderTpm securityProviderTpm)
             {
                 var request = new DiscoveryTransportIssueChallengeRequest(
-                    _globalDeviceEndpoint, 
-                    _security, 
-                    securityProviderTpm.GetRegistrationID(), 
-                    Convert.ToBase64String(securityProviderTpm.GetEndorsementKey()), 
-                    Convert.ToBase64String(securityProviderTpm.GetStorageRootKey()))
+                    _globalDeviceEndpoint,
+                    securityProviderTpm)
                 {
                     ProductInfo = ProductInfo,
                 };
 
                 return _transport.IssueChallengeAsync(request, cancellationToken);
+            }
+            else
+            {
+                throw new NotSupportedException($"{nameof(_security)} must be of type {nameof(SecurityProviderTpm)}");
+            }
+        }
+
+        /// <summary>
+        /// Gets challenge string to decrypt to onboard device
+        /// </summary>
+        /// <param name="nonce"></param>
+        /// <param name="csr"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        /// <exception cref="NotSupportedException">Security provider must be TPM</exception>
+        public Task<string> GetOnboardingInfoAsync(string nonce, string csr, CancellationToken cancellationToken = default)
+        {
+            if (_security is SecurityProviderTpm securityProviderTpm)
+            {
+                var request = new DiscoveryTransportGetOnboardingInfoRequest(
+                    _globalDeviceEndpoint,
+                    securityProviderTpm,
+                    nonce,
+                    csr)
+                {
+                    ProductInfo = ProductInfo,
+                };
+
+                return _transport.GetOnboardingInfoAsync(request, cancellationToken);
             }
             else
             {
