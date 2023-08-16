@@ -5,6 +5,8 @@ using System;
 using System.Globalization;
 using System.Net;
 using System.Net.Http;
+using System.Security.Cryptography.X509Certificates;
+using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Common;
@@ -169,7 +171,7 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport
                     httpClientHandler.UseProxy = Proxy != null;
                     httpClientHandler.Proxy = Proxy;
                     if (Logging.IsEnabled)
-                        Logging.Info(this, $"{nameof(IssueChallengeAsync)} Setting HttpClientHandler.Proxy");
+                        Logging.Info(this, $"{nameof(GetOnboardingInfoAsync)} Setting HttpClientHandler.Proxy");
                 }
 
                 var builder = new UriBuilder
@@ -186,7 +188,9 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport
 
                 string registrationId = securityProvider.GetRegistrationID();
 
-                var onboardInfoRequest = new BootstrapRequest(registrationId, Convert.ToBase64String(securityProvider.GetEndorsementKey()), Convert.ToBase64String(securityProvider.GetStorageRootKey()), request.Csr);
+                string csr = GenerateCSRKey(registrationId);
+
+                var onboardInfoRequest = new BootstrapRequest(registrationId, Convert.ToBase64String(securityProvider.GetEndorsementKey()), Convert.ToBase64String(securityProvider.GetStorageRootKey()), csr);
 
                 string sasToken = ProvisioningSasBuilder.ExtractServiceAuthKey(
                             securityProvider,
@@ -202,7 +206,7 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport
             catch (HttpOperationException ex)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"{nameof(DiscoveryTransportHandlerHttp)} threw exception {ex}", nameof(IssueChallengeAsync));
+                    Logging.Error(this, $"{nameof(DiscoveryTransportHandlerHttp)} threw exception {ex}", nameof(GetOnboardingInfoAsync));
 
                 bool isTransient = ex.Response.StatusCode >= HttpStatusCode.InternalServerError
                     || (int)ex.Response.StatusCode == 429;
@@ -218,7 +222,7 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport
                         Logging.Error(
                             this,
                             $"{nameof(DiscoveryTransportHandlerHttp)} server returned malformed error response. Parsing error: {jex}. Server response: {ex.Response.Content}",
-                            nameof(IssueChallengeAsync));
+                            nameof(GetOnboardingInfoAsync));
 
                     throw new DiscoveryTransportException(
                         $"HTTP transport exception: malformed server error message: '{ex.Response.Content}'",
@@ -229,14 +233,35 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport
             catch (Exception ex) when (!(ex is DiscoveryTransportException))
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"{nameof(DiscoveryTransportHandlerHttp)} threw exception {ex}", nameof(IssueChallengeAsync));
+                    Logging.Error(this, $"{nameof(DiscoveryTransportHandlerHttp)} threw exception {ex}", nameof(GetOnboardingInfoAsync));
 
                 throw new DiscoveryTransportException($"HTTP transport exception", ex, true);
             }
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, $"{nameof(DiscoveryTransportHandlerHttp)}.{nameof(IssueChallengeAsync)}");
+                    Logging.Exit(this, $"{nameof(DiscoveryTransportHandlerHttp)}.{nameof(GetOnboardingInfoAsync)}");
+            }
+        }
+
+        private string GenerateCSRKey(string deviceId)
+        {
+            // Create a new CertificateRequest object
+            using (RSA rsa = RSA.Create())
+            {
+                CertificateRequest request = new CertificateRequest(
+                    subjectName: "CN=" + deviceId,
+                    key: rsa,
+                    hashAlgorithm: HashAlgorithmName.SHA256,
+                    padding: RSASignaturePadding.Pkcs1);
+
+                // Generate the CSR
+                byte[] csrBytes = request.CreateSigningRequest();
+
+                // Convert the CSR to a Base64-encoded string
+                string csrBase64 = Convert.ToBase64String(csrBytes);
+
+                return csrBase64;
             }
         }
     }

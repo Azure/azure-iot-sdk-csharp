@@ -90,19 +90,17 @@ namespace Microsoft.Azure.Devices.Discovery.Client
         /// Gets challenge string to decrypt to onboard device
         /// </summary>
         /// <param name="nonce"></param>
-        /// <param name="csr"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         /// <exception cref="NotSupportedException">Security provider must be TPM</exception>
-        public Task<string> GetOnboardingInfoAsync(string nonce, string csr, CancellationToken cancellationToken = default)
+        public Task<string> GetOnboardingInfoAsync(string nonce, CancellationToken cancellationToken = default)
         {
             if (_security is SecurityProviderTpm securityProviderTpm)
             {
                 var request = new DiscoveryTransportGetOnboardingInfoRequest(
                     _globalDeviceEndpoint,
                     securityProviderTpm,
-                    nonce,
-                    csr)
+                    nonce)
                 {
                     ProductInfo = ProductInfo,
                 };

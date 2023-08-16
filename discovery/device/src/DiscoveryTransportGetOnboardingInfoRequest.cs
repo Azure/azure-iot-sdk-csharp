@@ -14,10 +14,6 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport
         /// 
         /// </summary>
         public string Nonce { get; private set; }
-        /// <summary>
-        /// 
-        /// </summary>
-        public string Csr { get; private set; }
 
         /// <summary>
         /// 
@@ -25,11 +21,9 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport
         /// <param name="globalDeviceEndpoint"></param>
         /// <param name="security"></param>
         /// <param name="nonce"></param>
-        /// <param name="csr"></param>
-        public DiscoveryTransportGetOnboardingInfoRequest(string globalDeviceEndpoint, SecurityProviderTpm security, string nonce, string csr) : base(globalDeviceEndpoint, security)
+        public DiscoveryTransportGetOnboardingInfoRequest(string globalDeviceEndpoint, SecurityProviderTpm security, string nonce) : base(globalDeviceEndpoint, security)
         {
             Nonce = nonce;
-            Csr = csr;
         }
     }
 }
