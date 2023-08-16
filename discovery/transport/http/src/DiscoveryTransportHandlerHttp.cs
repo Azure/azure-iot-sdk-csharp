@@ -192,9 +192,14 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport
 
                 var onboardInfoRequest = new BootstrapRequest(registrationId, Convert.ToBase64String(securityProvider.GetEndorsementKey()), Convert.ToBase64String(securityProvider.GetStorageRootKey()), csr);
 
+                string target = $"{client.BaseUri.GetTarget()}/registration/{registrationId}";
+
+                if (Logging.IsEnabled)
+                    Logging.Info(this, $"Target of token: {target}");
+
                 string sasToken = ProvisioningSasBuilder.ExtractServiceAuthKey(
                             securityProvider,
-                            client.BaseUri.GetTarget(),
+                            target,
                             Convert.FromBase64String(request.Nonce));
 
                 BootstrapResponse onboardInfo = await client.DiscoveryRegistrations
