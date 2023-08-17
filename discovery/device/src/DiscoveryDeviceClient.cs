@@ -17,7 +17,6 @@ namespace Microsoft.Azure.Devices.Discovery.Client
     public class DiscoveryDeviceClient
     {
         private readonly string _globalDeviceEndpoint;
-        private readonly string _idScope;
         private readonly DiscoveryTransportHandler _transport;
         private readonly SecurityProvider _security;
 
@@ -25,22 +24,19 @@ namespace Microsoft.Azure.Devices.Discovery.Client
         /// Creates an instance of the Device Provisioning Client.
         /// </summary>
         /// <param name="globalDeviceEndpoint">The GlobalDeviceEndpoint for the Device Provisioning Service.</param>
-        /// <param name="idScope">The IDScope for the Device Provisioning Service.</param>
         /// <param name="securityProvider">The security provider instance.</param>
         /// <param name="transport">The type of transport (e.g. HTTP, AMQP, MQTT).</param>
         /// <returns>An instance of the ProvisioningDeviceClient</returns>
         public static DiscoveryDeviceClient Create(
             string globalDeviceEndpoint,
-            string idScope,
             SecurityProvider securityProvider,
             DiscoveryTransportHandler transport)
         {
-            return new DiscoveryDeviceClient(globalDeviceEndpoint, idScope, securityProvider, transport);
+            return new DiscoveryDeviceClient(globalDeviceEndpoint, securityProvider, transport);
         }
 
         private DiscoveryDeviceClient(
             string globalDeviceEndpoint,
-            string idScope,
             SecurityProvider securityProvider,
             DiscoveryTransportHandler transport)
         {
@@ -48,7 +44,6 @@ namespace Microsoft.Azure.Devices.Discovery.Client
             JsonConvert.DefaultSettings = JsonSerializerSettingsInitializer.GetJsonSerializerSettingsDelegate();
 
             _globalDeviceEndpoint = globalDeviceEndpoint;
-            _idScope = idScope;
             _transport = transport;
             _security = securityProvider;
 
