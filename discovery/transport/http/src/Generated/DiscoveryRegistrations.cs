@@ -108,7 +108,7 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport.Http
             }
             // Construct URL
             var _baseUrl = Client.BaseUri.AbsoluteUri;
-            var _url = new System.Uri(new System.Uri(_baseUrl + (_baseUrl.EndsWith("/") ? "" : "/")), "devices:getOnboardingInfo").ToString();
+            var _url = new System.Uri(_baseUrl + (_baseUrl.EndsWith("/") ? "" : "/")) + "devices:getOnboardingInfo";
             List<string> _queryParameters = new List<string>();
             if (apiVersion != null)
             {
@@ -302,7 +302,7 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport.Http
             }
             // Construct URL
             var _baseUrl = Client.BaseUri.AbsoluteUri;
-            var _url = new System.Uri(new System.Uri(_baseUrl + (_baseUrl.EndsWith("/") ? "" : "/")), "devices:issueChallenge").ToString();
+            var _url = new System.Uri(_baseUrl + (_baseUrl.EndsWith("/") ? "" : "/")) + "devices:issueChallenge";
             List<string> _queryParameters = new List<string>();
             if (apiVersion != null)
             {
