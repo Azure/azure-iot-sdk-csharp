@@ -88,15 +88,18 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport
 
                 string registrationId = request.Security.GetRegistrationID();
 
-                var onboardRequest = new ChallengeRequest(registrationId, Convert.ToBase64String(securityProvider.GetEndorsementKey()), Convert.ToBase64String(securityProvider.GetStorageRootKey()));
+                var onboardRequest = new ChallengeRequest(
+                    registrationId, 
+                    Convert.ToBase64String(securityProvider.GetEndorsementKey()), 
+                    Convert.ToBase64String(securityProvider.GetStorageRootKey()));
 
                 Challenge challenge = await client.DiscoveryRegistrations
-                    .IssueChallengeAsync("v1", onboardRequest, cancellationToken)
+                    .IssueChallengeAsync("0000-00-00", onboardRequest, cancellationToken)
                     .ConfigureAwait(false);
 
                 return challenge.Key;
             }
-            catch (HttpOperationException ex)
+            catch (AzureCoreFoundationsErrorResponseException ex)
             {
                 if (Logging.IsEnabled)
                     Logging.Error(this, $"{nameof(DiscoveryTransportHandlerHttp)} threw exception {ex}", nameof(IssueChallengeAsync));
@@ -104,24 +107,8 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport
                 bool isTransient = ex.Response.StatusCode >= HttpStatusCode.InternalServerError
                     || (int)ex.Response.StatusCode == 429;
 
-                try
-                {
-                    AzureCoreFoundationsError errorDetails = JsonConvert.DeserializeObject<AzureCoreFoundationsError>(ex.Response.Content);
-                    throw new DiscoveryTransportException(ex.Response.Content, ex, isTransient);
-                }
-                catch (JsonException jex)
-                {
-                    if (Logging.IsEnabled)
-                        Logging.Error(
-                            this,
-                            $"{nameof(DiscoveryTransportHandlerHttp)} server returned malformed error response. Parsing error: {jex}. Server response: {ex.Response.Content}",
-                            nameof(IssueChallengeAsync));
-
-                    throw new DiscoveryTransportException(
-                        $"HTTP transport exception: malformed server error message: '{ex.Response.Content}'",
-                        jex,
-                        false);
-                }
+                AzureCoreFoundationsError errorDetails = JsonConvert.DeserializeObject<AzureCoreFoundationsError>(ex.Response.Content);
+                throw new DiscoveryTransportException(ex.Response.Content, ex, isTransient, errorDetails.Code, errorDetails.Message);
             }
             catch (Exception ex) when (!(ex is DiscoveryTransportException))
             {
@@ -190,9 +177,13 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport
 
                 string csr = GenerateCSRKey(registrationId);
 
-                var onboardInfoRequest = new BootstrapRequest(registrationId, Convert.ToBase64String(securityProvider.GetEndorsementKey()), Convert.ToBase64String(securityProvider.GetStorageRootKey()), csr);
+                var onboardInfoRequest = new BootstrapRequest(
+                    registrationId, 
+                    Convert.ToBase64String(securityProvider.GetEndorsementKey()), 
+                    Convert.ToBase64String(securityProvider.GetStorageRootKey()), 
+                    csr);
 
-                string target = $"{client.BaseUri.GetTarget()}/registration/{registrationId}";
+                string target = $"registrations/{registrationId}";
 
                 if (Logging.IsEnabled)
                     Logging.Info(this, $"Target of token: {target}");
@@ -203,37 +194,21 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport
                             Convert.FromBase64String(request.Nonce));
 
                 BootstrapResponse onboardInfo = await client.DiscoveryRegistrations
-                    .GetOnboardingInfoAsync("v1", onboardInfoRequest, sasToken, cancellationToken)
+                    .GetOnboardingInfoAsync("0000-00-00", onboardInfoRequest, sasToken, cancellationToken)
                     .ConfigureAwait(false);
 
-                return onboardInfo.ProvisioningEndpoint;
+                return onboardInfo.EdgeProvisioningEndpoint;
             }
-            catch (HttpOperationException ex)
+            catch (AzureCoreFoundationsErrorResponseException ex)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"{nameof(DiscoveryTransportHandlerHttp)} threw exception {ex}", nameof(GetOnboardingInfoAsync));
+                    Logging.Error(this, $"{nameof(DiscoveryTransportHandlerHttp)} threw exception {ex}", nameof(IssueChallengeAsync));
 
                 bool isTransient = ex.Response.StatusCode >= HttpStatusCode.InternalServerError
                     || (int)ex.Response.StatusCode == 429;
 
-                try
-                {
-                    AzureCoreFoundationsError errorDetails = JsonConvert.DeserializeObject<AzureCoreFoundationsError>(ex.Response.Content);
-                    throw new DiscoveryTransportException(ex.Response.Content, ex, isTransient);
-                }
-                catch (JsonException jex)
-                {
-                    if (Logging.IsEnabled)
-                        Logging.Error(
-                            this,
-                            $"{nameof(DiscoveryTransportHandlerHttp)} server returned malformed error response. Parsing error: {jex}. Server response: {ex.Response.Content}",
-                            nameof(GetOnboardingInfoAsync));
-
-                    throw new DiscoveryTransportException(
-                        $"HTTP transport exception: malformed server error message: '{ex.Response.Content}'",
-                        jex,
-                        false);
-                }
+                AzureCoreFoundationsError errorDetails = JsonConvert.DeserializeObject<AzureCoreFoundationsError>(ex.Response.Content);
+                throw new DiscoveryTransportException(ex.Response.Content, ex, isTransient, errorDetails.Code, errorDetails.Message);
             }
             catch (Exception ex) when (!(ex is DiscoveryTransportException))
             {
