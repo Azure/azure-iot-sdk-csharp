@@ -26,11 +26,12 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport.Http.Models
         /// <summary>
         /// Initializes a new instance of the BootstrapResponse class.
         /// </summary>
-        /// <param name="provisioningEndpoint">Provisioning Endpoint.</param>
         /// <param name="issuedCredential">Issued Credential.</param>
-        public BootstrapResponse(string provisioningEndpoint, Credential issuedCredential)
+        /// <param name="edgeProvisioningEndpoint">The endpoint to use to
+        /// connect to the edge provisioning service.</param>
+        public BootstrapResponse(Credential issuedCredential, string edgeProvisioningEndpoint = default(string))
         {
-            ProvisioningEndpoint = provisioningEndpoint;
+            EdgeProvisioningEndpoint = edgeProvisioningEndpoint;
             IssuedCredential = issuedCredential;
             CustomInit();
         }
@@ -41,10 +42,11 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport.Http.Models
         partial void CustomInit();
 
         /// <summary>
-        /// Gets or sets provisioning Endpoint.
+        /// Gets or sets the endpoint to use to connect to the edge
+        /// provisioning service.
         /// </summary>
-        [JsonProperty(PropertyName = "provisioningEndpoint")]
-        public string ProvisioningEndpoint { get; set; }
+        [JsonProperty(PropertyName = "edgeProvisioningEndpoint")]
+        public string EdgeProvisioningEndpoint { get; set; }
 
         /// <summary>
         /// Gets or sets issued Credential.
@@ -60,10 +62,6 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport.Http.Models
         /// </exception>
         public virtual void Validate()
         {
-            if (ProvisioningEndpoint == null)
-            {
-                throw new ValidationException(ValidationRules.CannotBeNull, "ProvisioningEndpoint");
-            }
             if (IssuedCredential == null)
             {
                 throw new ValidationException(ValidationRules.CannotBeNull, "IssuedCredential");
