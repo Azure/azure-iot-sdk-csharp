@@ -3,6 +3,7 @@
 
 using Microsoft.Azure.Devices.Discovery.Client;
 using Microsoft.Azure.Devices.Discovery.Client.Transport;
+using Microsoft.Azure.Devices.Provisioning.Client.Transport;
 using Microsoft.Azure.Devices.Provisioning.Security;
 using Microsoft.Azure.Devices.Shared;
 using System;
@@ -43,9 +44,23 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
 
             Console.WriteLine($"Received nonce");
 
-            string cert = await client.GetOnboardingInfoAsync(nonce);
+            OnboardingInfo onboardingInfo = await client.GetOnboardingInfoAsync(nonce);
 
-            Console.WriteLine($"Received cert: {cert}");
+            Console.WriteLine($"Received endpoint: {onboardingInfo.EdgeProvisioningEndpoint}");
+
+            using SecurityProvider provSecurity = new SecurityProviderX509Certificate(onboardingInfo.ProvisioningCertificate);
+
+            Console.WriteLine("Initializing transport");
+            using ProvisioningTransportHandlerHttp provTransport = new ProvisioningTransportHandlerHttp();
+
+            var provClient = ProvisioningDeviceClient.Create(
+                "provservice-hci-01.eastus.dev1.edgeprov-dev.azure.net",
+                provSecurity,
+                provTransport);
+
+            DeviceOnboardingResult stuff = await provClient.OnboardAsync("test");
+
+            Console.WriteLine($"Done onboarding! {stuff.Id} {stuff.Result.RegistrationId}");
         }
     }
 }
