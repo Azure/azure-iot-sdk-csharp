@@ -88,7 +88,7 @@ namespace Microsoft.Azure.Devices.Discovery.Client
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         /// <exception cref="NotSupportedException">Security provider must be TPM</exception>
-        public Task<string> GetOnboardingInfoAsync(string nonce, CancellationToken cancellationToken = default)
+        public Task<OnboardingInfo> GetOnboardingInfoAsync(string nonce, CancellationToken cancellationToken = default)
         {
             if (_security is SecurityProviderTpm securityProviderTpm)
             {

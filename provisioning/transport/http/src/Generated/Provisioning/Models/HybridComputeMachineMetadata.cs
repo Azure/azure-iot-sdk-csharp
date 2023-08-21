@@ -13,7 +13,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Models
     /// <summary>
     /// The HybridComputeMachine onboarding request metadata.
     /// </summary>
-    [Newtonsoft.Json.JsonObject("HybridComputeMachineMetadata")]
+    [Newtonsoft.Json.JsonObject(DeviceKind.HybridComputeMachine)]
     public partial class HybridComputeMachineMetadata : ResourceMetadata
     {
         /// <summary>

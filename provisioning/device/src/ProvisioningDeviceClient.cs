@@ -43,6 +43,21 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             return new ProvisioningDeviceClient(globalDeviceEndpoint, idScope, securityProvider, transport);
         }
 
+        /// <summary>
+        /// Creates an instance of the Device Provisioning Client.
+        /// </summary>
+        /// <param name="globalDeviceEndpoint">The GlobalDeviceEndpoint for the Device Provisioning Service.</param>
+        /// <param name="securityProvider">The security provider instance.</param>
+        /// <param name="transport">The type of transport (e.g. HTTP, AMQP, MQTT).</param>
+        /// <returns>An instance of the ProvisioningDeviceClient</returns>
+        public static ProvisioningDeviceClient Create(
+            string globalDeviceEndpoint,
+            SecurityProvider securityProvider,
+            ProvisioningTransportHandler transport)
+        {
+            return Create(globalDeviceEndpoint, null, securityProvider, transport);
+        }
+
         private ProvisioningDeviceClient(
             string globalDeviceEndpoint,
             string idScope,

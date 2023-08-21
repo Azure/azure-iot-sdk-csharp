@@ -128,7 +128,7 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport
         /// Issue challenge
         /// </summary>
         /// <returns></returns>
-        public override async Task<string> GetOnboardingInfoAsync(DiscoveryTransportGetOnboardingInfoRequest request, CancellationToken cancellationToken)
+        public override async Task<OnboardingInfo> GetOnboardingInfoAsync(DiscoveryTransportGetOnboardingInfoRequest request, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"{nameof(DiscoveryTransportHandlerHttp)}.{nameof(IssueChallengeAsync)}");
@@ -175,7 +175,9 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport
 
                 string registrationId = securityProvider.GetRegistrationID();
 
-                string csr = GenerateCSRKey(registrationId);
+                using RSA rsa = RSA.Create();
+
+                string csr = GenerateCSRKey(rsa, registrationId);
 
                 var onboardInfoRequest = new BootstrapRequest(
                     registrationId, 
@@ -197,7 +199,10 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport
                     .GetOnboardingInfoAsync("0000-00-00", onboardInfoRequest, sasToken, cancellationToken)
                     .ConfigureAwait(false);
 
-                return onboardInfo.EdgeProvisioningEndpoint;
+                using X509Certificate2 cert = new X509Certificate2(Convert.FromBase64String(((X509Credential)onboardInfo.IssuedCredential).X509));
+                X509Certificate2 certWithKey = cert.CopyWithPrivateKey(rsa);
+
+                return new OnboardingInfo(onboardInfo.EdgeProvisioningEndpoint, certWithKey);
             }
             catch (AzureCoreFoundationsErrorResponseException ex)
             {
@@ -224,25 +229,22 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport
             }
         }
 
-        private string GenerateCSRKey(string deviceId)
+        private string GenerateCSRKey(RSA rsa, string deviceId)
         {
             // Create a new CertificateRequest object
-            using (RSA rsa = RSA.Create())
-            {
-                CertificateRequest request = new CertificateRequest(
-                    subjectName: "CN=" + deviceId,
-                    key: rsa,
-                    hashAlgorithm: HashAlgorithmName.SHA256,
-                    padding: RSASignaturePadding.Pkcs1);
+            CertificateRequest request = new CertificateRequest(
+                subjectName: "CN=" + deviceId,
+                key: rsa,
+                hashAlgorithm: HashAlgorithmName.SHA256,
+                padding: RSASignaturePadding.Pkcs1);
 
-                // Generate the CSR
-                byte[] csrBytes = request.CreateSigningRequest();
+            // Generate the CSR
+            byte[] csrBytes = request.CreateSigningRequest();
 
-                // Convert the CSR to a Base64-encoded string
-                string csrBase64 = Convert.ToBase64String(csrBytes);
+            // Convert the CSR to a Base64-encoded string
+            string csrBase64 = Convert.ToBase64String(csrBytes);
 
-                return csrBase64;
-            }
+            return csrBase64;
         }
     }
 }
