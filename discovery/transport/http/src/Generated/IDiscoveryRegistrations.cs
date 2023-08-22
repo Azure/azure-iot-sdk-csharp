@@ -20,9 +20,6 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport.Http
         /// <summary>
         /// Get Onboarding Information.
         /// </summary>
-        /// <param name='apiVersion'>
-        /// The API version to use for this operation.
-        /// </param>
         /// <param name='body'>
         /// </param>
         /// <param name="credentials"></param>
@@ -41,14 +38,11 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport.Http
         /// <exception cref="Microsoft.Rest.ValidationException">
         /// Thrown when a required parameter is null
         /// </exception>
-        Task<HttpOperationResponse<BootstrapResponse,DiscoveryRegistrationsGetOnboardingInfoHeaders>> GetOnboardingInfoWithHttpMessagesAsync(string apiVersion, BootstrapRequest body, TokenCredentials credentials, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        Task<HttpOperationResponse<BootstrapResponse,DiscoveryRegistrationsGetOnboardingInfoHeaders>> GetOnboardingInfoWithHttpMessagesAsync(BootstrapRequest body, TokenCredentials credentials, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
         /// <summary>
         /// Issue TPM Challenge. Will return an encrypted nonce, that can be
         /// used to sign a SAS Token for the GetOnboardingInfo request.
         /// </summary>
-        /// <param name='apiVersion'>
-        /// The API version to use for this operation.
-        /// </param>
         /// <param name='body'>
         /// </param>
         /// <param name='customHeaders'>
@@ -66,6 +60,6 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport.Http
         /// <exception cref="Microsoft.Rest.ValidationException">
         /// Thrown when a required parameter is null
         /// </exception>
-        Task<HttpOperationResponse<Challenge,DiscoveryRegistrationsIssueChallengeHeaders>> IssueChallengeWithHttpMessagesAsync(string apiVersion, ChallengeRequest body, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        Task<HttpOperationResponse<Challenge,DiscoveryRegistrationsIssueChallengeHeaders>> IssueChallengeWithHttpMessagesAsync(ChallengeRequest body, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
     }
 }

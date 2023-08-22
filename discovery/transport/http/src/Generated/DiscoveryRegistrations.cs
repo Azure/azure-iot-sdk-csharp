@@ -46,9 +46,6 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport.Http
         /// <summary>
         /// Get Onboarding Information.
         /// </summary>
-        /// <param name='apiVersion'>
-        /// The API version to use for this operation.
-        /// </param>
         /// <param name='body'>
         /// </param>
         /// <param name="credentials"></param>
@@ -73,19 +70,8 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport.Http
         /// <return>
         /// A response object containing the response body and response headers.
         /// </return>
-        public async Task<HttpOperationResponse<BootstrapResponse,DiscoveryRegistrationsGetOnboardingInfoHeaders>> GetOnboardingInfoWithHttpMessagesAsync(string apiVersion, BootstrapRequest body, TokenCredentials credentials, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<HttpOperationResponse<BootstrapResponse,DiscoveryRegistrationsGetOnboardingInfoHeaders>> GetOnboardingInfoWithHttpMessagesAsync(BootstrapRequest body, TokenCredentials credentials, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
         {
-            if (apiVersion == null)
-            {
-                throw new ValidationException(ValidationRules.CannotBeNull, "apiVersion");
-            }
-            if (apiVersion != null)
-            {
-                if (apiVersion.Length < 1)
-                {
-                    throw new ValidationException(ValidationRules.MinLength, "apiVersion", 1);
-                }
-            }
             if (body == null)
             {
                 throw new ValidationException(ValidationRules.CannotBeNull, "body");
@@ -101,7 +87,6 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport.Http
             {
                 _invocationId = ServiceClientTracing.NextInvocationId.ToString();
                 Dictionary<string, object> tracingParameters = new Dictionary<string, object>();
-                tracingParameters.Add("apiVersion", apiVersion);
                 tracingParameters.Add("body", body);
                 tracingParameters.Add("cancellationToken", cancellationToken);
                 ServiceClientTracing.Enter(_invocationId, this, "GetOnboardingInfo", tracingParameters);
@@ -110,10 +95,6 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport.Http
             var _baseUrl = Client.BaseUri.AbsoluteUri;
             var _url = new System.Uri(_baseUrl + (_baseUrl.EndsWith("/") ? "" : "/")) + "devices:getOnboardingInfo";
             List<string> _queryParameters = new List<string>();
-            if (apiVersion != null)
-            {
-                _queryParameters.Add(string.Format("api-version={0}", System.Uri.EscapeDataString(apiVersion)));
-            }
             if (_queryParameters.Count > 0)
             {
                 _url += "?" + string.Join("&", _queryParameters);
@@ -241,9 +222,6 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport.Http
         /// Issue TPM Challenge. Will return an encrypted nonce, that can be used to
         /// sign a SAS Token for the GetOnboardingInfo request.
         /// </summary>
-        /// <param name='apiVersion'>
-        /// The API version to use for this operation.
-        /// </param>
         /// <param name='body'>
         /// </param>
         /// <param name='customHeaders'>
@@ -267,19 +245,8 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport.Http
         /// <return>
         /// A response object containing the response body and response headers.
         /// </return>
-        public async Task<HttpOperationResponse<Challenge,DiscoveryRegistrationsIssueChallengeHeaders>> IssueChallengeWithHttpMessagesAsync(string apiVersion, ChallengeRequest body, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<HttpOperationResponse<Challenge,DiscoveryRegistrationsIssueChallengeHeaders>> IssueChallengeWithHttpMessagesAsync(ChallengeRequest body, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
         {
-            if (apiVersion == null)
-            {
-                throw new ValidationException(ValidationRules.CannotBeNull, "apiVersion");
-            }
-            if (apiVersion != null)
-            {
-                if (apiVersion.Length < 1)
-                {
-                    throw new ValidationException(ValidationRules.MinLength, "apiVersion", 1);
-                }
-            }
             if (body == null)
             {
                 throw new ValidationException(ValidationRules.CannotBeNull, "body");
@@ -295,7 +262,6 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport.Http
             {
                 _invocationId = ServiceClientTracing.NextInvocationId.ToString();
                 Dictionary<string, object> tracingParameters = new Dictionary<string, object>();
-                tracingParameters.Add("apiVersion", apiVersion);
                 tracingParameters.Add("body", body);
                 tracingParameters.Add("cancellationToken", cancellationToken);
                 ServiceClientTracing.Enter(_invocationId, this, "IssueChallenge", tracingParameters);
@@ -304,10 +270,6 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport.Http
             var _baseUrl = Client.BaseUri.AbsoluteUri;
             var _url = new System.Uri(_baseUrl + (_baseUrl.EndsWith("/") ? "" : "/")) + "devices:issueChallenge";
             List<string> _queryParameters = new List<string>();
-            if (apiVersion != null)
-            {
-                _queryParameters.Add(string.Format("api-version={0}", System.Uri.EscapeDataString(apiVersion)));
-            }
             if (_queryParameters.Count > 0)
             {
                 _url += "?" + string.Join("&", _queryParameters);

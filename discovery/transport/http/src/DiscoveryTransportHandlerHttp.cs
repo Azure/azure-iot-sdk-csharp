@@ -86,7 +86,7 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport
                 if (Logging.IsEnabled)
                     Logging.Info(this, $"Uri: {builder.Uri}; User-Agent: {request.ProductInfo}");
 
-                string registrationId = request.Security.GetRegistrationID();
+                string registrationId = securityProvider.GetRegistrationID();
 
                 var onboardRequest = new ChallengeRequest(
                     registrationId, 
@@ -94,7 +94,7 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport
                     Convert.ToBase64String(securityProvider.GetStorageRootKey()));
 
                 Challenge challenge = await client.DiscoveryRegistrations
-                    .IssueChallengeAsync("0000-00-00", onboardRequest, cancellationToken)
+                    .IssueChallengeAsync(onboardRequest, cancellationToken)
                     .ConfigureAwait(false);
 
                 return challenge.Key;
@@ -196,10 +196,18 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport
                             Convert.FromBase64String(request.Nonce));
 
                 BootstrapResponse onboardInfo = await client.DiscoveryRegistrations
-                    .GetOnboardingInfoAsync("0000-00-00", onboardInfoRequest, sasToken, cancellationToken)
+                    .GetOnboardingInfoAsync(onboardInfoRequest, sasToken, cancellationToken)
                     .ConfigureAwait(false);
 
-                using X509Certificate2 cert = new X509Certificate2(Convert.FromBase64String(((X509Credential)onboardInfo.IssuedCredential).X509));
+                string x509String = ((X509Credential)onboardInfo.IssuedCredential).X509;
+
+                Console.WriteLine(x509String);
+
+                string pemHeader = "-----BEGIN CERTIFICATE-----";
+                int indexOfStart = x509String.IndexOf(pemHeader) + pemHeader.Length;
+                string certString = x509String.Substring(indexOfStart, x509String.IndexOf("-----END CERTIFICATE-----") - indexOfStart);
+
+                using X509Certificate2 cert = new X509Certificate2(Convert.FromBase64String(certString));
                 X509Certificate2 certWithKey = cert.CopyWithPrivateKey(rsa);
 
                 return new OnboardingInfo(onboardInfo.EdgeProvisioningEndpoint, certWithKey);

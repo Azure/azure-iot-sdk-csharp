@@ -7,6 +7,7 @@ using Microsoft.Azure.Devices.Provisioning.Client.Transport;
 using Microsoft.Azure.Devices.Provisioning.Security;
 using Microsoft.Azure.Devices.Shared;
 using System;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
@@ -48,7 +49,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
 
             Console.WriteLine($"Received endpoint: {onboardingInfo.EdgeProvisioningEndpoint}");
 
-            using SecurityProvider provSecurity = new SecurityProviderX509Certificate(onboardingInfo.ProvisioningCertificate);
+            using var cert = new X509Certificate2(onboardingInfo.ProvisioningCertificate.Export(X509ContentType.Pfx));
+
+            using SecurityProvider provSecurity = new SecurityProviderX509Certificate(cert);
 
             Console.WriteLine("Initializing transport");
             using ProvisioningTransportHandlerHttp provTransport = new ProvisioningTransportHandlerHttp();
