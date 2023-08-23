@@ -15,7 +15,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Models
     /// <summary>
     /// The DeviceRegistryDevice onboarding response.
     /// </summary>
-    [Newtonsoft.Json.JsonObject("DeviceRegistryDeviceResponse")]
+    [Newtonsoft.Json.JsonObject("DeviceRegistryDevice")]
     public partial class DeviceRegistryDeviceResponse : ResponseMetadata
     {
         /// <summary>

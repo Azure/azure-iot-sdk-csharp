@@ -15,7 +15,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Models
     /// <summary>
     /// The HybridComputeMachine onboarding response.
     /// </summary>
-    public partial class HybridComputeMachineResponse
+    [Newtonsoft.Json.JsonObject("HybridComputeMachine")]
+    public partial class HybridComputeMachineResponse : ResponseMetadata
     {
         /// <summary>
         /// Initializes a new instance of the HybridComputeMachineResponse
@@ -48,13 +49,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Models
             ArcVirtualMachineId = arcVirtualMachineId;
             AssignedEndpoints = assignedEndpoints;
             CustomInit();
-        }
-        /// <summary>
-        /// Static constructor for HybridComputeMachineResponse class.
-        /// </summary>
-        static HybridComputeMachineResponse()
-        {
-            Kind = "HybridComputeMachine";
         }
 
         /// <summary>
@@ -93,12 +87,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Models
         /// </summary>
         [JsonProperty(PropertyName = "assignedEndpoints")]
         public IList<Endpoint> AssignedEndpoints { get; set; }
-
-        /// <summary>
-        /// The response type.
-        /// </summary>
-        [JsonProperty(PropertyName = "kind")]
-        public static string Kind { get; private set; }
 
         /// <summary>
         /// Validate the object.

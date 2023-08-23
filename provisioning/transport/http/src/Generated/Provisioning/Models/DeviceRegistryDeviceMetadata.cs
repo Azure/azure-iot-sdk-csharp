@@ -12,7 +12,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Models
     /// <summary>
     /// The DeviceRegistryDevice request metadata.
     /// </summary>
-    [Newtonsoft.Json.JsonObject("DeviceRegistryDeviceMetadata")]
+    [Newtonsoft.Json.JsonObject("DeviceRegistryDevice")]
     public partial class DeviceRegistryDeviceMetadata : ResourceMetadata
     {
         /// <summary>
