@@ -415,6 +415,8 @@ try
         BuildPackage provisioning\transport\http\src "Provisioning Transport for HTTP"
         BuildPackage provisioning\transport\mqtt\src "Provisioning Transport for MQTT"
         BuildPackage provisioning\service\src "Provisioning Service Client SDK"
+        BuildPackage discovery\device\src "Discovery Device Client SDK"
+        BuildPackage discovery\transport\http\src "Discovery Transport for HTTP"
     }
 
     if ($localPackagesAvailableForTesting)
