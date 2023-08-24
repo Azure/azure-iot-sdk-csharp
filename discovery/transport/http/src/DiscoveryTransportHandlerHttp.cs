@@ -177,7 +177,7 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport
 
                 using RSA rsa = RSA.Create();
 
-                string csr = GenerateCSRKey(rsa, registrationId);
+                string csr = GenerateCSR(rsa, registrationId);
 
                 var onboardInfoRequest = new BootstrapRequest(
                     registrationId, 
@@ -199,16 +199,24 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport
                     .GetOnboardingInfoAsync(onboardInfoRequest, sasToken, cancellationToken)
                     .ConfigureAwait(false);
 
-                string x509String = ((X509Credential)onboardInfo.IssuedCredential).X509;
+                X509Certificate2 certWithKey;
 
-                Console.WriteLine(x509String);
+                try
+                {
+                    string x509String = ((X509Credential)onboardInfo.IssuedCredential).X509;
 
-                string pemHeader = "-----BEGIN CERTIFICATE-----";
-                int indexOfStart = x509String.IndexOf(pemHeader) + pemHeader.Length;
-                string certString = x509String.Substring(indexOfStart, x509String.IndexOf("-----END CERTIFICATE-----") - indexOfStart);
+                    string pemHeader = "-----BEGIN CERTIFICATE-----";
+                    int indexOfStart = x509String.IndexOf(pemHeader) + pemHeader.Length;
+                    string certString = x509String.Substring(indexOfStart, x509String.IndexOf("-----END CERTIFICATE-----") - indexOfStart);
 
-                using X509Certificate2 cert = new X509Certificate2(Convert.FromBase64String(certString));
-                X509Certificate2 certWithKey = cert.CopyWithPrivateKey(rsa);
+                    using X509Certificate2 cert = new X509Certificate2(Convert.FromBase64String(certString));
+                    certWithKey = cert.CopyWithPrivateKey(rsa);
+                }
+                catch (Exception e)
+                {
+                    throw new DiscoveryTransportException("Invalid certificate supplied by discovery service.", e);
+                }
+                
 
                 return new OnboardingInfo(onboardInfo.EdgeProvisioningEndpoint, certWithKey);
             }
@@ -237,7 +245,7 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport
             }
         }
 
-        private string GenerateCSRKey(RSA rsa, string deviceId)
+        private string GenerateCSR(RSA rsa, string deviceId)
         {
             // Create a new CertificateRequest object
             CertificateRequest request = new CertificateRequest(

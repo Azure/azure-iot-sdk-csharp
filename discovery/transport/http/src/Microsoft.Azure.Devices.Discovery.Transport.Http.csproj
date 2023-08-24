@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net5.0;netstandard2.1;netcoreapp2.1.30</TargetFrameworks>
+    <TargetFrameworks>net5.0;netstandard2.1;netcoreapp2.1.30;net48</TargetFrameworks>
     <LangVersion>8.0</LangVersion>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <RootNamespace>Microsoft.Azure.Devices.Discovery.Client.Transport</RootNamespace>
@@ -30,7 +30,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <Version>1.0.0</Version>
+    <Version>1.0.1</Version>
     <Title>Microsoft Azure Discovery Device Client HTTP Transport</Title>
     <IncludeSource>True</IncludeSource>
     <IncludeSymbols>True</IncludeSymbols>
@@ -69,6 +69,10 @@
     <Compile Include="$(Common)\HttpContentExtensions.cs">
       <LinkBase>Common</LinkBase>
     </Compile>
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net48' ">
+    <Reference Include="System.Web" Version="4.0.0.0"/>
   </ItemGroup>
 
   <ItemGroup>
