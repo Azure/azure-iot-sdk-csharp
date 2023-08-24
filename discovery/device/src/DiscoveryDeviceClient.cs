@@ -40,9 +40,6 @@ namespace Microsoft.Azure.Devices.Discovery.Client
             SecurityProvider securityProvider,
             DiscoveryTransportHandler transport)
         {
-            // Specify the JsonSerializerSettings. Check JsonSerializerSettingsInitializer for more details.
-            JsonConvert.DefaultSettings = JsonSerializerSettingsInitializer.GetJsonSerializerSettingsDelegate();
-
             _globalDeviceEndpoint = globalDeviceEndpoint;
             _transport = transport;
             _security = securityProvider;

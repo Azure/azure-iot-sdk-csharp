@@ -9,7 +9,7 @@ namespace Microsoft.Azure.Devices.Common
     /// <summary>
     /// A class to initialize JsonSerializerSettings which can be applied to the project.
     /// </summary>
-    public static class JsonSerializerSettingsInitializer
+    internal static class JsonSerializerSettingsInitializer
     {
         /// <summary>
         /// A static instance of JsonSerializerSettings which sets DateParseHandling to None.
@@ -28,7 +28,7 @@ namespace Microsoft.Azure.Devices.Common
         /// <summary>
         /// Returns JsonSerializerSettings Func delegate
         /// </summary>
-        public static Func<JsonSerializerSettings> GetJsonSerializerSettingsDelegate()
+        internal static Func<JsonSerializerSettings> GetJsonSerializerSettingsDelegate()
         {
             return () => s_settings;
         }

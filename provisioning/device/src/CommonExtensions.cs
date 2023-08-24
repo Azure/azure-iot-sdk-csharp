@@ -4,7 +4,7 @@
 using System;
 using System.Text.RegularExpressions;
 
-namespace Microsoft.Azure.Devices.Common
+namespace Microsoft.Azure.Devices.Provisioning.Client
 {
     /// <summary>
     /// Commong string extensions
@@ -25,7 +25,7 @@ namespace Microsoft.Azure.Devices.Common
         /// </summary>
         /// <param name="input">The string to be formatted.</param>
         /// <returns>The input string, with extra white space removed. </returns>
-        public static string TrimWhiteSpace(this string input)
+        internal static string TrimWhiteSpace(this string input)
         {
             return s_trimWhiteSpace.Replace(input, "$1");
         }
@@ -35,7 +35,7 @@ namespace Microsoft.Azure.Devices.Common
         /// </summary>
         /// <param name="argumentValue">The argument value.</param>
         /// <param name="argumentName">The argument name.</param>
-        public static void ThrowIfNullOrWhiteSpace(this string argumentValue, string argumentName)
+        internal static void ThrowIfNullOrWhiteSpace(this string argumentValue, string argumentName)
         {
             if (string.IsNullOrWhiteSpace(argumentValue))
             {
