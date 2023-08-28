@@ -11,7 +11,7 @@ using Microsoft.Azure.Devices.Shared;
 namespace Microsoft.Azure.Devices.Discovery.Client.Transport
 {
     /// <summary>
-    /// Represents the interface for a Provisioning Transport Handler.
+    /// Represents the interface for a Discovery Transport Handler.
     /// </summary>
     public abstract class DiscoveryTransportHandler : IDisposable
     {
@@ -19,12 +19,12 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport
         private int _port;
 
         /// <summary>
-        /// Creates an instance of the ProvisioningTransportHandler class.
+        /// Creates an instance of the <see cref="DiscoveryTransportHandler"/> class.
         /// </summary>
         public DiscoveryTransportHandler() { }
 
         /// <summary>
-        /// Gets or sets the proxy for Provisioning Client operations.
+        /// Gets or sets the proxy for Discovery Client operations.
         /// </summary>
         public IWebProxy Proxy { get; set; }
 
@@ -82,7 +82,7 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport
         }
 
         /// <summary>
-        /// Issue challenge
+        /// Get onboarding info
         /// </summary>
         /// <returns></returns>
         public virtual Task<OnboardingInfo> GetOnboardingInfoAsync(DiscoveryTransportGetOnboardingInfoRequest request, CancellationToken cancellationToken)
@@ -100,7 +100,7 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport
         }
 
         /// <summary>
-        /// Releases the unmanaged resources used by the ProvisioningTransportHandler and optionally disposes of the managed resources.
+        /// Releases the unmanaged resources used by the <see cref="DiscoveryTransportHandler"/> and optionally disposes of the managed resources.
         /// </summary>
         /// <param name="disposing">true to release both managed and unmanaged resources; false to releases only unmanaged resources.</param>
         protected virtual void Dispose(bool disposing)

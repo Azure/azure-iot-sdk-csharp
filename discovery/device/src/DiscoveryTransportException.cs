@@ -7,14 +7,14 @@ using System.Runtime.Serialization;
 namespace Microsoft.Azure.Devices.Discovery.Client
 {
     /// <summary>
-    /// Represents errors reported by the Provisioning Transport Handlers.
+    /// Represents errors reported by the Discovery Transport Handlers.
     /// </summary>
     public class DiscoveryTransportException : Exception
     {
-        private const string IsTransientValueSerializationStoreName = "ProvisioningTransportException-IsTransient";
+        private const string IsTransientValueSerializationStoreName = "DiscoveryTransportException-IsTransient";
 
         /// <summary>
-        /// Creates a new instance of the ProvisioningTransportException class.
+        /// Creates a new instance of the <see cref="DiscoveryTransportException"/> class.
         /// </summary>
         public DiscoveryTransportException()
         {

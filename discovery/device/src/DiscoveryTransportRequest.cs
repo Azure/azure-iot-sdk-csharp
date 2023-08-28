@@ -6,7 +6,7 @@ using Microsoft.Azure.Devices.Shared;
 namespace Microsoft.Azure.Devices.Discovery.Client.Transport
 {
     /// <summary>
-    /// Represents a Provisioning message.
+    /// Represents a Discovery message.
     /// </summary>
     public abstract class DiscoveryTransportRequest
     {
@@ -23,7 +23,7 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport
         public SecurityProviderTpm Security { get; private set; }
 
         /// <summary>
-        /// The Product Information sent to the Provisioning Service. The application can specify extra information.
+        /// The Product Information sent to the Discovery Service. The application can specify extra information.
         /// </summary>
         public string ProductInfo
         {
@@ -32,7 +32,7 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport
         }
 
         /// <summary>
-        /// Creates a new instance of the ProvisioningTransportRequest class.
+        /// Creates a new instance of the <see cref="DiscoveryTransportRequest"/> class.
         /// </summary>
         /// <param name="globalDeviceEndpoint">The Global Device Endpoint for this message.</param>
         /// <param name="security">The SecurityProvider used to authenticate the client.</param>

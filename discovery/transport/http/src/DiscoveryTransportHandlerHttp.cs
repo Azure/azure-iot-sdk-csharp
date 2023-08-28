@@ -21,7 +21,7 @@ using Newtonsoft.Json.Linq;
 namespace Microsoft.Azure.Devices.Discovery.Client.Transport
 {
     /// <summary>
-    /// Represents the HTTP protocol implementation for the Provisioning Transport Handler.
+    /// Represents the HTTP protocol implementation for the Discovery Transport Handler.
     /// </summary>
     public class DiscoveryTransportHandlerHttp : DiscoveryTransportHandler
     {
@@ -29,7 +29,7 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport
         private static readonly TimeSpan s_defaultOperationPoolingIntervalMilliseconds = TimeSpan.FromSeconds(2);
 
         /// <summary>
-        /// Creates an instance of the ProvisioningTransportHandlerHttp class.
+        /// Creates an instance of the <see cref="DiscoveryTransportHandlerHttp"/> class.
         /// </summary>
         public DiscoveryTransportHandlerHttp()
         {
@@ -125,7 +125,7 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport
         }
 
         /// <summary>
-        /// Issue challenge
+        /// Get onboarding info
         /// </summary>
         /// <returns></returns>
         public override async Task<OnboardingInfo> GetOnboardingInfoAsync(DiscoveryTransportGetOnboardingInfoRequest request, CancellationToken cancellationToken)

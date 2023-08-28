@@ -6,7 +6,7 @@ using Microsoft.Azure.Devices.Shared;
 namespace Microsoft.Azure.Devices.Discovery.Client.Transport
 {
     /// <summary>
-    /// Represents a Provisioning issue challenge message.
+    /// Represents a Discovery issue challenge message.
     /// </summary>
     public class DiscoveryTransportIssueChallengeRequest : DiscoveryTransportRequest
     {
