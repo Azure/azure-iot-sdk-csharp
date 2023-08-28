@@ -363,11 +363,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 string operationId = operation.Id;
 
                 if (Logging.IsEnabled)
-                    Logging.RegisterDevice(
+                    Logging.OnboardDevice(
                         this,
                         registrationId,
-                        "",
-                        "X509",
                         operation.Id,
                         null,
                         operation.Status.ToString());

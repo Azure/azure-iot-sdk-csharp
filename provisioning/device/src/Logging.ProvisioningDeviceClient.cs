@@ -10,6 +10,7 @@ namespace Microsoft.Azure.Devices.Shared
     internal sealed partial class Logging : EventSource
     {
         private const int RegisterAsyncId = 11;
+        private const int OnboardAsyncId = 12;
 
         [NonEvent]
         public static void RegisterAsync(
@@ -42,5 +43,34 @@ namespace Microsoft.Azure.Devices.Shared
             string transport,
             string security) =>
             WriteEvent(RegisterAsyncId, thisOrContextObject, globalDeviceEndpoint, idScope, transport, security);
+
+        [NonEvent]
+        public static void OnboardAsync(
+            object thisOrContextObject,
+            string globalDeviceEndpoint,
+            object transport,
+            object security)
+        {
+            DebugValidateArg(thisOrContextObject);
+            DebugValidateArg(security);
+            DebugValidateArg(transport);
+
+            if (IsEnabled)
+            {
+                Log.OnboardAsync(
+                IdOf(thisOrContextObject),
+                globalDeviceEndpoint,
+                IdOf(transport),
+                IdOf(security));
+            }
+        }
+
+        [Event(OnboardAsyncId, Keywords = Keywords.Default, Level = EventLevel.Informational)]
+        private void OnboardAsync(
+            string thisOrContextObject,
+            string globalDeviceEndpoint,
+            string transport,
+            string security) =>
+            WriteEvent(OnboardAsyncId, thisOrContextObject, globalDeviceEndpoint, transport, security);
     }
 }

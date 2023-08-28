@@ -61,6 +61,8 @@ namespace Microsoft.Azure.Devices.Discovery.Client
         /// <exception cref="NotSupportedException">Security provider must be TPM</exception>
         public Task<string> IssueChallengeAsync(CancellationToken cancellationToken = default)
         {
+            Logging.IssueChallengeAsync(this, _globalDeviceEndpoint, _transport, _security);
+
             if (_security is SecurityProviderTpm securityProviderTpm)
             {
                 var request = new DiscoveryTransportIssueChallengeRequest(
@@ -87,6 +89,8 @@ namespace Microsoft.Azure.Devices.Discovery.Client
         /// <exception cref="NotSupportedException">Security provider must be TPM</exception>
         public Task<OnboardingInfo> GetOnboardingInfoAsync(string nonce, CancellationToken cancellationToken = default)
         {
+            Logging.GetOnboardingInfoAsync(this, _globalDeviceEndpoint, _transport, _security);
+
             if (_security is SecurityProviderTpm securityProviderTpm)
             {
                 var request = new DiscoveryTransportGetOnboardingInfoRequest(

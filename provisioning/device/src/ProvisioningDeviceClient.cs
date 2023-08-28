@@ -176,6 +176,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// <returns></returns>
         public Task<DeviceOnboardingResult> OnboardAsync(string publicKey, CancellationToken cancellationToken = default)
         {
+            Logging.OnboardAsync(this, _globalDeviceEndpoint, _transport, _security);
+
             var request = new ProvisioningTransportOnboardRequest(_globalDeviceEndpoint, _security, publicKey)
             {
                 ProductInfo = ProductInfo,

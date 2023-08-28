@@ -9,7 +9,8 @@ namespace Microsoft.Azure.Devices.Shared
     internal sealed partial class Logging : EventSource
     {
         private const int RegisterDeviceId = 12;
-        private const int OperationStatusLookupId = 13;
+        private const int OnboardDeviceId = 13;
+        private const int OperationStatusLookupId = 14;
 
         [NonEvent]
         public static void RegisterDevice(
@@ -53,6 +54,43 @@ namespace Microsoft.Azure.Devices.Shared
                     registrationId,
                     idScope,
                     attestationType,
+                    operationId,
+                    retryAfterSeconds,
+                    status);
+
+        [NonEvent]
+        public static void OnboardDevice(
+            object thisOrContextObject,
+            string registrationId,
+            string operationId,
+            TimeSpan? retryAfter,
+            string status)
+        {
+            if (IsEnabled)
+            {
+                DebugValidateArg(thisOrContextObject);
+                DebugValidateArg(retryAfter);
+
+                Log.OnboardDevice(
+                IdOf(thisOrContextObject),
+                registrationId,
+                operationId,
+                (int)(retryAfter?.TotalSeconds ?? 0),
+                status);
+            }
+        }
+
+        [Event(OnboardDeviceId, Keywords = Keywords.Default, Level = EventLevel.Informational)]
+        private void OnboardDevice(
+            string thisOrContextObject,
+            string registrationId,
+            string operationId,
+            int retryAfterSeconds,
+            string status) =>
+                WriteEvent(
+                    OnboardDeviceId,
+                    thisOrContextObject,
+                    registrationId,
                     operationId,
                     retryAfterSeconds,
                     status);

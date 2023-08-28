@@ -9,13 +9,13 @@ namespace Microsoft.Azure.Devices.Shared
     [EventSource(Name = "Microsoft-Azure-Devices-Discovery-Client")]
     internal sealed partial class Logging : EventSource
     {
-        private const int RegisterAsyncId = 11;
+        private const int IssueChallengeAsyncId = 15;
+        private const int GetOnboardingInfoAsyncId = 16;
 
         [NonEvent]
-        public static void RegisterAsync(
+        public static void IssueChallengeAsync(
             object thisOrContextObject,
             string globalDeviceEndpoint,
-            string idScope,
             object transport,
             object security)
         {
@@ -25,22 +25,49 @@ namespace Microsoft.Azure.Devices.Shared
 
             if (IsEnabled)
             {
-                Log.RegisterAsync(
+                Log.IssueChallengeAsync(
                 IdOf(thisOrContextObject),
                 globalDeviceEndpoint,
-                idScope,
                 IdOf(transport),
                 IdOf(security));
             }
         }
 
-        [Event(RegisterAsyncId, Keywords = Keywords.Default, Level = EventLevel.Informational)]
-        private void RegisterAsync(
+        [Event(IssueChallengeAsyncId, Keywords = Keywords.Default, Level = EventLevel.Informational)]
+        private void IssueChallengeAsync(
             string thisOrContextObject,
             string globalDeviceEndpoint,
-            string idScope,
             string transport,
             string security) =>
-            WriteEvent(RegisterAsyncId, thisOrContextObject, globalDeviceEndpoint, idScope, transport, security);
+            WriteEvent(IssueChallengeAsyncId, thisOrContextObject, globalDeviceEndpoint, transport, security);
+
+        [NonEvent]
+        public static void GetOnboardingInfoAsync(
+            object thisOrContextObject,
+            string globalDeviceEndpoint,
+            object transport,
+            object security)
+        {
+            DebugValidateArg(thisOrContextObject);
+            DebugValidateArg(security);
+            DebugValidateArg(transport);
+
+            if (IsEnabled)
+            {
+                Log.GetOnboardingInfoAsync(
+                IdOf(thisOrContextObject),
+                globalDeviceEndpoint,
+                IdOf(transport),
+                IdOf(security));
+            }
+        }
+
+        [Event(GetOnboardingInfoAsyncId, Keywords = Keywords.Default, Level = EventLevel.Informational)]
+        private void GetOnboardingInfoAsync(
+            string thisOrContextObject,
+            string globalDeviceEndpoint,
+            string transport,
+            string security) =>
+            WriteEvent(GetOnboardingInfoAsyncId, thisOrContextObject, globalDeviceEndpoint, transport, security);
     }
 }
