@@ -34,7 +34,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
             using DiscoveryTransportHandler transport = new DiscoveryTransportHandlerHttp();
 
             var client = DiscoveryDeviceClient.Create(
-                _parameters.GlobalDeviceEndpoint,
+                _parameters.DiscoveryDeviceEndpoint,
                 security,
                 transport);
 
@@ -57,7 +57,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
             using ProvisioningTransportHandlerHttp provTransport = new ProvisioningTransportHandlerHttp();
 
             var provClient = ProvisioningDeviceClient.Create(
-                "provservice-hci-01.eastus.dev1.edgeprov-dev.azure.net",
+                _parameters.ProvisioningDeviceEndpoint,
                 provSecurity,
                 provTransport);
 

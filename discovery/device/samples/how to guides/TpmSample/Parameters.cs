@@ -23,10 +23,17 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
         public string RegistrationId { get; set; }
 
         [Option(
-            'g',
-            "GlobalDeviceEndpoint",
+            'd',
+            "DiscoveryDeviceEndpoint",
             Default = "dev1.eastus.device.discovery.edgeprov-dev.azure.net",
-            HelpText = "The global endpoint for devices to connect to.")]
-        public string GlobalDeviceEndpoint { get; set; }
+            HelpText = "The discovery service endpoint for devices to connect to.")]
+        public string DiscoveryDeviceEndpoint { get; set; }
+
+        [Option(
+            'p',
+            "ProvisioningDeviceEndpoint",
+            Default = "provservice-hci-01.eastus.dev1.edgeprov-dev.azure.net",
+            HelpText = "The provisioning service endpoint for devices to connect to.")]
+        public string ProvisioningDeviceEndpoint { get; set; }
     }
 }
