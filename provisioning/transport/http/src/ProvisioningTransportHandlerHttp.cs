@@ -367,7 +367,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                         this,
                         registrationId,
                         operation.Id,
-                        null,
                         operation.Status.ToString());
 
                 // Poll with operationId until registration complete.

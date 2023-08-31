@@ -97,6 +97,11 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport
                     .IssueChallengeAsync(onboardRequest, cancellationToken)
                     .ConfigureAwait(false);
 
+                if (Logging.IsEnabled)
+                    Logging.IssueChallenge(
+                        this,
+                        registrationId);
+
                 return challenge.Key;
             }
             catch (AzureCoreFoundationsErrorResponseException ex)
@@ -198,6 +203,11 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport
                 BootstrapResponse onboardInfo = await client.DiscoveryRegistrations
                     .GetOnboardingInfoAsync(onboardInfoRequest, sasToken, cancellationToken)
                     .ConfigureAwait(false);
+
+                if (Logging.IsEnabled)
+                    Logging.GetOnboardingInfo(
+                        this,
+                        registrationId);
 
                 X509Certificate2 certWithKey;
 

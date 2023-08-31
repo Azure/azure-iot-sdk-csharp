@@ -63,19 +63,16 @@ namespace Microsoft.Azure.Devices.Shared
             object thisOrContextObject,
             string registrationId,
             string operationId,
-            TimeSpan? retryAfter,
             string status)
         {
             if (IsEnabled)
             {
                 DebugValidateArg(thisOrContextObject);
-                DebugValidateArg(retryAfter);
 
                 Log.OnboardDevice(
                 IdOf(thisOrContextObject),
                 registrationId,
                 operationId,
-                (int)(retryAfter?.TotalSeconds ?? 0),
                 status);
             }
         }
@@ -85,14 +82,12 @@ namespace Microsoft.Azure.Devices.Shared
             string thisOrContextObject,
             string registrationId,
             string operationId,
-            int retryAfterSeconds,
             string status) =>
                 WriteEvent(
                     OnboardDeviceId,
                     thisOrContextObject,
                     registrationId,
                     operationId,
-                    retryAfterSeconds,
                     status);
 
         [NonEvent]
