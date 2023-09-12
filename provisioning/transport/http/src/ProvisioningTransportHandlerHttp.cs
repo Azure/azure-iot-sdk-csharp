@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Net;
 using System.Net.Http;
@@ -514,11 +515,35 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
         private static DeviceOnboardingResult ConvertToOnboardingResult(OnboardOperationStatusResponse result)
         {
+            ResponseMetadata deviceMetadata = null;
+
+            switch (result.Result.ResourceMetadata)
+            {
+                case HybridComputeMachineResponse hybridResponse:
+                    deviceMetadata = new HybridComputeMachine(
+                        hybridResponse.ResourceId, 
+                        hybridResponse.Location, 
+                        hybridResponse.TenantId, 
+                        hybridResponse.ArcVirtualMachineId);
+                    break;
+                case DeviceRegistryDeviceResponse deviceResponse:
+                    List<Endpoint> endpoints = new List<Endpoint>();
+                    foreach (var endpoint in deviceResponse.AssignedEndpoints)
+                    {
+                        endpoints.Add(new Endpoint(endpoint.Hostname, endpoint.Name));
+                    }
+                    deviceMetadata = new DeviceRegistryDevice(
+                        endpoints);
+                    break;
+            }
+
+
             return new DeviceOnboardingResult(
                 result.Id,
                 new Device(
                     result.Result.RegistrationId, 
-                    result.Status)
+                    result.Status,
+                    deviceMetadata)
                 );
         }
     }
