@@ -1,13 +1,5 @@
 # Microsoft Azure IoT SDK for .NET
 
-## V2 clients release notice
-
-The [2.0.0-preview001](https://github.com/Azure/azure-iot-sdk-csharp/releases/tag/2022-10-14-v2preview) release has been published for each package in this library. 
-These packages simplify usage and handling of our clients, and we highly encourage you to try out these packages and share your feedback. Once we promote these 
-changes to `main` in the future and release the 2.x.x packages publicly, all future features will be brought only to this new major version.
-
-If you need any help migrating your code to try out the new 2.X.X clients, please see this [migration guide](https://github.com/Azure/azure-iot-sdk-csharp/blob/previews/v2/SDK%20v2%20migration%20guide.md).
-
 ## Contents
 
 This repository contains the following:
@@ -194,7 +186,6 @@ Refer to the [Azure IoT Device SDK lifecycle and support](https://learn.microsof
 | Release | Category | End-of-life |
 |-|-|-|
 | 1.42.0 | Active | - |
-| 2.0.0-preview005 | Preview | 2023-07-26
 
 ### Need help?
 
