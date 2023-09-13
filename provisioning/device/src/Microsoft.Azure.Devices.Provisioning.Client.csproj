@@ -28,7 +28,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <Version>1.19.3-ztp-preview-02</Version>
+    <Version>1.19.3-ztp-preview-03</Version>
     <Title>Microsoft Azure IoT Provisioning Device Client SDK</Title>
     <IncludeSource>True</IncludeSource>
     <IncludeSymbols>True</IncludeSymbols>
