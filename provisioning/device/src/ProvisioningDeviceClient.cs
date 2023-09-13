@@ -4,9 +4,9 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Azure.Devices.Common;
 using Microsoft.Azure.Devices.Provisioning.Client.Transport;
 using Microsoft.Azure.Devices.Shared;
+using Microsoft.Azure.Provisioning.Client;
 using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client
