@@ -56,14 +56,32 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
             Console.WriteLine("Initializing transport");
             using ProvisioningTransportHandlerHttp provTransport = new ProvisioningTransportHandlerHttp();
 
+            var provisioningEndpoint = onboardingInfo.EdgeProvisioningEndpoint;
+
+            if (_parameters.ProvisioningDeviceEndpoint != null)
+            {
+                provisioningEndpoint = _parameters.ProvisioningDeviceEndpoint;
+            }
+
+            Console.WriteLine($"Initializing porivisioning client with endpoint {provisioningEndpoint}");
+
             var provClient = ProvisioningDeviceClient.Create(
-                _parameters.ProvisioningDeviceEndpoint,
+                provisioningEndpoint,
                 provSecurity,
                 provTransport);
 
-            DeviceOnboardingResult stuff = await provClient.OnboardAsync("test");
+            DeviceOnboardingResult result = await provClient.OnboardAsync("test");
 
-            Console.WriteLine($"Done onboarding! {stuff.Id} {stuff.Result.RegistrationId}");
+            Console.WriteLine($"Done onboarding! {result.Id} {result.Result.RegistrationId}");
+
+            if (result.Result.Metadata is HybridComputeMachine hybridComputeMachine)
+            {
+                Console.WriteLine($"Hybrid compute metadata: " +
+                    $"{hybridComputeMachine.ResourceId} " +
+                    $"{hybridComputeMachine.TenantId} " +
+                    $"{hybridComputeMachine.ArcVirtualMachineId} " +
+                    $"{hybridComputeMachine.Location}");
+            }
         }
     }
 }

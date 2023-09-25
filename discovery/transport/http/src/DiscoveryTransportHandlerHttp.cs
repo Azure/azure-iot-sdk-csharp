@@ -17,6 +17,7 @@ using Microsoft.Azure.Devices.Shared;
 using Microsoft.Rest;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System.Text;
 
 namespace Microsoft.Azure.Devices.Discovery.Client.Transport
 {
@@ -268,9 +269,20 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport
             byte[] csrBytes = request.CreateSigningRequest();
 
             // Convert the CSR to a Base64-encoded string
-            string csrBase64 = Convert.ToBase64String(csrBytes);
+            string csrBase64 = PemEncodeSigningRequest(csrBytes);
 
             return csrBase64;
+        }
+
+        private string PemEncodeSigningRequest(byte[] csr)
+        {
+            StringBuilder builder = new StringBuilder();
+
+            builder.AppendLine("-----BEGIN CERTIFICATE REQUEST-----");
+            builder.AppendLine(Convert.ToBase64String(csr, Base64FormattingOptions.InsertLineBreaks));
+            builder.AppendLine("-----END CERTIFICATE REQUEST-----");
+
+            return builder.ToString();
         }
     }
 }

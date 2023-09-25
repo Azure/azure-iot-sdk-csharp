@@ -32,8 +32,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
         [Option(
             'p',
             "ProvisioningDeviceEndpoint",
-            Default = "provservice-hci-01.eastus.dev1.edgeprov-dev.azure.net",
-            HelpText = "The provisioning service endpoint for devices to connect to.")]
+            Default = null,
+            HelpText = "The provisioning service endpoint for devices to connect to. Overrides edge provisioning endpoint from discovery service")]
         public string ProvisioningDeviceEndpoint { get; set; }
     }
 }
