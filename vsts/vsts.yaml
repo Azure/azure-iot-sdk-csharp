@@ -12,16 +12,14 @@ parameters:
   type: number
   default: 120
 - name: testTargets
-  displayName: The .NET test targets to build and run. 'all' and 'min-matrix' (net6.0, netcore3.1) are aggregates of the remaining values.
+  displayName: The .NET test targets to build and run. 'all' and 'min-matrix' (net6.0) are aggregates of the remaining values.
   type: string
   values:
     - default
     - all
     - min-matrix
+    - net7.0
     - net6.0
-    - net5.0
-    - netcore3.1
-    - netcore2.1
     - net4.7.2
     - net4.5.1
   default: default
@@ -41,11 +39,9 @@ variables:
 
 # The minimum matrix build/test targets.
   testNet60: ${{ or(eq(variables['minMatrix'], 'True'), contains(parameters['testTargets'], 'net6.0')) }}
-  testNetcore31: ${{ or(eq(variables['minMatrix'], 'True'), contains(parameters['testTargets'], 'netcore3.1')) }}
 
 # The remaining build/test targets.
-  testNet50: ${{ or(eq(variables['allTestTargets'], 'True'), contains(parameters['testTargets'], 'net5.0')) }}
-  testNetcore21: ${{ or(eq(variables['allTestTargets'], 'True'), contains(parameters['testTargets'], 'netcore2.1')) }}
+  testNet70: ${{ or(eq(variables['allTestTargets'], 'True'), contains(parameters['testTargets'], 'net7.0')) }}
   testNet472: ${{ or(eq(variables['allTestTargets'], 'True'), contains(parameters['testTargets'], 'net4.7.2')) }}
   testNet451: ${{ or(eq(variables['allTestTargets'], 'True'), contains(parameters['testTargets'], 'net4.5.1')) }}
 
@@ -78,15 +74,9 @@ jobs:
           FRAMEWORK: net6.0
           # Can't find a good way to skip matrix elements so for now we set an environment variable that the script will use to bail out.
           SHOULD_RUN: ${{ eq(variables['testNet60'], 'True') }}
-        .NET 5.0:
-          FRAMEWORK: net5.0
-          SHOULD_RUN: ${{ eq(variables['testNet50'], 'True') }}
-        .NET CoreApp 3.1:
-          FRAMEWORK: netcoreapp3.1
-          SHOULD_RUN: ${{ eq(variables['testNetcore31'], 'True') }}
-        .NET CoreApp 2.1.30:
-          FRAMEWORK: netcoreapp2.1.30
-          SHOULD_RUN: ${{ eq(variables['testNetcore21'], 'True') }}
+        .NET 7.0:
+          FRAMEWORK: net7.0
+          SHOULD_RUN: ${{ eq(variables['testNet70'], 'True') }}
     pool:
       # If this is changed, don't forget to update supported_platforms.md in the root directory. That document outlines what OS we test on and should stay up to date.
       vmImage: ubuntu-20.04
@@ -118,30 +108,12 @@ jobs:
          performMultiLevelLookup: true
          installationPath: $(Agent.ToolsDirectory)/dotnet
 
-      - ${{ if eq(variables['testNet50'], 'True') }}:
+      - ${{ if eq(variables['testNet70'], 'True') }}:
         - task: UseDotNet@2
-          displayName: 'Use .NET SDK 5.0'
+          displayName: 'Use .NET SDK 7.0'
           inputs:
             packageType: sdk
-            version: 5.x
-            performMultiLevelLookup: true
-            installationPath: $(Agent.ToolsDirectory)/dotnet
-
-      - ${{ if eq(variables['testNetcore31'], 'True') }}:
-        - task: UseDotNet@2
-          displayName: 'Use .NET Core SDK 3.1'
-          inputs:
-            packageType: sdk
-            version: 3.1.x
-            performMultiLevelLookup: true
-            installationPath: $(Agent.ToolsDirectory)/dotnet
-
-      - ${{ if eq(variables['testNetcore21'], 'True') }}:
-        - task: UseDotNet@2
-          displayName: 'Use .NET Core SDK 2.1'
-          inputs:
-            packageType: sdk
-            version: 2.1.x
+            version: 7.x
             performMultiLevelLookup: true
             installationPath: $(Agent.ToolsDirectory)/dotnet
 
@@ -361,14 +333,8 @@ jobs:
           FRAMEWORK: net6.0
           SHOULD_RUN: ${{ eq(variables['testNet60'], 'True') }}
         .NET 5.0:
-          FRAMEWORK: net5.0
-          SHOULD_RUN: ${{ eq(variables['testNet50'], 'True') }}
-        .NET CoreApp 3.1:
-          FRAMEWORK: netcoreapp3.1
-          SHOULD_RUN: ${{ eq(variables['testNetcore31'], 'True') }}
-        .NET CoreApp 2.1.30:
-          FRAMEWORK: netcoreapp2.1.30
-          SHOULD_RUN: ${{ eq(variables['testNetcore21'], 'True') }}
+          FRAMEWORK: net7.0
+          SHOULD_RUN: ${{ eq(variables['testNet70'], 'True') }}
         .NET 4.7.2:
           FRAMEWORK: net472
           SHOULD_RUN: ${{ eq(variables['testNet472'], 'True') }}
@@ -405,29 +371,14 @@ jobs:
             performMultiLevelLookup: true
             installationPath: $(Agent.ToolsDirectory)/dotnet
 
-      - ${{ if eq(variables['testNet50'], 'True') }}:
+      - ${{ if eq(variables['testNet70'], 'True') }}:
         - task: UseDotNet@2
-          displayName: 'Use .NET SDK 5.0'
+          displayName: 'Use .NET SDK 7.0'
           inputs:
             packageType: sdk
-            version: 5.x
+            version: 7.x
             performMultiLevelLookup: true
             installationPath: $(Agent.ToolsDirectory)/dotnet
-
-      - ${{ if eq(variables['testNetcore31'], 'True') }}:
-        - task: UseDotNet@2
-          displayName: 'Use .NET Core SDK 3.1'
-          inputs:
-            packageType: sdk
-            version: 3.1.x
-            performMultiLevelLookup: true
-            installationPath: $(Agent.ToolsDirectory)/dotnet
-
-      - ${{ if eq(variables['testNetcore21'], 'True') }}:
-        - task: CmdLine@2
-          displayName: 'Install .NET Core 2.1'
-          inputs:
-            script: 'choco install dotnetcore-2.1-sdk'
 
       - ${{ if eq(variables['testNet472'], 'True') }}:
         - task: CmdLine@2
