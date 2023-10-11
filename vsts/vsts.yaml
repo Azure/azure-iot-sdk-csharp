@@ -332,7 +332,7 @@ jobs:
         .NET 6.0:
           FRAMEWORK: net6.0
           SHOULD_RUN: ${{ eq(variables['testNet60'], 'True') }}
-        .NET 5.0:
+        .NET 7.0:
           FRAMEWORK: net7.0
           SHOULD_RUN: ${{ eq(variables['testNet70'], 'True') }}
         .NET 4.7.2:
