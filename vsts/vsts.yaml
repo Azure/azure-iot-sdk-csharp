@@ -20,7 +20,6 @@ parameters:
     - min-matrix
     - net7.0
     - net6.0
-    - netcore3.1
     - net4.7.2
   default: default
 
@@ -42,7 +41,6 @@ variables:
   testNet60: ${{ or(eq(variables['minMatrix'], 'True'), contains(parameters['testTargets'], 'net6.0')) }}
 
 # The remaining build/test targets.
-  testNetcore31: ${{ or(eq(variables['allTestTargets'], 'True'), contains(parameters['testTargets'], 'netcore3.1')) }}
   testNet472: ${{ or(eq(variables['allTestTargets'], 'True'), contains(parameters['testTargets'], 'net4.7.2')) }}
 
 trigger:
@@ -77,9 +75,6 @@ jobs:
         .NET 6.0:
           FRAMEWORK: net6.0
           SHOULD_RUN: ${{ eq(variables['testNet60'], 'True') }}
-        .NET CoreApp 3.1:
-          FRAMEWORK: netcoreapp3.1
-          SHOULD_RUN: ${{ eq(variables['testNetcore31'], 'True') }}
 
     pool:
       # If this is changed, don't forget to update supported_platforms.md in the root directory. That document outlines what OS we test on and should stay up to date.
@@ -376,9 +371,6 @@ jobs:
         .NET 6.0:
           FRAMEWORK: net6.0
           SHOULD_RUN: ${{ eq(variables['testNet60'], 'True') }}
-        .NET CoreApp 3.1:
-          FRAMEWORK: netcoreapp3.1
-          SHOULD_RUN: ${{ eq(variables['testNetcore31'], 'True') }}
         .NET 4.7.2:
           FRAMEWORK: net472
           SHOULD_RUN: ${{ eq(variables['testNet472'], 'True') }}
