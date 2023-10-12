@@ -99,21 +99,21 @@ jobs:
 
       # https://docs.microsoft.com/azure/devops/pipelines/tasks/tool/dotnet-core-tool-installer?view=azure-devops
 
-      # Linux requires .NET 6.0 install for tests to run, no matter which framework target is being tested
+      # Linux requires .NET 7.0 install for tests to run, no matter which framework target is being tested
       - task: UseDotNet@2
-        displayName: 'Use .NET SDK 6.0'
+        displayName: 'Use .NET SDK 7.0'
         inputs:
          packageType: sdk
          version: 6.x
          performMultiLevelLookup: true
          installationPath: $(Agent.ToolsDirectory)/dotnet
 
-      - ${{ if eq(variables['testNet70'], 'True') }}:
+      - ${{ if eq(variables['testNet60'], 'True') }}:
         - task: UseDotNet@2
-          displayName: 'Use .NET SDK 7.0'
+          displayName: 'Use .NET SDK 6.0'
           inputs:
             packageType: sdk
-            version: 7.x
+            version: 6.x
             performMultiLevelLookup: true
             installationPath: $(Agent.ToolsDirectory)/dotnet
 
