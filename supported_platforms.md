@@ -20,7 +20,6 @@ Nightly test platform details:
 .NET versions tested on
 - .NET 7.0
 - .NET 6.0
-- .NET Core 3.1
 - .NET Framework 4.7.2
 
 
@@ -37,7 +36,6 @@ Nightly test platform details:
 .NET versions tested on:
 - .NET 7.0
 - .NET 6.0
-- .NET Core 3.1
 
 Default locale: en_US, platform encoding: UTF-8
 
