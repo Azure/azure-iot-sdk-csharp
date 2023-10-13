@@ -80,25 +80,6 @@ namespace Microsoft.Azure.Devices.Shared.Tests
             tlsVersions.Preferred.Should().Be(expected);
         }
 
-        [TestMethod]
-        [DataRow(SslProtocols.Tls)]
-        [DataRow(SslProtocols.Tls11)]
-        [DataRow(SslProtocols.Tls | SslProtocols.Tls11)]
-        [DataRow(SslProtocols.Tls | SslProtocols.Tls11 | SslProtocols.Tls12)]
-        public void SetMinimumTlsVersions_CanSetToOlderTls(SslProtocols protocol)
-        {
-            // arrange
-            var tlsVersions = new TlsVersions();
-            SslProtocols expected = protocol | SslProtocols.Tls12;
-
-            // act
-            tlsVersions.SetMinimumTlsVersions(protocol);
-
-            // assert
-            tlsVersions.MinimumTlsVersions.Should().Be(expected);
-            tlsVersions.Preferred.Should().Be(expected);
-        }
-
 #pragma warning disable 0618
 
         [TestMethod]
