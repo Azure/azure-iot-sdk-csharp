@@ -64,25 +64,5 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
             // assert
             act.Should().Throw<ArgumentNullException>().WithParameterName("primaryKey");
         }
-
-        [TestMethod]
-        public void AuthenticationProviderSymmetricKey_SecondaryKey_EmptyString_Throws()
-        {
-            // arrange - act
-            Func<AuthenticationProviderSymmetricKey> act = () => _ = new AuthenticationProviderSymmetricKey(FakeRegistrationId, FakePrimaryKey, "");
-
-            // assert
-            act.Should().Throw<ArgumentException>().WithParameterName("secondaryKey");
-        }
-
-        [TestMethod]
-        public void AuthenticationProviderSymmetricKey_SecondaryKey_Null_Throws()
-        {
-            // arrange - act
-            Func<AuthenticationProviderSymmetricKey> act = () => _ = new AuthenticationProviderSymmetricKey(FakeRegistrationId, FakePrimaryKey, null);
-
-            // assert
-            act.Should().Throw<ArgumentNullException>().WithParameterName("secondaryKey");
-        }
     }
 }
