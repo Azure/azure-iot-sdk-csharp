@@ -445,6 +445,8 @@ namespace Microsoft.Azure.Devices.E2ETests
         // Test device client recovery when proxy settings are enabled
         [TestCategory("Proxy")]
         [TestMethod]
+        [TestCategory("Flaky")]
+        [DoNotParallelize]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_TcpConnectionLossSendRecovery_MultipleConnections_AmqpWs_WithProxy()
         {
