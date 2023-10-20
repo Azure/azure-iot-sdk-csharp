@@ -18,6 +18,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
     [TestClass]
     [TestCategory("E2E")]
     [TestCategory("IoTHub")]
+    [DoNotParallelize]
     public class MethodE2ETests : E2EMsTestBase
     {
         public const string DeviceResponseJson = "{\"name\":\"e2e_test\"}";

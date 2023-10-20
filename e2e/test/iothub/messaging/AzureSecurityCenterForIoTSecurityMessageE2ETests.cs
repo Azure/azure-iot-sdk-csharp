@@ -15,6 +15,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
     [TestCategory("E2E")]
     [TestCategory("IoTHub")]
     [TestCategory("LongRunning")]
+    [DoNotParallelize]
     public class AzureSecurityCenterForIoTSecurityMessageE2ETests : E2EMsTestBase
     {
         private readonly string _devicePrefix = $"{nameof(AzureSecurityCenterForIoTSecurityMessageE2ETests)}_";

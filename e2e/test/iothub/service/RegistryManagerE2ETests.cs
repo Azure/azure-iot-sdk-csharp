@@ -16,6 +16,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
     [TestClass]
     [TestCategory("E2E")]
     [TestCategory("IoTHub")]
+    [DoNotParallelize]
     public class RegistryManagerE2ETests : E2EMsTestBase
     {
         private readonly string _idPrefix = $"E2E_{nameof(RegistryManagerE2ETests)}_";

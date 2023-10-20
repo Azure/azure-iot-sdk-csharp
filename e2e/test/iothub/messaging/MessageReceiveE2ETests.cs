@@ -21,6 +21,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
     [TestCategory("E2E")]
     [TestCategory("IoTHub")]
     [TestCategory("LongRunning")]
+    [DoNotParallelize]
     public partial class MessageReceiveE2ETests : E2EMsTestBase
     {
         private static readonly string s_devicePrefix = $"{nameof(MessageReceiveE2ETests)}_";
