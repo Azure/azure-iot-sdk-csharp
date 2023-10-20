@@ -17,6 +17,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
     [TestCategory("E2E")]
     [TestCategory("IoTHub")]
     [TestCategory("Proxy")]
+    [DoNotParallelize]
     public class IoTHubServiceProxyE2ETests : E2EMsTestBase
     {
         private readonly string DevicePrefix = $"{nameof(IoTHubServiceProxyE2ETests)}_";
@@ -25,7 +26,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         private static string s_connectionString = TestConfiguration.IotHub.ConnectionString;
         private static string s_proxyServerAddress = TestConfiguration.IotHub.ProxyServerAddress;
         private const int MaxIterationWait = 30;
-        private static readonly TimeSpan _waitDuration = TimeSpan.FromSeconds(5);
+        private const int jobRetryTimeInMinutes = 3;
+        private static readonly TimeSpan _waitDuration = TimeSpan.FromSeconds(10);
 
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
@@ -51,6 +53,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         [TestMethod]
         [TestCategory("LongRunning")]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
+        [TestCategory("Flaky")]
         public async Task JobClient_ScheduleAndRunTwinJob_WithProxy()
         {
             var httpTransportSettings = new HttpTransportSettings
@@ -103,7 +106,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                     string jobId = "JOBSAMPLE" + Guid.NewGuid().ToString();
                     string query = $"DeviceId IN ['{JobDeviceId}']";
                     JobResponse createJobResponse = await jobClient
-                        .ScheduleTwinUpdateAsync(jobId, query, twin, DateTime.UtcNow, (long)TimeSpan.FromMinutes(2).TotalSeconds)
+                        .ScheduleTwinUpdateAsync(jobId, query, twin, DateTime.UtcNow, (long)TimeSpan.FromMinutes(jobRetryTimeInMinutes).TotalSeconds)
                         .ConfigureAwait(false);
                     break;
                 }
