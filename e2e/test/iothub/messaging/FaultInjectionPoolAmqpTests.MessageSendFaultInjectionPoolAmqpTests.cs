@@ -236,6 +236,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestMethod]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         [TestCategory("Flaky")]
+        [DoNotParallelize]
         public async Task Message_TcpConnectionLossSendRecovery_MultipleConnections_Amqp()
         {
             await SendMessageRecoveryPoolOverAmqpAsync(
@@ -250,6 +251,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestMethod]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         [TestCategory("Flaky")]
+        [DoNotParallelize]
         public async Task Message_TcpConnectionLossSendRecovery_MultipleConnections_AmqpWs()
         {
             await SendMessageRecoveryPoolOverAmqpAsync(
@@ -264,6 +266,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestMethod]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         [TestCategory("Flaky")]
+        [DoNotParallelize]
         public async Task Message_AmqpConnectionLossSendRecovery_MultipleConnections_Amqp()
         {
             await SendMessageRecoveryPoolOverAmqpAsync(
@@ -278,6 +281,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestMethod]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         [TestCategory("Flaky")]
+        [DoNotParallelize]
         public async Task Message_AmqpConnectionLossSendRecovery_MultipleConnections_AmqpWs()
         {
             await SendMessageRecoveryPoolOverAmqpAsync(
@@ -293,6 +297,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestMethod]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         [TestCategory("Flaky")]
+        [DoNotParallelize]
         public async Task Message_AmqpSessionLossSendRecovery_MultipleConnections_Amqp()
         {
             await SendMessageRecoveryPoolOverAmqpAsync(
@@ -308,6 +313,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestMethod]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         [TestCategory("Flaky")]
+        [DoNotParallelize]
         public async Task Message_AmqpSessionLossSendRecovery_MultipleConnections_AmqpWs()
         {
             await SendMessageRecoveryPoolOverAmqpAsync(
@@ -323,6 +329,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestMethod]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         [TestCategory("Flaky")]
+        [DoNotParallelize]
         public async Task Message_AmqpD2cLinkDropSendRecovery_MultipleConnections_Amqp()
         {
             await SendMessageRecoveryPoolOverAmqpAsync(
@@ -338,6 +345,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestMethod]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         [TestCategory("Flaky")]
+        [DoNotParallelize]
         public async Task Message_AmqpD2cLinkDropSendRecovery_MultipleConnections_AmqpWs()
         {
             await SendMessageRecoveryPoolOverAmqpAsync(
@@ -353,6 +361,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         [TestCategory("LongRunning")]
         [TestCategory("Flaky")]
+        [DoNotParallelize]
         public async Task Message_GracefulShutdownSendRecovery_MultipleConnections_Amqp()
         {
             await SendMessageRecoveryPoolOverAmqpAsync(
@@ -367,6 +376,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestMethod]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         [TestCategory("Flaky")]
+        [DoNotParallelize]
         public async Task Message_GracefulShutdownSendRecovery_MultipleConnections_AmqpWs()
         {
             await SendMessageRecoveryPoolOverAmqpAsync(

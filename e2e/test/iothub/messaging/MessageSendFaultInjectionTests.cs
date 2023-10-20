@@ -173,6 +173,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         [TestCategory("Flaky")]
+        [DoNotParallelize]
         public async Task Message_ThrottledConnectionRecovery_AmqpWs()
         {
             await SendMessageRecoveryAsync(
@@ -184,6 +185,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
+        [TestCategory("Flaky")]
         [DoNotParallelize]
         public async Task Message_ThrottledConnectionLongTimeNoRecovery_Amqp()
         {
@@ -208,6 +210,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
+        [TestCategory("Flaky")]
         [DoNotParallelize]
         public async Task Message_ThrottledConnectionLongTimeNoRecovery_AmqpWs()
         {
@@ -231,6 +234,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
+        [TestCategory("Flaky")]
+        [DoNotParallelize]
         public async Task Message_ThrottledConnectionLongTimeNoRecovery_Http()
         {
             try
