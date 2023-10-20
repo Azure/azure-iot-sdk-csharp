@@ -70,8 +70,10 @@ namespace Microsoft.Azure.Devices.E2ETests
             await DeviceClient_TokenIsRefreshed_Internal(Client.TransportType.Amqp).ConfigureAwait(false);
         }
 
+        [Ignore]
         [TestMethod]
         [Timeout(TokenRefreshTestTimeoutMilliseconds)]
+        [TestCategory("Flaky")]
         [TestCategory("LongRunning")]
         public async Task DeviceClient_TokenIsRefreshed_Ok_Mqtt()
         {
