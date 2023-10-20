@@ -22,6 +22,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestMethod]
         [Timeout(ConnectionStateChangeTestTimeoutMilliseconds)]
         [TestCategory("LongRunning")]
+        [DoNotParallelize]
         public async Task DeviceClient_DeviceDeleted_Gives_ConnectionStatus_DeviceDisabled_AmqpTcp()
         {
             await DeviceClient_Gives_ConnectionStatus_DeviceDisabled_Base(
@@ -33,6 +34,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestCategory("LongRunning")]
         [TestMethod]
         [Timeout(ConnectionStateChangeTestTimeoutMilliseconds)]
+        [DoNotParallelize]
         public async Task DeviceClient_DeviceDeleted_Gives_ConnectionStatus_DeviceDisabled_AmqpWs()
         {
             await DeviceClient_Gives_ConnectionStatus_DeviceDisabled_Base(
@@ -44,6 +46,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestMethod]
         [Timeout(ConnectionStateChangeTestTimeoutMilliseconds)] // This test always takes more than 5 minutes for service to return. Needs investigation.
         [TestCategory("LongRunning")]
+        [DoNotParallelize]
         public async Task DeviceClient_DeviceDisabled_Gives_ConnectionStatus_DeviceDisabled_AmqpTcp()
         {
             await DeviceClient_Gives_ConnectionStatus_DeviceDisabled_Base(
@@ -60,6 +63,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestMethod]
         [Timeout(ConnectionStateChangeTestTimeoutMilliseconds)]
         [TestCategory("LongRunning")]
+        [DoNotParallelize]
         public async Task DeviceClient_DeviceDisabled_Gives_ConnectionStatus_DeviceDisabled_AmqpWs()
         {
             await DeviceClient_Gives_ConnectionStatus_DeviceDisabled_Base(
@@ -76,6 +80,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestMethod]
         [Timeout(ConnectionStateChangeTestTimeoutMilliseconds)]
         [TestCategory("LongRunning")]
+        [DoNotParallelize]
         public async Task ModuleClient_DeviceDeleted_Gives_ConnectionStatus_DeviceDisabled_AmqpTcp()
         {
             await ModuleClient_Gives_ConnectionStatus_DeviceDisabled_Base(
@@ -87,6 +92,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestMethod]
         [Timeout(ConnectionStateChangeTestTimeoutMilliseconds)]
         [TestCategory("LongRunning")]
+        [DoNotParallelize]
         public async Task ModuleClient_DeviceDeleted_Gives_ConnectionStatus_DeviceDisabled_AmqpWs()
         {
             await ModuleClient_Gives_ConnectionStatus_DeviceDisabled_Base(

@@ -249,6 +249,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         [TestMethod]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
+        [TestCategory("Flaky")]
         public async Task Message_TcpConnectionLossSendRecovery_MultipleConnections_AmqpWs()
         {
             await SendMessageRecoveryPoolOverAmqpAsync(
@@ -306,6 +307,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         // TODO: #950 - Link/session faults for message send/ method/ twin operations closes the connection.
         [TestMethod]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
+        [TestCategory("Flaky")]
         public async Task Message_AmqpSessionLossSendRecovery_MultipleConnections_AmqpWs()
         {
             await SendMessageRecoveryPoolOverAmqpAsync(
@@ -335,6 +337,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         // TODO: #950 - Link/session faults for message send/ method/ twin operations closes the connection.
         [TestMethod]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
+        [TestCategory("Flaky")]
         public async Task Message_AmqpD2cLinkDropSendRecovery_MultipleConnections_AmqpWs()
         {
             await SendMessageRecoveryPoolOverAmqpAsync(
@@ -349,6 +352,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestMethod]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         [TestCategory("LongRunning")]
+        [TestCategory("Flaky")]
         public async Task Message_GracefulShutdownSendRecovery_MultipleConnections_Amqp()
         {
             await SendMessageRecoveryPoolOverAmqpAsync(
@@ -362,6 +366,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         [TestMethod]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
+        [TestCategory("Flaky")]
         public async Task Message_GracefulShutdownSendRecovery_MultipleConnections_AmqpWs()
         {
             await SendMessageRecoveryPoolOverAmqpAsync(
