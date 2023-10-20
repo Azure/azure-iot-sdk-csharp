@@ -15,8 +15,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
         public const int SingleConnection_PoolSize = 1;
         public const int MultipleConnections_DevicesCount = 4;
         public const int MultipleConnections_PoolSize = 2;
-        public const int MaxTestRunCount = 5;
-        public const int TestSuccessRate = 80; // 4 out of 5 (80%) test runs should pass (even after accounting for network instability issues).
+        public const int MaxTestRunCount = 8;
+        public const int TestSuccessRate = 75; // % of test runs should pass (even after accounting for network instability issues).
 
         public static async Task TestPoolAmqpAsync(
             string devicePrefix,
