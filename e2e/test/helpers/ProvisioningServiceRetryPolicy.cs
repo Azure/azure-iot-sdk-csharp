@@ -14,12 +14,14 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
         private const int MaxRetryCount = 5;
 
         private static readonly TimeSpan s_defaultRetryInterval = TimeSpan.FromSeconds(5);
+        private static readonly TimeSpan s_maxBackoff = TimeSpan.FromSeconds(20);
+        private static readonly TimeSpan s_deltaBackoff = TimeSpan.FromMilliseconds(200);
 
         private static readonly IRetryPolicy s_exponentialBackoffRetryStrategy = new ExponentialBackoff(
             retryCount: MaxRetryCount,
             minBackoff: s_defaultRetryInterval,
-            maxBackoff: TimeSpan.FromSeconds(10),
-            deltaBackoff: TimeSpan.FromMilliseconds(100));
+            maxBackoff: s_maxBackoff,
+            deltaBackoff: s_deltaBackoff);
 
         public bool ShouldRetry(int currentRetryCount, Exception lastException, out TimeSpan retryInterval)
         {
