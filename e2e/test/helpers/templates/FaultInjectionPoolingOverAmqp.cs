@@ -48,7 +48,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
             var testDeviceCallbackHandlers = new List<TestDeviceCallbackHandler>(devicesCount);
             var amqpConnectionStatuses = new List<AmqpConnectionStatusChange>(devicesCount);
             var operations = new List<Task>(devicesCount);
-            TimeSpan faultRetryDelay = TimeSpan.FromSeconds(5);
+            TimeSpan faultRetryDelay = TimeSpan.FromSeconds(10);
 
             // Arrange
 
