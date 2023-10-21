@@ -30,7 +30,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
     {
         private const int PassingTimeoutMiliseconds = 10 * 60 * 1000;
         private const int FailingTimeoutMiliseconds = 10 * 1000;
-        private const int MaxTryCount = 10;
+        private const int MaxTryCount = 5;
+        private const int RetryDelay = TimeSpan.FromSeconds(10);
         private const string InvalidIdScope = "0neFFFFFFFF";
         private const string PayloadJsonData = "{\"testKey\":\"testValue\"}";
         private const string InvalidGlobalAddress = "httpbin.org";
@@ -719,7 +720,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     catch (ProvisioningTransportException ex) when (++tryCount < MaxTryCount)
                     {
                         VerboseTestLogger.WriteLine($"ProvisioningDeviceClient RegisterAsync failed because: {ex.Message}");
-                        await Task.Delay(TimeSpan.FromSeconds(2)).ConfigureAwait(false);
+                        await Task.Delay(RetryDelay).ConfigureAwait(false);
                     }
                 }
 

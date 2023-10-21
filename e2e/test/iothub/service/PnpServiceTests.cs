@@ -19,6 +19,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
     [TestCategory("E2E")]
     [TestCategory("IoTHub")]
     [TestCategory("PlugAndPlay")]
+    [DoNotParallelize]
+
     public class PnpServiceTests : E2EMsTestBase
     {
         private const string DevicePrefix = "plugAndPlayDevice";

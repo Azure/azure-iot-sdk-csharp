@@ -404,7 +404,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 // But it could probably just as easily be done with cancellation tokens.
                 deviceClient.OperationTimeoutInMilliseconds = (uint)operationTimeout.TotalMilliseconds;
 
-                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(20));
+                using var cts = new CancellationTokenSource(DefaultRecoveryTimeout);
                 await deviceClient.OpenAsync(cts.Token).ConfigureAwait(false);
                 deviceClient.OperationTimeoutInMilliseconds = (uint)retryDuration.TotalMilliseconds;
             }

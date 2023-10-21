@@ -234,7 +234,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 {
                     exceptionDispatchInfo = ExceptionDispatchInfo.Capture(ex);
                     VerboseTestLogger.WriteLine($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: [Tried {attempt} time(s)] ServiceClient exception caught: {ex}.");
-                    await Task.Delay(1000).ConfigureAwait(false);
+                    await Task.Delay(5000).ConfigureAwait(false);
                 }
             }
 
