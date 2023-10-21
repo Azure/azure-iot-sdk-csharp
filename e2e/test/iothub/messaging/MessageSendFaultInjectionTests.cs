@@ -397,6 +397,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             TimeSpan operationTimeout = retryDuration == TimeSpan.Zero
                 ? FaultInjection.RecoveryTime
                 : retryDuration;
+            
+            TimeSpan DefaultRecoveryTimeout = TimeSpan.FromSeconds(20);
 
             async Task InitAsync(DeviceClient deviceClient, TestDevice testDevice)
             {

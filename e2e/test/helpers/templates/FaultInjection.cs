@@ -26,7 +26,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
         public static readonly TimeSpan WaitForDisconnectDuration = TimeSpan.FromTicks(DefaultFaultDelay.Ticks * 3);
         public static readonly TimeSpan WaitForReconnectDuration = TimeSpan.FromTicks(DefaultFaultDuration.Ticks * 2);
         public static readonly TimeSpan ShortRetryDuration = DefaultFaultDuration;
-        public static readonly TimeSpan DefaultRecoveryTimeout = TimeSpan.FromTicks(LatencyTimeBuffer.Ticks * 2);
         public static readonly TimeSpan RecoveryTime = TimeSpan.FromTicks(LatencyTimeBuffer.Ticks * 2);
 
         public static Client.Message ComposeErrorInjectionProperties(
