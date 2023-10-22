@@ -11,11 +11,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
     public class ProvisioningServiceRetryPolicy : IRetryPolicy
     {
         private const string RetryAfterKey = "Retry-After";
-        private const int MaxRetryCount = 5;
+        private const int MaxRetryCount = 10;
 
         private static readonly TimeSpan s_defaultRetryInterval = TimeSpan.FromSeconds(5);
-        private static readonly TimeSpan s_maxBackoff = TimeSpan.FromSeconds(20);
-        private static readonly TimeSpan s_deltaBackoff = TimeSpan.FromMilliseconds(200);
+        private static readonly TimeSpan s_maxBackoff = TimeSpan.FromSeconds(30);
+        private static readonly TimeSpan s_deltaBackoff = TimeSpan.FromMilliseconds(100);
 
         private static readonly IRetryPolicy s_exponentialBackoffRetryStrategy = new ExponentialBackoff(
             retryCount: MaxRetryCount,

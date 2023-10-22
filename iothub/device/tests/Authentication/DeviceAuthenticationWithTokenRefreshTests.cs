@@ -240,7 +240,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             {
                 _callCount++;
 
-                await Task.Delay(10).ConfigureAwait(false);
+                await Task.Delay(100).ConfigureAwait(false);
 
                 int ttl = suggestedTimeToLive;
                 if (ActualTimeToLive > 0)

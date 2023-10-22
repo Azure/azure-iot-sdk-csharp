@@ -117,7 +117,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 do
                 {
                     // allow some time for the device registry to update the cache
-                    await Task.Delay(50).ConfigureAwait(false);
+                    await Task.Delay(1000).ConfigureAwait(false);
                     actual = await registryManager.GetDeviceAsync(deviceId).ConfigureAwait(false);
                 } while (actual == null);
 
@@ -467,7 +467,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 }
 
                 // Give the hub a moment
-                await Task.Delay(250).ConfigureAwait(false);
+                await Task.Delay(500).ConfigureAwait(false);
 
                 // List the modules on the test device
                 IEnumerable<Module> modulesOnDevice = await client.GetModulesOnDeviceAsync(testDeviceId).ConfigureAwait(false);

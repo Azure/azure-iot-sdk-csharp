@@ -48,7 +48,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
             var testDeviceCallbackHandlers = new List<TestDeviceCallbackHandler>(devicesCount);
             var amqpConnectionStatuses = new List<AmqpConnectionStatusChange>(devicesCount);
             var operations = new List<Task>(devicesCount);
-            TimeSpan faultRetryDelay = TimeSpan.FromSeconds(10);
 
             // Arrange
 
@@ -108,7 +107,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                             break;
                         }
 
-                        await Task.Delay(faultRetryDelay).ConfigureAwait(false);
+                        await Task.Delay(FaultInjection.DefaultFaultDelay).ConfigureAwait(false);
                     }
                     connectionChangeWaitDuration.Reset();
 
@@ -128,7 +127,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                             break;
                         }
 
-                        await Task.Delay(faultRetryDelay);
+                        await Task.Delay(FaultInjection.DefaultFaultDelay);
                     }
 
                     if (!isRecovered)
@@ -165,7 +164,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                     {
                         VerboseTestLogger.WriteLine($"{nameof(FaultInjectionPoolingOverAmqp)}: Performing test operation for device 0 - Run {counter++}.");
                         await testOperation(deviceClients[0], testDevices[0], testDeviceCallbackHandlers[0]).ConfigureAwait(false);
-                        await Task.Delay(faultRetryDelay).ConfigureAwait(false);
+                        await Task.Delay(FaultInjection.DefaultFaultDelay).ConfigureAwait(false);
                     }
                 }
 
