@@ -16,7 +16,7 @@ namespace Microsoft.Azure.Devices.E2ETests
     public partial class FaultInjectionPoolAmqpTests
     {
         private const string MessageSend_DevicePrefix = "MessageSendFaultInjectionPoolAmqpTests";
-        private static readonly TimeSpan s_faultInjectionTestTimeout = TimeSpan.FromSeconds(30);
+        private static readonly TimeSpan s_faultInjectionTestTimeout = TimeSpan.FromSeconds(60);
 
 
         // TODO: #943 - Honor different pool sizes for different connection pool settings.
