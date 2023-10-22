@@ -454,6 +454,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             Device device = null;
             using var client = RegistryManager.CreateFromConnectionString(TestConfiguration.IotHub.ConnectionString);
 
+            await Task.Delay(2000).ConfigureAwait(false);
+
             try
             {
                 // Create a device to house the modules
@@ -467,7 +469,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 }
 
                 // Give the hub a moment
-                await Task.Delay(500).ConfigureAwait(false);
+                await Task.Delay(2000).ConfigureAwait(false);
 
                 // List the modules on the test device
                 IEnumerable<Module> modulesOnDevice = await client.GetModulesOnDeviceAsync(testDeviceId).ConfigureAwait(false);
@@ -504,6 +506,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             // Create a device to house the module
             Device device = await regClient.AddDeviceAsync(new Device(testDeviceId)).ConfigureAwait(false);
 
+            await Task.Delay(2000).ConfigureAwait(false);
+
             try
             {
                 // Create a module on the device
@@ -513,6 +517,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
                 createdModule.DeviceId.Should().Be(testDeviceId);
                 createdModule.Id.Should().Be(testModuleId);
+
+                await Task.Delay(2000).ConfigureAwait(false);
 
                 // Get device
                 // Get the device and compare ETag values (should remain unchanged)
@@ -548,6 +554,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             using var client = RegistryManager.CreateFromConnectionString(TestConfiguration.IotHub.ConnectionString);
             TestModule module = await TestModule.GetTestModuleAsync(_idPrefix, _idPrefix).ConfigureAwait(false);
 
+            await Task.Delay(2000).ConfigureAwait(false);
+
             try
             {
                 // Get the module twin
@@ -559,6 +567,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 string propName = "username";
                 string propValue = "userA";
                 moduleTwin.Properties.Desired[propName] = propValue;
+
+                await Task.Delay(2000).ConfigureAwait(false);
 
                 Twin updatedModuleTwin = await client.UpdateTwinAsync(module.DeviceId, module.Id, moduleTwin, moduleTwin.ETag).ConfigureAwait(false);
 
@@ -584,6 +594,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             // cleanup
             try
             {
+                await Task.Delay(2000).ConfigureAwait(false);
                 await client.RemoveDeviceAsync(deviceId).ConfigureAwait(false);
             }
             catch (Exception ex)
