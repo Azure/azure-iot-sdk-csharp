@@ -21,12 +21,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
     {
         public static readonly TimeSpan DefaultFaultDelay = TimeSpan.FromSeconds(2); // Time in seconds after service initiates the fault.
         public static readonly TimeSpan DefaultFaultDuration = TimeSpan.FromSeconds(5); // Duration in seconds
-        public static readonly TimeSpan LatencyTimeBuffer = TimeSpan.FromSeconds(10); // Buffer time waiting fault occurs or connection recover
+        public static readonly TimeSpan LatencyTimeBuffer = TimeSpan.FromSeconds(20); // Buffer time waiting fault occurs or connection recover
 
         public static readonly TimeSpan WaitForDisconnectDuration = TimeSpan.FromTicks(DefaultFaultDelay.Ticks * 3);
         public static readonly TimeSpan WaitForReconnectDuration = TimeSpan.FromTicks(DefaultFaultDuration.Ticks * 2);
         public static readonly TimeSpan ShortRetryDuration = TimeSpan.FromTicks(DefaultFaultDuration.Ticks / 2);
-        public static readonly TimeSpan RecoveryTime = TimeSpan.FromTicks(LatencyTimeBuffer.Ticks * 2);
+        public static readonly TimeSpan RecoveryTime = TimeSpan.FromSeconds(20);
 
         public static Client.Message ComposeErrorInjectionProperties(
             string faultType,
@@ -175,7 +175,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                             break;
                         }
 
-                        await Task.Delay(TimeSpan.FromSeconds(1)).ConfigureAwait(false);
+                        await Task.Delay(DefaultFaultDelay).ConfigureAwait(false);
                     }
                     connectionChangeWaitDuration.Reset();
 
@@ -189,7 +189,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                     while (lastConnectionStatus != ConnectionStatus.Connected
                         && connectionChangeWaitDuration.Elapsed < faultDuration.Add(LatencyTimeBuffer))
                     {
-                        await Task.Delay(TimeSpan.FromSeconds(1)).ConfigureAwait(false);
+                        await Task.Delay(DefaultFaultDelay).ConfigureAwait(false);
                     }
                     connectionChangeWaitDuration.Reset();
 
@@ -211,7 +211,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                     {
                         VerboseTestLogger.WriteLine($"{nameof(FaultInjection)}: Performing test operation for device - Run {counter++}.");
                         await testOperation(deviceClient, testDevice).ConfigureAwait(false);
-                        await Task.Delay(TimeSpan.FromSeconds(1)).ConfigureAwait(false);
+                        await Task.Delay(DefaultFaultDelay).ConfigureAwait(false);
                     }
                     sw.Reset();
                 }

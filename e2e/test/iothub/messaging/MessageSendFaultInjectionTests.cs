@@ -398,15 +398,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 ? FaultInjection.RecoveryTime
                 : retryDuration;
             
-            TimeSpan DefaultRecoveryTimeout = TimeSpan.FromSeconds(20);
-
             async Task InitAsync(DeviceClient deviceClient, TestDevice testDevice)
             {
                 // Some tests rely on the operation timing out before fault injection ends, so this is important to set.
                 // But it could probably just as easily be done with cancellation tokens.
                 deviceClient.OperationTimeoutInMilliseconds = (uint)operationTimeout.TotalMilliseconds;
 
-                using var cts = new CancellationTokenSource(DefaultRecoveryTimeout);
+                using var cts = new CancellationTokenSource(FaultInjection.RecoveryTime);
                 await deviceClient.OpenAsync(cts.Token).ConfigureAwait(false);
                 deviceClient.OperationTimeoutInMilliseconds = (uint)retryDuration.TotalMilliseconds;
             }
