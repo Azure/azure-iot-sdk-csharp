@@ -651,6 +651,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 responseTimeout,
                 serviceClientTransportSettings);
 
+            await Task.Delay(2000).ConfigureAwait(false);
+
             await Task.WhenAll(serviceSendTask, methodReceivedTask).ConfigureAwait(false);
 
             await deviceClient.CloseAsync().ConfigureAwait(false);
@@ -662,6 +664,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             using var moduleClient = ModuleClient.CreateFromConnectionString(testModule.ConnectionString, transport);
 
             Task methodReceivedTask = await setDeviceReceiveMethod(moduleClient, MethodName).ConfigureAwait(false);
+
+            await Task.Delay(2000).ConfigureAwait(false);
 
             await Task
                 .WhenAll(

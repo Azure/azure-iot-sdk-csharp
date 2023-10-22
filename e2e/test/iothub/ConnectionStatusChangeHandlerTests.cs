@@ -182,6 +182,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             Shared.Twin twin = await moduleClient.GetTwinAsync().ConfigureAwait(false);
             Assert.IsNotNull(twin);
 
+            await Task.Delay(2000).ConfigureAwait(false);
             // Delete/disable the device in IoT hub.
             using var registryManager = RegistryManager.CreateFromConnectionString(TestConfiguration.IotHub.ConnectionString);
             await registryManagerOperation(registryManager, testModule.DeviceId).ConfigureAwait(false);
@@ -189,10 +190,10 @@ namespace Microsoft.Azure.Devices.E2ETests
             VerboseTestLogger.WriteLine($"{nameof(ModuleClient_Gives_ConnectionStatus_DeviceDisabled_Base)}: Completed RegistryManager operation.");
 
             // Artificial sleep waiting for the connection status change handler to get triggered.
-            int sleepCount = 50;
+            int sleepCount = 500;
             for (int i = 0; i < sleepCount; i++)
             {
-                await Task.Delay(100).ConfigureAwait(false);
+                await Task.Delay(50).ConfigureAwait(false);
                 if (deviceDisabledReceivedCount == 1)
                 {
                     break;
