@@ -19,14 +19,14 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
 {
     public static class FaultInjection
     {
-        public static readonly TimeSpan DefaultFaultDelay = TimeSpan.FromSeconds(1); // Time in seconds after service initiates the fault.
-        public static readonly TimeSpan DefaultFaultDuration = TimeSpan.FromSeconds(2); // Duration in seconds
+        public static readonly TimeSpan DefaultFaultDelay = TimeSpan.FromSeconds(2); // Time in seconds after service initiates the fault.
+        public static readonly TimeSpan DefaultFaultDuration = TimeSpan.FromSeconds(5); // Duration in seconds
         public static readonly TimeSpan LatencyTimeBuffer = TimeSpan.FromSeconds(5); // Buffer time waiting fault occurs or connection recover
 
         public static readonly TimeSpan WaitForDisconnectDuration = TimeSpan.FromTicks(DefaultFaultDelay.Ticks * 3);
         public static readonly TimeSpan WaitForReconnectDuration = TimeSpan.FromTicks(DefaultFaultDuration.Ticks * 2);
         public static readonly TimeSpan ShortRetryDuration = TimeSpan.FromTicks(DefaultFaultDuration.Ticks / 2);
-        public static readonly TimeSpan RecoveryTime = TimeSpan.FromSeconds(30);
+        public static readonly TimeSpan RecoveryTime = TimeSpan.FromSeconds(20);
 
         public static Client.Message ComposeErrorInjectionProperties(
             string faultType,

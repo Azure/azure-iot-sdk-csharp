@@ -148,7 +148,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             while (deviceDisabledReceivedCount <= 0)
             {
                 VerboseTestLogger.WriteLine($"{nameof(DeviceClient_Gives_ConnectionStatus_DeviceDisabled_Base)}: Still waiting for connection update {sw.Elapsed} after device status was changed.");
-                await Task.Delay(TimeSpan.FromSeconds(10)).ConfigureAwait(false);
+                await Task.Delay(100).ConfigureAwait(false);
             }
 
             deviceDisabledReceivedCount.Should().Be(1);
@@ -198,7 +198,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             int sleepCount = 50;
             for (int i = 0; i < sleepCount; i++)
             {
-                await Task.Delay(TimeSpan.FromSeconds(10)).ConfigureAwait(false);
+                await Task.Delay(100).ConfigureAwait(false);
                 if (deviceDisabledReceivedCount == 1)
                 {
                     break;
