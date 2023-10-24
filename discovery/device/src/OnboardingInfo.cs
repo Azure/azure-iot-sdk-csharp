@@ -6,7 +6,7 @@ using System.Security.Cryptography.X509Certificates;
 namespace Microsoft.Azure.Devices.Discovery.Client
 {
     /// <summary>
-    /// Holds information returned from the getOnboardingInfo endpoint
+    /// Holds information returned from the getOnboardingInfo request
     /// </summary>
     public class OnboardingInfo
     {
@@ -14,6 +14,7 @@ namespace Microsoft.Azure.Devices.Discovery.Client
         /// The endpoint to reach the provisioning service
         /// </summary>
         public string EdgeProvisioningEndpoint { get; private set; }
+
         /// <summary>
         /// Credentials to authenticate with the provisioning service
         /// </summary>

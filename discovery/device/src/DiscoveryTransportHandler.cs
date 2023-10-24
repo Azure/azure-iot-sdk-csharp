@@ -29,12 +29,6 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport
         public IWebProxy Proxy { get; set; }
 
         /// <summary>
-        /// A callback for remote certificate validation.
-        /// If incorrectly implemented, your device may fail to connect to DPS and/or be open to security vulnerabilities.
-        /// </summary>
-        public RemoteCertificateValidationCallback RemoteCertificateValidationCallback { get; set; }
-
-        /// <summary>
         /// Gets or sets the inner handler.
         /// </summary>
         public DiscoveryTransportHandler InnerHandler
@@ -71,9 +65,10 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport
                 _port = value;
             }
         }
-        
+
         /// <summary>
-        /// Issue challenge
+        /// Issue TPM Challenge. Will return an encrypted nonce, that can be used to
+        /// sign a SAS Token for the GetOnboardingInfo request.
         /// </summary>
         /// <returns></returns>
         public virtual Task<string> IssueChallengeAsync(DiscoveryTransportIssueChallengeRequest request, CancellationToken cancellationToken)

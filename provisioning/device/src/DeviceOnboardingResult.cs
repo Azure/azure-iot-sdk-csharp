@@ -46,6 +46,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
         /// <summary> The registrationId. </summary>
         public string RegistrationId { get; }
+
         /// <summary> The status of the onboarding process.Possible values include:
         /// 'InProgress', 'Succeeded', 'Failed', 'Canceled'
         /// </summary>

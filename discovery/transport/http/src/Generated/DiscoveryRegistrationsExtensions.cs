@@ -31,32 +31,31 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport.Http
         /// The cancellation token.
         /// </param>
         public static async Task<BootstrapResponse> GetOnboardingInfoAsync(this IDiscoveryRegistrations operations, BootstrapRequest body, string token, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            using (var _result = await operations.GetOnboardingInfoWithHttpMessagesAsync(body, new TokenCredentials(token), null, cancellationToken).ConfigureAwait(false))
             {
-                using (var _result = await operations.GetOnboardingInfoWithHttpMessagesAsync(body, new TokenCredentials(token), null, cancellationToken).ConfigureAwait(false))
-                {
-                    return _result.Body;
-                }
+                return _result.Body;
             }
+        }
 
-            /// <summary>
-            /// Issue TPM Challenge. Will return an encrypted nonce, that can be used to
-            /// sign a SAS Token for the GetOnboardingInfo request.
-            /// </summary>
-            /// <param name='operations'>
-            /// The operations group for this extension method.
-            /// </param>
-            /// <param name='body'>
-            /// </param>
-            /// <param name='cancellationToken'>
-            /// The cancellation token.
-            /// </param>
-            public static async Task<Challenge> IssueChallengeAsync(this IDiscoveryRegistrations operations, ChallengeRequest body, CancellationToken cancellationToken = default(CancellationToken))
+        /// <summary>
+        /// Issue TPM Challenge. Will return an encrypted nonce, that can be used to
+        /// sign a SAS Token for the GetOnboardingInfo request.
+        /// </summary>
+        /// <param name='operations'>
+        /// The operations group for this extension method.
+        /// </param>
+        /// <param name='body'>
+        /// </param>
+        /// <param name='cancellationToken'>
+        /// The cancellation token.
+        /// </param>
+        public static async Task<Challenge> IssueChallengeAsync(this IDiscoveryRegistrations operations, ChallengeRequest body, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            using (var _result = await operations.IssueChallengeWithHttpMessagesAsync(body, null, cancellationToken).ConfigureAwait(false))
             {
-                using (var _result = await operations.IssueChallengeWithHttpMessagesAsync(body, null, cancellationToken).ConfigureAwait(false))
-                {
-                    return _result.Body;
-                }
+                return _result.Body;
             }
-
+        }
     }
 }

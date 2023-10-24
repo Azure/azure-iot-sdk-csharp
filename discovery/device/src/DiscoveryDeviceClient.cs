@@ -4,29 +4,28 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Azure.Devices.Common;
 using Microsoft.Azure.Devices.Discovery.Client.Transport;
 using Microsoft.Azure.Devices.Shared;
-using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Discovery.Client
 {
     /// <summary>
-    /// Allows devices to use the Device Provisioning Service.
+    /// Allows devices to use the Device Discovery Service.
     /// </summary>
     public class DiscoveryDeviceClient
     {
         private readonly string _globalDeviceEndpoint;
         private readonly DiscoveryTransportHandler _transport;
-        private readonly SecurityProvider _security;
+        private readonly SecurityProviderTpm _security;
 
         /// <summary>
-        /// Creates an instance of the Device Provisioning Client.
+        /// Creates an instance of the Device Discovery Client.
         /// </summary>
-        /// <param name="globalDeviceEndpoint">The GlobalDeviceEndpoint for the Device Provisioning Service.</param>
+        /// <param name="globalDeviceEndpoint">The GlobalDeviceEndpoint for the Device Discovery Service.</param>
         /// <param name="securityProvider">The security provider instance.</param>
         /// <param name="transport">The type of transport (e.g. HTTP, AMQP, MQTT).</param>
-        /// <returns>An instance of the ProvisioningDeviceClient</returns>
+        /// <returns>An instance of the DiscoveryDeviceClient</returns>
+        /// <exception cref="NotSupportedException">Security provider must be TPM</exception>
         public static DiscoveryDeviceClient Create(
             string globalDeviceEndpoint,
             SecurityProvider securityProvider,
@@ -42,7 +41,15 @@ namespace Microsoft.Azure.Devices.Discovery.Client
         {
             _globalDeviceEndpoint = globalDeviceEndpoint;
             _transport = transport;
-            _security = securityProvider;
+
+            if (securityProvider is SecurityProviderTpm securityProviderTpm)
+            {
+                _security = securityProviderTpm;
+            }
+            else
+            {
+                throw new NotSupportedException($"{nameof(_security)} must be of type {nameof(SecurityProviderTpm)}");
+            }
 
             Logging.Associate(this, _security);
             Logging.Associate(this, _transport);
@@ -54,59 +61,43 @@ namespace Microsoft.Azure.Devices.Discovery.Client
         public string ProductInfo { get; set; }
 
         /// <summary>
-        /// Gets challenge string to decrypt to onboard device
+        /// Issues challenge to authenticate device.
         /// </summary>
         /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        /// <exception cref="NotSupportedException">Security provider must be TPM</exception>
+        /// <returns>nonce for authentication challenge</returns>
         public Task<string> IssueChallengeAsync(CancellationToken cancellationToken = default)
         {
             Logging.IssueChallengeAsync(this, _globalDeviceEndpoint, _transport, _security);
 
-            if (_security is SecurityProviderTpm securityProviderTpm)
+            var request = new DiscoveryTransportIssueChallengeRequest(
+                _globalDeviceEndpoint,
+                _security)
             {
-                var request = new DiscoveryTransportIssueChallengeRequest(
-                    _globalDeviceEndpoint,
-                    securityProviderTpm)
-                {
-                    ProductInfo = ProductInfo,
-                };
+                ProductInfo = ProductInfo,
+            };
 
-                return _transport.IssueChallengeAsync(request, cancellationToken);
-            }
-            else
-            {
-                throw new NotSupportedException($"{nameof(_security)} must be of type {nameof(SecurityProviderTpm)}");
-            }
+            return _transport.IssueChallengeAsync(request, cancellationToken);
         }
 
         /// <summary>
-        /// Gets challenge string to decrypt to onboard device
+        /// Gets information necessary to onboard device
         /// </summary>
         /// <param name="nonce"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        /// <exception cref="NotSupportedException">Security provider must be TPM</exception>
         public Task<OnboardingInfo> GetOnboardingInfoAsync(string nonce, CancellationToken cancellationToken = default)
         {
             Logging.GetOnboardingInfoAsync(this, _globalDeviceEndpoint, _transport, _security);
 
-            if (_security is SecurityProviderTpm securityProviderTpm)
+            var request = new DiscoveryTransportGetOnboardingInfoRequest(
+                _globalDeviceEndpoint,
+                _security,
+                nonce)
             {
-                var request = new DiscoveryTransportGetOnboardingInfoRequest(
-                    _globalDeviceEndpoint,
-                    securityProviderTpm,
-                    nonce)
-                {
-                    ProductInfo = ProductInfo,
-                };
+                ProductInfo = ProductInfo,
+            };
 
-                return _transport.GetOnboardingInfoAsync(request, cancellationToken);
-            }
-            else
-            {
-                throw new NotSupportedException($"{nameof(_security)} must be of type {nameof(SecurityProviderTpm)}");
-            }
+            return _transport.GetOnboardingInfoAsync(request, cancellationToken);
         }
     }
 }

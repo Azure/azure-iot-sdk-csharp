@@ -2,21 +2,17 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Globalization;
 using System.Net;
 using System.Net.Http;
 using System.Security.Cryptography.X509Certificates;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Azure.Devices.Common;
 using Microsoft.Azure.Devices.Discovery.Client.Transport.Http;
 using Microsoft.Azure.Devices.Discovery.Client.Transport.Http.Models;
 using Microsoft.Azure.Devices.Provisioning.Client.Transport;
 using Microsoft.Azure.Devices.Shared;
-using Microsoft.Rest;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System.Text;
 
 namespace Microsoft.Azure.Devices.Discovery.Client.Transport
@@ -39,7 +35,8 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport
         }
 
         /// <summary>
-        /// Issue challenge
+        /// Issue TPM Challenge. Will return an encrypted nonce, that can be used to
+        /// sign a SAS Token for the GetOnboardingInfo request.
         /// </summary>
         /// <returns></returns>
         public override async Task<string> IssueChallengeAsync(DiscoveryTransportIssueChallengeRequest request, CancellationToken cancellationToken)
@@ -58,14 +55,7 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport
             {
                 var securityProvider = request.Security;
 
-                using var httpClientHandler = new HttpClientHandler()
-                {
-                    // Cannot specify a specific protocol here, as desired due to an error:
-                    //   ProvisioningDeviceClient_ValidRegistrationId_AmqpWithProxy_SymmetricKey_RegisterOk_GroupEnrollment failing for me with System.PlatformNotSupportedException: Operation is not supported on this platform.	
-                    // When revisiting TLS12 work for DPS, we should figure out why. Perhaps the service needs to support it.	
-
-                    //SslProtocols = TlsVersions.Preferred,
-                };
+                using var httpClientHandler = new HttpClientHandler();
 
                 if (Proxy != DefaultWebProxySettings.Instance)
                 {
@@ -256,6 +246,12 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport
             }
         }
 
+        /// <summary>
+        /// Creates a new CSR based off of a provided device ID and RSA key.
+        /// </summary>
+        /// <param name="rsa"></param>
+        /// <param name="deviceId"></param>
+        /// <returns></returns>
         private string GenerateCSR(RSA rsa, string deviceId)
         {
             // Create a new CertificateRequest object

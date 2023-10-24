@@ -4,7 +4,7 @@
 using System;
 using System.Text.RegularExpressions;
 
-namespace Microsoft.Azure.Devices.Provisioning.Client
+namespace Microsoft.Azure.Devices.Provisioning.Client.Extensions
 {
     /// <summary>
     /// Commong string extensions
