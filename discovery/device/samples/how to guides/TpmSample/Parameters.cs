@@ -3,7 +3,7 @@
 
 using CommandLine;
 
-namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
+namespace Microsoft.Azure.Devices.Discovery.Client.Samples
 {
     /// <summary>
     /// Parameters for the application

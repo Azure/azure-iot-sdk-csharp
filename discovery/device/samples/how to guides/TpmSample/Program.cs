@@ -6,10 +6,10 @@ using Microsoft.Azure.Devices.Provisioning.Security;
 using System;
 using System.Threading.Tasks;
 
-namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
+namespace Microsoft.Azure.Devices.Discovery.Client.Samples
 {
     /// <summary>
-    /// A sample to illustrate connecting a device to hub using the device provisioning service and a certificate.
+    /// A sample to illustrate onboarding a device using the device provisioning service.
     /// </summary>
     internal class Program
     {

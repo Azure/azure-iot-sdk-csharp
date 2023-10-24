@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Azure.Devices.Discovery.Client;
 using Microsoft.Azure.Devices.Discovery.Client.Transport;
+using Microsoft.Azure.Devices.Provisioning.Client;
 using Microsoft.Azure.Devices.Provisioning.Client.Transport;
 using Microsoft.Azure.Devices.Provisioning.Security;
 using Microsoft.Azure.Devices.Shared;
@@ -10,11 +10,10 @@ using System;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 
-namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
+namespace Microsoft.Azure.Devices.Discovery.Client.Samples
 {
     /// <summary>
-    /// Demonstrates how to register a device with the device provisioning service using a certificate, and then
-    /// use the registration information to authenticate to IoT Hub.
+    /// Demonstrates how to onboard a device with the provisioning service with a certificate provided by the discovery service
     /// </summary>
     internal class DiscoveryDeviceClientSample
     {
