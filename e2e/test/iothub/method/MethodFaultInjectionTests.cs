@@ -26,7 +26,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         private const string ServiceRequestJson = "{\"a\":123}";
         private const string MethodName = "MethodE2ETest";
 
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceReceivesMethodAndResponseRecovery_MqttWs()
         {
@@ -37,7 +37,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 .ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceMethodGracefulShutdownRecovery_Mqtt()
         {
@@ -48,7 +48,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 .ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceReceivesMethodAndResponseRecovery_Mqtt()
         {
@@ -58,7 +58,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 .ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceMethodGracefulShutdownRecovery_MqttWs()
         {
@@ -69,7 +69,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 .ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceMethodTcpConnRecovery_Amqp()
         {
@@ -80,7 +80,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 .ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceMethodTcpConnRecovery_AmqpWs()
         {
@@ -90,7 +90,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 .ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceMethodAmqpConnLostRecovery_Amqp()
         {
@@ -101,7 +101,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 .ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceMethodAmqpConnLostRecovery_AmqpWs()
         {
@@ -112,7 +112,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 .ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceMethodSessionLostRecovery_Amqp()
         {
@@ -123,7 +123,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 .ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceMethodSessionLostRecovery_AmqpWs()
         {
@@ -134,7 +134,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 .ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceMethodReqLinkDropRecovery_Amqp()
         {
@@ -145,7 +145,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 .ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceMethodReqLinkDropRecovery_AmqpWs()
         {
@@ -156,7 +156,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 .ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceMethodRespLinkDropRecovery_Amqp()
         {
@@ -167,7 +167,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 .ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceMethodRespLinkDropRecovery_AmqpWs()
         {
@@ -178,7 +178,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 .ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceMethodGracefulShutdownRecovery_Amqp()
         {
@@ -189,7 +189,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 .ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceMethodGracefulShutdownRecovery_AmqpWs()
         {

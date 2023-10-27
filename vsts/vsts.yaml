@@ -10,7 +10,7 @@ parameters:
 - name: jobTimeoutInMinutes
   displayName: Timeout for each job
   type: number
-  default: 120
+  default: 150
 - name: testTargets
   displayName: The .NET test targets to build and run. 'all' and 'min-matrix' (net6.0) are aggregates of the remaining values.
   type: string
@@ -91,8 +91,8 @@ jobs:
             Write-Host "maxParallelJobs: ${{ parameters.maxParallelJobs }}"
             Write-Host "minMatrix: ${{ variables.minMatrix }}"
             Write-Host "testNet60: ${{ variables.testNet60 }}"
+            Write-Host "testNet70: ${{ variables.testNet70 }}"
             Write-Host "testNetcore31: ${{ variables.testNetcore31 }}"
-            Write-Host "testNet50: ${{ variables.testNet50 }}"
             Write-Host "testNetcore21: ${{ variables.testNetcore21 }}"
             Write-Host "testNet472: ${{ variables.testNet472 }}"
             Write-Host "testNet451: ${{ variables.testNet451 }}"
@@ -356,8 +356,8 @@ jobs:
             Write-Host "maxParallelJobs: ${{ parameters.maxParallelJobs }}"
             Write-Host "minMatrix: ${{ variables.minMatrix }}"
             Write-Host "testNet60: ${{ variables.testNet60 }}"
+            Write-Host "testNet70: ${{ variables.testNet70 }}"
             Write-Host "testNetcore31: ${{ variables.testNetcore31 }}"
-            Write-Host "testNet50: ${{ variables.testNet50 }}"
             Write-Host "testNetcore21: ${{ variables.testNetcore21 }}"
             Write-Host "testNet472: ${{ variables.testNet472 }}"
             Write-Host "testNet451: ${{ variables.testNet451 }}"

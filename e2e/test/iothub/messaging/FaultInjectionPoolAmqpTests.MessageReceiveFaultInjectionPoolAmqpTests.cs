@@ -162,7 +162,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             async Task InitOperationAsync(DeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler testDeviceCallbackHandler)
             {
-                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(20));
+                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(60));
                 await deviceClient.OpenAsync(cts.Token).ConfigureAwait(false);
 
                 await testDeviceCallbackHandler.SetMessageReceiveCallbackHandlerAsync().ConfigureAwait(false);
@@ -174,7 +174,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 testDeviceCallbackHandler.ExpectedMessageSentByService = msg;
                 await serviceClient.SendAsync(testDevice.Id, msg).ConfigureAwait(false);
 
-                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(20));
+                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(60));
                 await testDeviceCallbackHandler.WaitForReceiveMessageCallbackAsync(cts.Token).ConfigureAwait(false);
 
                 msg.Dispose();

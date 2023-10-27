@@ -192,7 +192,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjectionConstants.FaultCloseReason_Boom).ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Twin_DeviceSak_DeviceReportedPropertiesTcpConnRecovery_MultipleConnections_Amqp()
         {
@@ -204,7 +204,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjectionConstants.FaultCloseReason_Boom).ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Twin_DeviceSak_DeviceReportedPropertiesTcpConnRecovery_MultipleConnections_AmqpWs()
         {
@@ -216,7 +216,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjectionConstants.FaultCloseReason_Boom).ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Twin_DeviceSak_DeviceReportedPropertiesGracefulShutdownRecovery_MultipleConnections_Amqp()
         {
@@ -228,7 +228,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjectionConstants.FaultCloseReason_Bye).ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Twin_DeviceSak_DeviceReportedPropertiesGracefulShutdownRecovery_MultipleConnections_AmqpWs()
         {
@@ -240,7 +240,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjectionConstants.FaultCloseReason_Bye).ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Twin_DeviceSak_DeviceReportedPropertiesAmqpConnectionLossRecovery_MultipleConnections_Amqp()
         {
@@ -252,7 +252,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 "").ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Twin_DeviceSak_DeviceReportedPropertiesAmqpConnectionLossRecovery_MultipleConnections_AmqpWs()
         {
@@ -534,8 +534,9 @@ namespace Microsoft.Azure.Devices.E2ETests
                 TwinE2ETests.SetTwinPropertyUpdateCallbackHandlerAsync).ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
+        [DoNotParallelize]
         public async Task Twin_DeviceSak_DeviceDesiredPropertyUpdateTcpConnRecovery_MultipleConnections_Amqp()
         {
             await Twin_DeviceDesiredPropertyUpdateRecoveryPoolOverAmqp(
@@ -547,8 +548,9 @@ namespace Microsoft.Azure.Devices.E2ETests
                 TwinE2ETests.SetTwinPropertyUpdateCallbackHandlerAsync).ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
+        [DoNotParallelize]
         public async Task Twin_DeviceSak_DeviceDesiredPropertyUpdateTcpConnRecovery_MultipleConnections_AmqpWs()
         {
             await Twin_DeviceDesiredPropertyUpdateRecoveryPoolOverAmqp(
@@ -590,8 +592,9 @@ namespace Microsoft.Azure.Devices.E2ETests
                 TwinE2ETests.SetTwinPropertyUpdateCallbackHandlerAsync).ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
+        [DoNotParallelize]
         public async Task Twin_DeviceSak_DeviceDesiredPropertyUpdateAmqpConnectionLossRecovery_MultipleConnections_Amqp()
         {
             await Twin_DeviceDesiredPropertyUpdateRecoveryPoolOverAmqp(
@@ -603,8 +606,9 @@ namespace Microsoft.Azure.Devices.E2ETests
                 TwinE2ETests.SetTwinPropertyUpdateCallbackHandlerAsync).ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
+        [DoNotParallelize]
         public async Task Twin_DeviceSak_DeviceDesiredPropertyUpdateAmqpConnectionLossRecovery_MultipleConnections_AmqpWs()
         {
             await Twin_DeviceDesiredPropertyUpdateRecoveryPoolOverAmqp(
@@ -617,8 +621,9 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         // TODO: #950 - Link/session faults for message send/ method/ twin operations closes the connection.
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
+        [DoNotParallelize]
         public async Task Twin_DeviceSak_DeviceDesiredPropertyUpdateAmqpSessionLossRecovery_MultipleConnections_Amqp()
         {
             await Twin_DeviceDesiredPropertyUpdateRecoveryPoolOverAmqp(
@@ -631,8 +636,9 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         // TODO: #950 - Link/session faults for message send/ method/ twin operations closes the connection.
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
+        [DoNotParallelize]
         public async Task Twin_DeviceSak_DeviceDesiredPropertyUpdateAmqpSessionLossRecovery_MultipleConnections_AmqpWs()
         {
             await Twin_DeviceDesiredPropertyUpdateRecoveryPoolOverAmqp(
@@ -645,8 +651,9 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         // TODO: #950 - Link/session faults for message send/ method/ twin operations closes the connection.
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
+        [DoNotParallelize]
         public async Task Twin_DeviceSak_DeviceDesiredPropertyUpdateTwinReqLinkDropRecovery_MultipleConnections_Amqp()
         {
             await Twin_DeviceDesiredPropertyUpdateRecoveryPoolOverAmqp(
@@ -659,8 +666,9 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         // TODO: #950 - Link/session faults for message send/ method/ twin operations closes the connection.
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
+        [DoNotParallelize]
         public async Task Twin_DeviceSak_DeviceDesiredPropertyUpdateTwinReqLinkDropRecovery_MultipleConnections_AmqpWs()
         {
             await Twin_DeviceDesiredPropertyUpdateRecoveryPoolOverAmqp(

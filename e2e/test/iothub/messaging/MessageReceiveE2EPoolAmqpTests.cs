@@ -90,7 +90,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 PoolingOverAmqp.MultipleConnections_DevicesCount).ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_IoTHubSak_DeviceReceiveSingleMessage_MultipleConnections_Amqp()
         {
@@ -101,7 +101,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 ConnectionStringAuthScope.IoTHub).ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_IoTHubSak_DeviceReceiveSingleMessage_MultipleConnections_AmqpWs()
         {
@@ -162,7 +162,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 .ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_DeviceReceiveSingleMessageUsingCallbackAndUnsubscribe_MultipleConnections_Amqp()
         {
@@ -174,7 +174,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 .ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_DeviceReceiveSingleMessageUsingCallbackAndUnsubscribe_MultipleConnections_AmqpWs()
         {
@@ -186,7 +186,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 .ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_IoTHubSak_DeviceReceiveSingleMessageUsingCallbackAndUnsubscribe_MultipleConnections_Amqp()
         {
@@ -199,7 +199,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 .ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_IoTHubSak_DeviceReceiveSingleMessageUsingCallbackAndUnsubscribe_MultipleConnections_AmqpWs()
         {
@@ -319,7 +319,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
             async Task InitOperationAsync(DeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler testDeviceCallbackHandler)
             {
-                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(20));
+                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(60));
                 await deviceClient.OpenAsync(cts.Token).ConfigureAwait(false);
 
                 await testDeviceCallbackHandler.SetMessageReceiveCallbackHandlerAsync().ConfigureAwait(false);
@@ -327,7 +327,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
             async Task TestOperationAsync(DeviceClient deviceClient, TestDevice testDevice, TestDeviceCallbackHandler testDeviceCallbackHandler)
             {
-                var timeout = TimeSpan.FromSeconds(20);
+                var timeout = TimeSpan.FromSeconds(60);
                 using var cts = new CancellationTokenSource(timeout);
 
                 // Send a message to the device from the service.

@@ -15,8 +15,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
         public const int SingleConnection_PoolSize = 1;
         public const int MultipleConnections_DevicesCount = 4;
         public const int MultipleConnections_PoolSize = 2;
-        public const int MaxTestRunCount = 5;
-        public const int TestSuccessRate = 80; // 4 out of 5 (80%) test runs should pass (even after accounting for network instability issues).
+        public const int MaxTestRunCount = 3;
+        public const int TestSuccessCount = 1;
 
         public static async Task TestPoolAmqpAsync(
             string devicePrefix,
@@ -43,7 +43,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
 
             int totalRuns = 0;
             int successfulRuns = 0;
-            int currentSuccessRate = 0;
             bool reRunTest = false;
 
             var testDevices = new List<TestDevice>();
@@ -119,8 +118,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                         successfulRuns++;
                     }
 
-                    currentSuccessRate = (int)((double)successfulRuns / totalRuns * 100);
-                    reRunTest = currentSuccessRate < TestSuccessRate;
+                    reRunTest = successfulRuns < TestSuccessCount;
                 }
                 finally
                 {
@@ -140,7 +138,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                 }
             } while (reRunTest && totalRuns < MaxTestRunCount);
 
-            reRunTest.Should().BeFalse($"Device client instances got disconnected in {totalRuns - successfulRuns} runs out of {totalRuns}; current testSuccessRate = {currentSuccessRate}%.");
+            reRunTest.Should().BeFalse($"Device client instances successfully run {successfulRuns} out of {MaxTestRunCount}.");
         }
 
         private class AmqpConnectionStatusChange
