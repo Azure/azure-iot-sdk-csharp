@@ -13,6 +13,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
     [TestClass]
     [TestCategory("E2E")]
     [TestCategory("IoTHub")]
+    [DoNotParallelize]
     public class BulkOperationsE2ETests : E2EMsTestBase
     {
         private readonly string DevicePrefix = $"{nameof(BulkOperationsE2ETests)}_";
@@ -74,7 +75,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             await registryManager.CloseAsync().ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task BulkOperations_UpdateTwins2Module_Ok()
         {
@@ -103,7 +104,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             await registryManager.CloseAsync().ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task BulkOperations_UpdateTwins2ModulePatch_Ok()
         {

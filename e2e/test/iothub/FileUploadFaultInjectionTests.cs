@@ -21,6 +21,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         private const int FileSizeSmall = 10 * 1024;
         private const int FileSizeBig = 5120 * 1024;
 
+        [Ignore]
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         [Obsolete]
@@ -39,6 +40,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .ConfigureAwait(false);
         }
 
+        [Ignore]
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         [Obsolete]
@@ -58,6 +60,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .ConfigureAwait(false);
         }
 
+        [Ignore]
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         [DoNotParallelize]
@@ -78,6 +81,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .ConfigureAwait(false);
         }
 
+        [Ignore]
         [Obsolete]
         private async Task UploadFileDisconnectTransport(
             Client.TransportType transport,

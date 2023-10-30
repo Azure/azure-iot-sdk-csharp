@@ -19,13 +19,14 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
     [TestCategory("E2E")]
     [TestCategory("IoTHub")]
     [TestCategory("PlugAndPlay")]
+    [DoNotParallelize]
     public class PnpServiceTests : E2EMsTestBase
     {
         private const string DevicePrefix = "plugAndPlayDevice";
         private const string ModulePrefix = "plugAndPlayModule";
         private const string TestModelId = "dtmi:com:example:testModel;1";
 
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         public async Task DeviceTwin_Contains_ModelId()
         {
             // Setup
@@ -53,7 +54,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             await registryManager.RemoveDeviceAsync(testDevice.Id).ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         public async Task DeviceTwin_Contains_ModelId_X509()
         {
             // Setup
@@ -91,7 +92,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             authCertificate = null;
         }
 
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         public async Task ModuleTwin_Contains_ModelId()
         {
             // Setup

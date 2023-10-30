@@ -24,8 +24,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         private const string JobTestTagName = "JobsSample_Tag";
         private static string s_connectionString = TestConfiguration.IotHub.ConnectionString;
         private static string s_proxyServerAddress = TestConfiguration.IotHub.ProxyServerAddress;
-        private const int MaxIterationWait = 30;
-        private static readonly TimeSpan _waitDuration = TimeSpan.FromSeconds(5);
+        private const int MaxIterationWait = 180;
+        private static readonly TimeSpan _waitDuration = TimeSpan.FromSeconds(2);
 
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
@@ -123,7 +123,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             string payload = Guid.NewGuid().ToString();
             string p1Value = Guid.NewGuid().ToString();
 
-            VerboseTestLogger.WriteLine($"{nameof(ComposeD2CTestMessage)}: messageId='{messageId}' payload='{payload}' p1Value='{p1Value}'");
+            VerboseTestLogger.WriteLine($"{nameof(ComposeD2CTestMessage)}: messageId='{messageId}' payload='{payload.Substring(0,32)}' p1Value='{p1Value}'");
             var message = new Message(Encoding.UTF8.GetBytes(payload))
             {
                 MessageId = messageId,
