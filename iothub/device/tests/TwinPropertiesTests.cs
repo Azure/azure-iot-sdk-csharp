@@ -20,13 +20,20 @@ namespace Microsoft.Azure.Devices.Client.Tests
         public void TwinProperties_SerializesCorrectly()
         {
             // arrange
-            var twinProperties = new TwinProperties(null, new ReportedProperties());
+            var properties = new Dictionary<string, object>
+            {
+                { "$version", "1" }
+            };
+
+            var desired = new DesiredProperties(properties);
+            var reported = new ReportedProperties(properties, false);
+            var twinProperties = new TwinProperties(desired, reported);
 
             // act
             string jsonTwinProperties = twinProperties.ToJson();
-            
+
             // assert
-            jsonTwinProperties.Should().BeEquivalentTo(JsonConvert.SerializeObject(twinProperties));
+            jsonTwinProperties.Should().BeEquivalentTo("{\"properties\":{\"desired\":\"{\\\"$version\\\":\\\"1\\\"}\",\"reported\":\"{\\\"$version\\\":\\\"1\\\"}\"}}");
         }
     }
 }
