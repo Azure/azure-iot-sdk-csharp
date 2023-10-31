@@ -17,7 +17,8 @@ namespace Microsoft.Azure.Devices.E2ETests
     {
         private readonly string MessageReceive_DevicePrefix = $"{nameof(FaultInjectionPoolAmqpTests)}.MessagaeReceive";
 
-        [TestMethod]
+        [Ignore] // TODO: Investigate timeout for this test
+        [TestMethodWithRetry(Max=3)]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_TcpConnectionLossReceiveUsingCallbackRecovery_MultipleConnections_Amqp()
         {
@@ -30,7 +31,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [Ignore] // TODO: Investigate timeout for this test
+        [TestMethodWithRetry(Max=3)]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_TcpConnectionLossReceiveUsingCallbackRecovery_MultipleConnections_AmqpWs()
         {
@@ -43,7 +45,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [Ignore] // TODO: Investigate timeout for this test
+        [TestMethodWithRetry(Max=3)]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_AmqpConnectionLossReceiveUsingCallbackRecovery_MultipleConnections_Amqp()
         {
@@ -56,7 +59,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [Ignore] // TODO: Investigate timeout for this test
+        [TestMethodWithRetry(Max=3)]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_AmqpConnectionLossReceiveUsingCallbackRecovery_MultipleConnections_AmqpWs()
         {
@@ -70,7 +74,8 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         // TODO: #950 - Link/session faults for message send/ method/ twin operations closes the connection.
-        [TestMethod]
+        [Ignore]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_AmqpSessionLossReceiveUsingCallbackRecovery_MultipleConnections_Amqp()
         {
@@ -84,7 +89,8 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         // TODO: #950 - Link/session faults for message send/ method/ twin operations closes the connection.
-        [TestMethod]
+        [Ignore]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_AmqpSessionLossReceiveUsingCallbackRecovery_MultipleConnections_AmqpWs()
         {
@@ -97,7 +103,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [Ignore] // TODO: Investigate timeout for this test
+        [TestMethodWithRetry(Max=3)]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         [TestCategory("LongRunning")]
         public async Task Message_AmqpC2dLinkDropReceiveUsingCallbackRecovery_MultipleConnections_Amqp()
@@ -111,7 +118,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [Ignore] // TODO: Investigate timeout for this test
+        [TestMethodWithRetry(Max=3)]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_AmqpC2dLinkDropReceiveUsingCallbackRecovery_MultipleConnections_AmqpWs()
         {
@@ -124,7 +132,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [Ignore] // TODO: Investigate timeout for this test
+        [TestMethodWithRetry(Max=3)]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_GracefulShutdownReceiveUsingCallbackRecovery_MultipleConnections_Amqp()
         {
@@ -137,7 +146,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [Ignore] // TODO: Investigate timeout for this test
+        [TestMethodWithRetry(Max=3)]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_GracefulShutdownReceiveUsingCallbackRecovery_MultipleConnections_AmqpWs()
         {

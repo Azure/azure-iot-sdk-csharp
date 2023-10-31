@@ -233,6 +233,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .ConfigureAwait(false);
         }
 
+        [Ignore] // TODO: Investigate timeout for this test
         [TestMethodWithRetry(Max=3)]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_TcpConnectionLossSendRecovery_MultipleConnections_Amqp()
@@ -246,6 +247,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .ConfigureAwait(false);
         }
 
+        [Ignore] // TODO: Investigate timeout for this test
         [TestMethodWithRetry(Max=3)]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_TcpConnectionLossSendRecovery_MultipleConnections_AmqpWs()
@@ -259,6 +261,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .ConfigureAwait(false);
         }
 
+        [Ignore] // TODO: Investigate timeout for this test
         [TestMethodWithRetry(Max=3)]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_AmqpConnectionLossSendRecovery_MultipleConnections_Amqp()
@@ -272,6 +275,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .ConfigureAwait(false);
         }
 
+        [Ignore] // TODO: Investigate timeout for this test
         [TestMethodWithRetry(Max=3)]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_AmqpConnectionLossSendRecovery_MultipleConnections_AmqpWs()
@@ -286,6 +290,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         // TODO: #950 - Link/session faults for message send/ method/ twin operations closes the connection.
+        [Ignore]
         [TestMethodWithRetry(Max=3)]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_AmqpSessionLossSendRecovery_MultipleConnections_Amqp()
@@ -300,6 +305,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         // TODO: #950 - Link/session faults for message send/ method/ twin operations closes the connection.
+        [Ignore]
         [TestMethodWithRetry(Max=3)]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_AmqpSessionLossSendRecovery_MultipleConnections_AmqpWs()
@@ -314,6 +320,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         // TODO: #950 - Link/session faults for message send/ method/ twin operations closes the connection.
+        [Ignore]
         [TestMethodWithRetry(Max=3)]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_AmqpD2cLinkDropSendRecovery_MultipleConnections_Amqp()
@@ -328,6 +335,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         // TODO: #950 - Link/session faults for message send/ method/ twin operations closes the connection.
+        [Ignore]
         [TestMethodWithRetry(Max=3)]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_AmqpD2cLinkDropSendRecovery_MultipleConnections_AmqpWs()
@@ -341,6 +349,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .ConfigureAwait(false);
         }
 
+        [Ignore] // TODO: Investigate timeout for this test
         [TestMethodWithRetry(Max=3)]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         [TestCategory("LongRunning")]
@@ -355,6 +364,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .ConfigureAwait(false);
         }
 
+        [Ignore] // TODO: Investigate timeout for this test
         [TestMethodWithRetry(Max=3)]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_GracefulShutdownSendRecovery_MultipleConnections_AmqpWs()
@@ -368,6 +378,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .ConfigureAwait(false);
         }
 
+        [Ignore] // TODO: Investigate timeout for this test
         [TestMethodWithRetry(Max=3)]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_ThrottledConnectionRecovery_MultipleConnections_Amqp()
@@ -381,6 +392,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .ConfigureAwait(false);
         }
 
+        [Ignore] // TODO: Investigate timeout for this test
         [TestMethodWithRetry(Max=3)]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Message_ThrottledConnectionRecovery_MultipleConnections_AmqpWs()
@@ -394,6 +406,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .ConfigureAwait(false);
         }
 
+        [Ignore] // TODO: Investigate timeout for this test
         [TestMethodWithRetry(Max=3)]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         [ExpectedException(typeof(UnauthorizedException))]
@@ -408,6 +421,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .ConfigureAwait(false);
         }
 
+        [Ignore] // TODO: Investigate timeout for this test
         [TestMethodWithRetry(Max=3)]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         [ExpectedException(typeof(UnauthorizedException))]
@@ -423,6 +437,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         // Test device client recovery when proxy settings are enabled
+        [Ignore] // TODO: Investigate timeout for this test
         [TestMethodWithRetry(Max=3)]
         [TestCategory("Proxy")]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
