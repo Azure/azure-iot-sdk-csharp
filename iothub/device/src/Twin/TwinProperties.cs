@@ -40,13 +40,13 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns>JSON string</returns>
         public string ToJson(Formatting formatting = Formatting.None)
         {
-            var properties = new Dictionary<string, string>
+            var properties = new Dictionary<string, object>
             {
-                { "desired", Desired.GetSerializedString() },
-                { "reported", Reported.GetSerializedString() }
+                { "desired", JsonConvert.DeserializeObject(Desired.GetSerializedString()) },
+                { "reported", JsonConvert.DeserializeObject(Reported.GetSerializedString()) }
             };
 
-            var formattedTwinProperties = new Dictionary<string, Dictionary<string, string>>
+            var formattedTwinProperties = new Dictionary<string, Dictionary<string, object>>
             {
                 { "properties", properties },
             };

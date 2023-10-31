@@ -22,7 +22,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
             // arrange
             var properties = new Dictionary<string, object>
             {
-                { "$version", "1" }
+                { "$version", 1 }
             };
 
             var desired = new DesiredProperties(properties);
@@ -33,7 +33,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
             string jsonTwinProperties = twinProperties.ToJson();
 
             // assert
-            jsonTwinProperties.Should().BeEquivalentTo("{\"properties\":{\"desired\":\"{\\\"$version\\\":\\\"1\\\"}\",\"reported\":\"{\\\"$version\\\":\\\"1\\\"}\"}}");
+            jsonTwinProperties.Should().BeEquivalentTo("{\"properties\":{\"desired\":{\"$version\":1},\"reported\":{\"$version\":1}}}");
         }
     }
 }
