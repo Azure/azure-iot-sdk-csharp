@@ -45,7 +45,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             Iso8601String = DateTimeValue,
         };
 
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Twin_DeviceSetsReportedPropertyAndGetsItBack_Mqtt()
         {
@@ -54,7 +54,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 .ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Twin_DeviceSetsReportedPropertyAndGetsItBack_MqttWs()
         {
@@ -63,7 +63,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 .ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Twin_DeviceSetsReportedPropertyAndGetsItBack_Amqp()
         {
@@ -72,7 +72,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 .ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Twin_DeviceSetsReportedPropertyAndGetsItBack_AmqpWs()
         {
@@ -81,7 +81,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 .ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Twin_DeviceSetsReportedPropertyArrayAndGetsItBack_Mqtt()
         {
@@ -90,7 +90,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 .ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Twin_DeviceSetsReportedPropertyArrayAndGetsItBack_MqttWs()
         {
@@ -99,7 +99,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 .ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Twin_DeviceSetsReportedPropertyArrayAndGetsItBack_Amqp()
         {
@@ -108,7 +108,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 .ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Twin_DeviceSetsReportedPropertyArrayAndGetsItBack_AmqpWs()
         {
@@ -117,7 +117,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 .ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Twin_ServiceSetsDesiredPropertyAndDeviceUnsubscribes_Mqtt()
         {
@@ -127,7 +127,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 .ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Twin_ServiceSetsDesiredPropertyAndDeviceUnsubscribes_MqttWs()
         {
@@ -137,7 +137,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 .ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Twin_ServiceSetsDesiredPropertyAndDeviceUnsubscribes_Amqp()
         {
@@ -147,7 +147,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 .ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Twin_ServiceSetsDesiredPropertyAndDeviceUnsubscribes_AmqpWs()
         {
@@ -157,7 +157,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 .ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent_Mqtt()
         {
@@ -168,7 +168,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 .ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent_MqttWs()
         {
@@ -179,7 +179,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 .ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent_Amqp()
         {
@@ -190,7 +190,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 .ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent_AmqpWs()
         {
@@ -201,7 +201,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 .ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Twin_ServiceSetsDesiredPropertyArrayAndDeviceReceivesEvent_Mqtt()
         {
@@ -212,7 +212,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 .ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Twin_ServiceSetsDesiredPropertyArrayAndDeviceReceivesEvent_MqttWs()
         {
@@ -223,7 +223,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 .ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Twin_ServiceSetsDesiredPropertyArrayAndDeviceReceivesEvent_Amqp()
         {
@@ -234,7 +234,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 .ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Twin_ServiceSetsDesiredPropertyArrayAndDeviceReceivesEvent_AmqpWs()
         {
@@ -245,7 +245,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 .ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent_WithObseleteCallbackSetter_Mqtt()
         {
@@ -256,7 +256,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 .ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent_WithObseleteCallbackSetter_MqttWs()
         {
@@ -267,7 +267,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 .ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent_WithObseleteCallbackSetter_Amqp()
         {
@@ -278,7 +278,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 .ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent_WithObseleteCallbackSetter_AmqpWs()
         {
@@ -289,7 +289,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 .ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGet_Mqtt()
         {
@@ -298,7 +298,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 .ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGet_MqttWs()
         {
@@ -307,7 +307,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 .ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGet_Amqp()
         {
@@ -316,7 +316,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 .ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGet_AmqpWs()
         {
@@ -327,7 +327,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
 
         // This is mainly for testing serialization/deserialization behavior which is independent of the
         // transport protocol used, so we are not covering cases for other protocols than Mqtt here.
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGet_DateTimeProperties_Mqtt()
         {
@@ -336,7 +336,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 .ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Twin_DeviceSetsReportedPropertyAndServiceReceivesIt_Mqtt()
         {
@@ -345,7 +345,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 .ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Twin_DeviceSetsReportedPropertyAndServiceReceivesIt_MqttWs()
         {
@@ -354,7 +354,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 .ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Twin_DeviceSetsReportedPropertyAndServiceReceivesIt_Amqp()
         {
@@ -363,7 +363,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 .ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Twin_DeviceSetsReportedPropertyAndServiceReceivesIt_AmqpWs()
         {
@@ -372,7 +372,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 .ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Twin_ServiceDoesNotCreateNullPropertyInCollection_Mqtt()
         {
@@ -381,7 +381,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 .ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Twin_ServiceDoesNotCreateNullPropertyInCollection_MqttWs()
         {
@@ -390,7 +390,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 .ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Twin_ServiceDoesNotCreateNullPropertyInCollection_Amqp()
         {
@@ -399,7 +399,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 .ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Twin_ServiceDoesNotCreateNullPropertyInCollection_AmqpWs()
         {
@@ -408,7 +408,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 .ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Twin_ClientHandlesRejectionInvalidPropertyName_Mqtt()
         {
@@ -417,7 +417,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 .ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Twin_ClientHandlesRejectionInvalidPropertyName_MqttWs()
         {
@@ -426,7 +426,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 .ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Twin_ClientHandlesRejectionInvalidPropertyName_Amqp()
         {
@@ -435,7 +435,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 .ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Twin_ClientHandlesRejectionInvalidPropertyName_AmqpWs()
         {

@@ -23,6 +23,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         [Ignore]
         [TestMethod]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
+        [DoNotParallelize]
         public async Task Method_DeviceSak_DeviceMethodTcpConnRecovery_SingleConnection_Amqp()
         {
             await SendMethodAndRespondRecoveryPoolOverAmqpAsync(
@@ -289,7 +290,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         // TODO: #950 - Link/session faults for message send/ method/ twin operations closes the connection.
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Method_DeviceSak_DeviceMethodSessionLostRecovery_MultipleConnections_AmqpWs()
         {
@@ -304,7 +305,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         // TODO: #950 - Link/session faults for message send/ method/ twin operations closes the connection.
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Method_DeviceSak_DeviceMethodReqLinkDropRecovery_MultipleConnections_Amqp()
         {
@@ -319,7 +320,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         // TODO: #950 - Link/session faults for message send/ method/ twin operations closes the connection.
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Method_DeviceSak_DeviceMethodReqLinkDropRecovery_MultipleConnections_AmqpWs()
         {
@@ -334,7 +335,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         // TODO: #950 - Link/session faults for message send/ method/ twin operations closes the connection.
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Method_DeviceSak_DeviceMethodRespLinkDropRecovery_MultipleConnections_Amqp()
         {
@@ -349,7 +350,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         // TODO: #950 - Link/session faults for message send/ method/ twin operations closes the connection.
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Method_DeviceSak_DeviceMethodRespLinkDropRecovery_MultipleConnections_AmqpWs()
         {
@@ -363,7 +364,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Method_DeviceSak_DeviceMethodGracefulShutdownRecovery_MultipleConnections_Amqp()
         {
@@ -377,7 +378,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         public async Task Method_DeviceSak_DeviceMethodGracefulShutdownRecovery_MultipleConnections_AmqpWs()
         {

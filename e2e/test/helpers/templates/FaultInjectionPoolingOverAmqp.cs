@@ -107,7 +107,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                             break;
                         }
 
-                        await Task.Delay(TimeSpan.FromSeconds(1)).ConfigureAwait(false);
+                        await Task.Delay(TimeSpan.FromSeconds(2)).ConfigureAwait(false);
                     }
                     connectionChangeWaitDuration.Reset();
 
@@ -127,7 +127,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                             break;
                         }
 
-                        await Task.Delay(TimeSpan.FromSeconds(1));
+                        await Task.Delay(500);
                     }
 
                     if (!isRecovered)
@@ -164,7 +164,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                     {
                         VerboseTestLogger.WriteLine($"{nameof(FaultInjectionPoolingOverAmqp)}: Performing test operation for device 0 - Run {counter++}.");
                         await testOperation(deviceClients[0], testDevices[0], testDeviceCallbackHandlers[0]).ConfigureAwait(false);
-                        await Task.Delay(TimeSpan.FromSeconds(1)).ConfigureAwait(false);
+                        await Task.Delay(TimeSpan.FromSeconds(2)).ConfigureAwait(false);
                     }
                 }
 
