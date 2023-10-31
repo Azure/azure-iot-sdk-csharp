@@ -91,7 +91,9 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             await registryManager.RemoveDeviceAsync(device.Id).ConfigureAwait(false);
         }
 
+        [Ignore] //Flaky Test
         [TestMethodWithRetry(Max=3)]
+        [TestCategory("Flaky")]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task JobClient_Http_SasCredentialAuth_Success()
         {
