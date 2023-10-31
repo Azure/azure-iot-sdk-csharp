@@ -26,13 +26,11 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The collection of desired property update requests received from service.
         /// </summary>
-        [JsonProperty("desired")]
         public DesiredProperties Desired { get; }
 
         /// <summary>
         /// The collection of twin properties reported by the client.
         /// </summary>
-        [JsonProperty("reported")]
         public ReportedProperties Reported { get; }
 
         /// <summary>
@@ -42,13 +40,18 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns>JSON string</returns>
         public string ToJson(Formatting formatting = Formatting.None)
         {
-            var twin = new Dictionary<string, string>
+            var properties = new Dictionary<string, string>
             {
                 { "desired", Desired.GetSerializedString() },
                 { "reported", Reported.GetSerializedString() }
             };
 
-            return JsonConvert.SerializeObject(twin);
+            var formattedTwinProperties = new Dictionary<string, Dictionary<string, string>>
+            {
+                { "properties", properties },
+            };
+
+            return JsonConvert.SerializeObject(formattedTwinProperties);
         }
     }
 }
