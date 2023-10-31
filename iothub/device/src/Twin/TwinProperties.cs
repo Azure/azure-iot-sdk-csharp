@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System.Collections.Generic;
 using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Client
@@ -41,7 +42,13 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns>JSON string</returns>
         public string ToJson(Formatting formatting = Formatting.None)
         {
-            return JsonConvert.SerializeObject(this, formatting);
+            var twin = new Dictionary<string, string>
+            {
+                { "desired", Desired.GetSerializedString() },
+                { "reported", Reported.GetSerializedString() }
+            };
+
+            return JsonConvert.SerializeObject(twin);
         }
     }
 }
