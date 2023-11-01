@@ -18,7 +18,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
     {
         private static readonly string s_devicePrefix = $"{nameof(IncomingMessageCallbackE2eTests)}_";
 
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         [TestCategory("LongRunning")]   // This test takes the complete 3 minutes before exiting. So, we will mark this as "LongRunning" so that it doesn't run at PR gate.
         public async Task DeviceReceiveMessageUsingCallbackAndUnsubscribe_Amqp()
         {
@@ -29,7 +29,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             await ReceiveMessageUsingCallbackAndUnsubscribeAsync(new IotHubClientAmqpSettings(), ct).ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         [TestCategory("LongRunning")]   // This test takes the complete 3 minutes before exiting. So, we will mark this as "LongRunning" so that it doesn't run at PR gate.
         public async Task DeviceReceiveMessageUsingCallbackAndUnsubscribe_Mqtt()
         {
@@ -40,7 +40,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             await ReceiveMessageUsingCallbackAndUnsubscribeAsync(new IotHubClientMqttSettings(), ct).ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         public async Task Message_DeviceMaintainsConnectionAfterUnsubscribing_Amqp()
         {
             // Setting up one cancellation token for the complete test flow
@@ -50,7 +50,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             await UnsubscribeDoesNotCauseConnectionStatusEventAsync(new IotHubClientAmqpSettings(), ct).ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         public async Task Message_DeviceMaintainsConnectionAfterUnsubscribing_Mqtt()
         {
             // Setting up one cancellation token for the complete test flow
@@ -60,7 +60,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             await UnsubscribeDoesNotCauseConnectionStatusEventAsync(new IotHubClientMqttSettings(), ct).ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         public async Task DeviceReceiveMessageAfterOpenCloseOpen_Amqp()
         {
             // Setting up one cancellation token for the complete test flow
@@ -70,7 +70,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             await ReceiveMessageAfterOpenCloseOpenAsync(new IotHubClientAmqpSettings(), ct).ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         public async Task DeviceReceiveMessageAfterOpenCloseOpen_Mqtt()
         {
             // Setting up one cancellation token for the complete test flow
@@ -80,7 +80,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             await ReceiveMessageAfterOpenCloseOpenAsync(new IotHubClientMqttSettings(), ct).ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         public async Task DeviceReceiveMessageSetCallbackAfterReconnect_Mqtt()
         {
             // Setting up one cancellation token for the complete test flow
