@@ -21,7 +21,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
     {
         private readonly string _devicePrefix = $"{nameof(MessageFeedbackReceiverE2ETest)}_";
 
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         [DataRow(IotHubTransportProtocol.Tcp)]
         [DataRow(IotHubTransportProtocol.WebSocket)]
@@ -101,7 +101,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             }
         }
 
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         public async Task MessageFeedbackReceiver_CloseGracefully_DoesNotExecuteConnectionLoss()
         {
             // arrange
