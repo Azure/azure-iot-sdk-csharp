@@ -44,6 +44,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             return new DeviceRegistration(_security.GetRegistrationID(), new TpmAttestation(ek, srk));
         }
 
+        public override EdgeProvisioningService CreateOnboardingClient(Uri uri, HttpClientHandler httpClientHandler)
+        {
+            throw new NotImplementedException();
+        }
+
         public override void SaveCredentials(RegistrationOperationStatus operation)
         {
             if (operation?.RegistrationState?.Tpm?.AuthenticationKey == null)

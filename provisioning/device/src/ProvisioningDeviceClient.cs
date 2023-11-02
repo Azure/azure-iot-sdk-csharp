@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Provisioning.Client.Transport;
 using Microsoft.Azure.Devices.Shared;
+using Microsoft.Azure.Provisioning.Client;
 using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client
@@ -40,6 +41,21 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             }
 
             return new ProvisioningDeviceClient(globalDeviceEndpoint, idScope, securityProvider, transport);
+        }
+
+        /// <summary>
+        /// Creates an instance of the Device Provisioning Client.
+        /// </summary>
+        /// <param name="globalDeviceEndpoint">The GlobalDeviceEndpoint for the Device Provisioning Service.</param>
+        /// <param name="securityProvider">The security provider instance.</param>
+        /// <param name="transport">The type of transport (e.g. HTTP, AMQP, MQTT).</param>
+        /// <returns>An instance of the ProvisioningDeviceClient</returns>
+        public static ProvisioningDeviceClient Create(
+            string globalDeviceEndpoint,
+            SecurityProvider securityProvider,
+            ProvisioningTransportHandler transport)
+        {
+            return Create(globalDeviceEndpoint, null, securityProvider, transport);
         }
 
         private ProvisioningDeviceClient(
@@ -150,6 +166,24 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             };
 
             return _transport.RegisterAsync(request, cancellationToken);
+        }
+
+        /// <summary>
+        /// Onboards the current device using Device Provisioning Service
+        /// </summary>
+        /// <param name="publicKey">Public key of Arc enabled device</param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public Task<DeviceOnboardingResult> OnboardAsync(string publicKey, CancellationToken cancellationToken = default)
+        {
+            Logging.OnboardAsync(this, _globalDeviceEndpoint, _transport, _security);
+
+            var request = new ProvisioningTransportOnboardRequest(_globalDeviceEndpoint, _security, publicKey)
+            {
+                ProductInfo = ProductInfo,
+            };
+
+            return _transport.OnboardAsync(request, cancellationToken);
         }
     }
 }

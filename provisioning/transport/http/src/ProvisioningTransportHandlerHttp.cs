@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Net;
 using System.Net.Http;
@@ -286,6 +287,212 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             }
         }
 
+        /// <inheritdoc/>
+        public override async Task<DeviceOnboardingResult> OnboardAsync(ProvisioningTransportOnboardRequest request, CancellationToken cancellationToken)
+        {
+            if (Logging.IsEnabled)
+                Logging.Enter(this, $"{nameof(ProvisioningTransportHandlerHttp)}.{nameof(OnboardAsync)}");
+
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            try
+            {
+                HttpAuthStrategy authStrategy;
+
+                switch (request.Security)
+                {
+                    case SecurityProviderX509 _:
+                        authStrategy = new HttpAuthStrategyX509((SecurityProviderX509)request.Security);
+                        break;
+
+                    default:
+                        if (Logging.IsEnabled)
+                            Logging.Error(this, $"Invalid {nameof(SecurityProvider)} type.");
+
+                        throw new NotSupportedException(
+                            $"{nameof(request.Security)} must be of type {nameof(SecurityProviderX509)}");
+                }
+
+                Logging.Associate(authStrategy, this);
+
+                using var httpClientHandler = new HttpClientHandler()
+                {
+                    // Cannot specify a specific protocol here, as desired due to an error:
+                    //   ProvisioningDeviceClient_ValidRegistrationId_AmqpWithProxy_SymmetricKey_RegisterOk_GroupEnrollment failing for me with System.PlatformNotSupportedException: Operation is not supported on this platform.	
+                    // When revisiting TLS12 work for DPS, we should figure out why. Perhaps the service needs to support it.	
+
+                    //SslProtocols = TlsVersions.Preferred,
+                };
+
+                if (Proxy != DefaultWebProxySettings.Instance)
+                {
+                    httpClientHandler.UseProxy = Proxy != null;
+                    httpClientHandler.Proxy = Proxy;
+                    if (Logging.IsEnabled)
+                        Logging.Info(this, $"{nameof(OnboardAsync)} Setting HttpClientHandler.Proxy");
+                }
+
+                var builder = new UriBuilder
+                {
+                    Scheme = Uri.UriSchemeHttps,
+                    Host = request.GlobalDeviceEndpoint,
+                    Port = Port,
+                };
+
+                using EdgeProvisioningService client = authStrategy.CreateOnboardingClient(builder.Uri, httpClientHandler);
+                client.HttpClient.DefaultRequestHeaders.Add("User-Agent", request.ProductInfo);
+                if (Logging.IsEnabled)
+                    Logging.Info(this, $"Uri: {builder.Uri}; User-Agent: {request.ProductInfo}");
+
+                string registrationId = request.Security.GetRegistrationID();
+
+                OnboardingRequest onboardRequest = new OnboardingRequest(registrationId, new HybridComputeMachineMetadata(request.PublicKey));
+
+                OnboardOperationStatusResponse operation = await client.Devices
+                    .OnboardAsync(
+                        "v1",
+                        onboardRequest,
+                        cancellationToken: cancellationToken)
+                    .ConfigureAwait(false);
+
+                int attempts = 0;
+                string operationId = operation.Id;
+
+                if (Logging.IsEnabled)
+                    Logging.OnboardDevice(
+                        this,
+                        registrationId,
+                        operation.Id,
+                        operation.Status.ToString());
+
+                // Poll with operationId until registration complete.
+                while (operation.Status == OperationState.InProgress)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    TimeSpan? serviceRecommendedDelay = null;
+                    if (serviceRecommendedDelay != null
+                        && serviceRecommendedDelay?.TotalSeconds < s_defaultOperationPoolingIntervalMilliseconds.TotalSeconds)
+                    {
+                        if (Logging.IsEnabled)
+                            Logging.Error(
+                                this,
+                                $"Service recommended unexpected retryAfter of {null}, defaulting to delay of {s_defaultOperationPoolingIntervalMilliseconds}",
+                                nameof(OnboardAsync));
+
+                        serviceRecommendedDelay = s_defaultOperationPoolingIntervalMilliseconds;
+                    }
+
+                    await Task
+                        .Delay(serviceRecommendedDelay ?? RetryJitter.GenerateDelayWithJitterForRetry(s_defaultOperationPoolingIntervalMilliseconds), cancellationToken)
+                        .ConfigureAwait(false);
+
+                    try
+                    {
+                        operation = await client
+                            .Devices.GetOperationStatusAsync(
+                                "v1",
+                                registrationId,
+                                operationId,
+                                cancellationToken: cancellationToken)
+                            .ConfigureAwait(false);
+                    }
+                    catch (HttpOperationException ex)
+                    {
+                        bool isTransient = ex.Response.StatusCode >= HttpStatusCode.InternalServerError
+                            || (int)ex.Response.StatusCode == 429;
+
+                        try
+                        {
+                            AzureCoreFoundationsErrorResponse errorDetails = JsonConvert.DeserializeObject<AzureCoreFoundationsErrorResponse>(ex.Response.Content);
+
+                            if (isTransient)
+                            {
+                                serviceRecommendedDelay = null;
+                            }
+                            else
+                            {
+                                if (Logging.IsEnabled)
+                                    Logging.Error(this, $"{nameof(ProvisioningTransportHandlerHttp)} threw exception {ex}", nameof(OnboardAsync));
+
+                                throw new ProvisioningTransportException(ex.Response.Content, ex, isTransient);
+                            }
+                        }
+                        catch (JsonException jex)
+                        {
+                            if (Logging.IsEnabled)
+                                Logging.Error(
+                                    this,
+                                    $"{nameof(ProvisioningTransportHandlerHttp)} server returned malformed error response." +
+                                    $"Parsing error: {jex}. Server response: {ex.Response.Content}",
+                                    nameof(OnboardAsync));
+
+                            throw new ProvisioningTransportException(
+                                $"HTTP transport exception: malformed server error message: '{ex.Response.Content}'",
+                                jex,
+                                false);
+                        }
+                    }
+
+                    if (Logging.IsEnabled)
+                        Logging.OperationStatusLookup(
+                            this,
+                            registrationId,
+                            operation.Id,
+                            null,
+                            operation.Status.ToString(),
+                            attempts);
+
+                    ++attempts;
+                }
+
+                return ConvertToOnboardingResult(operation);
+            }
+            catch (HttpOperationException ex)
+            {
+                if (Logging.IsEnabled)
+                    Logging.Error(this, $"{nameof(ProvisioningTransportHandlerHttp)} threw exception {ex}", nameof(OnboardAsync));
+
+                bool isTransient = ex.Response.StatusCode >= HttpStatusCode.InternalServerError
+                    || (int)ex.Response.StatusCode == 429;
+
+                try
+                {
+                    AzureCoreFoundationsError errorDetails = JsonConvert.DeserializeObject<AzureCoreFoundationsError>(ex.Response.Content);
+                    throw new ProvisioningTransportException(ex.Response.Content, ex, isTransient);
+                }
+                catch (JsonException jex)
+                {
+                    if (Logging.IsEnabled)
+                        Logging.Error(
+                            this,
+                            $"{nameof(ProvisioningTransportHandlerHttp)} server returned malformed error response. Parsing error: {jex}. Server response: {ex.Response.Content}",
+                            nameof(OnboardAsync));
+
+                    throw new ProvisioningTransportException(
+                        $"HTTP transport exception: malformed server error message: '{ex.Response.Content}'",
+                        jex,
+                        false);
+                }
+            }
+            catch (Exception ex) when (!(ex is ProvisioningTransportException))
+            {
+                if (Logging.IsEnabled)
+                    Logging.Error(this, $"{nameof(ProvisioningTransportHandlerHttp)} threw exception {ex}", nameof(OnboardAsync));
+
+                throw new ProvisioningTransportException($"HTTP transport exception", ex, true);
+            }
+            finally
+            {
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, $"{nameof(ProvisioningTransportHandlerHttp)}.{nameof(OnboardAsync)}");
+            }
+        }
+
         private static DeviceRegistrationResult ConvertToProvisioningRegistrationResult(Models.DeviceRegistrationResult result)
         {
             Enum.TryParse(result.Status, true, out ProvisioningRegistrationStatusType status);
@@ -304,6 +511,40 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 result.ErrorMessage,
                 result.Etag,
                 result?.Payload?.ToString(CultureInfo.InvariantCulture));
+        }
+
+        private static DeviceOnboardingResult ConvertToOnboardingResult(OnboardOperationStatusResponse result)
+        {
+            ResponseMetadata deviceMetadata = null;
+
+            switch (result.Result.ResourceMetadata)
+            {
+                case HybridComputeMachineResponse hybridResponse:
+                    deviceMetadata = new HybridComputeMachine(
+                        hybridResponse.ResourceId, 
+                        hybridResponse.Location, 
+                        hybridResponse.TenantId, 
+                        hybridResponse.ArcVirtualMachineId);
+                    break;
+                case DeviceRegistryDeviceResponse deviceResponse:
+                    List<Endpoint> endpoints = new List<Endpoint>();
+                    foreach (var endpoint in deviceResponse.AssignedEndpoints)
+                    {
+                        endpoints.Add(new Endpoint(endpoint.Hostname, endpoint.Name));
+                    }
+                    deviceMetadata = new DeviceRegistryDevice(
+                        endpoints);
+                    break;
+            }
+
+
+            return new DeviceOnboardingResult(
+                result.Id,
+                new Device(
+                    result.Result.RegistrationId, 
+                    result.Status,
+                    deviceMetadata)
+                );
         }
     }
 }

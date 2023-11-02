@@ -6,7 +6,10 @@ using System.Text.RegularExpressions;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client.Extensions
 {
-    internal static class CommonExtensions
+    /// <summary>
+    /// Commong string extensions
+    /// </summary>
+    public static class CommonExtensions
     {
         // The following regex expression minifies a json string.
         // It makes sure that space characters within sentences are preserved, and all other space characters are discarded.
@@ -39,6 +42,25 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Extensions
                 string errorMessage = $"The parameter named {argumentName} can't be null, empty or white space.";
                 throw new ArgumentNullException(argumentName, errorMessage);
             }
+        }
+
+        /// <summary>
+        /// Get hostname
+        /// </summary>
+        /// <param name="requestUri"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentException"></exception>
+        public static string GetTarget(this Uri requestUri)
+        {
+            var requestUriLocalPath = requestUri.LocalPath;
+            requestUriLocalPath = requestUriLocalPath.TrimStart('/');
+            string[] parameters = requestUriLocalPath.Split('/');
+            if (parameters.Length <= 3)
+            {
+                throw new ArgumentException($"Invalid RequestUri LocalPath");
+            }
+
+            return string.Concat(parameters[0], "/", parameters[1], "/", parameters[2]);
         }
     }
 }
