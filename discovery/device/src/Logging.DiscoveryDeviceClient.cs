@@ -5,7 +5,7 @@ using System.Diagnostics.Tracing;
 
 namespace Microsoft.Azure.Devices.Shared
 {
-    // e927240b-7198-5cc8-72f1-7ddcf31bb8cb
+    // 85628a4e-d1ce-58b3-1ad2-dd5f1681e41b
     [EventSource(Name = "Microsoft-Azure-Devices-Discovery-Client")]
     internal sealed partial class Logging : EventSource
     {
