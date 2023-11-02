@@ -30,7 +30,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <Version>1.0.3</Version>
+    <Version>1.0.4</Version>
     <Title>Microsoft Azure Discovery Device Client HTTP Transport</Title>
     <IncludeSource>True</IncludeSource>
     <IncludeSymbols>True</IncludeSymbols>
