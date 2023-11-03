@@ -86,6 +86,8 @@ namespace Microsoft.Azure.Devices.Client
             }
             catch (JsonReaderException)
             {
+                // T should always be of type byte[] here, so this is basically a no-op.
+                // However, .NET does not allow us to simply return "payload as T" or other basic casts.
                 deserialized = JsonConvert.DeserializeObject<T>(JsonConvert.SerializeObject(Encoding.UTF8.GetBytes(jsonObjectAsText)));
             }
             return deserialized;
