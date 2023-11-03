@@ -9,10 +9,14 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             public static string AzureBearerToken => GetValue("AZURE_ACCESS_TOKEN");
 
-            public static string ConnectionString => GetValue("DISCOVERY_CONNECTION_STRING");
+            public static string SubscriptionId => GetValue("DISCOVERY_AZURE_SUBSCRIPTION");
+
+            public static string ResourceGroup1 => GetValue("DISCOVERY_AZURE_RG1");
+
+            public static string ResourceGroup2 => GetValue("DISCOVERY_AZURE_RG2");
 
             public static string GlobalDeviceEndpoint =>
-                GetValue("DPS_GLOBALDISCOVERYENDPOINT", "dev1.eastus.device.discovery.edgeprov-dev.azure.net/");
+                GetValue("DPS_GLOBALDISCOVERYENDPOINT", "sta1.eastus.device.discovery.edgeprov-dev.azure.net");
 
             public static string ConnectionStringInvalidServiceCertificate => GetValue("DISCOVERY_CONNECTION_STRING_INVALIDCERT", string.Empty);
 
