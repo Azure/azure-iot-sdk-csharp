@@ -78,7 +78,19 @@ namespace Microsoft.Azure.Devices.Client
         [SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "Method must be instance to benefit from s_settings.")]
         internal T GetObject<T>(string jsonObjectAsText)
         {
-            return JsonConvert.DeserializeObject<T>(jsonObjectAsText);
+            T deserialized;
+
+            try
+            {
+                deserialized = JsonConvert.DeserializeObject<T>(jsonObjectAsText);
+            }
+            catch (JsonReaderException)
+            {
+                // T should always be of type byte[] here, so this is basically a no-op.
+                // However, .NET does not allow us to simply return "payload as T" or other basic casts.
+                deserialized = JsonConvert.DeserializeObject<T>(JsonConvert.SerializeObject(Encoding.UTF8.GetBytes(jsonObjectAsText)));
+            }
+            return deserialized;
         }
 
         // For internal and unit testing use
