@@ -15,6 +15,10 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             public static string ResourceGroup2 => GetValue("DISCOVERY_AZURE_RG2");
 
+            public static string ResourceOwner => GetValue("DISCOVERY_RESOURCE_OWNER", "resource owner");
+
+            public static string RegistrationId => GetValue("DISCOVERY_DEVICE_REGISTRATION_ID", "device");
+
             public static string GlobalDeviceEndpoint =>
                 GetValue("DPS_GLOBALDISCOVERYENDPOINT", "sta1.eastus.device.discovery.edgeprov-dev.azure.net");
 

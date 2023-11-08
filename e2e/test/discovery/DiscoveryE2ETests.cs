@@ -27,6 +27,7 @@ using Azure.Core;
 using Microsoft.Azure.Devices.Provisioning.Security;
 using Azure.ResourceManager.Resources.Models;
 using System.Security.Cryptography.X509Certificates;
+using System.Globalization;
 
 namespace Microsoft.Azure.Devices.E2ETests.Discovery
 {
@@ -43,6 +44,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Discovery
         private static readonly string s_subscriptionId = TestConfiguration.Discovery.SubscriptionId;
         private static readonly string s_resourceGroup1 = TestConfiguration.Discovery.ResourceGroup1;
         private static readonly string s_resourceGroup2 = TestConfiguration.Discovery.ResourceGroup2;
+        private static readonly string s_resourceOwner = TestConfiguration.Discovery.ResourceOwner;
+        private static readonly string s_registrationId = TestConfiguration.Discovery.RegistrationId;
         private static readonly string s_proxyServerAddress = "";
 
         private static readonly HashSet<Type> s_retryableExceptions = new() { typeof(ProvisioningServiceClientHttpException) };
@@ -90,29 +93,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Discovery
         #endregion InvalidGlobalAddress
 
         public async Task ClientValidOnboardingAsyncOk(
-            TimeSpan timeout)
-        {
-            //Default reprovisioning settings: Hashed allocation, no reprovision policy, hub names, or custom allocation policy
-            await ClientValidOnboardingAsyncOk(false, timeout, s_proxyServerAddress).ConfigureAwait(false);
-        }
-
-        public async Task ClientValidOnboardingAsyncOk(
             bool setCustomProxy,
             string proxyServerAddress = null)
         {
             // Default reprovisioning settings: Hashed allocation, no reprovision policy, hub names, or custom allocation policy
-            await ClientValidOnboardingAsyncOk(
-                    setCustomProxy,
-                    TimeSpan.MaxValue,
-                    proxyServerAddress)
-                .ConfigureAwait(false);
-        }
-
-        public async Task ClientValidOnboardingAsyncOk(
-            bool setCustomProxy,
-            DeviceCapabilities capabilities,
-            string proxyServerAddress = null)
-        {
             await ClientValidOnboardingAsyncOk(
                     setCustomProxy,
                     TimeSpan.MaxValue,
@@ -127,7 +111,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Discovery
         {
             // The range of valid combinations of configuration is very limited, there are fewer cases for us to test
 
-            string registrationId = $"timtest-1";
+            string registrationId = s_registrationId;
 
             using DiscoveryTransportHandler transport = new DiscoveryTransportHandlerHttp();
             using SecurityProvider security = new SecurityProviderTpmHsm(registrationId);
@@ -177,134 +161,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Discovery
             Console.WriteLine($"Successfully onboarded {onboardingResult.Id} {onboardingResult.Result.RegistrationId}");
         }
 
-        private class AzureResourceTags
-        {
-            public string owner { get; set; }
-            public string purpose { get; set; }
-        }
-
-        private class AzureResource
-        {
-            public string Location { get; set; }
-            public AzureResourceTags Tags { get; set; }
-        }
-
-        private class AzureBootstrapResource : AzureResource
-        {
-            public class BootstrapResourceProperties
-            {
-                public string SiteResourceId { get; set; }
-                public int MaximumNumberOfDevicesToOnboard { get; set; }
-                public string TokenExpiryDate { get; set; }
-            }
-
-            public class BootstrapResourceIdentity
-            {
-                public string Type { get; set; }
-            }
-
-            public BootstrapResourceProperties Properties { get; set; }
-
-            public BootstrapResourceIdentity Identity { get; set; }
-        }
-
-        private class ProvisioningResource : AzureResource
-        {
-            public class ProvisioningProperties { }
-            public ProvisioningProperties Properties { get; set; }
-        }
-
-        private class ProvisioningPolicyResource : AzureResource
-        {
-            public class ProvisioningPolicyProperties 
-            {
-                public class ProvisioningPolicyPropertyAuth
-                {
-                    [JsonProperty(PropertyName = "type")]
-                    public string Type { get; set; }
-                }
-                [JsonProperty(PropertyName = "bootstrapAuthentication")]
-                public ProvisioningPolicyPropertyAuth BootstrapAuthentication { get; set; }
-                public class ProvisioningPolicyResourceDetails
-                {
-                    [JsonProperty(PropertyName = "resourceType")]
-                    public string ResourceType { get; set; }
-                }
-                [JsonProperty(PropertyName = "resourceDetails")]
-                public ProvisioningPolicyResourceDetails ResourceDetails { get; set; }
-            }
-            public ProvisioningPolicyProperties Properties { get; set; }
-        }
-
-        private class ArcDeviceResource : AzureResource
-        {
-            public class ArcDeviceResourceProperties
-            {
-                public string osName { get; set; } = "HCI";
-            }
-            public ArcDeviceResourceProperties properties { get; set; } = new ArcDeviceResourceProperties();
-            public string kind { get; set; } = "EPS";
-        }
-
-        private class ArcDeviceExtensionResource
-        {
-            public class ArcDeviceExtensionResourceProperties
-            {
-                public string registrationId { get; set; }
-                public string onboardingStatus { get; set; } = "Pending";
-                public bool discoveryEnabled { get; set; } = true;
-                public string provisioningPolicyResourceId { get; set; }
-
-            }
-            public ArcDeviceExtensionResourceProperties Properties { get; set; }
-        }
-
-        private class EdgeOrderPatch
-        {
-            public class EdgeOrderPatchProperties
-            {
-                public class EdgeOrderPatchProvisioningDetails
-                {
-                    public string ProvisioningArmId { get; set; }
-                    public string ProvisioningEndpoint { get; set; }
-                    public string SerialNumber { get; set; }
-                    public string ReadyToConnectArmId { get; set; }
-                }
-                public EdgeOrderPatchProvisioningDetails ProvisioningDetails { get; set; }
-            }
-            public EdgeOrderPatchProperties Properties { get; set; }
-        }
-
-        private class BootstrapSiteKey
-        {
-            public string Token { get; set; }
-        }
-
-        public class BearerTokenCredential : TokenCredential
-        {
-
-            /// <param name="token">The bearer access token value.</param>
-            /// <param name="dateTimeOffset">The bearer access token expiry date.</param>
-            public BearerTokenCredential(string token, DateTimeOffset dateTimeOffset)
-            {
-                accesstoken = new AccessToken(token, dateTimeOffset);
-            }
-
-            private AccessToken accesstoken;
-
-            public override AccessToken GetToken(TokenRequestContext requestContext, CancellationToken cancellationToken) => accesstoken;
-
-            public override ValueTask<AccessToken> GetTokenAsync(TokenRequestContext requestContext, CancellationToken cancellationToken) => new ValueTask<AccessToken>(accesstoken);
-        }
-
         private async Task UploadArtifacts()
         {
             string subscriptionId = s_subscriptionId;
             string resourceGroupName = s_resourceGroup1;
             string resourceGroupName2 = s_resourceGroup2;
-            //string resourceGroupName2 = resourceGroupName;
             string siteResourceId = $"/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/";
-            string serialNumber = "timtest-1";
+            string serialNumber = s_registrationId;
             using SecurityProviderTpm security = new SecurityProviderTpmHsm(serialNumber);
 
             string resourceName = $"{Guid.NewGuid()}";
@@ -321,10 +184,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Discovery
             {
                 var azureTags = new AzureResourceTags()
                 {
-                    owner = "timstewart",
+                    owner = s_resourceOwner,
                     purpose = "e2etesting"
                 };
-                   
+
                 // create bootstrap resource
                 var bootstrapResourceRequest = new AzureBootstrapResource()
                 {
@@ -332,7 +195,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Discovery
                     {
                         SiteResourceId = siteResourceId,
                         MaximumNumberOfDevicesToOnboard = 10,
-                        TokenExpiryDate = "2023-11-30T13:30:59.2837796+05:30"
+                        TokenExpiryDate = DateTime.Now.AddDays(5).ToString("o", CultureInfo.InvariantCulture)
                     },
                     Identity = new AzureBootstrapResource.BootstrapResourceIdentity()
                     {
@@ -411,7 +274,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Discovery
                     Properties = new ProvisioningResource.ProvisioningProperties()
                 };
 
-                string provResourceName = GetRandomResourceName("timprov");
+                string provResourceName = GetRandomResourceName(serialNumber);
                 string provResourceApiVersion = "?api-version=2023-12-01-preview";
 
                 Console.WriteLine($"Going to create provisioning resource: {provResourceName}");
@@ -440,7 +303,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Discovery
                     },
                 };
 
-                string provResourcePolicyName = GetRandomResourceName("timpol");
+                string provResourcePolicyName = GetRandomResourceName(serialNumber);
                 Console.WriteLine($"Going to create provisioning resource policy: {provResourcePolicyName}");
 
                 string provisioningResourcePolicyFullyQualifiedName = $"{provisioningResourceFullyQualifiedName}/provisioningPolicies/{provResourcePolicyName}";
