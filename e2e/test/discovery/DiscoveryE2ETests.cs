@@ -170,16 +170,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Discovery
             string serialNumber = s_registrationId;
             using SecurityProviderTpm security = new SecurityProviderTpmHsm(serialNumber);
 
-            string resourceName = $"{Guid.NewGuid()}";
-
-            Console.WriteLine($"Going to register for resource: {resourceName}");
-
-            string apiVersion = "?api-version=2023-05-01-preview";
-            string baseUri = $"management.azure.com{siteResourceId}providers/Microsoft.EdgeOrder/bootstrapConfigurations/{resourceName}";
-            string bootstrapResourceUri = $"{baseUri}{apiVersion}";
-
-            azureResources.Add(bootstrapResourceUri);
-
             try
             {
                 var azureTags = new AzureResourceTags()
@@ -188,40 +178,28 @@ namespace Microsoft.Azure.Devices.E2ETests.Discovery
                     purpose = "e2etesting"
                 };
 
-                // create bootstrap resource
-                var bootstrapResourceRequest = new AzureBootstrapResource()
+                string bootstrapResourceName = TestConfiguration.Discovery.BootstrapResourceName;
+
+                bool createBootstrapResource = string.IsNullOrEmpty(bootstrapResourceName);
+
+                if (createBootstrapResource)
                 {
-                    Properties = new AzureBootstrapResource.BootstrapResourceProperties()
-                    {
-                        SiteResourceId = siteResourceId,
-                        MaximumNumberOfDevicesToOnboard = 10,
-                        TokenExpiryDate = DateTime.Now.AddDays(5).ToString("o", CultureInfo.InvariantCulture)
-                    },
-                    Identity = new AzureBootstrapResource.BootstrapResourceIdentity()
-                    {
-                        Type = "SystemAssigned"
-                    },
-                    Tags = azureTags,
-                    Location = "eastus"
-                };
-                var content = new StringContent(JsonConvert.SerializeObject(bootstrapResourceRequest), Encoding.UTF8, "application/json");
+                    bootstrapResourceName = $"{Guid.NewGuid()}";
+                }
 
-                var response = await client.PutAsync($"https://{bootstrapResourceUri}", content);
+                string apiVersion = "?api-version=2023-05-01-preview";
+                string baseUri = $"management.azure.com{siteResourceId}providers/Microsoft.EdgeOrder/bootstrapConfigurations/{bootstrapResourceName}";
+                string bootstrapResourceUri = $"{baseUri}{apiVersion}";
 
-                Console.WriteLine($"Created bootstrap resource: {response.StatusCode}");
-                Console.WriteLine(await response.Content.ReadAsStringAsync());
-
-                content.Dispose();
-
-                if (!response.IsSuccessStatusCode)
+                if (createBootstrapResource)
                 {
-                    throw new Exception("Failed request");
+                    await MakeBootstrapResource(siteResourceId, azureTags, bootstrapResourceUri);
                 }
 
                 // get token (site key) for bootstrap resource
                 string tokenUri = $"{baseUri}/listToken{apiVersion}";
-                content = new StringContent("");
-                response = await client.PostAsync($"https://{tokenUri}", content);
+                var content = new StringContent("");
+                var response = await client.PostAsync($"https://{tokenUri}", content);
 
                 content.Dispose();
 
@@ -234,9 +212,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Discovery
                 var armClientOptions = new ArmClientOptions()
                 {
                     Diagnostics =
-                {
-                    IsLoggingContentEnabled = true,
-                },
+                    {
+                        IsLoggingContentEnabled = true,
+                    },
                 };
 
                 var artifacts = new AzureHardwareCenterArtifacts()
@@ -389,6 +367,30 @@ namespace Microsoft.Azure.Devices.E2ETests.Discovery
             return $"{baseName}-{Guid.NewGuid().ToString("N").Substring(0, 5)}t";
         }
 
+        private async Task MakeBootstrapResource(string siteResourceId, AzureResourceTags azureTags, string bootstrapResourceUri)
+        {
+            // create bootstrap resource
+            var bootstrapResourceRequest = new AzureBootstrapResource()
+            {
+                Properties = new AzureBootstrapResource.BootstrapResourceProperties()
+                {
+                    SiteResourceId = siteResourceId,
+                    MaximumNumberOfDevicesToOnboard = 10,
+                    TokenExpiryDate = DateTime.Now.AddDays(5).ToString("o", CultureInfo.InvariantCulture)
+                },
+                Identity = new AzureBootstrapResource.BootstrapResourceIdentity()
+                {
+                    Type = "SystemAssigned"
+                },
+                Tags = azureTags,
+                Location = "eastus"
+            };
+
+            await MakeAzurePutCall(bootstrapResourceUri, bootstrapResourceRequest, "Bootstrap resource");
+
+            azureResources.Add(bootstrapResourceUri);
+        }
+
         private async Task MakeAzurePutCall(string uri, object data, string description)
         {
             var content = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
@@ -402,8 +404,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Discovery
         protected override void Dispose(bool disposing)
         {
             base.Dispose(disposing);
-
-            Console.WriteLine($"Disposing: {disposing}");
 
             foreach (string resource in azureResources)
             {
