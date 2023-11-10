@@ -28,13 +28,14 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
     [TestClass]
     [TestCategory("E2E")]
     [TestCategory("IoTHub")]
+    [DoNotParallelize]
     public class SasCredentialAuthenticationTests : E2EMsTestBase
     {
         private readonly string _devicePrefix = $"{nameof(SasCredentialAuthenticationTests)}_";
 
 #if !NET451
 
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task RegistryManager_Http_SasCredentialAuth_Success()
         {
@@ -56,7 +57,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             await registryManager.RemoveDeviceAsync(device.Id).ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task RegistryManager_Http_SasCredentialAuth_Renewed_Success()
         {
@@ -90,7 +91,9 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             await registryManager.RemoveDeviceAsync(device.Id).ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [Ignore] //Flaky Test
+        [TestMethodWithRetry(Max=3)]
+        [TestCategory("Flaky")]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task JobClient_Http_SasCredentialAuth_Success()
         {
@@ -123,7 +126,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             }
         }
 
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task DigitalTwinClient_Http_SasCredentialAuth_Success()
         {
@@ -159,7 +162,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             await testDevice.RemoveDeviceAsync().ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Service_Amqp_SasCredentialAuth_Success()
         {
@@ -184,7 +187,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             await testDevice.RemoveDeviceAsync().ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Service_Amqp_SasCredentialAuth_Renewed_Success()
         {

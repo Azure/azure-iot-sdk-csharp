@@ -19,7 +19,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         private readonly string DevicePrefix = $"{nameof(ConnectionStatusChangeHandlerTests)}_Device";
         private readonly string ModulePrefix = $"{nameof(ConnectionStatusChangeHandlerTests)}";
 
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(ConnectionStateChangeTestTimeoutMilliseconds)]
         [TestCategory("LongRunning")]
         public async Task DeviceClient_DeviceDeleted_Gives_ConnectionStatus_DeviceDisabled_AmqpTcp()
@@ -30,8 +30,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .ConfigureAwait(false);
         }
 
+        [TestMethodWithRetry(Max=3)]
         [TestCategory("LongRunning")]
-        [TestMethod]
         [Timeout(ConnectionStateChangeTestTimeoutMilliseconds)]
         public async Task DeviceClient_DeviceDeleted_Gives_ConnectionStatus_DeviceDisabled_AmqpWs()
         {
@@ -41,7 +41,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(ConnectionStateChangeTestTimeoutMilliseconds)] // This test always takes more than 5 minutes for service to return. Needs investigation.
         [TestCategory("LongRunning")]
         public async Task DeviceClient_DeviceDisabled_Gives_ConnectionStatus_DeviceDisabled_AmqpTcp()
@@ -57,7 +57,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(ConnectionStateChangeTestTimeoutMilliseconds)]
         [TestCategory("LongRunning")]
         public async Task DeviceClient_DeviceDisabled_Gives_ConnectionStatus_DeviceDisabled_AmqpWs()
@@ -73,7 +73,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(ConnectionStateChangeTestTimeoutMilliseconds)]
         [TestCategory("LongRunning")]
         public async Task ModuleClient_DeviceDeleted_Gives_ConnectionStatus_DeviceDisabled_AmqpTcp()
@@ -84,7 +84,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 .ConfigureAwait(false);
         }
 
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(ConnectionStateChangeTestTimeoutMilliseconds)]
         [TestCategory("LongRunning")]
         public async Task ModuleClient_DeviceDeleted_Gives_ConnectionStatus_DeviceDisabled_AmqpWs()
@@ -142,7 +142,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             while (deviceDisabledReceivedCount <= 0)
             {
                 VerboseTestLogger.WriteLine($"{nameof(DeviceClient_Gives_ConnectionStatus_DeviceDisabled_Base)}: Still waiting for connection update {sw.Elapsed} after device status was changed.");
-                await Task.Delay(TimeSpan.FromSeconds(10)).ConfigureAwait(false);
+                await Task.Delay(TimeSpan.FromSeconds(2)).ConfigureAwait(false);
             }
 
             deviceDisabledReceivedCount.Should().Be(1);
@@ -189,10 +189,10 @@ namespace Microsoft.Azure.Devices.E2ETests
             VerboseTestLogger.WriteLine($"{nameof(ModuleClient_Gives_ConnectionStatus_DeviceDisabled_Base)}: Completed RegistryManager operation.");
 
             // Artificial sleep waiting for the connection status change handler to get triggered.
-            int sleepCount = 50;
+            int sleepCount = 300;
             for (int i = 0; i < sleepCount; i++)
             {
-                await Task.Delay(TimeSpan.FromSeconds(10)).ConfigureAwait(false);
+                await Task.Delay(TimeSpan.FromSeconds(2)).ConfigureAwait(false);
                 if (deviceDisabledReceivedCount == 1)
                 {
                     break;

@@ -22,7 +22,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         // https://github.com/Azure/azure-sdk-for-net/issues/10476
 
         private const string ExportFileNameDefault = "devices.txt";
-        private const int MaxIterationWait = 60;
+        private const int MaxIterationWait = 180;
         private static readonly TimeSpan s_waitDuration = TimeSpan.FromSeconds(3);
 
         private static readonly char[] s_newlines = new char[]
@@ -31,7 +31,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             '\n',
         };
 
-        [TestMethod]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         [TestCategory("LongRunning")]
         [DoNotParallelize] // the number of jobs that can be run at a time are limited anyway

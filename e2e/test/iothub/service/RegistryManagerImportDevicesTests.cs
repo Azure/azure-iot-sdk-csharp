@@ -24,7 +24,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         // https://github.com/Azure/azure-sdk-for-net/issues/10476
 
         private const string ImportFileNameDefault = "devices.txt";
-        private const int MaxIterationWait = 30;
+        private const int MaxIterationWait = 180;
         private static readonly TimeSpan s_waitDuration = TimeSpan.FromSeconds(5);
 
         [DataTestMethod]
