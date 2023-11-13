@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System.Collections.Generic;
 using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Client
@@ -25,13 +26,11 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The collection of desired property update requests received from service.
         /// </summary>
-        [JsonProperty("desired")]
         public DesiredProperties Desired { get; }
 
         /// <summary>
         /// The collection of twin properties reported by the client.
         /// </summary>
-        [JsonProperty("reported")]
         public ReportedProperties Reported { get; }
 
         /// <summary>
@@ -41,7 +40,18 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns>JSON string</returns>
         public string ToJson(Formatting formatting = Formatting.None)
         {
-            return JsonConvert.SerializeObject(this, formatting);
+            var properties = new Dictionary<string, object>
+            {
+                { "desired", JsonConvert.DeserializeObject(Desired.GetSerializedString()) },
+                { "reported", JsonConvert.DeserializeObject(Reported.GetSerializedString()) }
+            };
+
+            var formattedTwinProperties = new Dictionary<string, Dictionary<string, object>>
+            {
+                { "properties", properties },
+            };
+
+            return JsonConvert.SerializeObject(formattedTwinProperties);
         }
     }
 }

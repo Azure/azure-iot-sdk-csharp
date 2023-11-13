@@ -17,6 +17,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
         private readonly ILogger _logger;
         private static int s_individualEnrollmentsDeleted;
         private static int s_enrollmentGroupsDeleted;
+        private const int BulkOperationLimit = 10;  // Bulk operation limit
 
         private readonly List<string> _individualEnrollmentsToBeRetained = new()
         {
@@ -61,6 +62,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
                     s_individualEnrollmentsDeleted++;
                 }
 
+                if (individualEnrollments.Count == BulkOperationLimit)
+                {
+                    await DeleteBulkIndividualEnrollmentsAsync(individualEnrollments);
+                    individualEnrollments.Clear();
+                }
                 await Task.Delay(1000);
             }
 

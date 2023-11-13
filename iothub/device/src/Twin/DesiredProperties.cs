@@ -23,7 +23,7 @@ namespace Microsoft.Azure.Devices.Client
         /// This class can be inherited from and set by unit tests for mocking purposes.
         /// </remarks>
         protected internal DesiredProperties(Dictionary<string, object> desiredProperties)
-            : base(desiredProperties, true)
+            : base(desiredProperties, false)
         {
         }
     }
