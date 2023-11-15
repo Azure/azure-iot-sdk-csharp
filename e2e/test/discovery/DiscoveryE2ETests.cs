@@ -244,59 +244,56 @@ namespace Microsoft.Azure.Devices.E2ETests.Discovery
 
                 Console.WriteLine($"Artifacts uploaded: {artifactResponse.HasCompleted}");
 
-                // make provisioning resource
-                var provisioningResource = new ProvisioningResource()
+                // check for or create provisioning resource
+
+                string provResourceName = TestConfiguration.Discovery.ProvisioningResourceName;
+
+                bool shouldMakeProvResource = string.IsNullOrEmpty(provResourceName);
+
+                if (shouldMakeProvResource)
                 {
-                    Location = "eastus",
-                    Tags = azureTags,
-                    Properties = new ProvisioningResource.ProvisioningProperties()
-                };
+                    provResourceName = GetRandomResourceName(serialNumber);
+                }
 
-                string provResourceName = GetRandomResourceName(serialNumber);
                 string provResourceApiVersion = "?api-version=2023-12-01-preview";
-
-                Console.WriteLine($"Going to create provisioning resource: {provResourceName}");
 
                 string provisioningResourceFullyQualifiedName = $"/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName2}/providers/Private.BbeeSta1/provisioningResources/{provResourceName}";
                 string provisioningResourceBaseUri = $"eastus2euap.management.azure.com{provisioningResourceFullyQualifiedName}";
                 string provisioningResourceUri = $"{provisioningResourceBaseUri}{provResourceApiVersion}";
-                
 
-                content = new StringContent(JsonConvert.SerializeObject(provisioningResource), Encoding.UTF8, "application/json");
-                response = await client.PutAsync($"https://{provisioningResourceUri}", content);
-                content.Dispose();
-
-                Console.WriteLine($"Provisioning resource: {response.StatusCode}");
-                Console.WriteLine(await response.Content.ReadAsStringAsync());
-
-                // make provisioning resource policy
-                var provisioningResourcePolicy = new ProvisioningPolicyResource()
+                if (shouldMakeProvResource)
                 {
-                    Location = "eastus",
-                    Tags = azureTags,
-                    Properties = new ProvisioningPolicyResource.ProvisioningPolicyProperties() 
-                    { 
-                        BootstrapAuthentication = new ProvisioningPolicyResource.ProvisioningPolicyProperties.ProvisioningPolicyPropertyAuth() { Type = "Discovery" },
-                        ResourceDetails = new ProvisioningPolicyResource.ProvisioningPolicyProperties.ProvisioningPolicyResourceDetails() { ResourceType = "Microsoft.HybridCompute/machines" }
-                    },
-                };
+                    await MakeProvisioningResource(azureTags, provisioningResourceUri);
+                }
 
-                string provResourcePolicyName = GetRandomResourceName(serialNumber);
-                Console.WriteLine($"Going to create provisioning resource policy: {provResourcePolicyName}");
+                // check for or create provisioning resource policy
+
+                string provResourcePolicyName = TestConfiguration.Discovery.ProvisioningPolicyResourceName;
+
+                bool shouldMakeProvResourcePolicy = string.IsNullOrEmpty(provResourcePolicyName);
+
+                if (shouldMakeProvResourcePolicy)
+                {
+                    provResourcePolicyName = GetRandomResourceName(serialNumber);
+                }
 
                 string provisioningResourcePolicyFullyQualifiedName = $"{provisioningResourceFullyQualifiedName}/provisioningPolicies/{provResourcePolicyName}";
                 string provisioningResourcePolicyUri = $"{provisioningResourceBaseUri}/provisioningPolicies/{provResourcePolicyName}{provResourceApiVersion}";
 
-                content = new StringContent(JsonConvert.SerializeObject(provisioningResourcePolicy), Encoding.UTF8, "application/json");
-                response = await client.PutAsync($"https://{provisioningResourcePolicyUri}", content);
-                content.Dispose();
-
-                Console.WriteLine($"Provisioning policy resource: {response.StatusCode}");
-                Console.WriteLine(await response.Content.ReadAsStringAsync());
+                if (shouldMakeProvResourcePolicy)
+                {
+                    await MakeProvisioningResourcePolicy(azureTags, provisioningResourcePolicyUri);
+                }
 
                 // add the resources in order of how they should be deleted
-                azureResources.Add(provisioningResourcePolicyUri);
-                azureResources.Add(provisioningResourceUri);
+                if (shouldMakeProvResourcePolicy)
+                {
+                    azureResources.Add(provisioningResourcePolicyUri);
+                }
+                if (shouldMakeProvResource)
+                {
+                    azureResources.Add(provisioningResourceUri);
+                }
 
                 // make arc device resource
 
@@ -391,8 +388,39 @@ namespace Microsoft.Azure.Devices.E2ETests.Discovery
             azureResources.Add(bootstrapResourceUri);
         }
 
+        private async Task MakeProvisioningResource(AzureResourceTags azureTags, string provisioningResourceUri)
+        {
+            // make provisioning resource
+            var provisioningResource = new ProvisioningResource()
+            {
+                Location = "eastus",
+                Tags = azureTags,
+                Properties = new ProvisioningResource.ProvisioningProperties()
+            };
+
+            await MakeAzurePutCall(provisioningResourceUri, provisioningResource, "Provisioning resource");
+        }
+
+        private async Task MakeProvisioningResourcePolicy(AzureResourceTags azureTags, string provisioningResourcePolicyUri)
+        {
+            var provisioningResourcePolicy = new ProvisioningPolicyResource()
+            {
+                Location = "eastus",
+                Tags = azureTags,
+                Properties = new ProvisioningPolicyResource.ProvisioningPolicyProperties()
+                {
+                    BootstrapAuthentication = new ProvisioningPolicyResource.ProvisioningPolicyProperties.ProvisioningPolicyPropertyAuth() { Type = "Discovery" },
+                    ResourceDetails = new ProvisioningPolicyResource.ProvisioningPolicyProperties.ProvisioningPolicyResourceDetails() { ResourceType = "Microsoft.HybridCompute/machines" }
+                },
+            };
+
+            await MakeAzurePutCall(provisioningResourcePolicyUri, provisioningResourcePolicy, "Provisioning policy resource");
+        }
+
         private async Task MakeAzurePutCall(string uri, object data, string description)
         {
+            Console.WriteLine($"Making put call for: {description}");
+
             var content = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
             var response = await client.PutAsync($"https://{uri}", content);
             content.Dispose();

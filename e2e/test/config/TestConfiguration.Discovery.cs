@@ -20,7 +20,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             public static string RegistrationId => GetValue("DISCOVERY_DEVICE_REGISTRATION_ID", "device");
 
             // resource names
-            // if specified, this resource will be used instead of making a newone
+            // if specified, this resource will be used instead of making a new one
 
             public static string BootstrapResourceName => GetValue("DISCOVERY_BOOTSTRAP_RESOURCE_NAME", "");
 
