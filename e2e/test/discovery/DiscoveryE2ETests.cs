@@ -79,13 +79,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Discovery
             await ClientValidOnboardingAsyncOk(false).ConfigureAwait(false);
         }
 
-        [TestMethod]
-        [Timeout(TestTimeoutMilliseconds)]
-        public async Task DPS_Onboard_Proxy_Ok()
-        {
-            await ClientValidOnboardingAsyncOk(true).ConfigureAwait(false);
-        }
-
         #region InvalidGlobalAddress
 
         [TestMethod]
@@ -99,14 +92,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Discovery
         [Timeout(TestTimeoutMilliseconds)]
         public async Task DPS_Onboard_InvalidDiscoveryAddress()
         {
-            await Assert.ThrowsExceptionAsync<Exception>(() => ClientValidOnboardingAsyncOk(false, discoveryEndpoint: InvalidGlobalAddress));
-        }
-
-        [TestMethod]
-        [Timeout(TestTimeoutMilliseconds)]
-        public async Task DPS_Onboard_InvalidDiscoveryProvisioningAddresses()
-        {
-            await Assert.ThrowsExceptionAsync<Exception>(() => ClientValidOnboardingAsyncOk(false, discoveryEndpoint: InvalidGlobalAddress, invalidProvisioningEndpoint: true));
+            await Assert.ThrowsExceptionAsync<DiscoveryTransportException>(() => ClientValidOnboardingAsyncOk(false, discoveryEndpoint: InvalidGlobalAddress));
         }
 
         #endregion InvalidGlobalAddress

@@ -103,8 +103,24 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport
                 bool isTransient = ex.Response.StatusCode >= HttpStatusCode.InternalServerError
                     || (int)ex.Response.StatusCode == 429;
 
-                AzureCoreFoundationsError errorDetails = JsonConvert.DeserializeObject<AzureCoreFoundationsError>(ex.Response.Content);
-                throw new DiscoveryTransportException(ex.Response.Content, ex, isTransient, errorDetails.Code, errorDetails.Message);
+                try
+                {
+                    AzureCoreFoundationsError errorDetails = JsonConvert.DeserializeObject<AzureCoreFoundationsError>(ex.Response.Content);
+                    throw new DiscoveryTransportException(ex.Response.Content, ex, isTransient, errorDetails.Code, errorDetails.Message);
+                }
+                catch (JsonException jex)
+                {
+                    if (Logging.IsEnabled)
+                        Logging.Error(
+                            this,
+                            $"{nameof(DiscoveryTransportHandlerHttp)} server returned malformed error response. Parsing error: {jex}. Server response: {ex.Response.Content}",
+                            nameof(IssueChallengeAsync));
+
+                    throw new DiscoveryTransportException(
+                        $"HTTP transport exception: malformed server error message: '{ex.Response.Content}'",
+                        jex,
+                        false);
+                }
             }
             catch (Exception ex) when (!(ex is DiscoveryTransportException))
             {
@@ -229,8 +245,24 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport
                 bool isTransient = ex.Response.StatusCode >= HttpStatusCode.InternalServerError
                     || (int)ex.Response.StatusCode == 429;
 
-                AzureCoreFoundationsError errorDetails = JsonConvert.DeserializeObject<AzureCoreFoundationsError>(ex.Response.Content);
-                throw new DiscoveryTransportException(ex.Response.Content, ex, isTransient, errorDetails.Code, errorDetails.Message);
+                try
+                {
+                    AzureCoreFoundationsError errorDetails = JsonConvert.DeserializeObject<AzureCoreFoundationsError>(ex.Response.Content);
+                    throw new DiscoveryTransportException(ex.Response.Content, ex, isTransient, errorDetails.Code, errorDetails.Message);
+                }
+                catch (JsonException jex)
+                {
+                    if (Logging.IsEnabled)
+                        Logging.Error(
+                            this,
+                            $"{nameof(DiscoveryTransportHandlerHttp)} server returned malformed error response. Parsing error: {jex}. Server response: {ex.Response.Content}",
+                            nameof(IssueChallengeAsync));
+
+                    throw new DiscoveryTransportException(
+                        $"HTTP transport exception: malformed server error message: '{ex.Response.Content}'",
+                        jex,
+                        false);
+                }
             }
             catch (Exception ex) when (!(ex is DiscoveryTransportException))
             {
