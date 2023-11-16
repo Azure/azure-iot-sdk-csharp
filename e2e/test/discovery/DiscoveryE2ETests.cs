@@ -68,14 +68,14 @@ namespace Microsoft.Azure.Devices.E2ETests.Discovery
             azureResources = new List<string>();
             client = new HttpClient();
             client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", TestConfiguration.Discovery.AzureBearerToken.Trim());
-
-            UploadArtifacts().Wait();
         }
 
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task DPS_Onboard_Ok()
         {
+            await UploadArtifacts();
+
             await ClientValidOnboardingAsyncOk(false).ConfigureAwait(false);
         }
 
@@ -85,6 +85,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Discovery
         [Timeout(TestTimeoutMilliseconds)]
         public async Task DPS_Onboard_InvalidProvisioningAddress()
         {
+            await UploadArtifacts();
+
             await Assert.ThrowsExceptionAsync<ProvisioningTransportException>(() => ClientValidOnboardingAsyncOk(false, invalidProvisioningEndpoint: true));
         }
 
@@ -92,6 +94,39 @@ namespace Microsoft.Azure.Devices.E2ETests.Discovery
         [Timeout(TestTimeoutMilliseconds)]
         public async Task DPS_Onboard_InvalidDiscoveryAddress()
         {
+            await UploadArtifacts();
+
+            await Assert.ThrowsExceptionAsync<DiscoveryTransportException>(() => ClientValidOnboardingAsyncOk(false, discoveryEndpoint: InvalidGlobalAddress));
+        }
+
+        #endregion InvalidGlobalAddress
+
+        #region InvalidArtifacts
+
+        [TestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
+        public async Task DPS_Onboard_InvalidSrk()
+        {
+            await UploadArtifacts(invalidSrk: true);
+
+            await Assert.ThrowsExceptionAsync<ProvisioningTransportException>(() => ClientValidOnboardingAsyncOk(false, invalidProvisioningEndpoint: true));
+        }
+
+        [TestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
+        public async Task DPS_Onboard_InvalidEk()
+        {
+            await UploadArtifacts(invalidEk: true);
+
+            await Assert.ThrowsExceptionAsync<DiscoveryTransportException>(() => ClientValidOnboardingAsyncOk(false, discoveryEndpoint: InvalidGlobalAddress));
+        }
+
+        [TestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
+        public async Task DPS_Onboard_InvalidSrkEk()
+        {
+            await UploadArtifacts(invalidEk: true, invalidSrk: true);
+
             await Assert.ThrowsExceptionAsync<DiscoveryTransportException>(() => ClientValidOnboardingAsyncOk(false, discoveryEndpoint: InvalidGlobalAddress));
         }
 
@@ -179,7 +214,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Discovery
             Console.WriteLine($"Successfully onboarded {onboardingResult.Id} {onboardingResult.Result.RegistrationId}");
         }
 
-        private async Task UploadArtifacts()
+        private async Task UploadArtifacts(bool invalidSrk = false, bool invalidEk = false)
         {
             string subscriptionId = s_subscriptionId;
             string resourceGroupName = s_resourceGroup1;
@@ -235,14 +270,27 @@ namespace Microsoft.Azure.Devices.E2ETests.Discovery
                     },
                 };
 
+                string srk = Convert.ToBase64String(security.GetStorageRootKey());
+                string ek = Convert.ToBase64String(security.GetEndorsementKey());
+
+                if (invalidSrk)
+                {
+                    srk = "invalid";
+                }
+
+                if (invalidEk)
+                {
+                    ek = "invalid";
+                }
+
                 var artifacts = new AzureHardwareCenterArtifacts()
                 {
                     Metadata = new AzureHardwareCenterMetadataWrapper(new AzureHardwareCenterMetadata()
                     {
                         ProductFamily = "azurestackhci",
                         SerialNumber = serialNumber,
-                        ApplianceID = new ApplianceID(Convert.ToBase64String(security.GetStorageRootKey()), "V12"),
-                        EndorsementKeyPublic = Convert.ToBase64String(security.GetEndorsementKey()),
+                        ApplianceID = new ApplianceID(srk, "V12"),
+                        EndorsementKeyPublic = ek,
                         Manufacturer = "Manufacturer",
                         Model = "Model",
                         Version = "V1",
