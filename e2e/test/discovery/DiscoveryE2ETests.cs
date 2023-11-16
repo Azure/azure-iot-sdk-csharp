@@ -67,15 +67,15 @@ namespace Microsoft.Azure.Devices.E2ETests.Discovery
         {
             azureResources = new List<string>();
             client = new HttpClient();
-            client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", TestConfiguration.Discovery.AzureBearerToken);
+            client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", TestConfiguration.Discovery.AzureBearerToken.Trim());
+
+            UploadArtifacts().Wait();
         }
 
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task DPS_Onboard_Ok()
         {
-            await UploadArtifacts();
-
             await ClientValidOnboardingAsyncOk(false).ConfigureAwait(false);
         }
 
@@ -88,26 +88,51 @@ namespace Microsoft.Azure.Devices.E2ETests.Discovery
 
         #region InvalidGlobalAddress
 
+        [TestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
+        public async Task DPS_Onboard_InvalidProvisioningAddress()
+        {
+            await Assert.ThrowsExceptionAsync<ProvisioningTransportException>(() => ClientValidOnboardingAsyncOk(false, invalidProvisioningEndpoint: true));
+        }
 
+        [TestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
+        public async Task DPS_Onboard_InvalidDiscoveryAddress()
+        {
+            await Assert.ThrowsExceptionAsync<Exception>(() => ClientValidOnboardingAsyncOk(false, discoveryEndpoint: InvalidGlobalAddress));
+        }
+
+        [TestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
+        public async Task DPS_Onboard_InvalidDiscoveryProvisioningAddresses()
+        {
+            await Assert.ThrowsExceptionAsync<Exception>(() => ClientValidOnboardingAsyncOk(false, discoveryEndpoint: InvalidGlobalAddress, invalidProvisioningEndpoint: true));
+        }
 
         #endregion InvalidGlobalAddress
 
         public async Task ClientValidOnboardingAsyncOk(
             bool setCustomProxy,
-            string proxyServerAddress = null)
+            string proxyServerAddress = null,
+            string discoveryEndpoint = null,
+            bool invalidProvisioningEndpoint = false)
         {
             // Default reprovisioning settings: Hashed allocation, no reprovision policy, hub names, or custom allocation policy
             await ClientValidOnboardingAsyncOk(
                     setCustomProxy,
                     TimeSpan.MaxValue,
-                    proxyServerAddress)
+                    proxyServerAddress,
+                    discoveryEndpoint,
+                    invalidProvisioningEndpoint)
                 .ConfigureAwait(false);
         }
 
         private async Task ClientValidOnboardingAsyncOk(
             bool setCustomProxy,
             TimeSpan timeout,
-            string proxyServerAddress = null)
+            string proxyServerAddress = null,
+            string discoveryEndpoint = null,
+            bool invalidProvisioningEndpoint = false)
         {
             // The range of valid combinations of configuration is very limited, there are fewer cases for us to test
 
@@ -124,7 +149,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Discovery
             }
 
             var client = DiscoveryDeviceClient.Create(
-                s_globalDiscoveryEndpoint,
+                discoveryEndpoint ?? s_globalDiscoveryEndpoint,
                 security,
                 transport);
 
@@ -151,8 +176,15 @@ namespace Microsoft.Azure.Devices.E2ETests.Discovery
                     : new WebProxy(s_proxyServerAddress);
             }
 
+            string provisioningEndpoint = onboardingInfo.EdgeProvisioningEndpoint;
+
+            if (invalidProvisioningEndpoint)
+            {
+                provisioningEndpoint = InvalidGlobalAddress;
+            }
+
             var provClient = ProvisioningDeviceClient.Create(
-                onboardingInfo.EdgeProvisioningEndpoint,
+                provisioningEndpoint,
                 provSecurity,
                 provTranspot);
 
@@ -429,6 +461,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Discovery
             Console.WriteLine(await response.Content.ReadAsStringAsync());
         }
 
+        /// <summary>
+        /// Clean up the azure resources created
+        /// </summary>
+        /// <param name="disposing"></param>
         protected override void Dispose(bool disposing)
         {
             base.Dispose(disposing);
@@ -436,7 +472,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Discovery
             foreach (string resource in azureResources)
             {
                 Console.WriteLine($"Going to delete {resource}");
-                // cleanup
+
                 try
                 {
                     var response = client.DeleteAsync($"https://{resource}").Result;
