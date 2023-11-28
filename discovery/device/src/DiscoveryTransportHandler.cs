@@ -71,7 +71,7 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport
         /// sign a SAS Token for the GetOnboardingInfo request.
         /// </summary>
         /// <returns></returns>
-        public virtual Task<string> IssueChallengeAsync(DiscoveryTransportIssueChallengeRequest request, CancellationToken cancellationToken)
+        public virtual Task<byte[]> IssueChallengeAsync(DiscoveryTransportIssueChallengeRequest request, CancellationToken cancellationToken)
         {
             return _innerHandler.IssueChallengeAsync(request, cancellationToken);
         }

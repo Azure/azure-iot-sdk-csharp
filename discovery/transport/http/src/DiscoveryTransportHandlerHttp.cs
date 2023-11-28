@@ -14,6 +14,7 @@ using Microsoft.Azure.Devices.Provisioning.Client.Transport;
 using Microsoft.Azure.Devices.Shared;
 using Newtonsoft.Json;
 using System.Text;
+using System.Collections.Generic;
 
 namespace Microsoft.Azure.Devices.Discovery.Client.Transport
 {
@@ -39,7 +40,7 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport
         /// sign a SAS Token for the GetOnboardingInfo request.
         /// </summary>
         /// <returns></returns>
-        public override async Task<string> IssueChallengeAsync(DiscoveryTransportIssueChallengeRequest request, CancellationToken cancellationToken)
+        public override async Task<byte[]> IssueChallengeAsync(DiscoveryTransportIssueChallengeRequest request, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"{nameof(DiscoveryTransportHandlerHttp)}.{nameof(IssueChallengeAsync)}");
@@ -72,7 +73,7 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport
                     Port = Port,
                 };
 
-                using EdgeDiscoveryService client = new EdgeDiscoveryService(builder.Uri, httpClientHandler);
+                using MicrosoftFairfieldGardensDiscovery client = new MicrosoftFairfieldGardensDiscovery(builder.Uri, httpClientHandler);
                 client.HttpClient.DefaultRequestHeaders.Add("User-Agent", request.ProductInfo);
                 if (Logging.IsEnabled)
                     Logging.Info(this, $"Uri: {builder.Uri}; User-Agent: {request.ProductInfo}");
@@ -81,11 +82,11 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport
 
                 var onboardRequest = new ChallengeRequest(
                     registrationId, 
-                    Convert.ToBase64String(securityProvider.GetEndorsementKey()), 
-                    Convert.ToBase64String(securityProvider.GetStorageRootKey()));
+                    securityProvider.GetEndorsementKey(), 
+                    securityProvider.GetStorageRootKey());
 
                 Challenge challenge = await client.DiscoveryRegistrations
-                    .IssueChallengeAsync(onboardRequest, cancellationToken)
+                    .IssueChallengeAsync("2023-12-01-preview", onboardRequest, cancellationToken: cancellationToken)
                     .ConfigureAwait(false);
 
                 if (Logging.IsEnabled)
@@ -180,7 +181,7 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport
                     Port = Port,
                 };
 
-                using EdgeDiscoveryService client = new EdgeDiscoveryService(builder.Uri, httpClientHandler);
+                using MicrosoftFairfieldGardensDiscovery client = new MicrosoftFairfieldGardensDiscovery(builder.Uri, httpClientHandler);
                 client.HttpClient.DefaultRequestHeaders.Add("User-Agent", request.ProductInfo);
                 if (Logging.IsEnabled)
                     Logging.Info(this, $"Uri: {builder.Uri}; User-Agent: {request.ProductInfo}");
@@ -189,13 +190,7 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport
 
                 using RSA rsa = RSA.Create();
 
-                string csr = GenerateCSR(rsa, registrationId);
-
-                var onboardInfoRequest = new BootstrapRequest(
-                    registrationId, 
-                    Convert.ToBase64String(securityProvider.GetEndorsementKey()), 
-                    Convert.ToBase64String(securityProvider.GetStorageRootKey()), 
-                    csr);
+                byte[] csr = GenerateCSR(rsa, registrationId);
 
                 string target = $"registrations/{registrationId}";
 
@@ -205,10 +200,16 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport
                 string sasToken = ProvisioningSasBuilder.ExtractServiceAuthKey(
                             securityProvider,
                             target,
-                            Convert.FromBase64String(request.Nonce));
+                            request.Nonce);
+
+                var onboardInfoRequest = new BootstrapRequest(
+                    registrationId,
+                    securityProvider.GetEndorsementKey(),
+                    securityProvider.GetStorageRootKey(),
+                    csr);
 
                 BootstrapResponse onboardInfo = await client.DiscoveryRegistrations
-                    .GetOnboardingInfoAsync(onboardInfoRequest, sasToken, cancellationToken)
+                    .GetOnboardingInfoAsync("2023-12-01-preview", onboardInfoRequest, sasToken, cancellationToken: cancellationToken)
                     .ConfigureAwait(false);
 
                 if (Logging.IsEnabled)
@@ -216,18 +217,13 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport
                         this,
                         registrationId);
 
-                X509Certificate2 certWithKey;
+                X509Certificate2Collection certsWithKey;
 
                 try
                 {
-                    string x509String = ((X509Credential)onboardInfo.IssuedCredential).X509;
+                    var certs = ((X509Credential)onboardInfo.IssuedCredential).X509;
 
-                    string pemHeader = "-----BEGIN CERTIFICATE-----";
-                    int indexOfStart = x509String.IndexOf(pemHeader) + pemHeader.Length;
-                    string certString = x509String.Substring(indexOfStart, x509String.IndexOf("-----END CERTIFICATE-----") - indexOfStart);
-
-                    using X509Certificate2 cert = new X509Certificate2(Convert.FromBase64String(certString));
-                    certWithKey = cert.CopyWithPrivateKey(rsa);
+                    certsWithKey = ConvertCertificateListToChainWithPrivateKey(certs, rsa);
                 }
                 catch (Exception e)
                 {
@@ -235,7 +231,7 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport
                 }
                 
 
-                return new OnboardingInfo(onboardInfo.EdgeProvisioningEndpoint, certWithKey);
+                return new OnboardingInfo(onboardInfo.EdgeProvisioningEndpoint, certsWithKey);
             }
             catch (AzureCoreFoundationsErrorResponseException ex)
             {
@@ -284,7 +280,7 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport
         /// <param name="rsa"></param>
         /// <param name="deviceId"></param>
         /// <returns></returns>
-        private string GenerateCSR(RSA rsa, string deviceId)
+        private byte[] GenerateCSR(RSA rsa, string deviceId)
         {
             // Create a new CertificateRequest object
             CertificateRequest request = new CertificateRequest(
@@ -293,24 +289,36 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport
                 hashAlgorithm: HashAlgorithmName.SHA256,
                 padding: RSASignaturePadding.Pkcs1);
 
+            request.CertificateExtensions.Add(new X509KeyUsageExtension(X509KeyUsageFlags.DigitalSignature, false));
+
             // Generate the CSR
             byte[] csrBytes = request.CreateSigningRequest();
 
-            // Convert the CSR to a Base64-encoded string
-            string csrBase64 = PemEncodeSigningRequest(csrBytes);
-
-            return csrBase64;
+            return csrBytes;
         }
 
-        private string PemEncodeSigningRequest(byte[] csr)
+        /// <summary>
+        /// Converts a list of certificates, with the first certificate being the device (leaf) certificate, to a certificate chain with a private RSA or ECDsa key.
+        /// </summary>
+        /// <param name="certificateByteArrays">A list of one or more DER-encoded X.509 certificates, with the first certificate being the device (leaf) certificate.</param>
+        /// <param name="rsa">The private key associated with the device (leaf) certificate.</param>
+        /// <returns>An X509Certificate2Collection containing the certificate chain, with leaf certificate containing private key.</returns>
+        public static X509Certificate2Collection ConvertCertificateListToChainWithPrivateKey(IList<byte[]> certificateByteArrays, RSA rsa)
         {
-            StringBuilder builder = new StringBuilder();
+            X509Certificate2Collection tempCol = new X509Certificate2Collection();
 
-            builder.AppendLine("-----BEGIN CERTIFICATE REQUEST-----");
-            builder.AppendLine(Convert.ToBase64String(csr, Base64FormattingOptions.InsertLineBreaks));
-            builder.AppendLine("-----END CERTIFICATE REQUEST-----");
-
-            return builder.ToString();
+            foreach (byte[] certBytes in certificateByteArrays)
+            {
+                var certificate = new X509Certificate2(certBytes);
+                if (tempCol.Count == 0)
+                {
+                    certificate = certificate.CopyWithPrivateKey(rsa);
+                }
+                _ = tempCol.Add(certificate);
+            }
+            X509Certificate2Collection collection = new X509Certificate2Collection();
+            collection.Import(tempCol.Export(X509ContentType.Pkcs12) ?? throw new FormatException("No certificate chain was created."), null, X509KeyStorageFlags.UserKeySet);
+            return collection;
         }
     }
 }

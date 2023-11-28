@@ -19,6 +19,8 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             public static string RegistrationId => GetValue("DISCOVERY_DEVICE_REGISTRATION_ID", "device");
 
+            public static string SkipArtifacts => GetValue("DISCOVERY_SKIP_ARTIFACTS", "false");
+
             // resource names
             // if specified, this resource will be used instead of making a new one
 
@@ -31,7 +33,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             // discovery endpoint
 
             public static string GlobalDeviceEndpoint =>
-                GetValue("DPS_GLOBALDISCOVERYENDPOINT", "sta1.eastus.device.discovery.edgeprov-dev.azure.net");
+                GetValue("DPS_GLOBALDISCOVERYENDPOINT", "int1.eastus.device.discovery.edgeprov-dev.azure.net");
         }
     }
 }
