@@ -16,9 +16,9 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport.Http
     using System.Net.Http;
 
     /// <summary>
-    /// Edge Discovery Service
+    /// 
     /// </summary>
-    public partial class EdgeDiscoveryService : ServiceClient<EdgeDiscoveryService>, IEdgeDiscoveryService
+    public partial class MicrosoftFairfieldGardensDiscovery : ServiceClient<MicrosoftFairfieldGardensDiscovery>, IMicrosoftFairfieldGardensDiscovery
     {
         /// <summary>
         /// The base URI of the service.
@@ -41,31 +41,31 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport.Http
         public virtual IDiscoveryRegistrations DiscoveryRegistrations { get; private set; }
 
         /// <summary>
-        /// Initializes a new instance of the EdgeDiscoveryService class.
+        /// Initializes a new instance of the MicrosoftFairfieldGardensDiscovery class.
         /// </summary>
         /// <param name='httpClient'>
         /// HttpClient to be used
         /// </param>
         /// <param name='disposeHttpClient'>
-        /// True: will dispose the provided httpClient on calling EdgeDiscoveryService.Dispose(). False: will not dispose provided httpClient</param>
-        internal EdgeDiscoveryService(HttpClient httpClient, bool disposeHttpClient) : base(httpClient, disposeHttpClient)
+        /// True: will dispose the provided httpClient on calling MicrosoftFairfieldGardensDiscovery.Dispose(). False: will not dispose provided httpClient</param>
+        internal MicrosoftFairfieldGardensDiscovery(HttpClient httpClient, bool disposeHttpClient) : base(httpClient, disposeHttpClient)
         {
             Initialize();
         }
 
         /// <summary>
-        /// Initializes a new instance of the EdgeDiscoveryService class.
+        /// Initializes a new instance of the MicrosoftFairfieldGardensDiscovery class.
         /// </summary>
         /// <param name='handlers'>
         /// Optional. The delegating handlers to add to the http client pipeline.
         /// </param>
-        internal EdgeDiscoveryService(params DelegatingHandler[] handlers) : base(handlers)
+        internal MicrosoftFairfieldGardensDiscovery(params DelegatingHandler[] handlers) : base(handlers)
         {
             Initialize();
         }
 
         /// <summary>
-        /// Initializes a new instance of the EdgeDiscoveryService class.
+        /// Initializes a new instance of the MicrosoftFairfieldGardensDiscovery class.
         /// </summary>
         /// <param name='rootHandler'>
         /// Optional. The http client handler used to handle http transport.
@@ -73,13 +73,13 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport.Http
         /// <param name='handlers'>
         /// Optional. The delegating handlers to add to the http client pipeline.
         /// </param>
-        internal EdgeDiscoveryService(HttpClientHandler rootHandler, params DelegatingHandler[] handlers) : base(rootHandler, handlers)
+        internal MicrosoftFairfieldGardensDiscovery(HttpClientHandler rootHandler, params DelegatingHandler[] handlers) : base(rootHandler, handlers)
         {
             Initialize();
         }
 
         /// <summary>
-        /// Initializes a new instance of the EdgeDiscoveryService class.
+        /// Initializes a new instance of the MicrosoftFairfieldGardensDiscovery class.
         /// </summary>
         /// <param name='baseUri'>
         /// Optional. The base URI of the service.
@@ -90,7 +90,7 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport.Http
         /// <exception cref="System.ArgumentNullException">
         /// Thrown when a required parameter is null
         /// </exception>
-        internal EdgeDiscoveryService(System.Uri baseUri, params DelegatingHandler[] handlers) : this(handlers)
+        internal MicrosoftFairfieldGardensDiscovery(System.Uri baseUri, params DelegatingHandler[] handlers) : this(handlers)
         {
             if (baseUri == null)
             {
@@ -100,7 +100,7 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport.Http
         }
 
         /// <summary>
-        /// Initializes a new instance of the EdgeDiscoveryService class.
+        /// Initializes a new instance of the MicrosoftFairfieldGardensDiscovery class.
         /// </summary>
         /// <param name='baseUri'>
         /// Optional. The base URI of the service.
@@ -114,7 +114,7 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport.Http
         /// <exception cref="System.ArgumentNullException">
         /// Thrown when a required parameter is null
         /// </exception>
-        internal EdgeDiscoveryService(System.Uri baseUri, HttpClientHandler rootHandler, params DelegatingHandler[] handlers) : this(rootHandler, handlers)
+        internal MicrosoftFairfieldGardensDiscovery(System.Uri baseUri, HttpClientHandler rootHandler, params DelegatingHandler[] handlers) : this(rootHandler, handlers)
         {
             if (baseUri == null)
             {

@@ -13,13 +13,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Models
     public static class DeviceKind
     {
         /// <summary>
-        /// Specifies a request/response model for DeviceRegistryDevice
-        /// devices.
+        /// Azure Device Registry resource.
         /// </summary>
         public const string DeviceRegistryDevice = "DeviceRegistryDevice";
         /// <summary>
-        /// Specifies a request/response model for HybridComputeMachine
-        /// devices.
+        /// Hybrid Compute Machine resource.
         /// </summary>
         public const string HybridComputeMachine = "HybridComputeMachine";
     }

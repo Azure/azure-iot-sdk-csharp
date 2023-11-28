@@ -10,33 +10,30 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Models
     using System.Linq;
 
     /// <summary>
-    /// Defines headers for GetOperationStatus operation.
+    /// Defines headers for Reprovision operation.
     /// </summary>
-    public partial class DevicesGetOperationStatusHeaders
+    public partial class DevicesReprovisionHeaders
     {
         /// <summary>
-        /// Initializes a new instance of the DevicesGetOperationStatusHeaders
-        /// class.
+        /// Initializes a new instance of the DevicesReprovisionHeaders class.
         /// </summary>
-        public DevicesGetOperationStatusHeaders()
+        public DevicesReprovisionHeaders()
         {
             CustomInit();
         }
 
         /// <summary>
-        /// Initializes a new instance of the DevicesGetOperationStatusHeaders
-        /// class.
+        /// Initializes a new instance of the DevicesReprovisionHeaders class.
         /// </summary>
-        /// <param name="retryAfter">The Retry-After header can indicate how
-        /// long the client should wait before polling the operation
-        /// status.</param>
+        /// <param name="operationLocation">The location for monitoring the
+        /// operation state.</param>
         /// <param name="xMsClientRequestId">An opaque, globally-unique,
         /// client-generated string identifier for the request.</param>
         /// <param name="xMsErrorCode">String error code indicating what went
         /// wrong.</param>
-        public DevicesGetOperationStatusHeaders(int? retryAfter = default(int?), System.Guid? xMsClientRequestId = default(System.Guid?), string xMsErrorCode = default(string))
+        public DevicesReprovisionHeaders(string operationLocation = default(string), System.Guid? xMsClientRequestId = default(System.Guid?), string xMsErrorCode = default(string))
         {
-            RetryAfter = retryAfter;
+            OperationLocation = operationLocation;
             XMsClientRequestId = xMsClientRequestId;
             XMsErrorCode = xMsErrorCode;
             CustomInit();
@@ -48,11 +45,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Models
         partial void CustomInit();
 
         /// <summary>
-        /// Gets or sets the Retry-After header can indicate how long the
-        /// client should wait before polling the operation status.
+        /// Gets or sets the location for monitoring the operation state.
         /// </summary>
-        [JsonProperty(PropertyName = "Retry-After")]
-        public int? RetryAfter { get; set; }
+        [JsonProperty(PropertyName = "Operation-Location")]
+        public string OperationLocation { get; set; }
 
         /// <summary>
         /// Gets or sets an opaque, globally-unique, client-generated string

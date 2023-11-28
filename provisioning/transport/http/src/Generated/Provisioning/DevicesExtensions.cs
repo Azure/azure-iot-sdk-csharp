@@ -16,7 +16,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
     public static partial class DevicesExtensions
     {
             /// <summary>
-            /// Gets status of an onboarding operation.
+            /// Get the status of an onboarding or reprovisioning operation.
             /// </summary>
             /// <param name='operations'>
             /// The operations group for this extension method.
@@ -30,19 +30,23 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             /// <param name='operationId'>
             /// The unique ID of the operation.
             /// </param>
+            /// <param name='clientRequestId'>
+            /// An opaque, globally-unique, client-generated string identifier for the
+            /// request.
+            /// </param>
             /// <param name='cancellationToken'>
             /// The cancellation token.
             /// </param>
-            public static async Task<OnboardOperationStatusResponse> GetOperationStatusAsync(this IDevices operations, string apiVersion, string registrationId, string operationId, CancellationToken cancellationToken = default(CancellationToken))
+            public static async Task<OnboardOperationStatusResponse> GetOperationStatusAsync(this IDevices operations, string apiVersion, string registrationId, string operationId, System.Guid? clientRequestId = default(System.Guid?), CancellationToken cancellationToken = default(CancellationToken))
             {
-                using (var _result = await operations.GetOperationStatusWithHttpMessagesAsync(apiVersion, registrationId, operationId, null, cancellationToken).ConfigureAwait(false))
+                using (var _result = await operations.GetOperationStatusWithHttpMessagesAsync(apiVersion, registrationId, operationId, clientRequestId, null, cancellationToken).ConfigureAwait(false))
                 {
                     return _result.Body;
                 }
             }
 
             /// <summary>
-            /// Onboard a device.
+            /// Onboard a device to Azure.
             /// </summary>
             /// <param name='operations'>
             /// The operations group for this extension method.
@@ -52,12 +56,43 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             /// </param>
             /// <param name='body'>
             /// </param>
+            /// <param name='clientRequestId'>
+            /// An opaque, globally-unique, client-generated string identifier for the
+            /// request.
+            /// </param>
             /// <param name='cancellationToken'>
             /// The cancellation token.
             /// </param>
-            public static async Task<OnboardOperationStatusResponse> OnboardAsync(this IDevices operations, string apiVersion, OnboardingRequest body, CancellationToken cancellationToken = default(CancellationToken))
+            public static async Task<OnboardOperationStatusResponse> OnboardAsync(this IDevices operations, string apiVersion, OnboardingRequest body, System.Guid? clientRequestId = default(System.Guid?), CancellationToken cancellationToken = default(CancellationToken))
             {
-                using (var _result = await operations.OnboardWithHttpMessagesAsync(apiVersion, body, null, cancellationToken).ConfigureAwait(false))
+                using (var _result = await operations.OnboardWithHttpMessagesAsync(apiVersion, body, clientRequestId, null, cancellationToken).ConfigureAwait(false))
+                {
+                    return _result.Body;
+                }
+            }
+
+            /// <summary>
+            /// Reprovision a device that has previously been onboarded. This operation may
+            /// update the device's Azure resource state.
+            /// </summary>
+            /// <param name='operations'>
+            /// The operations group for this extension method.
+            /// </param>
+            /// <param name='apiVersion'>
+            /// The API version to use for this operation.
+            /// </param>
+            /// <param name='body'>
+            /// </param>
+            /// <param name='clientRequestId'>
+            /// An opaque, globally-unique, client-generated string identifier for the
+            /// request.
+            /// </param>
+            /// <param name='cancellationToken'>
+            /// The cancellation token.
+            /// </param>
+            public static async Task<ReprovisionAcceptedResponse> ReprovisionAsync(this IDevices operations, string apiVersion, OnboardingRequest body, System.Guid? clientRequestId = default(System.Guid?), CancellationToken cancellationToken = default(CancellationToken))
+            {
+                using (var _result = await operations.ReprovisionWithHttpMessagesAsync(apiVersion, body, clientRequestId, null, cancellationToken).ConfigureAwait(false))
                 {
                     return _result.Body;
                 }

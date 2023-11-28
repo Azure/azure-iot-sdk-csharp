@@ -27,10 +27,13 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport.Http.Models
         /// Initializes a new instance of the
         /// DiscoveryRegistrationsIssueChallengeHeaders class.
         /// </summary>
+        /// <param name="xMsClientRequestId">An opaque, globally-unique,
+        /// client-generated string identifier for the request.</param>
         /// <param name="xMsErrorCode">String error code indicating what went
         /// wrong.</param>
-        public DiscoveryRegistrationsIssueChallengeHeaders(string xMsErrorCode = default(string))
+        public DiscoveryRegistrationsIssueChallengeHeaders(System.Guid? xMsClientRequestId = default(System.Guid?), string xMsErrorCode = default(string))
         {
+            XMsClientRequestId = xMsClientRequestId;
             XMsErrorCode = xMsErrorCode;
             CustomInit();
         }
@@ -39,6 +42,13 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport.Http.Models
         /// An initialization method that performs custom operations like setting defaults
         /// </summary>
         partial void CustomInit();
+
+        /// <summary>
+        /// Gets or sets an opaque, globally-unique, client-generated string
+        /// identifier for the request.
+        /// </summary>
+        [JsonProperty(PropertyName = "x-ms-client-request-id")]
+        public System.Guid? XMsClientRequestId { get; set; }
 
         /// <summary>
         /// Gets or sets string error code indicating what went wrong.

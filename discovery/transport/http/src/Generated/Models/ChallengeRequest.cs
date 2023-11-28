@@ -26,14 +26,16 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport.Http.Models
         /// <summary>
         /// Initializes a new instance of the ChallengeRequest class.
         /// </summary>
-        /// <param name="registrationId">The device serial number.</param>
+        /// <param name="registrationId">Unique identifier for the device.
+        /// Allow lowercase alphanumeric and '-', '.', '_', ':' only. Last
+        /// character can only be lowercase alphanumeric or '-'.</param>
         /// <param name="endorsementKey">Endorsement Key.</param>
-        /// <param name="storageRootKey">Storage Root Key.</param>
-        public ChallengeRequest(string registrationId, string endorsementKey, string storageRootKey)
+        /// <param name="signingKey">Signing Key.</param>
+        public ChallengeRequest(string registrationId, byte[] endorsementKey, byte[] signingKey)
         {
             RegistrationId = registrationId;
             EndorsementKey = endorsementKey;
-            StorageRootKey = storageRootKey;
+            SigningKey = signingKey;
             CustomInit();
         }
 
@@ -43,7 +45,9 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport.Http.Models
         partial void CustomInit();
 
         /// <summary>
-        /// Gets or sets the device serial number.
+        /// Gets or sets unique identifier for the device. Allow lowercase
+        /// alphanumeric and '-', '.', '_', ':' only. Last character can only
+        /// be lowercase alphanumeric or '-'.
         /// </summary>
         [JsonProperty(PropertyName = "registrationId")]
         public string RegistrationId { get; set; }
@@ -52,13 +56,13 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport.Http.Models
         /// Gets or sets endorsement Key.
         /// </summary>
         [JsonProperty(PropertyName = "endorsementKey")]
-        public string EndorsementKey { get; set; }
+        public byte[] EndorsementKey { get; set; }
 
         /// <summary>
-        /// Gets or sets storage Root Key.
+        /// Gets or sets signing Key.
         /// </summary>
-        [JsonProperty(PropertyName = "storageRootKey")]
-        public string StorageRootKey { get; set; }
+        [JsonProperty(PropertyName = "signingKey")]
+        public byte[] SigningKey { get; set; }
 
         /// <summary>
         /// Validate the object.
@@ -76,9 +80,20 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport.Http.Models
             {
                 throw new ValidationException(ValidationRules.CannotBeNull, "EndorsementKey");
             }
-            if (StorageRootKey == null)
+            if (SigningKey == null)
             {
-                throw new ValidationException(ValidationRules.CannotBeNull, "StorageRootKey");
+                throw new ValidationException(ValidationRules.CannotBeNull, "SigningKey");
+            }
+            if (RegistrationId != null)
+            {
+                if (RegistrationId.Length > 128)
+                {
+                    throw new ValidationException(ValidationRules.MaxLength, "RegistrationId", 128);
+                }
+                if (!System.Text.RegularExpressions.Regex.IsMatch(RegistrationId, "^([a-z0-9-._:]{0,127}[a-z0-9-])$"))
+                {
+                    throw new ValidationException(ValidationRules.Pattern, "RegistrationId", "^([a-z0-9-._:]{0,127}[a-z0-9-])$");
+                }
             }
         }
     }

@@ -19,7 +19,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
     public partial interface IDevices
     {
         /// <summary>
-        /// Gets status of an onboarding operation.
+        /// Get the status of an onboarding or reprovisioning operation.
         /// </summary>
         /// <param name='apiVersion'>
         /// The API version to use for this operation.
@@ -30,6 +30,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         /// <param name='operationId'>
         /// The unique ID of the operation.
         /// </param>
+        /// <param name='clientRequestId'>
+        /// An opaque, globally-unique, client-generated string identifier for
+        /// the request.
+        /// </param>
         /// <param name='customHeaders'>
         /// The headers that will be added to request.
         /// </param>
@@ -45,15 +49,19 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         /// <exception cref="Microsoft.Rest.ValidationException">
         /// Thrown when a required parameter is null
         /// </exception>
-        Task<HttpOperationResponse<OnboardOperationStatusResponse, DevicesGetOperationStatusHeaders>> GetOperationStatusWithHttpMessagesAsync(string apiVersion, string registrationId, string operationId, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        Task<HttpOperationResponse<OnboardOperationStatusResponse, DevicesGetOperationStatusHeaders>> GetOperationStatusWithHttpMessagesAsync(string apiVersion, string registrationId, string operationId, System.Guid? clientRequestId = default(System.Guid?), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
         /// <summary>
-        /// Onboard a device.
+        /// Onboard a device to Azure.
         /// </summary>
         /// <param name='apiVersion'>
         /// The API version to use for this operation.
         /// </param>
         /// <param name='body'>
         /// </param>
+        /// <param name='clientRequestId'>
+        /// An opaque, globally-unique, client-generated string identifier for
+        /// the request.
+        /// </param>
         /// <param name='customHeaders'>
         /// The headers that will be added to request.
         /// </param>
@@ -69,6 +77,35 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         /// <exception cref="Microsoft.Rest.ValidationException">
         /// Thrown when a required parameter is null
         /// </exception>
-        Task<HttpOperationResponse<OnboardOperationStatusResponse,DevicesOnboardHeaders>> OnboardWithHttpMessagesAsync(string apiVersion, OnboardingRequest body, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        Task<HttpOperationResponse<OnboardOperationStatusResponse,DevicesOnboardHeaders>> OnboardWithHttpMessagesAsync(string apiVersion, OnboardingRequest body, System.Guid? clientRequestId = default(System.Guid?), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        /// <summary>
+        /// Reprovision a device that has previously been onboarded. This
+        /// operation may update the device's Azure resource state.
+        /// </summary>
+        /// <param name='apiVersion'>
+        /// The API version to use for this operation.
+        /// </param>
+        /// <param name='body'>
+        /// </param>
+        /// <param name='clientRequestId'>
+        /// An opaque, globally-unique, client-generated string identifier for
+        /// the request.
+        /// </param>
+        /// <param name='customHeaders'>
+        /// The headers that will be added to request.
+        /// </param>
+        /// <param name='cancellationToken'>
+        /// The cancellation token.
+        /// </param>
+        /// <exception cref="AzureCoreFoundationsErrorResponseException">
+        /// Thrown when the operation returned an invalid status code
+        /// </exception>
+        /// <exception cref="Microsoft.Rest.SerializationException">
+        /// Thrown when unable to deserialize the response
+        /// </exception>
+        /// <exception cref="Microsoft.Rest.ValidationException">
+        /// Thrown when a required parameter is null
+        /// </exception>
+        Task<HttpOperationResponse<ReprovisionAcceptedResponse,DevicesReprovisionHeaders>> ReprovisionWithHttpMessagesAsync(string apiVersion, OnboardingRequest body, System.Guid? clientRequestId = default(System.Guid?), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
     }
 }

@@ -27,11 +27,14 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Models
         /// </summary>
         /// <param name="operationLocation">The location for monitoring the
         /// operation state.</param>
+        /// <param name="xMsClientRequestId">An opaque, globally-unique,
+        /// client-generated string identifier for the request.</param>
         /// <param name="xMsErrorCode">String error code indicating what went
         /// wrong.</param>
-        public DevicesOnboardHeaders(string operationLocation = default(string), string xMsErrorCode = default(string))
+        public DevicesOnboardHeaders(string operationLocation = default(string), System.Guid? xMsClientRequestId = default(System.Guid?), string xMsErrorCode = default(string))
         {
             OperationLocation = operationLocation;
+            XMsClientRequestId = xMsClientRequestId;
             XMsErrorCode = xMsErrorCode;
             CustomInit();
         }
@@ -46,6 +49,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Models
         /// </summary>
         [JsonProperty(PropertyName = "Operation-Location")]
         public string OperationLocation { get; set; }
+
+        /// <summary>
+        /// Gets or sets an opaque, globally-unique, client-generated string
+        /// identifier for the request.
+        /// </summary>
+        [JsonProperty(PropertyName = "x-ms-client-request-id")]
+        public System.Guid? XMsClientRequestId { get; set; }
 
         /// <summary>
         /// Gets or sets string error code indicating what went wrong.

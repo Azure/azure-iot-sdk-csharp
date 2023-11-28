@@ -26,7 +26,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Models
         /// <summary>
         /// Initializes a new instance of the Endpoint class.
         /// </summary>
-        /// <param name="hostname">The endpoint hostname.</param>
+        /// <param name="hostname">The Endpoint hostname.</param>
         /// <param name="name">The allocation group name.</param>
         public Endpoint(string hostname, string name)
         {
@@ -39,7 +39,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Models
         /// </summary>
         static Endpoint()
         {
-            EndpointType = "AzureEventGridBroker";
+            Kind = "MicrosoftEventGridBroker";
         }
 
         /// <summary>
@@ -48,7 +48,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Models
         partial void CustomInit();
 
         /// <summary>
-        /// Gets or sets the endpoint hostname.
+        /// Gets or sets the Endpoint hostname.
         /// </summary>
         [JsonProperty(PropertyName = "hostname")]
         public string Hostname { get; set; }
@@ -62,8 +62,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Models
         /// <summary>
         /// The Endpoint type.
         /// </summary>
-        [JsonProperty(PropertyName = "endpointType")]
-        public static string EndpointType { get; private set; }
+        [JsonProperty(PropertyName = "kind")]
+        public static string Kind { get; private set; }
 
         /// <summary>
         /// Validate the object.

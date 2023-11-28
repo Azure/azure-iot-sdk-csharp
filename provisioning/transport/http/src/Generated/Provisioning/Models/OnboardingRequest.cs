@@ -26,8 +26,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Models
         /// <summary>
         /// Initializes a new instance of the OnboardingRequest class.
         /// </summary>
-        /// <param name="registrationId">The device registrationId. Must match
-        /// the X.509 Certificate CN.</param>
+        /// <param name="registrationId">Unique identifier for the device.
+        /// Allow lowercase alphanumeric and '-', '.', '_', ':' only. Last
+        /// character can only be lowercase alphanumeric or '-'.</param>
         /// <param name="resourceMetadata">Additional resource
         /// metadata.</param>
         public OnboardingRequest(string registrationId, ResourceMetadata resourceMetadata)
@@ -43,8 +44,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Models
         partial void CustomInit();
 
         /// <summary>
-        /// Gets or sets the device registrationId. Must match the X.509
-        /// Certificate CN.
+        /// Gets or sets unique identifier for the device. Allow lowercase
+        /// alphanumeric and '-', '.', '_', ':' only. Last character can only
+        /// be lowercase alphanumeric or '-'.
         /// </summary>
         [JsonProperty(PropertyName = "registrationId")]
         public string RegistrationId { get; set; }
@@ -70,6 +72,17 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Models
             if (ResourceMetadata == null)
             {
                 throw new ValidationException(ValidationRules.CannotBeNull, "ResourceMetadata");
+            }
+            if (RegistrationId != null)
+            {
+                if (RegistrationId.Length > 128)
+                {
+                    throw new ValidationException(ValidationRules.MaxLength, "RegistrationId", 128);
+                }
+                if (!System.Text.RegularExpressions.Regex.IsMatch(RegistrationId, "^([a-z0-9-._:]{0,127}[a-z0-9-])$"))
+                {
+                    throw new ValidationException(ValidationRules.Pattern, "RegistrationId", "^([a-z0-9-._:]{0,127}[a-z0-9-])$");
+                }
             }
         }
     }

@@ -26,10 +26,10 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport.Http.Models
         /// <summary>
         /// Initializes a new instance of the BootstrapResponse class.
         /// </summary>
-        /// <param name="issuedCredential">Issued Credential.</param>
-        /// <param name="edgeProvisioningEndpoint">The endpoint to use to
+        /// <param name="edgeProvisioningEndpoint">The hostname to use to
         /// connect to the edge provisioning service.</param>
-        public BootstrapResponse(Credential issuedCredential, string edgeProvisioningEndpoint = default(string))
+        /// <param name="issuedCredential">Issued Credential.</param>
+        public BootstrapResponse(string edgeProvisioningEndpoint, Credential issuedCredential)
         {
             EdgeProvisioningEndpoint = edgeProvisioningEndpoint;
             IssuedCredential = issuedCredential;
@@ -42,7 +42,7 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport.Http.Models
         partial void CustomInit();
 
         /// <summary>
-        /// Gets or sets the endpoint to use to connect to the edge
+        /// Gets or sets the hostname to use to connect to the edge
         /// provisioning service.
         /// </summary>
         [JsonProperty(PropertyName = "edgeProvisioningEndpoint")]
@@ -62,6 +62,10 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport.Http.Models
         /// </exception>
         public virtual void Validate()
         {
+            if (EdgeProvisioningEndpoint == null)
+            {
+                throw new ValidationException(ValidationRules.CannotBeNull, "EdgeProvisioningEndpoint");
+            }
             if (IssuedCredential == null)
             {
                 throw new ValidationException(ValidationRules.CannotBeNull, "IssuedCredential");

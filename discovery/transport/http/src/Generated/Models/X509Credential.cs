@@ -8,6 +8,8 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport.Http.Models
 {
     using Microsoft.Rest;
     using Newtonsoft.Json;
+    using System.Collections;
+    using System.Collections.Generic;
     using System.Linq;
 
     /// <summary>
@@ -27,8 +29,11 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport.Http.Models
         /// <summary>
         /// Initializes a new instance of the X509Credential class.
         /// </summary>
-        /// <param name="x509">X.509 certificate value.</param>
-        public X509Credential(string x509)
+        /// <param name="x509">A list of one or more DER-encoded certificates
+        /// representing a certificate chain, with the first element being the
+        /// leaf certificate issued for the device. No private key is
+        /// included.</param>
+        public X509Credential(IList<byte[]> x509)
         {
             X509 = x509;
             CustomInit();
@@ -40,10 +45,12 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport.Http.Models
         partial void CustomInit();
 
         /// <summary>
-        /// Gets or sets X.509 certificate value.
+        /// Gets or sets a list of one or more DER-encoded certificates
+        /// representing a certificate chain, with the first element being the
+        /// leaf certificate issued for the device. No private key is included.
         /// </summary>
         [JsonProperty(PropertyName = "x509")]
-        public string X509 { get; set; }
+        public IList<byte[]> X509 { get; set; }
 
         /// <summary>
         /// Validate the object.

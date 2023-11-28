@@ -18,7 +18,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
     /// <summary>
     /// 
     /// </summary>
-    public partial class EdgeProvisioningService : ServiceClient<EdgeProvisioningService>, IEdgeProvisioningService
+    public partial class MicrosoftFairfieldGardens : ServiceClient<MicrosoftFairfieldGardens>, IMicrosoftFairfieldGardens
     {
         /// <summary>
         /// The base URI of the service.
@@ -46,31 +46,36 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         public virtual IDevices Devices { get; private set; }
 
         /// <summary>
-        /// Initializes a new instance of the EdgeProvisioningService class.
+        /// Gets the ICertificates.
+        /// </summary>
+        public virtual ICertificates Certificates { get; private set; }
+
+        /// <summary>
+        /// Initializes a new instance of the MicrosoftFairfieldGardens class.
         /// </summary>
         /// <param name='httpClient'>
         /// HttpClient to be used
         /// </param>
         /// <param name='disposeHttpClient'>
-        /// True: will dispose the provided httpClient on calling EdgeProvisioningService.Dispose(). False: will not dispose provided httpClient</param>
-        protected EdgeProvisioningService(HttpClient httpClient, bool disposeHttpClient) : base(httpClient, disposeHttpClient)
+        /// True: will dispose the provided httpClient on calling MicrosoftFairfieldGardens.Dispose(). False: will not dispose provided httpClient</param>
+        protected MicrosoftFairfieldGardens(HttpClient httpClient, bool disposeHttpClient) : base(httpClient, disposeHttpClient)
         {
             Initialize();
         }
 
         /// <summary>
-        /// Initializes a new instance of the EdgeProvisioningService class.
+        /// Initializes a new instance of the MicrosoftFairfieldGardens class.
         /// </summary>
         /// <param name='handlers'>
         /// Optional. The delegating handlers to add to the http client pipeline.
         /// </param>
-        protected EdgeProvisioningService(params DelegatingHandler[] handlers) : base(handlers)
+        protected MicrosoftFairfieldGardens(params DelegatingHandler[] handlers) : base(handlers)
         {
             Initialize();
         }
 
         /// <summary>
-        /// Initializes a new instance of the EdgeProvisioningService class.
+        /// Initializes a new instance of the MicrosoftFairfieldGardens class.
         /// </summary>
         /// <param name='rootHandler'>
         /// Optional. The http client handler used to handle http transport.
@@ -78,13 +83,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         /// <param name='handlers'>
         /// Optional. The delegating handlers to add to the http client pipeline.
         /// </param>
-        protected EdgeProvisioningService(HttpClientHandler rootHandler, params DelegatingHandler[] handlers) : base(rootHandler, handlers)
+        protected MicrosoftFairfieldGardens(HttpClientHandler rootHandler, params DelegatingHandler[] handlers) : base(rootHandler, handlers)
         {
             Initialize();
         }
 
         /// <summary>
-        /// Initializes a new instance of the EdgeProvisioningService class.
+        /// Initializes a new instance of the MicrosoftFairfieldGardens class.
         /// </summary>
         /// <param name='baseUri'>
         /// Optional. The base URI of the service.
@@ -95,7 +100,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         /// <exception cref="System.ArgumentNullException">
         /// Thrown when a required parameter is null
         /// </exception>
-        protected EdgeProvisioningService(System.Uri baseUri, params DelegatingHandler[] handlers) : this(handlers)
+        protected MicrosoftFairfieldGardens(System.Uri baseUri, params DelegatingHandler[] handlers) : this(handlers)
         {
             if (baseUri == null)
             {
@@ -105,7 +110,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         }
 
         /// <summary>
-        /// Initializes a new instance of the EdgeProvisioningService class.
+        /// Initializes a new instance of the MicrosoftFairfieldGardens class.
         /// </summary>
         /// <param name='baseUri'>
         /// Optional. The base URI of the service.
@@ -119,7 +124,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         /// <exception cref="System.ArgumentNullException">
         /// Thrown when a required parameter is null
         /// </exception>
-        protected EdgeProvisioningService(System.Uri baseUri, HttpClientHandler rootHandler, params DelegatingHandler[] handlers) : this(rootHandler, handlers)
+        protected MicrosoftFairfieldGardens(System.Uri baseUri, HttpClientHandler rootHandler, params DelegatingHandler[] handlers) : this(rootHandler, handlers)
         {
             if (baseUri == null)
             {
@@ -129,7 +134,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         }
 
         /// <summary>
-        /// Initializes a new instance of the EdgeProvisioningService class.
+        /// Initializes a new instance of the MicrosoftFairfieldGardens class.
         /// </summary>
         /// <param name='credentials'>
         /// Required. Subscription credentials which uniquely identify client subscription.
@@ -140,7 +145,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         /// <exception cref="System.ArgumentNullException">
         /// Thrown when a required parameter is null
         /// </exception>
-        internal EdgeProvisioningService(ServiceClientCredentials credentials, params DelegatingHandler[] handlers) : this(handlers)
+        internal MicrosoftFairfieldGardens(ServiceClientCredentials credentials, params DelegatingHandler[] handlers) : this(handlers)
         {
             if (credentials == null)
             {
@@ -154,7 +159,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         }
 
         /// <summary>
-        /// Initializes a new instance of the EdgeProvisioningService class.
+        /// Initializes a new instance of the MicrosoftFairfieldGardens class.
         /// </summary>
         /// <param name='credentials'>
         /// Required. Subscription credentials which uniquely identify client subscription.
@@ -163,11 +168,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         /// HttpClient to be used
         /// </param>
         /// <param name='disposeHttpClient'>
-        /// True: will dispose the provided httpClient on calling EdgeProvisioningService.Dispose(). False: will not dispose provided httpClient</param>
+        /// True: will dispose the provided httpClient on calling MicrosoftFairfieldGardens.Dispose(). False: will not dispose provided httpClient</param>
         /// <exception cref="System.ArgumentNullException">
         /// Thrown when a required parameter is null
         /// </exception>
-        internal EdgeProvisioningService(ServiceClientCredentials credentials, HttpClient httpClient, bool disposeHttpClient) : this(httpClient, disposeHttpClient)
+        internal MicrosoftFairfieldGardens(ServiceClientCredentials credentials, HttpClient httpClient, bool disposeHttpClient) : this(httpClient, disposeHttpClient)
         {
             if (credentials == null)
             {
@@ -181,7 +186,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         }
 
         /// <summary>
-        /// Initializes a new instance of the EdgeProvisioningService class.
+        /// Initializes a new instance of the MicrosoftFairfieldGardens class.
         /// </summary>
         /// <param name='credentials'>
         /// Required. Subscription credentials which uniquely identify client subscription.
@@ -195,7 +200,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         /// <exception cref="System.ArgumentNullException">
         /// Thrown when a required parameter is null
         /// </exception>
-        internal EdgeProvisioningService(ServiceClientCredentials credentials, HttpClientHandler rootHandler, params DelegatingHandler[] handlers) : this(rootHandler, handlers)
+        internal MicrosoftFairfieldGardens(ServiceClientCredentials credentials, HttpClientHandler rootHandler, params DelegatingHandler[] handlers) : this(rootHandler, handlers)
         {
             if (credentials == null)
             {
@@ -209,7 +214,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         }
 
         /// <summary>
-        /// Initializes a new instance of the EdgeProvisioningService class.
+        /// Initializes a new instance of the MicrosoftFairfieldGardens class.
         /// </summary>
         /// <param name='baseUri'>
         /// Optional. The base URI of the service.
@@ -223,7 +228,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         /// <exception cref="System.ArgumentNullException">
         /// Thrown when a required parameter is null
         /// </exception>
-        internal EdgeProvisioningService(System.Uri baseUri, ServiceClientCredentials credentials, params DelegatingHandler[] handlers) : this(handlers)
+        internal MicrosoftFairfieldGardens(System.Uri baseUri, ServiceClientCredentials credentials, params DelegatingHandler[] handlers) : this(handlers)
         {
             if (baseUri == null)
             {
@@ -242,7 +247,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         }
 
         /// <summary>
-        /// Initializes a new instance of the EdgeProvisioningService class.
+        /// Initializes a new instance of the MicrosoftFairfieldGardens class.
         /// </summary>
         /// <param name='baseUri'>
         /// Optional. The base URI of the service.
@@ -259,7 +264,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         /// <exception cref="System.ArgumentNullException">
         /// Thrown when a required parameter is null
         /// </exception>
-        internal EdgeProvisioningService(System.Uri baseUri, ServiceClientCredentials credentials, HttpClientHandler rootHandler, params DelegatingHandler[] handlers) : this(rootHandler, handlers)
+        internal MicrosoftFairfieldGardens(System.Uri baseUri, ServiceClientCredentials credentials, HttpClientHandler rootHandler, params DelegatingHandler[] handlers) : this(rootHandler, handlers)
         {
             if (baseUri == null)
             {
@@ -287,6 +292,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         private void Initialize()
         {
             Devices = new Devices(this);
+            Certificates = new Certificates(this);
             BaseUri = new System.Uri("http://localhost");
             SerializationSettings = new JsonSerializerSettings
             {

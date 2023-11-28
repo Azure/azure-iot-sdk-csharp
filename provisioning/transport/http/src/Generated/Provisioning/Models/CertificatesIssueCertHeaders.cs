@@ -10,33 +10,29 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Models
     using System.Linq;
 
     /// <summary>
-    /// Defines headers for GetOperationStatus operation.
+    /// Defines headers for IssueCert operation.
     /// </summary>
-    public partial class DevicesGetOperationStatusHeaders
+    public partial class CertificatesIssueCertHeaders
     {
         /// <summary>
-        /// Initializes a new instance of the DevicesGetOperationStatusHeaders
+        /// Initializes a new instance of the CertificatesIssueCertHeaders
         /// class.
         /// </summary>
-        public DevicesGetOperationStatusHeaders()
+        public CertificatesIssueCertHeaders()
         {
             CustomInit();
         }
 
         /// <summary>
-        /// Initializes a new instance of the DevicesGetOperationStatusHeaders
+        /// Initializes a new instance of the CertificatesIssueCertHeaders
         /// class.
         /// </summary>
-        /// <param name="retryAfter">The Retry-After header can indicate how
-        /// long the client should wait before polling the operation
-        /// status.</param>
         /// <param name="xMsClientRequestId">An opaque, globally-unique,
         /// client-generated string identifier for the request.</param>
         /// <param name="xMsErrorCode">String error code indicating what went
         /// wrong.</param>
-        public DevicesGetOperationStatusHeaders(int? retryAfter = default(int?), System.Guid? xMsClientRequestId = default(System.Guid?), string xMsErrorCode = default(string))
+        public CertificatesIssueCertHeaders(System.Guid? xMsClientRequestId = default(System.Guid?), string xMsErrorCode = default(string))
         {
-            RetryAfter = retryAfter;
             XMsClientRequestId = xMsClientRequestId;
             XMsErrorCode = xMsErrorCode;
             CustomInit();
@@ -46,13 +42,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Models
         /// An initialization method that performs custom operations like setting defaults
         /// </summary>
         partial void CustomInit();
-
-        /// <summary>
-        /// Gets or sets the Retry-After header can indicate how long the
-        /// client should wait before polling the operation status.
-        /// </summary>
-        [JsonProperty(PropertyName = "Retry-After")]
-        public int? RetryAfter { get; set; }
 
         /// <summary>
         /// Gets or sets an opaque, globally-unique, client-generated string

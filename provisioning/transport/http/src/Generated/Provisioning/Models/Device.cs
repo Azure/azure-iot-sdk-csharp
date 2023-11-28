@@ -28,10 +28,14 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Models
         /// </summary>
         /// <param name="registrationId">The registrationId.</param>
         /// <param name="resourceMetadata">The response metadata.</param>
-        public Device(string registrationId, ResponseMetadata resourceMetadata)
+        /// <param name="shouldRequestCert">If certificate issuance is enabled,
+        /// indicates whether the device should request a certificate, based on
+        /// the configured certificate renewal interval.</param>
+        public Device(string registrationId, ResponseMetadata resourceMetadata, bool? shouldRequestCert = default(bool?))
         {
             RegistrationId = registrationId;
             ResourceMetadata = resourceMetadata;
+            ShouldRequestCert = shouldRequestCert;
             CustomInit();
         }
 
@@ -51,6 +55,14 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Models
         /// </summary>
         [JsonProperty(PropertyName = "resourceMetadata")]
         public ResponseMetadata ResourceMetadata { get; set; }
+
+        /// <summary>
+        /// Gets or sets if certificate issuance is enabled, indicates whether
+        /// the device should request a certificate, based on the configured
+        /// certificate renewal interval.
+        /// </summary>
+        [JsonProperty(PropertyName = "shouldRequestCert")]
+        public bool? ShouldRequestCert { get; set; }
 
         /// <summary>
         /// Validate the object.
