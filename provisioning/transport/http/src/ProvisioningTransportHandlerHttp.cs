@@ -344,7 +344,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                     Port = Port,
                 };
 
-                using EdgeProvisioningService client = authStrategy.CreateOnboardingClient(builder.Uri, httpClientHandler);
+                using MicrosoftFairfieldGardens client = authStrategy.CreateOnboardingClient(builder.Uri, httpClientHandler);
                 client.HttpClient.DefaultRequestHeaders.Add("User-Agent", request.ProductInfo);
                 if (Logging.IsEnabled)
                     Logging.Info(this, $"Uri: {builder.Uri}; User-Agent: {request.ProductInfo}");
@@ -355,7 +355,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
                 OnboardOperationStatusResponse operation = await client.Devices
                     .OnboardAsync(
-                        "v1",
+                        "2023-12-01-preview",
                         onboardRequest,
                         cancellationToken: cancellationToken)
                     .ConfigureAwait(false);
