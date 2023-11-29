@@ -2,10 +2,11 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
-using System.Security.Cryptography.X509Certificates;
 using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Discovery.Client.Transport.Http;
@@ -13,8 +14,6 @@ using Microsoft.Azure.Devices.Discovery.Client.Transport.Http.Models;
 using Microsoft.Azure.Devices.Provisioning.Client.Transport;
 using Microsoft.Azure.Devices.Shared;
 using Newtonsoft.Json;
-using System.Text;
-using System.Collections.Generic;
 
 namespace Microsoft.Azure.Devices.Discovery.Client.Transport
 {
