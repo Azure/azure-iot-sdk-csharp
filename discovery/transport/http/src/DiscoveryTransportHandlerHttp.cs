@@ -85,7 +85,7 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport
                     securityProvider.GetStorageRootKey());
 
                 Challenge challenge = await client.DiscoveryRegistrations
-                    .IssueChallengeAsync("2023-12-01-preview", onboardRequest, cancellationToken: cancellationToken)
+                    .IssueChallengeAsync(Versions.V20231201Preview, onboardRequest, cancellationToken: cancellationToken)
                     .ConfigureAwait(false);
 
                 if (Logging.IsEnabled)
@@ -208,7 +208,7 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport
                     csr);
 
                 BootstrapResponse onboardInfo = await client.DiscoveryRegistrations
-                    .GetOnboardingInfoAsync("2023-12-01-preview", onboardInfoRequest, sasToken, cancellationToken: cancellationToken)
+                    .GetOnboardingInfoAsync(Versions.V20231201Preview, onboardInfoRequest, sasToken, cancellationToken: cancellationToken)
                     .ConfigureAwait(false);
 
                 if (Logging.IsEnabled)

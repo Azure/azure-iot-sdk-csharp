@@ -355,7 +355,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
                 OnboardOperationStatusResponse operation = await client.Devices
                     .OnboardAsync(
-                        "2023-12-01-preview",
+                        Versions.V20231201Preview,
                         onboardRequest,
                         cancellationToken: cancellationToken)
                     .ConfigureAwait(false);
