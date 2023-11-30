@@ -48,7 +48,7 @@ namespace Microsoft.Azure.Devices.Client
 
         public static bool IsBase64String(string value)
         {
-#if NETSTANDARD2_0 || NET451 || NET472
+#if NETSTANDARD2_0 || NET472
             value = value.Replace("\r", string.Empty)
                 .Replace("\n", string.Empty);
 #else

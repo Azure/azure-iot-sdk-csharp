@@ -56,11 +56,8 @@ namespace Microsoft.Azure.Devices.Logging
             base.OnEventSourceCreated(eventSource);
             EnableEvents(
                 eventSource,
-                EventLevel.LogAlways
-#if !NET451
-                , EventKeywords.All
-#endif
-                );
+                EventLevel.LogAlways,
+                EventKeywords.All);
         }
 
         protected override void OnEventWritten(EventWrittenEventArgs eventData)
@@ -72,12 +69,7 @@ namespace Microsoft.Azure.Devices.Logging
                 if (_eventFilters.Any(ef => eventData.EventSource.Name.StartsWith(ef, StringComparison.Ordinal)))
                 {
                     string eventIdent;
-#if NET451
-                    // net451 doesn't have EventName, so we'll settle for EventId
-                    eventIdent = eventData.EventId.ToString(CultureInfo.InvariantCulture);
-#else
                     eventIdent = eventData.EventName;
-#endif
                     string text = $"[{eventData.EventSource.Name}-{eventIdent}]{(eventData.Payload != null ? $" ({string.Join(", ", eventData.Payload)})." : "")}";
                     _logger.LogTrace(text);
                 }

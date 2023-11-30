@@ -35,9 +35,7 @@ namespace Microsoft.Azure.Devices.Client
             switch (messageHandler)
             {
                 case HttpClientHandler httpClientHandler:
-#if !NET451
                     httpClientHandler.MaxConnectionsPerServer = DefaultMaxConnectionsPerServer;
-#endif
                     ServicePoint servicePoint = ServicePointManager.FindServicePoint(baseUri);
                     servicePoint.ConnectionLeaseTimeout = connectionLeaseTimeoutMilliseconds;
                     break;

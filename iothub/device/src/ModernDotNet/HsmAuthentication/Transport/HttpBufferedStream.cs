@@ -17,11 +17,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.Transport
 
         public HttpBufferedStream(Stream stream)
         {
-#if !NET451
             _innerStream = new BufferedStream(stream);
-#else
-            _innerStream = new BufferedReadStream(stream);
-#endif
         }
 
         public override void Flush()
@@ -52,7 +48,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.Transport
             var builder = new StringBuilder();
             while (true)
             {
-#if NET451 || NET472 || NETSTANDARD2_0
+#if NET472 || NETSTANDARD2_0
                 int length = await _innerStream
                     .ReadAsync(buffer, 0, buffer.Length, cancellationToken)
                     .ConfigureAwait(false);

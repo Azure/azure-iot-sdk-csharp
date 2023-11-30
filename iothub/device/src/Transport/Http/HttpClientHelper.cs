@@ -14,25 +14,13 @@ using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Devices.Client.Extensions;
 using Microsoft.Azure.Devices.Shared;
-
-#if NET451
-using System.Net.Http.Formatting;
-#else
-
 using System.Text;
 using Newtonsoft.Json;
-
-#endif
-
-using System.Security.Cryptography.X509Certificates;
 
 namespace Microsoft.Azure.Devices.Client.Transport
 {
     internal sealed class HttpClientHelper : IHttpClientHelper
     {
-#if NET451
-        static readonly JsonMediaTypeFormatter JsonFormatter = new JsonMediaTypeFormatter();
-#endif
         private readonly Uri _baseAddress;
         private readonly IAuthorizationProvider _authenticationHeaderProvider;
         private readonly IReadOnlyDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> _defaultErrorMapping;
@@ -66,27 +54,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             HttpMessageHandler httpMessageHandler;
             _usingX509ClientCert = transportSettings.ClientCertificate != null;
-#if NET451
-            TlsVersions.Instance.SetLegacyAcceptableVersions();
-
-#pragma warning disable CA2000 // Dispose objects before losing scope
-            // This disposable handler is disposed when the HttpClient it is given to is disposed
-            var webRequestHandler = new WebRequestHandler();
-#pragma warning restore CA2000 // Dispose objects before losing scope
-
-            if (_usingX509ClientCert)
-            {
-                webRequestHandler.ClientCertificates.Add(transportSettings.ClientCertificate);
-            }
-
-            if (proxy != DefaultWebProxySettings.Instance)
-            {
-                webRequestHandler.UseProxy = proxy != null;
-                webRequestHandler.Proxy = proxy;
-            }
-
-            httpMessageHandler = webRequestHandler;
-#elif NET5_0_OR_GREATER
+#if NET5_0_OR_GREATER
 #pragma warning disable CA2000 // Dispose objects before losing scope
             // This disposable handler is disposed when the HttpClient it is given to is disposed
             var socketsHandler = new SocketsHttpHandler();
@@ -584,18 +552,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
-#if NET451
-        private static ObjectContent<T> CreateContent<T>(T entity)
-        {
-            return new ObjectContent<T>(entity, JsonFormatter);
-        }
-
-        private static Task<T> ReadAsAsync<T>(HttpContent content, CancellationToken token)
-        {
-            return content.ReadAsAsync<T>(token);
-        }
-#else
-
         private static StringContent CreateContent<T>(T entity)
         {
             return new StringContent(JsonConvert.SerializeObject(entity), Encoding.UTF8, "application/json");
@@ -610,7 +566,5 @@ namespace Microsoft.Azure.Devices.Client.Transport
             using var jsonReader = new JsonTextReader(reader);
             return new JsonSerializer().Deserialize<T>(jsonReader);
         }
-
-#endif
     }
 }

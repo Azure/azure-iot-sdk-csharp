@@ -85,15 +85,6 @@ namespace Microsoft.Azure.Devices.Common
 
                 if (s_prepForRemotingMethodInfo == null)
                 {
-#if NET451
-                    s_prepForRemotingMethodInfo =
-                        typeof(Exception).GetMethod(
-                            "PrepForRemoting",
-                            BindingFlags.Instance | BindingFlags.NonPublic,
-                            null,
-                            new Type[] { },
-                            new ParameterModifier[] { });
-#else
                     s_prepForRemotingMethodInfo =
                         typeof(Exception).GetMethod(
                             "PrepForRemoting",
@@ -101,7 +92,6 @@ namespace Microsoft.Azure.Devices.Common
                             null,
                             Array.Empty<Type>(),
                             Array.Empty<ParameterModifier>());
-#endif
                 }
 
                 if (s_prepForRemotingMethodInfo != null)
@@ -109,11 +99,7 @@ namespace Microsoft.Azure.Devices.Common
                     // PrepForRemoting is not thread-safe. When the same exception instance is thrown by multiple threads
                     // the remote stack trace string may not format correctly. However, We don't lock this to protect us from it given
                     // it is discouraged to throw the same exception instance from multiple threads and the side impact is ignorable.
-#if NET451
-                    s_prepForRemotingMethodInfo.Invoke(exception, new object[] { });
-#else
                     s_prepForRemotingMethodInfo.Invoke(exception, Array.Empty<object>());
-#endif
                 }
             }
 

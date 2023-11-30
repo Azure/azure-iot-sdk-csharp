@@ -10,16 +10,10 @@ using System.Threading.Tasks;
 using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Amqp.Framing;
 using Microsoft.Azure.Devices.Common;
-using Microsoft.Azure.Devices.Common.Data;
 using Microsoft.Azure.Devices.Common.Exceptions;
 using Microsoft.Azure.Devices.Shared;
-
-#if !NET451
-
 using Azure;
 using Azure.Core;
-
-#endif
 
 namespace Microsoft.Azure.Devices
 {
@@ -133,8 +127,6 @@ namespace Microsoft.Azure.Devices
             return CreateFromConnectionString(connectionString, TransportType.Amqp, options);
         }
 
-#if !NET451
-
         /// <summary>
         /// Creates ServiceClient, authenticating using an identity in Azure Active Directory (AAD).
         /// </summary>
@@ -217,8 +209,6 @@ namespace Microsoft.Azure.Devices
                 transportSettings ?? new ServiceClientTransportSettings(),
                 options);
         }
-
-#endif
 
         internal IotHubConnection Connection { get; }
 

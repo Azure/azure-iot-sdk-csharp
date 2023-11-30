@@ -10,13 +10,8 @@ using System.Net;
 using Microsoft.Azure.Devices.Common.Exceptions;
 using System.Net.Http;
 using System.Text;
-
-#if !NET451
-
 using Azure;
 using Azure.Core;
-
-#endif
 
 namespace Microsoft.Azure.Devices
 {
@@ -98,8 +93,6 @@ namespace Microsoft.Azure.Devices
             return new JobClient(iotHubConnectionString, transportSettings);
         }
 
-#if !NET451
-
         /// <summary>
         /// Creates JobClient, authenticating using an identity in Azure Active Directory (AAD).
         /// </summary>
@@ -162,8 +155,6 @@ namespace Microsoft.Azure.Devices
             var sasCredentialProperties = new IotHubSasCredentialProperties(hostName, credential);
             return new JobClient(sasCredentialProperties, transportSettings ?? new HttpTransportSettings());
         }
-
-#endif
 
         /// <inheritdoc />
         public void Dispose()

@@ -510,46 +510,14 @@ namespace Microsoft.Azure.Devices.Common
                     // byte overhead for an array so we use 85000-24=84976 as the limit
                     if (bufferSize < 84976)
                     {
-#if !NET451
                         // Consider fallback to LargeBufferPool
                         throw new NotImplementedException();
-#else
-                        return new SynchronizedBufferPool(bufferSize, limit);
-#endif
                     }
                     else
                     {
                         return new LargeBufferPool(bufferSize, limit);
                     }
                 }
-
-#if NET451
-                class SynchronizedBufferPool : BufferPool
-                {
-                    SynchronizedPool<byte[]> innerPool;
-
-                    internal SynchronizedBufferPool(int bufferSize, int limit)
-                        : base(bufferSize, limit)
-                    {
-                        this.innerPool = new SynchronizedPool<byte[]>(limit);
-                    }
-
-                    internal override void OnClear()
-                    {
-                        this.innerPool.Clear();
-                    }
-
-                    internal override byte[] Take()
-                    {
-                        return this.innerPool.Take();
-                    }
-
-                    internal override bool Return(byte[] buffer)
-                    {
-                        return this.innerPool.Return(buffer);
-                    }
-                }
-#endif
 
                 private class LargeBufferPool : BufferPool
                 {

@@ -7,13 +7,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Threading;
 using FluentAssertions;
 using Microsoft.Azure.Devices.Common;
-
-#if !NET451
-
 using Microsoft.Azure.Devices.DigitalTwin.Authentication;
 using Azure.Core;
-
-#endif
 
 namespace Microsoft.Azure.Devices.Tests
 {
@@ -21,8 +16,6 @@ namespace Microsoft.Azure.Devices.Tests
     [TestCategory("Unit")]
     public class TokenHelperTests
     {
-#if !NET451
-
         [TestMethod]
         [DataRow(15, false)] // 15 minutes to expiry
         [DataRow(2, true)] // 2 minutes to expiry
@@ -43,7 +36,5 @@ namespace Microsoft.Azure.Devices.Tests
             // assert
             isExpired.Should().Be(expectedIsExpired);
         }
-
-#endif
     }
 }

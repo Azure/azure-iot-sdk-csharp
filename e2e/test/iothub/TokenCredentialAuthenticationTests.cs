@@ -10,14 +10,7 @@ using Microsoft.Azure.Devices.Common.Exceptions;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.Azure.Devices.Shared;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-
-#if !NET451
-
 using Microsoft.Rest;
-using Azure.Core;
-using Azure.Identity;
-
-#endif
 
 using ClientOptions = Microsoft.Azure.Devices.Client.ClientOptions;
 
@@ -32,8 +25,6 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
     public class TokenCredentialAuthenticationTests : E2EMsTestBase
     {
         private readonly string _devicePrefix = $"{nameof(TokenCredentialAuthenticationTests)}_";
-
-#if !NET451
 
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
@@ -142,7 +133,5 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             // assert
             await act.Should().ThrowAsync<DeviceNotFoundException>();
         }
-
-#endif
     }
 }

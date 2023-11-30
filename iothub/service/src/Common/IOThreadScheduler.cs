@@ -594,63 +594,13 @@ namespace Microsoft.Azure.Devices.Common
         // by the GC anyway.
         [Fx.Tag.SecurityNote(Critical = "manages NativeOverlapped instance, can be called outside user context")]
         [SecurityCritical]
-        private
-#if NET451
-        unsafe class ScheduledOverlapped
-#else
-        class ScheduledOverlapped
-#endif
+        private class ScheduledOverlapped
         {
-#if NET451
-            readonly NativeOverlapped* nativeOverlapped;
-#endif
             private IOThreadScheduler scheduler;
 
             public ScheduledOverlapped()
             {
-#if NET451
-                this.nativeOverlapped = (new Overlapped()).UnsafePack(
-                    Fx.ThunkCallback(new IOCompletionCallback(IOCallback)), null);
-#endif
             }
-
-#if NET451
-            [Fx.Tag.SecurityNote(Miscellaneous = "note that in some hosts this runs without any user context on the stack")]
-            void IOCallback(uint errorCode, uint numBytes, NativeOverlapped* nativeOverlappedCallback)
-            {
-                // Unhook the IOThreadScheduler ASAP to prevent it from leaking.
-                IOThreadScheduler iots = this.scheduler;
-                this.scheduler = null;
-                Fx.Assert(iots != null, "Overlapped completed without a scheduler.");
-
-                Action<object> callback;
-                object state;
-                try { }
-                finally
-                {
-                    // Called in a finally because it needs to run uninterrupted in order to maintain consistency.
-                    iots.CompletionCallback(out callback, out state);
-                }
-
-                bool found = true;
-                while (found)
-                {
-                    // The callback can be null if synchronization misses result in unsuable slots.  Keep going onto
-                    // the next slot in such cases until there are no more slots.
-                    if (callback != null)
-                    {
-                        callback(state);
-                    }
-
-                    try { }
-                    finally
-                    {
-                        // Called in a finally because it needs to run uninterrupted in order to maintain consistency.
-                        found = iots.TryCoalesce(out callback, out state);
-                    }
-                }
-            }
-#endif
 
             public void Post(IOThreadScheduler iots)
             {
@@ -658,9 +608,6 @@ namespace Microsoft.Azure.Devices.Common
                 Fx.Assert(iots != null, "Post called with a null scheduler.");
 
                 this.scheduler = iots;
-#if NET451
-                ThreadPool.UnsafeQueueNativeOverlapped(this.nativeOverlapped);
-#endif
             }
 
             [Fx.Tag.SecurityNote(Miscellaneous = "note that this runs on the finalizer thread")]
@@ -670,9 +617,6 @@ namespace Microsoft.Azure.Devices.Common
                 {
                     throw Fx.AssertAndThrowFatal("Cleanup called on an overlapped that is in-flight.");
                 }
-#if NET451
-                Overlapped.Free(this.nativeOverlapped);
-#endif
             }
         }
     }

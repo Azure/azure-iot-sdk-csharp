@@ -7,10 +7,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using Microsoft.Azure.Devices.Common.Tracing;
 
-#if NET451
-using System.Transactions;
-#endif
-
 namespace Microsoft.Azure.Devices.Common
 {
     // AsyncResult starts acquired; Complete releases.
@@ -27,9 +23,6 @@ namespace Microsoft.Azure.Devices.Common
         private bool _endCalled;
         private Exception _exception;
         private AsyncCompletion _nextAsyncCompletion;
-#if NET451
-        private IAsyncResult _deferredTransactionalResult;
-#endif
 
         [Fx.Tag.SynchronizationObject]
         private ManualResetEvent _manualResetEvent;
@@ -86,11 +79,6 @@ namespace Microsoft.Azure.Devices.Common
 
         // Override this property to provide the ActivityId when completing with exception
         protected internal virtual EventTraceActivity Activity => null;
-
-#if NET451
-        // Override this property to change the trace level when completing with exception
-        protected virtual TraceEventType TraceEventType => TraceEventType.Verbose;
-#endif
 
         protected object ThisLock => _thisLock;
 
@@ -276,15 +264,6 @@ namespace Microsoft.Azure.Devices.Common
             {
                 return false;
             }
-#if NET451
-            else
-            {
-                if (ReferenceEquals(result, _deferredTransactionalResult))
-                {
-                    _deferredTransactionalResult = null;
-                }
-            }
-#endif
 
             callback = GetNextCompletion();
             if (callback == null)
@@ -357,21 +336,13 @@ namespace Microsoft.Azure.Devices.Common
             if (asyncResult._manualResetEvent != null)
             {
                 asyncResult._manualResetEvent.WaitOne();
-#if NET451
-                asyncResult._manualResetEvent.Close();
-#else
                 asyncResult._manualResetEvent.Dispose();
-#endif
             }
 
             if (asyncResult._exception != null)
             {
                 // Trace before PrepareForRethrow to avoid weird callstack strings
-#if NET451
-                Fx.Exception.TraceException(asyncResult._exception, asyncResult.TraceEventType);
-#else
                 Fx.Exception.TraceException(asyncResult._exception, TraceEventType.Verbose);
-#endif
                 ExceptionDispatcher.Throw(asyncResult._exception);
             }
 

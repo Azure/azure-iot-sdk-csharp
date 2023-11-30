@@ -9,11 +9,7 @@ namespace Microsoft.Azure.Devices.Client
 {
     internal static class TaskHelpers
     {
-#if NET451
-        public static readonly Task CompletedTask = Task.FromResult<bool>(false);
-#else
         public static readonly Task CompletedTask = Task.CompletedTask;
-#endif
 
         public static IAsyncResult ToAsyncResult(this Task task, AsyncCallback callback, object state)
         {
