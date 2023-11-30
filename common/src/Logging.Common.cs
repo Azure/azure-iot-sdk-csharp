@@ -540,7 +540,7 @@ namespace Microsoft.Azure.Devices.Shared
             }
         }
 
-        private static partial void AdditionalCustomizedToString<T>(T value, ref string result);
+        static partial void AdditionalCustomizedToString<T>(T value, ref string result);
 
         #endregion Helpers
 
