@@ -180,6 +180,8 @@ jobs:
           FRAMEWORK: netcoreapp2.1.30
         .Net Framework 4.7.2:
           FRAMEWORK: net472
+        .Net Framework 4.5.1:
+          FRAMEWORK: net451
 
     condition: succeeded()
     pool:

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
@@ -14,13 +14,14 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Azure.Amqp.Transport;
-using Microsoft.Azure.Devices.Common;
+using Microsoft.Azure.Devices.Client.Common;
+using Microsoft.Azure.Devices.Client.Extensions;
 using Microsoft.Azure.Devices.Shared;
 
-namespace Microsoft.Azure.Devices
+namespace Microsoft.Azure.Devices.Client
 {
     // http://tools.ietf.org/html/rfc6455
+    [SuppressMessage(FxCop.Category.Design, FxCop.Rule.TypesThatOwnDisposableFieldsShouldBeDisposable, Justification = "Uses close/abort pattern")]
     internal class IotHubClientWebSocket
     {
         private const string HttpGetHeaderFormat = "GET {0} HTTP/1.1\r\n";
@@ -48,7 +49,6 @@ namespace Microsoft.Azure.Devices
         private const string ClientWebSocketNotInOpenStateDuringSend = "IotHubClientWebSocket not in Open State during Send.";
         private const string ServerRejectedUpgradeRequest = "The server rejected the upgrade request.";
         private const string UpgradeProtocolNotSupported = "Protocol Type {0} was sent to a service that does not support that type of upgrade.";
-        private const string SizeExceedsRemainingBufferSpace = "The specified size exceeds the remaining buffer space bytes.";
 
         private static readonly byte[] s_maskingKey = new byte[] { 0x00, 0x00, 0x00, 0x00 };
         private static readonly SHA1 s_sha1CryptoServiceProvider = InitCryptoServiceProvider();
@@ -57,6 +57,9 @@ namespace Microsoft.Azure.Devices
         private readonly string _requestPath;
         private string _webSocketKey;
         private string _host;
+
+        private TcpClient _tcpClient;
+        private Stream _webSocketStream;
 
         private static class Headers
         {
@@ -82,7 +85,7 @@ namespace Microsoft.Azure.Devices
         {
             Binary,
             Close,
-            Text,
+            Text
         }
 
         public enum WebSocketState
@@ -95,19 +98,15 @@ namespace Microsoft.Azure.Devices
             Faulted,
         }
 
-        public EndPoint LocalEndpoint => TcpClient?.Client?.LocalEndPoint;
-
-        public EndPoint RemoteEndpoint => TcpClient?.Client?.RemoteEndPoint;
-
+        public EndPoint LocalEndpoint => _tcpClient?.Client?.LocalEndPoint;
+        public EndPoint RemoteEndpoint => _tcpClient?.Client?.RemoteEndPoint;
         internal WebSocketState State { get; private set; }
-
-        private TcpClient TcpClient { get; set; }
-
-        private Stream WebSocketStream { get; set; }
 
         public void Abort()
         {
-            if (State == WebSocketState.Aborted || State == WebSocketState.Closed || State == WebSocketState.Faulted)
+            if (State == WebSocketState.Aborted
+                || State == WebSocketState.Closed
+                || State == WebSocketState.Faulted)
             {
                 return;
             }
@@ -115,71 +114,78 @@ namespace Microsoft.Azure.Devices
             State = WebSocketState.Aborted;
             try
             {
-                CleanUp();
-            }
-            catch (Exception e)
-            {
-                if (Fx.IsFatal(e))
-                {
-                    throw;
-                }
+                _webSocketStream?.Dispose();
+                _webSocketStream = null;
 
+                _tcpClient?.Close();
+                _tcpClient = null;
+            }
+            catch (Exception e) when (!Fx.IsFatal(e))
+            {
                 // ignore non-fatal errors encountered during abort
                 Fx.Exception.TraceHandled(e, "IotHubClientWebSocket.Abort");
             }
         }
 
-        public async Task ConnectAsync(string host, int port, string scheme, TimeSpan timeout)
+        public async Task ConnectAsync(string host, int port, string scheme, X509Certificate2 clientCertificate, CancellationToken cancellationToken)
         {
+            if (Logging.IsEnabled)
+                Logging.Enter(this, scheme, $"{nameof(IotHubClientWebSocket)}.{nameof(ConnectAsync)}");
+
             _host = host;
             bool succeeded = false;
             try
             {
                 // Connect without proxy
-                TcpClient = new TcpClient();
-                await TcpClient.ConnectAsync(host, port).ConfigureAwait(false);
+                _tcpClient = new TcpClient();
+                await _tcpClient.ConnectAsync(host, port).ConfigureAwait(false);
 
                 if (string.Equals(WebSocketConstants.Scheme, scheme, StringComparison.OrdinalIgnoreCase))
                 {
                     // In the real world, web-socket will happen over HTTPS
-                    var sslStream = new SslStream(TcpClient.GetStream(), false, IotHubConnection.OnRemoteCertificateValidation);
+                    var sslStream = new SslStream(_tcpClient.GetStream(), false, OnRemoteCertificateValidation);
                     var x509CertificateCollection = new X509Certificate2Collection();
+                    if (clientCertificate != null)
+                    {
+                        x509CertificateCollection.Add(clientCertificate);
+                    }
+
                     await sslStream
                         .AuthenticateAsClientAsync(
                             host,
                             x509CertificateCollection,
-                            TlsVersions.Instance.Preferred,
-                            checkCertificateRevocation: false)
+                            enabledSslProtocols: TlsVersions.Instance.Preferred,
+                            checkCertificateRevocation: TlsVersions.Instance.CertificateRevocationCheck)
                         .ConfigureAwait(false);
-                    WebSocketStream = sslStream;
+
+                    _webSocketStream = sslStream;
                 }
                 else
                 {
-                    WebSocketStream = TcpClient.GetStream();
+                    _webSocketStream = _tcpClient.GetStream();
                 }
 
                 string upgradeRequest = BuildUpgradeRequest();
                 byte[] upgradeRequestBytes = Encoding.ASCII.GetBytes(upgradeRequest);
 
-                TcpClient.Client.SendTimeout = GetSocketTimeoutInMilliSeconds(timeout);
-
                 // Send WebSocket Upgrade request
-                await WriteToStreamAsync(WebSocketStream, upgradeRequestBytes).ConfigureAwait(false);
+                await _webSocketStream.WriteAsync(upgradeRequestBytes, 0, upgradeRequestBytes.Length, cancellationToken).ConfigureAwait(false);
 
                 // receive WebSocket Upgrade response
                 byte[] responseBuffer = new byte[8 * 1024];
 
-                var upgradeResponse = new HttpResponse(TcpClient, WebSocketStream, responseBuffer);
+                // The response object is not returned to the user so it can be disposed.
+                using var upgradeResponse = new HttpResponse(_tcpClient, _webSocketStream, responseBuffer);
 
-                await upgradeResponse.ReadAsync(timeout).ConfigureAwait(false);
+                await upgradeResponse.ReadAsync(cancellationToken).ConfigureAwait(false);
 
                 if (upgradeResponse.StatusCode != HttpStatusCode.SwitchingProtocols)
                 {
                     // the HTTP response code was not 101
-                    if (TcpClient.Connected)
+                    if (_tcpClient.Connected)
                     {
-                        WebSocketStream.Close();
-                        TcpClient.Close();
+                        _webSocketStream.Close();
+                        _tcpClient.Close();
                     }
 
                     throw new IOException(ServerRejectedUpgradeRequest + " " + upgradeResponse);
@@ -187,10 +193,10 @@ namespace Microsoft.Azure.Devices
 
                 if (!VerifyWebSocketUpgradeResponse(upgradeResponse.Headers))
                 {
-                    if (TcpClient.Connected)
+                    if (_tcpClient.Connected)
                     {
-                        WebSocketStream.Close();
-                        TcpClient.Close();
+                        _webSocketStream.Close();
+                        _tcpClient.Close();
                     }
 
                     throw new IOException(UpgradeProtocolNotSupported.FormatInvariant(WebSocketConstants.SubProtocols.Amqpwsb10));
@@ -205,15 +211,21 @@ namespace Microsoft.Azure.Devices
                 {
                     Abort();
                 }
+
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, scheme, $"{nameof(IotHubClientWebSocket)}.{nameof(ConnectAsync)}");
             }
         }
 
         public async Task<int> ReceiveAsync(byte[] buffer, int offset, TimeSpan timeout)
         {
+            if (Logging.IsEnabled)
+                Logging.Enter(this, timeout, $"{nameof(IotHubClientWebSocket)}.{nameof(ReceiveAsync)}");
+
             byte[] header = new byte[2];
 
             Fx.AssertAndThrow(State == WebSocketState.Open, ClientWebSocketNotInOpenStateDuringReceive);
-            TcpClient.ReceiveTimeout = TimeoutHelper.ToMilliseconds(timeout);
+            _tcpClient.ReceiveTimeout = TimeoutHelper.ToMilliseconds(timeout);
 
             bool succeeded = false;
             try
@@ -228,23 +240,28 @@ namespace Microsoft.Azure.Devices
                 {
                     // Ignore pong frame and start over
                     totalBytesRead = 0;
-                    totalBytesRead = await ReadFromStreamAsync(WebSocketStream, header).ConfigureAwait(false);
-
-                    if (totalBytesRead == 0)
+                    do
                     {
-                        throw new IOException(FramingPrematureEOF, new InvalidDataException("IotHubClientWebSocket was expecting more bytes"));
+                        bytesRead = await _webSocketStream.ReadAsync(header, totalBytesRead, header.Length - totalBytesRead).ConfigureAwait(false);
+                        if (bytesRead == 0)
+                        {
+                            throw new IOException(FramingPrematureEOF, new InvalidDataException("IotHubClientWebSocket was expecting more bytes"));
+                        }
+
+                        totalBytesRead += bytesRead;
                     }
+                    while (totalBytesRead < header.Length);
 
                     if (!ParseWebSocketFrameHeader(header, out payloadLength, out pongFrame))
                     {
                         // Encountered a close frame or error in parsing frame from server. Close connection
                         byte[] closeHeader = PrepareWebSocketHeader(0, WebSocketMessageType.Close);
 
-                        await WriteToStreamAsync(WebSocketStream, closeHeader).ConfigureAwait(false);
+                        await _webSocketStream.WriteAsync(closeHeader, 0, closeHeader.Length).ConfigureAwait(false);
 
                         State = WebSocketState.Closed;
-                        WebSocketStream.Close();
-                        TcpClient.Close();
+                        _webSocketStream?.Close();
+                        _tcpClient?.Close();
                         return 0;  // TODO: throw exception?
                     }
 
@@ -254,7 +271,7 @@ namespace Microsoft.Azure.Devices
                         byte[] tempBuffer = new byte[payloadLength];
                         while (totalBytesRead < payloadLength)
                         {
-                            bytesRead = await ReadFromStreamAsync(WebSocketStream, tempBuffer, totalBytesRead, payloadLength - totalBytesRead).ConfigureAwait(false);
+                            bytesRead = await _webSocketStream.ReadAsync(tempBuffer, totalBytesRead, payloadLength - totalBytesRead).ConfigureAwait(false);
                             if (bytesRead == 0)
                             {
                                 throw new IOException(FramingPrematureEOF, new InvalidDataException("IotHubClientWebSocket was expecting more bytes"));
@@ -263,21 +280,20 @@ namespace Microsoft.Azure.Devices
                             totalBytesRead += bytesRead;
                         }
                     }
-                }
-                while (pongFrame);
+                } while (pongFrame);
 
                 totalBytesRead = 0;
 
                 if (buffer.Length < payloadLength)
                 {
-                    throw Fx.Exception.AsError(new InvalidOperationException(SizeExceedsRemainingBufferSpace));
+                    throw Fx.Exception.AsError(new InvalidOperationException(Resources.SizeExceedsRemainingBufferSpace));
                 }
 
                 if (payloadLength < MediumSizeFrame)
                 {
                     while (totalBytesRead < payloadLength)
                     {
-                        bytesRead = await ReadFromStreamAsync(WebSocketStream, buffer, offset + totalBytesRead, payloadLength - totalBytesRead).ConfigureAwait(false);
+                        bytesRead = await _webSocketStream.ReadAsync(buffer, offset + totalBytesRead, payloadLength - totalBytesRead).ConfigureAwait(false);
 
                         if (bytesRead == 0)
                         {
@@ -295,7 +311,7 @@ namespace Microsoft.Azure.Devices
                             // read payload length (< 64K)
                             do
                             {
-                                bytesRead = await ReadFromStreamAsync(WebSocketStream, header, totalBytesRead, header.Length - totalBytesRead).ConfigureAwait(false);
+                                bytesRead = await _webSocketStream.ReadAsync(header, totalBytesRead, header.Length - totalBytesRead).ConfigureAwait(false);
 
                                 if (bytesRead == 0)
                                 {
@@ -314,7 +330,7 @@ namespace Microsoft.Azure.Devices
                             {
                                 while (totalBytesRead < extendedPayloadLength)
                                 {
-                                    bytesRead = await ReadFromStreamAsync(WebSocketStream, buffer, offset + totalBytesRead, extendedPayloadLength - totalBytesRead).ConfigureAwait(false);
+                                    bytesRead = await _webSocketStream.ReadAsync(buffer, offset + totalBytesRead, extendedPayloadLength - totalBytesRead).ConfigureAwait(false);
 
                                     if (bytesRead == 0)
                                     {
@@ -326,7 +342,7 @@ namespace Microsoft.Azure.Devices
                             }
                             else
                             {
-                                throw Fx.Exception.AsError(new InvalidOperationException(SizeExceedsRemainingBufferSpace));
+                                throw Fx.Exception.AsError(new InvalidOperationException(Resources.SizeExceedsRemainingBufferSpace));
                             }
 
                             break;
@@ -336,7 +352,7 @@ namespace Microsoft.Azure.Devices
                             byte[] payloadLengthBuffer = new byte[8];
                             do
                             {
-                                bytesRead = await ReadFromStreamAsync(WebSocketStream, payloadLengthBuffer, totalBytesRead, payloadLengthBuffer.Length - totalBytesRead).ConfigureAwait(false);
+                                bytesRead = await _webSocketStream.ReadAsync(payloadLengthBuffer, totalBytesRead, payloadLengthBuffer.Length - totalBytesRead).ConfigureAwait(false);
 
                                 if (bytesRead == 0)
                                 {
@@ -357,7 +373,7 @@ namespace Microsoft.Azure.Devices
                             {
                                 while (totalBytesRead < superExtendedPayloadLength)
                                 {
-                                    bytesRead = await ReadFromStreamAsync(WebSocketStream, buffer, offset + totalBytesRead, (int)(superExtendedPayloadLength - totalBytesRead)).ConfigureAwait(false);
+                                    bytesRead = await _webSocketStream.ReadAsync(buffer, offset + totalBytesRead, (int)(superExtendedPayloadLength - totalBytesRead)).ConfigureAwait(false);
 
                                     if (bytesRead == 0)
                                     {
@@ -369,7 +385,7 @@ namespace Microsoft.Azure.Devices
                             }
                             else
                             {
-                                throw Fx.Exception.AsError(new InvalidOperationException(SizeExceedsRemainingBufferSpace));
+                                throw Fx.Exception.AsError(new InvalidOperationException(Resources.SizeExceedsRemainingBufferSpace));
                             }
 
                             break;
@@ -385,26 +401,26 @@ namespace Microsoft.Azure.Devices
                 {
                     Fault();
                 }
+
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, timeout, $"{nameof(IotHubClientWebSocket)}.{nameof(ReceiveAsync)}");
             }
         }
 
         public async Task SendAsync(byte[] buffer, int offset, int size, WebSocketMessageType webSocketMessageType, TimeSpan timeout)
         {
+            if (Logging.IsEnabled)
+                Logging.Enter(this, webSocketMessageType, timeout, $"{nameof(IotHubClientWebSocket)}.{nameof(SendAsync)}");
+
             Fx.AssertAndThrow(State == WebSocketState.Open, ClientWebSocketNotInOpenStateDuringSend);
-            TcpClient.Client.SendTimeout = TimeoutHelper.ToMilliseconds(timeout);
+            _tcpClient.Client.SendTimeout = TimeoutHelper.ToMilliseconds(timeout);
             bool succeeded = false;
             try
             {
                 byte[] webSocketHeader = PrepareWebSocketHeader(size, webSocketMessageType);
-#if NET451 || NET472 || NETSTANDARD2_0
-                await WebSocketStream.WriteAsync(webSocketHeader, 0, webSocketHeader.Length).ConfigureAwait(false);
+                await _webSocketStream.WriteAsync(webSocketHeader, 0, webSocketHeader.Length).ConfigureAwait(false);
                 MaskWebSocketData(buffer, offset, size);
-                await WebSocketStream.WriteAsync(buffer, offset, size).ConfigureAwait(false);
-#else
-                await WebSocketStream.WriteAsync(webSocketHeader).ConfigureAwait(false);
-                MaskWebSocketData(buffer, offset, size);
-                await WebSocketStream.WriteAsync(buffer.AsMemory(offset, size)).ConfigureAwait(false);
-#endif
+                await _webSocketStream.WriteAsync(buffer, offset, size).ConfigureAwait(false);
                 succeeded = true;
             }
             finally
@@ -413,34 +429,34 @@ namespace Microsoft.Azure.Devices
                 {
                     Fault();
                 }
+
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, webSocketMessageType, timeout, $"{nameof(IotHubClientWebSocket)}.{nameof(SendAsync)}");
             }
         }
 
         public async Task CloseAsync()
         {
+            if (Logging.IsEnabled)
+                Logging.Enter(this, $"{nameof(IotHubClientWebSocket)}.{nameof(CloseAsync)}");
+
             State = WebSocketState.Closed;
             bool succeeded = false;
             try
             {
-                if (TcpClient.Connected)
+                if (_tcpClient.Connected)
                 {
                     byte[] webSocketHeader = PrepareWebSocketHeader(0, WebSocketMessageType.Close);
 
-                    await WriteToStreamAsync(WebSocketStream, webSocketHeader, 0, webSocketHeader.Length).ConfigureAwait(false);
+                    await _webSocketStream.WriteAsync(webSocketHeader, 0, webSocketHeader.Length).ConfigureAwait(false);
 
-                    WebSocketStream.Close();
-                    TcpClient.Close();
+                    _webSocketStream?.Close();
                 }
 
                 succeeded = true;
             }
-            catch (Exception exception)
+            catch (Exception exception) when (!Fx.IsFatal(exception))
             {
-                if (Fx.IsFatal(exception))
-                {
-                    throw;
-                }
-
                 // ignore exceptions during close
                 Fx.Exception.TraceHandled(exception, "IotHubClientWebSocket.CloseAsync");
             }
@@ -450,6 +466,9 @@ namespace Microsoft.Azure.Devices
                 {
                     Fault();
                 }
+
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, $"{nameof(IotHubClientWebSocket)}.{nameof(CloseAsync)}");
             }
         }
 
@@ -457,29 +476,6 @@ namespace Microsoft.Azure.Devices
         private static SHA1 InitCryptoServiceProvider()
         {
             return SHA1.Create();
-        }
-
-        // Socket.ReceiveTimeout/SendTimeout 0 means infinite/no-timeout. When dealing with cascading timeouts
-        // if the remaining time reaches TimeSpan.Zero we don't want to turn off timeouts on the socket, instead
-        // we want to use a very small timeout.
-        private static int GetSocketTimeoutInMilliSeconds(TimeSpan timeout)
-        {
-            if (timeout == TimeSpan.MaxValue)
-            {
-                return Timeout.Infinite;
-            }
-
-            if (timeout == TimeSpan.Zero)
-            {
-                // Socket.ReceiveTimeout/SendTimeout 0 means no timeout which is not what we want.
-                // Use a small number instead
-                return 1;
-            }
-
-            long ticks = Ticks.FromTimeSpan(timeout);
-            return ticks / TimeSpan.TicksPerMillisecond > int.MaxValue
-                ? int.MaxValue
-                : Ticks.ToMilliseconds(ticks);
         }
 
         private static byte[] PrepareWebSocketHeader(int bufferLength, WebSocketMessageType webSocketMessageType)
@@ -607,14 +603,11 @@ namespace Microsoft.Azure.Devices
             switch (opcode)
             {
                 case Continuation:
+                    if (finalFragment)
                     {
-                        if (finalFragment)
-                        {
-                            return false; // This is a protocol violation. A final frame cannot also be a continuation frame
-                        }
-
-                        break;
+                        return false; // This is a protocol violation. A final frame cannot also be a continuation frame
                     }
+                    break;
 
                 case Text:
                 case Binary:
@@ -622,7 +615,8 @@ namespace Microsoft.Azure.Devices
                     break;
 
                 case Close:
-                    return false;   // Close frame received - We can close the connection
+                    return false; // Close frame received - we can close the connection
+
                 case Ping:
                     throw Fx.Exception.AsError(new NotImplementedException("Client Websocket implementation lacks ping message support"));
 
@@ -649,67 +643,53 @@ namespace Microsoft.Azure.Devices
         private void Fault()
         {
             State = WebSocketState.Faulted;
-            CleanUp();
-        }
 
-        private void CleanUp()
-        {
-            if (WebSocketStream != null)
-            {
-                WebSocketStream.Close();
-                WebSocketStream.Dispose();
-                WebSocketStream = null;
-            }
+            _webSocketStream?.Dispose();
+            _webSocketStream = null;
 
-            if (TcpClient != null)
-            {
-                TcpClient.Close();
-#if !NET451 // compile error, otherwise
-                TcpClient.Dispose();
-#endif
-                TcpClient = null;
-            }
+            _tcpClient?.Close();
+            _tcpClient = null;
         }
 
         private bool VerifyWebSocketUpgradeResponse(NameValueCollection webSocketHeaders)
         {
             // verify that Upgrade header is present with a value of websocket
-            string upgradeHeaderValue;
-            if (null == (upgradeHeaderValue = webSocketHeaders.Get(Upgrade)))
+            string upgradeHeaderValue = webSocketHeaders.Get(Upgrade);
+            if (upgradeHeaderValue == null)
             {
                 // Server did not respond with an upgrade header
                 return false;
             }
 
-            if (!string.Equals(upgradeHeaderValue, Websocket, StringComparison.OrdinalIgnoreCase))
+            if (!StringComparer.OrdinalIgnoreCase.Equals(upgradeHeaderValue, Websocket))
             {
                 // Server did not include the string websocket in the upgrade header
                 return false;
             }
 
             // verify connection header is present with a value of Upgrade
-            string connectionHeaderValue;
-            if (null == (connectionHeaderValue = webSocketHeaders.Get(ConnectionHeaderName)))
+            string connectionHeaderValue = webSocketHeaders.Get(ConnectionHeaderName);
+            if (connectionHeaderValue == null)
             {
                 // Server did not respond with an connection header
                 return false;
             }
 
-            if (!string.Equals(connectionHeaderValue, Upgrade, StringComparison.OrdinalIgnoreCase))
+            if (!StringComparer.OrdinalIgnoreCase.Equals(connectionHeaderValue, Upgrade))
             {
                 // Server did not include the string upgrade in the connection header
                 return false;
             }
 
             // verify that a SecWebSocketAccept header is present with appropriate hash value string
-            string secWebSocketAcceptHeaderValue;
-            if (null == (secWebSocketAcceptHeaderValue = webSocketHeaders.Get(Headers.SecWebSocketAccept)))
+            string secWebSocketAcceptHeaderValue = webSocketHeaders[Headers.SecWebSocketAccept];
+            if (secWebSocketAcceptHeaderValue == null)
             {
                 // Server did not include the SecWebSocketAcceptHeader in the response
                 return false;
             }
 
-            if (!ComputeHash(_webSocketKey).Equals(secWebSocketAcceptHeaderValue, StringComparison.Ordinal))
+            if (!StringComparer.Ordinal.Equals(ComputeHash(_webSocketKey), secWebSocketAcceptHeaderValue))
             {
                 // Server Hash Value of Client's Nonce was invalid
                 return false;
@@ -718,11 +698,11 @@ namespace Microsoft.Azure.Devices
             if (!string.IsNullOrEmpty(_webSocketRole))
             {
                 // verify SecWebSocketProtocol contents
-                string secWebSocketProtocolHeaderValue;
-                if (null != (secWebSocketProtocolHeaderValue = webSocketHeaders.Get(Headers.SecWebSocketProtocol)))
+                string secWebSocketProtocolHeaderValue = webSocketHeaders.Get(Headers.SecWebSocketProtocol);
+                if (secWebSocketProtocolHeaderValue != null)
                 {
                     // Check SecWebSocketProtocolHeader with requested protocol
-                    if (!StringComparer.OrdinalIgnoreCase.Equals(_webSocketRole, secWebSocketProtocolHeaderValue))
+                    if (!StringComparer.Ordinal.Equals(_webSocketRole, secWebSocketProtocolHeaderValue))
                     {
                         return false;
                     }
@@ -742,7 +722,7 @@ namespace Microsoft.Azure.Devices
             var sb = new StringBuilder();
 
             // GET {0} HTTP/1.1\r\n
-            sb.AppendFormat(CultureInfo.InvariantCulture, HttpGetHeaderFormat, _requestPath);
+            sb.AppendFormat(HttpGetHeaderFormat, _requestPath);
 
             // Setup Host Header
             sb.Append(HostHeaderPrefix).Append(_host).Append(EndOfLineSuffix);
@@ -770,9 +750,9 @@ namespace Microsoft.Azure.Devices
 
             // Setup SecWebSocketVersion Header
             sb.Append(Headers.SecWebSocketVersion)
-              .Append(Separator)
-              .Append(WebSocketConstants.Version)
-              .Append(EndOfLineSuffix);
+                .Append(Separator)
+                .Append(WebSocketConstants.Version)
+                .Append(EndOfLineSuffix);
 
             // Add an extra EndOfLine at the end
             sb.Append(EndOfLineSuffix);
@@ -796,63 +776,57 @@ namespace Microsoft.Azure.Devices
             return Convert.ToBase64String(hashBytes);
         }
 
-        private class HttpResponse
+        private class HttpResponse : IDisposable
         {
+            private TcpClient _tcpClient;
+            private Stream _stream;
             private int _bodyStartIndex;
-
+            private readonly byte[] _buffer;
+            private int _totalBytesRead;
             private int _bytesRead;
 
             public HttpResponse(TcpClient tcpClient, Stream stream, byte[] buffer)
             {
-                TcpClient = tcpClient;
-                Stream = stream;
-                Buffer = buffer;
+                _tcpClient = tcpClient;
+                _stream = stream;
+                _buffer = buffer;
             }
 
-            private TcpClient TcpClient { get; set; }
+            public HttpStatusCode StatusCode { get; private set; }
+            public string StatusDescription { get; private set; }
+            public WebHeaderCollection Headers { get; private set; }
 
-            private Stream Stream { get; set; }
-
-            private byte[] Buffer { get; set; }
-
-            private int TotalBytesRead { get; set; }
-
-            public async Task ReadAsync(TimeSpan timeout)
+            public async Task ReadAsync(CancellationToken cancellationToken)
             {
-                var timeoutHelper = new TimeoutHelper(timeout);
                 do
                 {
-                    TcpClient.Client.ReceiveTimeout = GetSocketTimeoutInMilliSeconds(timeoutHelper.RemainingTime());
+                    cancellationToken.ThrowIfCancellationRequested();
+
                     _bytesRead = 0;
 
-                    _bytesRead = await ReadFromStreamAsync(Stream, Buffer, TotalBytesRead, Buffer.Length - TotalBytesRead).ConfigureAwait(false);
+                    _bytesRead = await _stream
+                        .ReadAsync(_buffer, _totalBytesRead, _buffer.Length - _totalBytesRead, cancellationToken)
+                        .ConfigureAwait(false);
 
-                    TotalBytesRead += _bytesRead;
+                    _totalBytesRead += _bytesRead;
                     if (_bytesRead == 0 || TryParseBuffer())
                     {
                         // exit the do/while loop
                         break;
                     }
-                }
-                while (true);
+                } while (true);
 
-                if (TotalBytesRead == 0)
+                if (_totalBytesRead == 0)
                 {
                     var socketException = new SocketException((int)SocketError.ConnectionRefused);
                     throw Fx.Exception.AsWarning(new IOException(socketException.Message, socketException));
                 }
             }
 
-            public HttpStatusCode StatusCode { get; private set; }
-
-            public string StatusDescription { get; private set; }
-
-            public WebHeaderCollection Headers { get; private set; }
-
             public override string ToString()
             {
                 // return a string like "407 Proxy Auth Required"
-                return (int)StatusCode + " " + StatusDescription;
+                return $"{(int)StatusCode} {StatusDescription}";
             }
 
             /// <summary>
@@ -867,75 +841,85 @@ namespace Microsoft.Azure.Devices
             {
                 if (_bodyStartIndex == 0)
                 {
-                    int firstSpace = IndexOfAsciiChar(Buffer, 0, TotalBytesRead, ' ');
+                    int firstSpace = IndexOfAsciiChar(_buffer, 0, _totalBytesRead, ' ');
                     if (firstSpace == -1)
                     {
                         return false;
                     }
 
                     ////HttpVersion = Encoding.ASCII.GetString(array, arraySegment.Offset, firstSpace - arraySegment.Offset);
-                    int secondSpace = IndexOfAsciiChar(Buffer, firstSpace + 1, TotalBytesRead - (firstSpace + 1), ' ');
+                    int secondSpace = IndexOfAsciiChar(_buffer, firstSpace + 1, _totalBytesRead - (firstSpace + 1), ' ');
                     if (secondSpace == -1)
                     {
                         return false;
                     }
 
-                    string statusCodeString = Encoding.ASCII.GetString(Buffer, firstSpace + 1, secondSpace - (firstSpace + 1));
+                    string statusCodeString = Encoding.ASCII.GetString(_buffer, firstSpace + 1, secondSpace - (firstSpace + 1));
                     StatusCode = (HttpStatusCode)int.Parse(statusCodeString, CultureInfo.InvariantCulture);
-                    int endOfLine = IndexOfAsciiChars(Buffer, secondSpace + 1, TotalBytesRead - (secondSpace + 1), '\r', '\n');
+                    int endOfLine = IndexOfAsciiChars(_buffer, secondSpace + 1, _totalBytesRead - (secondSpace + 1), '\r', '\n');
                     if (endOfLine == -1)
                     {
                         return false;
                     }
 
-                    StatusDescription = Encoding.ASCII.GetString(Buffer, secondSpace + 1, endOfLine - (secondSpace + 1));
+                    StatusDescription = Encoding.ASCII.GetString(_buffer, secondSpace + 1, endOfLine - (secondSpace + 1));
 
                     // Now parse the headers
                     Headers = new WebHeaderCollection();
                     while (true)
                     {
                         int startCurrentLine = endOfLine + 2;
-                        if (startCurrentLine >= TotalBytesRead)
+                        if (startCurrentLine >= _totalBytesRead)
                         {
                             return false;
                         }
-                        else if (Buffer[startCurrentLine] == '\r' && Buffer[startCurrentLine + 1] == '\n')
+                        else if (_buffer[startCurrentLine] == '\r' && _buffer[startCurrentLine + 1] == '\n')
                         {
                             // \r\n\r\n indicates the end of the HTTP headers.
                             _bodyStartIndex = startCurrentLine + 2;
                             break;
                         }
 
-                        int separatorIndex = IndexOfAsciiChars(Buffer, startCurrentLine, TotalBytesRead - startCurrentLine, ':', ' ');
+                        int separatorIndex = IndexOfAsciiChars(_buffer, startCurrentLine, _totalBytesRead - startCurrentLine, ':', ' ');
                         if (separatorIndex == -1)
                         {
                             return false;
                         }
 
-                        string headerName = Encoding.ASCII.GetString(Buffer, startCurrentLine, separatorIndex - startCurrentLine);
-                        endOfLine = IndexOfAsciiChars(Buffer, separatorIndex + 2, TotalBytesRead - (separatorIndex + 2), '\r', '\n');
+                        string headerName = Encoding.ASCII.GetString(_buffer, startCurrentLine, separatorIndex - startCurrentLine);
+                        endOfLine = IndexOfAsciiChars(_buffer, separatorIndex + 2, _totalBytesRead - (separatorIndex + 2), '\r', '\n');
                         if (endOfLine == -1)
                         {
                             return false;
                         }
 
-                        string headerValue = Encoding.ASCII.GetString(Buffer, separatorIndex + 2, endOfLine - (separatorIndex + 2));
+                        string headerValue = Encoding.ASCII.GetString(_buffer, separatorIndex + 2, endOfLine - (separatorIndex + 2));
                         Headers.Add(headerName, headerValue);
                     }
                 }
 
                 // check to see if all the body bytes have been received.
                 string contentLengthValue = Headers[HttpResponseHeader.ContentLength];
-                if (!string.IsNullOrEmpty(contentLengthValue) && contentLengthValue != "0")
+                if (!string.IsNullOrEmpty(contentLengthValue)
+                    && contentLengthValue != "0")
                 {
                     int contentLength = int.Parse(contentLengthValue, CultureInfo.InvariantCulture);
-                    if (contentLength > TotalBytesRead - _bodyStartIndex)
+                    if (contentLength > _totalBytesRead - _bodyStartIndex)
                     {
                         return false;
                     }
                 }
 
                 return true;
+            }
+
+            public void Dispose()
+            {
+                _stream?.Dispose();
+                _stream = null;
+
+                _tcpClient?.Close();
+                _tcpClient = null;
             }
         }
 
@@ -975,32 +959,9 @@ namespace Microsoft.Azure.Devices
             return -1;
         }
 
-        private static async Task<int> ReadFromStreamAsync(Stream stream, byte[] buffer)
+        public static bool OnRemoteCertificateValidation(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
         {
-            return await ReadFromStreamAsync(stream, buffer, 0, buffer.Length).ConfigureAwait(false);
-        }
-
-        private static async Task<int> ReadFromStreamAsync(Stream stream, byte[] buffer, int offset, int size)
-        {
-#if NET451 || NET472 || NETSTANDARD2_0
-            return await stream.ReadAsync(buffer, offset, size).ConfigureAwait(false);
-#else
-            return await stream.ReadAsync(buffer.AsMemory(offset, size)).ConfigureAwait(false);
-#endif
-        }
-
-        private static async Task WriteToStreamAsync(Stream stream, byte[] buffer)
-        {
-            await WriteToStreamAsync(stream, buffer, 0, buffer.Length).ConfigureAwait(false);
-        }
-
-        private static async Task WriteToStreamAsync(Stream stream, byte[] buffer, int offset, int size)
-        {
-#if NET451 || NET472 || NETSTANDARD2_0
-            await stream.WriteAsync(buffer, offset, size).ConfigureAwait(false);
-#else
-            await stream.WriteAsync(buffer.AsMemory(offset, size)).ConfigureAwait(false);
-#endif
+            return sslPolicyErrors == SslPolicyErrors.None;
         }
     }
 }

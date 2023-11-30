@@ -4,7 +4,12 @@
 using System;
 using System.Linq;
 using System.Net.Http;
+
+#if !NET451
+
 using Microsoft.Azure.Devices.Client.HsmAuthentication.Transport;
+
+#endif
 
 namespace Microsoft.Azure.Devices.Client.HsmAuthentication
 {
@@ -12,7 +17,10 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication
     {
         private const string HttpScheme = "http";
         private const string HttpsScheme = "https";
+
+#if !NET451
         private const string UnixScheme = "unix";
+#endif
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage(
             "Reliability", "CA2000:Dispose objects before losing scope",
@@ -25,20 +33,24 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication
                 return new HttpClient();
             }
 
+#if !NET451
             if (providerUri.Scheme.Equals(UnixScheme, StringComparison.OrdinalIgnoreCase))
             {
                 return new HttpClient(new HttpUdsMessageHandler(providerUri));
             }
+#endif
 
             throw new InvalidOperationException("ProviderUri scheme is not supported");
         }
 
         public static string GetBaseUrl(Uri providerUri)
         {
+#if !NET451
             if (providerUri.Scheme.Equals(UnixScheme, StringComparison.OrdinalIgnoreCase))
             {
                 return $"{HttpScheme}://{providerUri.Segments.Last()}";
             }
+#endif
 
             return providerUri.OriginalString;
         }

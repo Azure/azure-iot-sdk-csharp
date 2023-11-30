@@ -310,7 +310,11 @@ namespace Microsoft.Azure.Devices.Client
             SetGetBodyCalled();
             if (_bodyStream == null)
             {
+#if NET451
+                return new byte[] { };
+#else
                 return Array.Empty<byte>();
+#endif
             }
 
             return ReadFullStream(_bodyStream);

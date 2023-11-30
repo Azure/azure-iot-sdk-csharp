@@ -33,6 +33,21 @@ namespace Microsoft.Azure.Devices.Shared.Tests
             new TlsVersions().CertificateRevocationCheck.Should().BeFalse();
         }
 
+#if NET451
+        [TestMethod]
+        public void SetLegacyAcceptableVersions_Sets()
+        {
+            // arrange
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls11;
+
+            // act
+            new TlsVersions().SetLegacyAcceptableVersions();
+
+            // assert
+            ServicePointManager.SecurityProtocol.Should().Be(SecurityProtocolType.Tls12);
+        }
+#endif
+
         [TestMethod]
         public void SetMinimumTlsVersions_CanSetToNone()
         {

@@ -77,6 +77,8 @@ namespace Microsoft.Azure.Devices.Client.Test
             Assert.IsTrue(r.IsMatch(diagId));
         }
 
+#if !NET451
+
         [TestMethod]
         public void IoTHubClientDiagnostic_CorrelationContext_Test()
         {
@@ -97,6 +99,8 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             Assert.IsTrue((DateTime.UtcNow - creationTime).TotalSeconds < 60);
         }
+
+#endif
 
         [TestMethod]
         public void IoTHubClientDiagnostic_SamplingPercentage_Test()

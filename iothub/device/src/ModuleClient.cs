@@ -28,7 +28,7 @@ namespace Microsoft.Azure.Devices.Client
     /// Contains methods that a module can use to send messages to and receive from the service and interact with module twins.
     /// </summary>
     public class ModuleClient : IDisposable
-#if !NET472 && !NETSTANDARD2_0
+#if !NET451 && !NET472 && !NETSTANDARD2_0
         , IAsyncDisposable
 #endif
     {
@@ -518,7 +518,7 @@ namespace Microsoft.Azure.Devices.Client
             _httpTransportHandler?.Dispose();
         }
 
-#if !NET472 && !NETSTANDARD2_0
+#if !NET451 && !NET472 && !NETSTANDARD2_0
         // IAsyncDisposable is available in .NET Standard 2.1 and above
 
         /// <summary>
@@ -839,15 +839,26 @@ namespace Microsoft.Azure.Devices.Client
                 // The HTTP message handlers created in this block are disposed when this client is
                 // disposed.
 #pragma warning disable CA2000 // Dispose objects before losing scope
+#if !NET451
                 var httpMessageHandler = new HttpClientHandler();
+#else
+                var httpMessageHandler = new WebRequestHandler();
+#endif
 #pragma warning restore CA2000 // Dispose objects before losing scope
 
                 if (customCertificateValidation != null)
                 {
                     TlsVersions.Instance.SetLegacyAcceptableVersions();
 
+#if !NET451
                     httpMessageHandler.ServerCertificateCustomValidationCallback = customCertificateValidation;
                     httpMessageHandler.SslProtocols = TlsVersions.Instance.Preferred;
+#else
+                    httpMessageHandler.ServerCertificateValidationCallback = (sender, certificate, chain, errors) =>
+                    {
+                        return customCertificateValidation(sender, certificate, chain, errors);
+                    };
+#endif
                 }
 
                 // We need to add the certificate to the httpTransport if DeviceAuthenticationWithX509Certificate

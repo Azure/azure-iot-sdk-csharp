@@ -6,6 +6,8 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
+#if !NET451
+
 using Azure.Core;
 
 namespace Microsoft.Azure.Devices.Tests
@@ -34,3 +36,5 @@ namespace Microsoft.Azure.Devices.Tests
         }
     }
 }
+
+#endif

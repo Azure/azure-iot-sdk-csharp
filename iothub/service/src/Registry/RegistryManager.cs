@@ -15,8 +15,13 @@ using Microsoft.Azure.Devices.Common.Exceptions;
 using Microsoft.Azure.Devices.Shared;
 using Newtonsoft.Json;
 using System.Diagnostics.CodeAnalysis;
+
+#if !NET451
+
 using Azure;
 using Azure.Core;
+
+#endif
 
 namespace Microsoft.Azure.Devices
 {
@@ -129,6 +134,8 @@ namespace Microsoft.Azure.Devices
             return new RegistryManager(iotHubConnectionString, transportSettings);
         }
 
+#if !NET451
+
         /// <summary>
         /// Creates RegistryManager, authenticating using an identity in Azure Active Directory (AAD).
         /// </summary>
@@ -191,6 +198,8 @@ namespace Microsoft.Azure.Devices
             var sasCredentialProperties = new IotHubSasCredentialProperties(hostName, credential);
             return new RegistryManager(sasCredentialProperties, transportSettings ?? new HttpTransportSettings());
         }
+
+#endif
 
         /// <inheritdoc />
         public void Dispose()

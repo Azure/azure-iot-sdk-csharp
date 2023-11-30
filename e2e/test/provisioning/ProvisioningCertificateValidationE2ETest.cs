@@ -43,7 +43,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             ProvisioningServiceClientTransportException exception = await Assert.ThrowsExceptionAsync<ProvisioningServiceClientTransportException>(
                 () => q.NextAsync()).ConfigureAwait(false);
 
-#if NET472
+#if NET472 || NET451
                 Assert.IsInstanceOfType(exception.InnerException.InnerException.InnerException, typeof(AuthenticationException));
 #else
             Assert.IsInstanceOfType(exception.InnerException.InnerException, typeof(AuthenticationException));
@@ -87,7 +87,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             ProvisioningTransportException exception = await Assert.ThrowsExceptionAsync<ProvisioningTransportException>(
                 () => TestInvalidServiceCertificate(transport)).ConfigureAwait(false);
 
-#if NET472
+#if NET472 || NET451
                 Assert.IsInstanceOfType(exception.InnerException.InnerException.InnerException, typeof(AuthenticationException));
 #else
             Assert.IsInstanceOfType(exception.InnerException.InnerException, typeof(AuthenticationException));

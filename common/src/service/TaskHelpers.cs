@@ -6,11 +6,29 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 
+#if NET451
+using System.Transactions;
+#endif
+
 namespace Microsoft.Azure.Devices.Common
 {
     internal static class TaskHelpers
     {
         public static readonly Task CompletedTask = Task.FromResult(default(VoidTaskResult));
+
+        /// <summary>
+        /// Create a Task based on Begin/End IAsyncResult pattern.
+        /// </summary>
+        public static void Fork(this Task thisTask)
+        {
+            Fork(thisTask, "TaskExtensions.Fork");
+        }
+
+        public static void Fork(this Task thisTask, string tracingInfo)
+        {
+            Fx.Assert(thisTask != null, "task is required!");
+            thisTask.ContinueWith(t => Fx.Exception.TraceHandled(t.Exception, tracingInfo), CancellationToken.None, TaskContinuationOptions.OnlyOnFaulted, TaskScheduler.Default);
+        }
 
         public static IAsyncResult ToAsyncResult(this Task task, AsyncCallback callback, object state)
         {

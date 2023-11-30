@@ -14,7 +14,16 @@ using System.IO;
 using Microsoft.Azure.Devices.Client.Exceptions;
 using System.ComponentModel;
 using Newtonsoft.Json;
+
+#if NET451
+
+using System.Net;
+
+#else
+
 using System.Net.Http;
+
+#endif
 
 namespace Microsoft.Azure.Devices.Client
 {
@@ -115,7 +124,6 @@ namespace Microsoft.Azure.Devices.Client
         // Stores methods supported by the client device and their associated delegate.
 
         private bool _isDeviceMethodEnabled;
-
         private readonly Dictionary<string, Tuple<MethodCallback, object>> _deviceMethods =
             new Dictionary<string, Tuple<MethodCallback, object>>();
 
@@ -191,7 +199,6 @@ namespace Microsoft.Azure.Devices.Client
             if (Logging.IsEnabled)
                 Logging.Exit(this, transportSettings, pipelineBuilder, nameof(InternalClient) + "_ctor");
         }
-
         internal bool IsDisposed { get; private set; }
 
         /// <summary>

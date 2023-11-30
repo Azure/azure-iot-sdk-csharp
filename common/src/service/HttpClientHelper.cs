@@ -907,8 +907,10 @@ namespace Microsoft.Azure.Devices
             httpMessageHandler = socketsHandler;
 #else
             var httpClientHandler = new HttpClientHandler();
+#if !NET451
             httpClientHandler.SslProtocols = TlsVersions.Instance.Preferred;
             httpClientHandler.CheckCertificateRevocationList = TlsVersions.Instance.CertificateRevocationCheck;
+#endif
             if (webProxy != DefaultWebProxySettings.Instance)
             {
                 httpClientHandler.UseProxy = webProxy != null;

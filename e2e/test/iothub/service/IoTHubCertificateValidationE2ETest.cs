@@ -15,7 +15,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
     [TestCategory("InvalidServiceCertificate")]
     public class IoTHubCertificateValidationE2ETest : E2EMsTestBase
     {
-        [TestMethodWithRetry(Max = 3)]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task RegistryManager_QueryDevicesInvalidServiceCertificateHttp_Fails()
         {
@@ -24,14 +24,14 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             IotHubCommunicationException exception = await Assert.ThrowsExceptionAsync<IotHubCommunicationException>(
                 () => query.GetNextAsTwinAsync()).ConfigureAwait(false);
 
-#if NET472
+#if NET451 || NET472
             Assert.IsInstanceOfType(exception.InnerException.InnerException.InnerException, typeof(AuthenticationException));
 #else
             Assert.IsInstanceOfType(exception.InnerException.InnerException, typeof(AuthenticationException));
 #endif
         }
 
-        [TestMethodWithRetry(Max = 3)]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task ServiceClient_SendMessageToDeviceInvalidServiceCertificateAmqpTcp_Fails()
         {
@@ -40,7 +40,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 () => TestServiceClientInvalidServiceCertificate(transport)).ConfigureAwait(false);
         }
 
-        [TestMethodWithRetry(Max = 3)]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task ServiceClient_SendMessageToDeviceInvalidServiceCertificateAmqpWs_Fails()
         {
@@ -60,7 +60,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             await service.SendAsync("testDevice1", testMessage).ConfigureAwait(false);
         }
 
-        [TestMethodWithRetry(Max = 3)]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task JobClient_ScheduleTwinUpdateInvalidServiceCertificateHttp_Fails()
         {
@@ -73,14 +73,14 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                     DateTime.UtcNow,
                     60)).ConfigureAwait(false);
 
-#if NET472
+#if NET451 || NET472
             Assert.IsInstanceOfType(exception.InnerException.InnerException.InnerException, typeof(AuthenticationException));
 #else
             Assert.IsInstanceOfType(exception.InnerException.InnerException, typeof(AuthenticationException));
 #endif
         }
 
-        [TestMethodWithRetry(Max = 3)]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task DeviceClient_SendAsyncInvalidServiceCertificateAmqpTcp_Fails()
         {
@@ -89,7 +89,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 () => TestDeviceClientInvalidServiceCertificate(transport)).ConfigureAwait(false);
         }
 
-        [TestMethodWithRetry(Max = 3)]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task DeviceClient_SendAsyncInvalidServiceCertificateMqttTcp_Fails()
         {
@@ -98,7 +98,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 () => TestDeviceClientInvalidServiceCertificate(transport)).ConfigureAwait(false);
         }
 
-        [TestMethodWithRetry(Max = 3)]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task DeviceClient_SendAsyncInvalidServiceCertificateHttp_Fails()
         {
@@ -106,14 +106,14 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             AuthenticationException exception = await Assert.ThrowsExceptionAsync<AuthenticationException>(
                 () => TestDeviceClientInvalidServiceCertificate(transport)).ConfigureAwait(false);
 
-#if NET472
+#if NET451 || NET472
             Assert.IsInstanceOfType(exception.InnerException.InnerException.InnerException, typeof(AuthenticationException));
 #else
             Assert.IsInstanceOfType(exception.InnerException.InnerException, typeof(AuthenticationException));
 #endif
         }
 
-        [TestMethodWithRetry(Max = 3)]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task DeviceClient_SendAsyncInvalidServiceCertificateAmqpWs_Fails()
         {
@@ -124,7 +124,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             Assert.IsInstanceOfType(exception.InnerException.InnerException.InnerException, typeof(AuthenticationException));
         }
 
-        [TestMethodWithRetry(Max = 3)]
+        [TestMethodWithRetry(Max=3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task DeviceClient_SendAsyncInvalidServiceCertificateMqttWs_Fails()
         {

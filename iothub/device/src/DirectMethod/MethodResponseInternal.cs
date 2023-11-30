@@ -113,7 +113,11 @@ namespace Microsoft.Azure.Devices.Client
             SetGetBodyCalled();
             if (_bodyStream == null)
             {
+#if NET451
+                return new byte[0];
+#else
                 return Array.Empty<byte>();
+#endif
             }
 
             // This is just fail safe code in case we are not using the Amqp protocol.

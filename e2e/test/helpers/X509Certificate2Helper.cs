@@ -122,7 +122,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
         {
             byte[] buff = Convert.FromBase64String(pfxCertificateBase64);
 
+#if NET451
+            var pfxCertificate = new X509Certificate2(buff, certificatePassword);
+#else
             using var pfxCertificate = new X509Certificate2(buff, certificatePassword);
+#endif
 
             string pfxFile = Path.Combine(destinationCertificateFolder.FullName, $"{pfxCertificate.Subject}.pfx");
             string keyFile = Path.Combine(destinationCertificateFolder.FullName, $"{pfxCertificate.Subject}.key");

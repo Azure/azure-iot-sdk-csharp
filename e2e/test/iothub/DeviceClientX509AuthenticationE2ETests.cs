@@ -173,7 +173,9 @@ namespace Microsoft.Azure.Devices.E2ETests
                 }
             }
 
+#if !NET451
             store?.Dispose();
+#endif
         }
 
         private async Task SendMessageTestAsync(ITransportSettings transportSetting)
