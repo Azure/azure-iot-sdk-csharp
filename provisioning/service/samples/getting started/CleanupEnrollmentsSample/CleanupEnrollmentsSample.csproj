@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <LangVersion>9.0</LangVersion>
     <RootNamespace>Microsoft.Azure.Devices.Provisioning.Service.Samples</RootNamespace>
   </PropertyGroup>

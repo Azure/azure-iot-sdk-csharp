@@ -41,7 +41,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.Transport
             builder.Append(Space);
             builder.Append(request.RequestUri.IsAbsoluteUri
                 ? request.RequestUri.PathAndQuery
-                : Uri.EscapeUriString(request.RequestUri.ToString()));
+                : Uri.EscapeDataString(request.RequestUri.ToString()));
             builder.Append(Space);
             builder.Append($"{Protocol}{ProtocolVersionSeparator}");
             builder.Append(new Version(1, 1).ToString(2));
