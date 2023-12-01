@@ -13,7 +13,6 @@ using System.Security.Cryptography.X509Certificates;
 using System.IO;
 using Microsoft.Azure.Devices.Client.Exceptions;
 using System.ComponentModel;
-using Newtonsoft.Json;
 
 #if NET451
 
@@ -124,6 +123,7 @@ namespace Microsoft.Azure.Devices.Client
         // Stores methods supported by the client device and their associated delegate.
 
         private bool _isDeviceMethodEnabled;
+
         private readonly Dictionary<string, Tuple<MethodCallback, object>> _deviceMethods =
             new Dictionary<string, Tuple<MethodCallback, object>>();
 
@@ -162,9 +162,6 @@ namespace Microsoft.Azure.Devices.Client
             if (Logging.IsEnabled)
                 Logging.Enter(this, transportSettings, pipelineBuilder, nameof(InternalClient) + "_ctor");
 
-            // Specify the JsonSerializerSettings. Check JsonSerializerSettingsInitializer for more details.
-            JsonConvert.DefaultSettings = JsonSerializerSettingsInitializer.GetJsonSerializerSettingsDelegate();
-
             TlsVersions.Instance.SetLegacyAcceptableVersions();
 
             _transportSettings = transportSettings;
@@ -199,6 +196,7 @@ namespace Microsoft.Azure.Devices.Client
             if (Logging.IsEnabled)
                 Logging.Exit(this, transportSettings, pipelineBuilder, nameof(InternalClient) + "_ctor");
         }
+
         internal bool IsDisposed { get; private set; }
 
         /// <summary>

@@ -539,7 +539,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 {
                     using var reader = new StreamReader(message.GetBodyStream(), System.Text.Encoding.UTF8);
                     string patch = reader.ReadToEnd();
-                    TwinCollection props = JsonConvert.DeserializeObject<TwinCollection>(patch);
+                    TwinCollection props = JsonConvert.DeserializeObject<TwinCollection>(patch, JsonSerializerSettingsInitializer.GetJsonSerializerSettings());
                     await Task.Run(() => _onDesiredStatePatchListener(props)).ConfigureAwait(false);
                     // Messages with QoS = 1 need to be Acknowledged otherwise it results in mismatched Ack to IoT Hub
                     // causing next message being replayed and all subsequent messages being queued.
@@ -949,7 +949,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             {
                 return new Twin
                 {
-                    Properties = JsonConvert.DeserializeObject<TwinProperties>(body),
+                    Properties = JsonConvert.DeserializeObject<TwinProperties>(body, JsonSerializerSettingsInitializer.GetJsonSerializerSettings()),
                 };
             }
             catch (JsonReaderException ex) when (Logging.IsEnabled)
@@ -964,7 +964,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             cancellationToken.ThrowIfCancellationRequested();
             EnsureValidState();
 
-            string body = JsonConvert.SerializeObject(reportedProperties);
+            string body = JsonConvert.SerializeObject(reportedProperties, JsonSerializerSettingsInitializer.GetJsonSerializerSettings());
             using var bodyStream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(body));
 
             using var request = new Message(bodyStream);

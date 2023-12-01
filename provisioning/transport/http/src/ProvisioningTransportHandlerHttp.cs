@@ -57,7 +57,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         /// <param name="message">The provisioning message.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The registration result.</returns>
-        public async override Task<DeviceRegistrationResult> RegisterAsync(
+        public override async Task<DeviceRegistrationResult> RegisterAsync(
             ProvisioningTransportRegisterMessage message,
             CancellationToken cancellationToken)
         {
@@ -102,8 +102,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 using var httpClientHandler = new HttpClientHandler()
                 {
                     // Cannot specify a specific protocol here, as desired due to an error:
-                    //   ProvisioningDeviceClient_ValidRegistrationId_AmqpWithProxy_SymmetricKey_RegisterOk_GroupEnrollment failing for me with System.PlatformNotSupportedException: Operation is not supported on this platform.	
-                    // When revisiting TLS12 work for DPS, we should figure out why. Perhaps the service needs to support it.	
+                    //   ProvisioningDeviceClient_ValidRegistrationId_AmqpWithProxy_SymmetricKey_RegisterOk_GroupEnrollment failing for me with System.PlatformNotSupportedException: Operation is not supported on this platform.
+                    // When revisiting TLS12 work for DPS, we should figure out why. Perhaps the service needs to support it.
 
                     //SslProtocols = TlsVersions.Preferred,
                 };
@@ -196,7 +196,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
                         try
                         {
-                            ProvisioningErrorDetailsHttp errorDetails = JsonConvert.DeserializeObject<ProvisioningErrorDetailsHttp>(ex.Response.Content);
+                            ProvisioningErrorDetailsHttp errorDetails = JsonConvert.DeserializeObject<ProvisioningErrorDetailsHttp>(ex.Response.Content, JsonSerializerSettingsInitializer.GetJsonSerializerSettings());
 
                             if (isTransient)
                             {
@@ -255,7 +255,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
                 try
                 {
-                    ProvisioningErrorDetailsHttp errorDetails = JsonConvert.DeserializeObject<ProvisioningErrorDetailsHttp>(ex.Response.Content);
+                    ProvisioningErrorDetailsHttp errorDetails = JsonConvert.DeserializeObject<ProvisioningErrorDetailsHttp>(ex.Response.Content, JsonSerializerSettingsInitializer.GetJsonSerializerSettings());
                     throw new ProvisioningTransportException(ex.Response.Content, ex, isTransient, errorDetails);
                 }
                 catch (JsonException jex)

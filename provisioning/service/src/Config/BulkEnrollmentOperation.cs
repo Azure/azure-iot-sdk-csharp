@@ -74,9 +74,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// Creates a <c>string</c>, whose content represents the mode and the collection of
         ///     individualEnrollments in a JSON format.
         /// </remarks>
-        /// <param name="mode">the <see cref="BulkOperationMode"/> that defines the single operation to do over the 
+        /// <param name="mode">the <see cref="BulkOperationMode"/> that defines the single operation to do over the
         ///     individualEnrollments.</param>
-        /// <param name="individualEnrollments">the collection of <see cref="IndividualEnrollment"/> that contains the description 
+        /// <param name="individualEnrollments">the collection of <see cref="IndividualEnrollment"/> that contains the description
         ///     of each individualEnrollment.</param>
         /// <returns>The <c>string</c> with the content of this class.</returns>
         /// <exception cref="ArgumentNullException">if the individualEnrollments is null.</exception>
@@ -93,7 +93,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 Mode = mode,
                 Enrollments = individualEnrollments,
             };
-            return JsonConvert.SerializeObject(bulkOperation);
+            return JsonConvert.SerializeObject(bulkOperation, JsonSerializerSettingsInitializer.GetJsonSerializerSettings());
         }
     }
 }

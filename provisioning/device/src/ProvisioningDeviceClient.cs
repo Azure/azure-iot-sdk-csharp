@@ -48,9 +48,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             SecurityProvider securityProvider,
             ProvisioningTransportHandler transport)
         {
-            // Specify the JsonSerializerSettings. Check JsonSerializerSettingsInitializer for more details.
-            JsonConvert.DefaultSettings = JsonSerializerSettingsInitializer.GetJsonSerializerSettingsDelegate();
-
             _globalDeviceEndpoint = globalDeviceEndpoint;
             _idScope = idScope;
             _transport = transport;
@@ -84,7 +81,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// Registers the current device using the Device Provisioning Service and assigns it to an IoT hub.
         /// </summary>
         /// <param name="data">
-        /// The optional additional data that is passed through to the custom allocation policy webhook if 
+        /// The optional additional data that is passed through to the custom allocation policy webhook if
         /// a custom allocation policy webhook is setup for this enrollment.
         /// </param>
         /// <param name="timeout">The maximum amount of time to allow this operation to run for before timing out.</param>
@@ -111,9 +108,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// </summary>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <remarks>
-        /// Due to the AMQP library used by this library uses not accepting cancellation tokens, the provided cancellation token will only be checked 
+        /// Due to the AMQP library used by this library uses not accepting cancellation tokens, the provided cancellation token will only be checked
         /// for cancellation in between AMQP operations, and not during. In order to have a timeout for this operation that is checked during AMQP operations
-        /// (such as opening the connection), you must use <see cref="RegisterAsync(TimeSpan)"/> instead. MQTT and HTTPS connections do not have the same 
+        /// (such as opening the connection), you must use <see cref="RegisterAsync(TimeSpan)"/> instead. MQTT and HTTPS connections do not have the same
         /// behavior as AMQP connections in this regard. MQTT and HTTPS connections will check this cancellation token for cancellation during their protocol level operations.
         /// </remarks>
         /// <returns>The registration result.</returns>
@@ -128,15 +125,15 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// Registers the current device using the Device Provisioning Service and assigns it to an IoT hub.
         /// </summary>
         /// <param name="data">
-        /// The optional additional data that is passed through to the custom allocation policy webhook if 
+        /// The optional additional data that is passed through to the custom allocation policy webhook if
         /// a custom allocation policy webhook is setup for this enrollment.
         /// </param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <remarks>
-        /// Due to the AMQP library used by this library uses not accepting cancellation tokens, the provided cancellation token will only be checked 
+        /// Due to the AMQP library used by this library uses not accepting cancellation tokens, the provided cancellation token will only be checked
         /// for cancellation in between AMQP operations, and not during. In order to have a timeout for this operation that is checked during AMQP operations
-        /// (such as opening the connection), you must use <see cref="RegisterAsync(ProvisioningRegistrationAdditionalData, TimeSpan)">this overload</see> instead. 
-        /// MQTT and HTTPS connections do not have the same behavior as AMQP connections in this regard. MQTT and HTTPS connections will check this cancellation 
+        /// (such as opening the connection), you must use <see cref="RegisterAsync(ProvisioningRegistrationAdditionalData, TimeSpan)">this overload</see> instead.
+        /// MQTT and HTTPS connections do not have the same behavior as AMQP connections in this regard. MQTT and HTTPS connections will check this cancellation
         /// token for cancellation during their protocol level operations.
         /// </remarks>
         /// <returns>The registration result.</returns>

@@ -283,14 +283,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                         // Here we are getting desired property update notifications and want to handle it first
                         using var reader = new StreamReader(amqpMessage.BodyStream, System.Text.Encoding.UTF8);
                         string patch = reader.ReadToEnd();
-                        twinProperties = JsonConvert.DeserializeObject<TwinCollection>(patch);
+                        twinProperties = JsonConvert.DeserializeObject<TwinCollection>(patch, JsonSerializerSettingsInitializer.GetJsonSerializerSettings());
                     }
                     else if (correlationId.StartsWith(AmqpTwinMessageType.Get.ToString(), StringComparison.OrdinalIgnoreCase))
                     {
                         // This a response of a GET TWIN so return (set) the full twin
                         using var reader = new StreamReader(amqpMessage.BodyStream, System.Text.Encoding.UTF8);
                         string body = reader.ReadToEnd();
-                        TwinProperties properties = JsonConvert.DeserializeObject<TwinProperties>(body);
+                        TwinProperties properties = JsonConvert.DeserializeObject<TwinProperties>(body, JsonSerializerSettingsInitializer.GetJsonSerializerSettings());
                         twin = new Twin(properties);
                     }
                     else if (correlationId.StartsWith(AmqpTwinMessageType.Patch.ToString(), StringComparison.OrdinalIgnoreCase))

@@ -25,6 +25,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         // This polling interval is the default time between checking if the device has reached a terminal state in its registration process
         // DPS will generally send a retry-after header that overrides this default value though.
         private static readonly TimeSpan s_defaultOperationPollingInterval = TimeSpan.FromSeconds(2);
+
         private static readonly TimeSpan s_timeoutConstant = TimeSpan.FromMinutes(1);
 
         /// <summary>
@@ -242,7 +243,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 }
                 else
                 {
-                    var customContentStream = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(deviceRegistration)));
+                    var customContentStream = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(deviceRegistration, JsonSerializerSettingsInitializer.GetJsonSerializerSettings())));
                     amqpMessage = AmqpMessage.Create(customContentStream, true);
                 }
 
@@ -265,7 +266,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 string jsonResponse = await streamReader
                     .ReadToEndAsync()
                     .ConfigureAwait(false);
-                RegistrationOperationStatus status = JsonConvert.DeserializeObject<RegistrationOperationStatus>(jsonResponse);
+                RegistrationOperationStatus status = JsonConvert.DeserializeObject<RegistrationOperationStatus>(jsonResponse, JsonSerializerSettingsInitializer.GetJsonSerializerSettings());
                 status.RetryAfter = ProvisioningErrorDetailsAmqp.GetRetryAfterFromApplicationProperties(amqpResponse, s_defaultOperationPollingInterval);
                 return status;
             }
@@ -306,7 +307,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             using var streamReader = new StreamReader(amqpResponse.BodyStream);
 
             string jsonResponse = await streamReader.ReadToEndAsync().ConfigureAwait(false);
-            RegistrationOperationStatus status = JsonConvert.DeserializeObject<RegistrationOperationStatus>(jsonResponse);
+            RegistrationOperationStatus status = JsonConvert.DeserializeObject<RegistrationOperationStatus>(jsonResponse, JsonSerializerSettingsInitializer.GetJsonSerializerSettings());
             status.RetryAfter = ProvisioningErrorDetailsAmqp.GetRetryAfterFromApplicationProperties(amqpResponse, s_defaultOperationPollingInterval);
 
             return status;
@@ -339,7 +340,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             {
                 try
                 {
-                    ProvisioningErrorDetailsAmqp errorDetails = JsonConvert.DeserializeObject<ProvisioningErrorDetailsAmqp>(rejected.Error.Description);
+                    ProvisioningErrorDetailsAmqp errorDetails = JsonConvert.DeserializeObject<ProvisioningErrorDetailsAmqp>(rejected.Error.Description, JsonSerializerSettingsInitializer.GetJsonSerializerSettings());
                     int statusCode = errorDetails.ErrorCode / 1000;
                     bool isTransient = statusCode >= (int)HttpStatusCode.InternalServerError || statusCode == 429;
                     if (isTransient)

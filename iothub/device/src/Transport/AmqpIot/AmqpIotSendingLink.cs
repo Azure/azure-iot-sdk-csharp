@@ -204,7 +204,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             if (Logging.IsEnabled)
                 Logging.Enter(this, nameof(SendTwinPatchMessageAsync));
 
-            string body = JsonConvert.SerializeObject(reportedProperties);
+            string body = JsonConvert.SerializeObject(reportedProperties, JsonSerializerSettingsInitializer.GetJsonSerializerSettings());
             var bodyStream = new MemoryStream(Encoding.UTF8.GetBytes(body));
 
             using var amqpMessage = AmqpMessage.Create(bodyStream, true);

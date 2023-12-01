@@ -22,7 +22,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         }
 
         protected override async Task<HttpResponseMessage> SendAsync(
-            HttpRequestMessage request, 
+            HttpRequestMessage request,
             CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
@@ -30,7 +30,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
             HttpResponseMessage response = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
 
-            if(response.StatusCode == HttpStatusCode.Unauthorized)
+            if (response.StatusCode == HttpStatusCode.Unauthorized)
             {
 #if NET5_0_OR_GREATER
                 if (request.Options.TryGetValue(new HttpRequestOptionsKey<object>(ProvisioningHeaderName), out object result))
@@ -42,11 +42,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                     {
                         string target = GetTarget(request.RequestUri.LocalPath);
                         string responseContent = await response.Content.ReadHttpContentAsStringAsync(cancellationToken).ConfigureAwait(false);
-                        TpmChallenge challenge = JsonConvert.DeserializeObject<TpmChallenge>(responseContent);
+                        TpmChallenge challenge = JsonConvert.DeserializeObject<TpmChallenge>(responseContent, JsonSerializerSettingsInitializer.GetJsonSerializerSettings());
 
                         string sasToken = ProvisioningSasBuilder.ExtractServiceAuthKey(
                             _securityProvider,
-                            target, 
+                            target,
                             Convert.FromBase64String(challenge.AuthenticationKey));
 
                         setSasToken(sasToken);
@@ -74,7 +74,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 throw new ArgumentException($"Invalid RequestUri LocalPath");
             }
 
-            return string.Concat(parameters[0], "/" , parameters[1], "/", parameters[2]);
+            return string.Concat(parameters[0], "/", parameters[1], "/", parameters[2]);
         }
     }
 }

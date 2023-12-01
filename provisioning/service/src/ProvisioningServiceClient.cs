@@ -110,9 +110,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 throw new ArgumentException($"{nameof(connectionString)} cannot be empty string");
             }
 
-            // Specify the JsonSerializerSettings. Check JsonSerializerSettingsInitializer for more details.
-            JsonConvert.DefaultSettings = JsonSerializerSettingsInitializer.GetJsonSerializerSettingsDelegate();
-
             _provisioningConnectionString = ServiceConnectionString.Parse(connectionString);
             _contractApiHttp = new ContractApiHttp(
                 _provisioningConnectionString.HttpsEndpoint,

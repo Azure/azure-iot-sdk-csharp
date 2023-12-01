@@ -113,7 +113,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 Logging.Exit(this, context.Name, nameof(ChannelInactive));
         }
 
-        public async override void ChannelRead(IChannelHandlerContext context, object message)
+        public override async void ChannelRead(IChannelHandlerContext context, object message)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, context.Name, nameof(ChannelRead));
@@ -129,7 +129,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 Logging.Exit(this, context.Name, nameof(ChannelRead));
         }
 
-        public async override void ChannelReadComplete(IChannelHandlerContext context)
+        public override async void ChannelReadComplete(IChannelHandlerContext context)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, context.Name, nameof(ChannelReadComplete));
@@ -329,7 +329,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             if (_message.Payload != null && _message.Payload.Length > 0)
             {
                 var deviceRegistration = new DeviceRegistration { Payload = new JRaw(_message.Payload) };
-                using var customContentStream = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(deviceRegistration)));
+                using var customContentStream = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(deviceRegistration, JsonSerializerSettingsInitializer.GetJsonSerializerSettings())));
                 long streamLength = customContentStream.Length;
                 int length = (int)streamLength;
                 packagePayload = context.Channel.Allocator.Buffer(length, length);
@@ -356,7 +356,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 {
                     if (statusCode >= HttpStatusCode.BadRequest)
                     {
-                        ProvisioningErrorDetailsMqtt errorDetails = JsonConvert.DeserializeObject<ProvisioningErrorDetailsMqtt>(jsonData);
+                        ProvisioningErrorDetailsMqtt errorDetails = JsonConvert.DeserializeObject<ProvisioningErrorDetailsMqtt>(jsonData, JsonSerializerSettingsInitializer.GetJsonSerializerSettings());
 
                         bool isTransient = statusCode >= HttpStatusCode.InternalServerError || (int)statusCode == 429;
 
@@ -391,7 +391,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
                 await VerifyPublishPacketTopicAsync(context, packet.TopicName, jsonData).ConfigureAwait(true);
 
-                RegistrationOperationStatus operation = JsonConvert.DeserializeObject<RegistrationOperationStatus>(jsonData);
+                RegistrationOperationStatus operation = JsonConvert.DeserializeObject<RegistrationOperationStatus>(jsonData, JsonSerializerSettingsInitializer.GetJsonSerializerSettings());
                 string operationId = operation.OperationId;
                 operation.RetryAfter = ProvisioningErrorDetailsMqtt.GetRetryAfterFromTopic(packet.TopicName, s_defaultOperationPoolingInterval);
 

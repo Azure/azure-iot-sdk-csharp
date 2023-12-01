@@ -1,4 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information
 
 using System;
@@ -39,6 +41,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
         private const int StatusFailure = 400;
         private const string FakeResponseId = "FakeResponseId";
         private static readonly TimeSpan s_receiveTimeoutBuffer = TimeSpan.FromSeconds(5);
+
         private delegate bool MessageMatcher(Message msg);
 
         [TestMethod]
@@ -367,7 +370,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             var transport = CreateTransportHandlerWithMockChannel(out IChannel channel);
             var twin = new Twin();
             twin.Properties.Desired = new TwinCollection(twinJson);
-            var twinByteStream = System.Text.Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(twin.Properties));
+            var twinByteStream = System.Text.Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(twin.Properties, JsonSerializerSettingsInitializer.GetJsonSerializerSettings()));
             channel
                 .WriteAndFlushAsync(Arg.Is<Message>(msg => msg.MqttTopicName.StartsWith(TwinGetTopicPrefix)))
                 .Returns(msg =>
@@ -458,7 +461,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             await transport.SendTwinPatchAsync(props, CancellationToken.None).ConfigureAwait(false);
 
             // assert
-            string expectedBody = JsonConvert.SerializeObject(props);
+            string expectedBody = JsonConvert.SerializeObject(props, JsonSerializerSettingsInitializer.GetJsonSerializerSettings());
             Assert.AreEqual<string>(expectedBody, receivedBody);
         }
 

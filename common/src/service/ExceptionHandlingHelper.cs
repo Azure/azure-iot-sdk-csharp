@@ -121,14 +121,14 @@ namespace Microsoft.Azure.Devices
             int errorCodeValue = (int)ErrorCode.InvalidErrorCode;
             try
             {
-                IoTHubExceptionResult responseContent = JsonConvert.DeserializeObject<IoTHubExceptionResult>(responseContentStr);
+                IoTHubExceptionResult responseContent = JsonConvert.DeserializeObject<IoTHubExceptionResult>(responseContentStr, JsonSerializerSettingsInitializer.GetJsonSerializerSettings());
 
                 try
                 {
                     var messageFields = new Dictionary<string, string>();
                     if (responseContent?.Message != null)
                     {
-                        messageFields = JsonConvert.DeserializeObject<Dictionary<string, string>>(responseContent.Message);
+                        messageFields = JsonConvert.DeserializeObject<Dictionary<string, string>>(responseContent.Message, JsonSerializerSettingsInitializer.GetJsonSerializerSettings());
                     }
 
                     if (messageFields != null

@@ -34,7 +34,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                     HttpMethod.Put,
                     GetEnrollmentUri(enrollmentGroup.EnrollmentGroupId),
                     null,
-                    JsonConvert.SerializeObject(enrollmentGroup),
+                    JsonConvert.SerializeObject(enrollmentGroup, JsonSerializerSettingsInitializer.GetJsonSerializerSettings()),
                     enrollmentGroup.ETag,
                     cancellationToken)
                 .ConfigureAwait(false);
@@ -44,7 +44,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 throw new ProvisioningServiceClientHttpException(contractApiResponse, true);
             }
 
-            return JsonConvert.DeserializeObject<EnrollmentGroup>(contractApiResponse.Body);
+            return JsonConvert.DeserializeObject<EnrollmentGroup>(contractApiResponse.Body, JsonSerializerSettingsInitializer.GetJsonSerializerSettings());
         }
 
         internal static async Task<EnrollmentGroup> GetAsync(
@@ -67,7 +67,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 throw new ProvisioningServiceClientHttpException(contractApiResponse, true);
             }
 
-            return JsonConvert.DeserializeObject<EnrollmentGroup>(contractApiResponse.Body);
+            return JsonConvert.DeserializeObject<EnrollmentGroup>(contractApiResponse.Body, JsonSerializerSettingsInitializer.GetJsonSerializerSettings());
         }
 
         internal static async Task DeleteAsync(
@@ -154,7 +154,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 throw new ProvisioningServiceClientHttpException(contractApiResponse, true);
             }
 
-            return JsonConvert.DeserializeObject<AttestationMechanism>(contractApiResponse.Body);
+            return JsonConvert.DeserializeObject<AttestationMechanism>(contractApiResponse.Body, JsonSerializerSettingsInitializer.GetJsonSerializerSettings());
         }
 
         private static Uri GetEnrollmentAttestationUri(string enrollmentGroupId)
