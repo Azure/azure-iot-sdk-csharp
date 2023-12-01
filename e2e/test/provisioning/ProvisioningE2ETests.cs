@@ -26,6 +26,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
     [TestClass]
     [TestCategory("E2E")]
     [TestCategory("DPS")]
+    [DoNotParallelize]
     public class ProvisioningE2ETests : E2EMsTestBase
     {
         private const int PassingTimeoutMiliseconds = 10 * 60 * 1000;

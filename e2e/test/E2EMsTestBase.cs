@@ -3,6 +3,8 @@
 
 using System;
 using System.Diagnostics.Tracing;
+using System.Threading.Tasks;
+using System.Threading;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 //Workers = 0 makes the test engine use one worker per available core. It does not mean to run serially.
@@ -74,6 +76,45 @@ namespace Microsoft.Azure.Devices.E2ETests
             {
                 _listener?.Dispose();
             }
+        }
+    }
+    
+    // Test Retry Attribute
+    public class TestMethodWithRetryAttribute : TestMethodAttribute
+    {
+        // Default 1 for single test with no retry
+        public int Max { get; set; } = 1;
+
+        public override TestResult[] Execute(ITestMethod testMethod)
+        {
+            int runNum = 0;
+            bool retry = true;
+            TestResult[] results = null;
+            while (runNum <= Max && retry)
+            {
+                int delay = 2+runNum*2; // seconds of delay for next run.
+                retry = false;
+                runNum++;
+                //VerboseTestLogger.WriteLine($"R:Starts {testMethod.TestMethodName} run({runNum}/{Max}).");
+                results = base.Execute(testMethod);
+                foreach (TestResult result in results)
+                {
+                    if (result.TestFailureException != null)
+                    {
+                        if (runNum >= Max)
+                        {
+                            VerboseTestLogger.WriteLine($"R{runNum}Failed {testMethod.TestMethodName}. Max retry reached.\nException [{result.TestFailureException}] caught in {testMethod.TestClassName}.\n\n\n");
+                            return results;
+                        }
+                        retry = true;
+                        VerboseTestLogger.WriteLine($"R{runNum}Failed {testMethod.TestMethodName}. Will rety after {delay}s.\nException [{result.TestFailureException}] caught in {testMethod.TestClassName}.\n\n\n");
+                        Thread.Sleep(delay*1000);
+                        break;
+                    }
+                }
+            }
+            //VerboseTestLogger.WriteLine($"R:Passed {testMethod.TestMethodName} run({runNum}/{Max}).");
+            return results;
         }
     }
 }

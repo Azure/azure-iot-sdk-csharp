@@ -32,8 +32,10 @@ namespace Microsoft.Azure.Devices
 #if !NET451
                     httpClientHandler.MaxConnectionsPerServer = DefaultMaxConnectionsPerServer;
 #endif
+#pragma warning disable SYSLIB0014 // Type or member is obsolete
                     ServicePoint servicePoint = ServicePointManager.FindServicePoint(baseUri);
                     servicePoint.ConnectionLeaseTimeout = connectionLeaseTimeoutMilliseconds;
+#pragma warning restore SYSLIB0014 // Type or member is obsolete
                     break;
 #if NETCOREAPP2_1_OR_GREATER || NET5_0_OR_GREATER
                 // SocketsHttpHandler is only available in netcore2.1 and onwards

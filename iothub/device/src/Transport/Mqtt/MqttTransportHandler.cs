@@ -992,6 +992,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             {
 #if NET451
                 _serverAddresses = Dns.GetHostEntry(_hostName).AddressList;
+#elif NET6_0_OR_GREATER
+                _serverAddresses = await Dns.GetHostAddressesAsync(_hostName, cancellationToken).ConfigureAwait(false);
 #else
                 _serverAddresses = await Dns.GetHostAddressesAsync(_hostName).ConfigureAwait(false);
 #endif
