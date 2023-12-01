@@ -258,7 +258,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             if (Logging.IsEnabled)
                 Logging.Associate(bootstrap, this);
 
+#if NET6_0_OR_GREATER
+            IPAddress[] addresses = await Dns.GetHostAddressesAsync(message.GlobalDeviceEndpoint, cancellationToken).ConfigureAwait(false);
+#else
             IPAddress[] addresses = await Dns.GetHostAddressesAsync(message.GlobalDeviceEndpoint).ConfigureAwait(false);
+#endif
 
             if (Logging.IsEnabled)
                 Logging.Info(this, $"DNS resolved {addresses.Length} addresses.");
