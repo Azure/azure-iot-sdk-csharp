@@ -38,7 +38,9 @@ namespace Microsoft.Azure.Devices.Client
 #if !NET451
                     httpClientHandler.MaxConnectionsPerServer = DefaultMaxConnectionsPerServer;
 #endif
+#pragma warning disable SYSLIB0014 // Type or member is obsolete
                     ServicePoint servicePoint = ServicePointManager.FindServicePoint(baseUri);
+#pragma warning restore SYSLIB0014 // Type or member is obsolete
                     servicePoint.ConnectionLeaseTimeout = connectionLeaseTimeoutMilliseconds;
                     break;
 #if NETCOREAPP2_1_OR_GREATER || NET5_0_OR_GREATER
