@@ -10,7 +10,7 @@
     <PackageReference Include="CommandLineParser" Version="2.9.1" />
 
     <!-- Working around a bug between DotNetty and .NET 5.0+ by specifying the exact version of DotNetty.Common that has the fix -->
-    <PackageReference Include="DotNetty.Common" Version="0.7.4" />
+    <PackageReference Include="DotNetty.Common" Version="0.7.5" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(Configuration)' == 'Release'">
