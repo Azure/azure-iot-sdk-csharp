@@ -82,11 +82,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
 
             if (type == TestDeviceType.X509)
             {
+                using X509Certificate2 cert = TestConfiguration.IotHub.GetCertificateWithPrivateKey();
                 requestDevice.Authentication = new AuthenticationMechanism
                 {
                     X509Thumbprint = new X509Thumbprint
                     {
-                        PrimaryThumbprint = TestConfiguration.IotHub.GetCertificateWithPrivateKey().Thumbprint
+                        PrimaryThumbprint = cert.Thumbprint
                     }
                 };
 
