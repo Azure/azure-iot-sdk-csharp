@@ -20,7 +20,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
 
             foreach (T item in items)
             {
-                itemsFileSb.AppendLine(JsonConvert.SerializeObject(item));
+                itemsFileSb.AppendLine(JsonConvert.SerializeObject(item, JsonSerializerSettingsInitializer.GetJsonSerializerSettings()));
             }
 
             byte[] itemsFileInBytes = Encoding.Default.GetBytes(itemsFileSb.ToString());
