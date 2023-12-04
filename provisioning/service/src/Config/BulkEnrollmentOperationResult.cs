@@ -10,7 +10,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// Representation of a single Device Provisioning Service bulk operation result with a JSON deserializer.
     /// </summary>
     /// <remarks>
-    /// This error is returned as a result of the 
+    /// This error is returned as a result of the
     ///     <see cref="ProvisioningServiceClient.RunBulkEnrollmentOperationAsync(BulkOperationMode, IEnumerable{IndividualEnrollment})"/>.
     ///
     /// The provisioning service provides general bulk result in the isSuccessful, and a individual error result

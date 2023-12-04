@@ -505,12 +505,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             // Validate the updated twin from the device-client
             Twin deviceTwin = await deviceClient.GetTwinAsync().ConfigureAwait(false);
             dynamic actual = deviceTwin.Properties.Reported[propName];
-            Assert.AreEqual(JsonConvert.SerializeObject(actual), JsonConvert.SerializeObject(propValue));
+            Assert.AreEqual(JsonConvert.SerializeObject(actual, JsonSerializerSettingsInitializer.GetJsonSerializerSettings()), JsonConvert.SerializeObject(propValue, JsonSerializerSettingsInitializer.GetJsonSerializerSettings()));
 
             // Validate the updated twin from the service-client
             Twin completeTwin = await _registryManager.GetTwinAsync(deviceId).ConfigureAwait(false);
             dynamic actualProp = completeTwin.Properties.Reported[propName];
-            Assert.AreEqual(JsonConvert.SerializeObject(actualProp), JsonConvert.SerializeObject(propValue));
+            Assert.AreEqual(JsonConvert.SerializeObject(actualProp, JsonSerializerSettingsInitializer.GetJsonSerializerSettings()), JsonConvert.SerializeObject(propValue, JsonSerializerSettingsInitializer.GetJsonSerializerSettings()));
         }
 
         public static async Task<Task> SetTwinPropertyUpdateCallbackHandlerAsync(DeviceClient deviceClient, string expectedPropName, object expectedPropValue)
@@ -526,7 +526,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
 
                         try
                         {
-                            Assert.AreEqual(JsonConvert.SerializeObject(expectedPropValue), JsonConvert.SerializeObject(patch[expectedPropName]));
+                            Assert.AreEqual(JsonConvert.SerializeObject(expectedPropValue, JsonSerializerSettingsInitializer.GetJsonSerializerSettings()), JsonConvert.SerializeObject(patch[expectedPropName], JsonSerializerSettingsInitializer.GetJsonSerializerSettings()));
                             Assert.AreEqual(userContext, context, "Context");
                         }
                         catch (Exception e)
@@ -646,12 +646,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             // Validate the updated twin from the device-client
             Twin deviceTwin = await deviceClient.GetTwinAsync().ConfigureAwait(false);
             dynamic actual = deviceTwin.Properties.Desired[propName];
-            Assert.AreEqual(JsonConvert.SerializeObject(actual), JsonConvert.SerializeObject(propValue));
+            Assert.AreEqual(JsonConvert.SerializeObject(actual, JsonSerializerSettingsInitializer.GetJsonSerializerSettings()), JsonConvert.SerializeObject(propValue, JsonSerializerSettingsInitializer.GetJsonSerializerSettings()));
 
             // Validate the updated twin from the service-client
             Twin completeTwin = await _registryManager.GetTwinAsync(testDevice.Id).ConfigureAwait(false);
             dynamic actualProp = completeTwin.Properties.Desired[propName];
-            Assert.AreEqual(JsonConvert.SerializeObject(actualProp), JsonConvert.SerializeObject(propValue));
+            Assert.AreEqual(JsonConvert.SerializeObject(actualProp, JsonSerializerSettingsInitializer.GetJsonSerializerSettings()), JsonConvert.SerializeObject(propValue, JsonSerializerSettingsInitializer.GetJsonSerializerSettings()));
 
             await deviceClient.SetDesiredPropertyUpdateCallbackAsync(null, null).ConfigureAwait(false);
             await deviceClient.CloseAsync().ConfigureAwait(false);
@@ -679,7 +679,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
 
         private async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGetDateTimePropertiesAsync(Client.TransportType transport)
         {
-            string jsonString = JsonConvert.SerializeObject(s_dateTimeProperty);
+            string jsonString = JsonConvert.SerializeObject(s_dateTimeProperty, JsonSerializerSettingsInitializer.GetJsonSerializerSettings());
 
             using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix).ConfigureAwait(false);
             using var registryManager = RegistryManager.CreateFromConnectionString(TestConfiguration.IotHub.ConnectionString);
@@ -691,7 +691,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             await registryManager.UpdateTwinAsync(testDevice.Id, twinPatch, "*").ConfigureAwait(false);
 
             Twin deviceTwin = await deviceClient.GetTwinAsync().ConfigureAwait(false);
-            Assert.AreEqual<string>(deviceTwin.Properties.Desired["Iso8601String"].ToString(), DateTimeValue);
+            Assert.AreEqual<string>(DateTimeValue, deviceTwin.Properties.Desired["Iso8601String"].ToString());
 
             await deviceClient.CloseAsync().ConfigureAwait(false);
             await registryManager.CloseAsync().ConfigureAwait(false);

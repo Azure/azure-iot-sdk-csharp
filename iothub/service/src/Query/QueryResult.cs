@@ -14,7 +14,7 @@ namespace Microsoft.Azure.Devices
     /// <summary>
     ///     Contains the result of a device, device job or device aggregate query
     /// </summary>
-    class QueryResult
+    internal class QueryResult
     {
         private const string ContinuationTokenHeader = "x-ms-continuation";
         private const string QueryResultTypeHeader = "x-ms-item-type";
@@ -34,7 +34,7 @@ namespace Microsoft.Azure.Devices
             return new QueryResult
             {
 #if !NET451
-                Items = Newtonsoft.Json.JsonConvert.DeserializeObject<IEnumerable<object>>(await response.Content.ReadAsStringAsync().ConfigureAwait(false)),
+                Items = JsonConvert.DeserializeObject<IEnumerable<object>>(await response.Content.ReadAsStringAsync().ConfigureAwait(false), JsonSerializerSettingsInitializer.GetJsonSerializerSettings()),
 #else // Requires System.Net.Http.Formatting.Extension
                 Items = await response.Content.ReadAsAsync<IEnumerable<object>>().ConfigureAwait(false),
 #endif

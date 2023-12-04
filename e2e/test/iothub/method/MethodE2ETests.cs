@@ -29,91 +29,91 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
 
         private static readonly TimeSpan s_defaultMethodTimeoutMinutes = TimeSpan.FromMinutes(2);
 
-        [TestMethodWithRetry(Max=3)]
+        [TestMethodWithRetry(Max = 3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceReceivesMethodAndResponse_Mqtt()
         {
             await SendMethodAndRespondAsync(Client.TransportType.Mqtt_Tcp_Only, SetDeviceReceiveMethodAsync).ConfigureAwait(false);
         }
 
-        [TestMethodWithRetry(Max=3)]
+        [TestMethodWithRetry(Max = 3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceReceivesMethodAndResponse_MqttWs()
         {
             await SendMethodAndRespondAsync(Client.TransportType.Mqtt_WebSocket_Only, SetDeviceReceiveMethodAsync).ConfigureAwait(false);
         }
 
-        [TestMethodWithRetry(Max=3)]
+        [TestMethodWithRetry(Max = 3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceUnsubscribes_Mqtt()
         {
             await SendMethodAndUnsubscribeAsync(Client.TransportType.Mqtt_Tcp_Only, SubscribeAndUnsubscribeMethodAsync).ConfigureAwait(false);
         }
 
-        [TestMethodWithRetry(Max=3)]
+        [TestMethodWithRetry(Max = 3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceUnsubscribes_MqttWs()
         {
             await SendMethodAndUnsubscribeAsync(Client.TransportType.Mqtt_WebSocket_Only, SubscribeAndUnsubscribeMethodAsync).ConfigureAwait(false);
         }
 
-        [TestMethodWithRetry(Max=3)]
+        [TestMethodWithRetry(Max = 3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceReceivesMethodAndResponseWithDefaultMethodHandler_Mqtt()
         {
             await SendMethodAndRespondAsync(Client.TransportType.Mqtt_Tcp_Only, SetDeviceReceiveMethodDefaultHandlerAsync).ConfigureAwait(false);
         }
 
-        [TestMethodWithRetry(Max=3)]
+        [TestMethodWithRetry(Max = 3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceReceivesMethodAndResponseWithDefaultMethodHandler_MqttWs()
         {
             await SendMethodAndRespondAsync(Client.TransportType.Mqtt_WebSocket_Only, SetDeviceReceiveMethodDefaultHandlerAsync).ConfigureAwait(false);
         }
 
-        [TestMethodWithRetry(Max=3)]
+        [TestMethodWithRetry(Max = 3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceReceivesMethodAndResponse_Amqp()
         {
             await SendMethodAndRespondAsync(Client.TransportType.Amqp_Tcp_Only, SetDeviceReceiveMethodAsync).ConfigureAwait(false);
         }
 
-        [TestMethodWithRetry(Max=3)]
+        [TestMethodWithRetry(Max = 3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceReceivesMethodAndResponse_AmqpWs()
         {
             await SendMethodAndRespondAsync(Client.TransportType.Amqp_WebSocket_Only, SetDeviceReceiveMethodAsync).ConfigureAwait(false);
         }
 
-        [TestMethodWithRetry(Max=3)]
+        [TestMethodWithRetry(Max = 3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceUnsubscribes_Amqp()
         {
             await SendMethodAndUnsubscribeAsync(Client.TransportType.Amqp_Tcp_Only, SubscribeAndUnsubscribeMethodAsync).ConfigureAwait(false);
         }
 
-        [TestMethodWithRetry(Max=3)]
+        [TestMethodWithRetry(Max = 3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceUnsubscribes_AmqpWs()
         {
             await SendMethodAndUnsubscribeAsync(Client.TransportType.Amqp_WebSocket_Only, SubscribeAndUnsubscribeMethodAsync).ConfigureAwait(false);
         }
 
-        [TestMethodWithRetry(Max=3)]
+        [TestMethodWithRetry(Max = 3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceReceivesMethodAndResponseWithDefaultMethodHandler_Amqp()
         {
             await SendMethodAndRespondAsync(Client.TransportType.Amqp_Tcp_Only, SetDeviceReceiveMethodDefaultHandlerAsync).ConfigureAwait(false);
         }
 
-        [TestMethodWithRetry(Max=3)]
+        [TestMethodWithRetry(Max = 3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Method_DeviceReceivesMethodAndResponseWithDefaultMethodHandler_AmqpWs()
         {
             await SendMethodAndRespondAsync(Client.TransportType.Amqp_WebSocket_Only, SetDeviceReceiveMethodDefaultHandlerAsync).ConfigureAwait(false);
         }
 
-        [TestMethodWithRetry(Max=3)]
+        [TestMethodWithRetry(Max = 3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Method_ServiceSendsMethodThroughProxyWithDefaultTimeout()
         {
@@ -129,7 +129,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 .ConfigureAwait(false);
         }
 
-        [TestMethodWithRetry(Max=3)]
+        [TestMethodWithRetry(Max = 3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Method_ServiceSendsMethodThroughProxyWithCustomTimeout()
         {
@@ -146,7 +146,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 .ConfigureAwait(false);
         }
 
-        [TestMethodWithRetry(Max=3)]
+        [TestMethodWithRetry(Max = 3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Method_ServiceInvokeDeviceMethodWithUnknownDeviceThrows()
         {
@@ -172,63 +172,63 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             await serviceClient.CloseAsync().ConfigureAwait(false);
         }
 
-        [TestMethodWithRetry(Max=3)]
+        [TestMethodWithRetry(Max = 3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Method_ModuleReceivesMethodAndResponse_Mqtt()
         {
             await SendMethodAndRespondAsync(Client.TransportType.Mqtt_Tcp_Only, SetModuleReceiveMethodAsync).ConfigureAwait(false);
         }
 
-        [TestMethodWithRetry(Max=3)]
+        [TestMethodWithRetry(Max = 3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Method_ModuleReceivesMethodAndResponse_MqttWs()
         {
             await SendMethodAndRespondAsync(Client.TransportType.Mqtt_WebSocket_Only, SetModuleReceiveMethodAsync).ConfigureAwait(false);
         }
 
-        [TestMethodWithRetry(Max=3)]
+        [TestMethodWithRetry(Max = 3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Method_ModuleReceivesMethodAndResponseWithDefaultMethodHandler_Mqtt()
         {
             await SendMethodAndRespondAsync(Client.TransportType.Mqtt_Tcp_Only, SetModuleReceiveMethodDefaultHandlerAsync).ConfigureAwait(false);
         }
 
-        [TestMethodWithRetry(Max=3)]
+        [TestMethodWithRetry(Max = 3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Method_ModuleReceivesMethodAndResponseWithDefaultMethodHandler_MqttWs()
         {
             await SendMethodAndRespondAsync(Client.TransportType.Mqtt_WebSocket_Only, SetModuleReceiveMethodDefaultHandlerAsync).ConfigureAwait(false);
         }
 
-        [TestMethodWithRetry(Max=3)]
+        [TestMethodWithRetry(Max = 3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Method_ModuleReceivesMethodAndResponse_Amqp()
         {
             await SendMethodAndRespondAsync(Client.TransportType.Amqp_Tcp_Only, SetModuleReceiveMethodAsync).ConfigureAwait(false);
         }
 
-        [TestMethodWithRetry(Max=3)]
+        [TestMethodWithRetry(Max = 3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Method_ModuleReceivesMethodAndResponse_AmqpWs()
         {
             await SendMethodAndRespondAsync(Client.TransportType.Amqp_WebSocket_Only, SetModuleReceiveMethodAsync).ConfigureAwait(false);
         }
 
-        [TestMethodWithRetry(Max=3)]
+        [TestMethodWithRetry(Max = 3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Method_ModuleReceivesMethodAndResponseWithDefaultMethodHandler_Amqp()
         {
             await SendMethodAndRespondAsync(Client.TransportType.Amqp_Tcp_Only, SetModuleReceiveMethodDefaultHandlerAsync).ConfigureAwait(false);
         }
 
-        [TestMethodWithRetry(Max=3)]
+        [TestMethodWithRetry(Max = 3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Method_ModuleReceivesMethodAndResponseWithDefaultMethodHandler_AmqpWs()
         {
             await SendMethodAndRespondAsync(Client.TransportType.Amqp_WebSocket_Only, SetModuleReceiveMethodDefaultHandlerAsync).ConfigureAwait(false);
         }
 
-        [TestMethodWithRetry(Max=3)]
+        [TestMethodWithRetry(Max = 3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Method_ServiceInvokeDeviceMethodWithUnknownModuleThrows()
         {
@@ -256,7 +256,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             await serviceClient.CloseAsync().ConfigureAwait(false);
         }
 
-        [TestMethodWithRetry(Max=3)]
+        [TestMethodWithRetry(Max = 3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Method_ServiceInvokeDeviceMethodWithNullPayload_DoesNotThrow()
         {
@@ -302,7 +302,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             }
         }
 
-        [TestMethodWithRetry(Max=3)]
+        [TestMethodWithRetry(Max = 3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Method_ServiceInvokeDeviceMethodWithDateTimePayload_DoesNotThrow()
         {
@@ -310,7 +310,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
 
             var date = new DateTimeOffset(638107582284599400, TimeSpan.FromHours(1));
 
-            string responseJson = JsonConvert.SerializeObject(new TestDateTime { Iso8601String = date.ToString("o", CultureInfo.InvariantCulture) });
+            string responseJson = JsonConvert.SerializeObject(new TestDateTime { Iso8601String = date.ToString("o", CultureInfo.InvariantCulture) }, JsonSerializerSettingsInitializer.GetJsonSerializerSettings());
             byte[] responseBytes = Encoding.UTF8.GetBytes(responseJson);
 
             const string commandName = "GetDateTime";
@@ -340,7 +340,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
 
                 CloudToDeviceMethodResult result = await serviceClient.InvokeDeviceMethodAsync(testDevice.Id, c2dMethod).ConfigureAwait(false);
                 string actualResultJson = result.GetPayloadAsJson();
-                TestDateTime myDtoValue = JsonConvert.DeserializeObject<TestDateTime>(actualResultJson);
+                TestDateTime myDtoValue = JsonConvert.DeserializeObject<TestDateTime>(actualResultJson, JsonSerializerSettingsInitializer.GetJsonSerializerSettings());
                 string value = myDtoValue.Iso8601String;
 
                 Action act = () => DateTimeOffset.ParseExact(value, "o", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);

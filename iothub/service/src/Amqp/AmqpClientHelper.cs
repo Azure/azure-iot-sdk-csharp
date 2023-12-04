@@ -138,7 +138,7 @@ namespace Microsoft.Azure.Devices
         {
             using var reader = new StreamReader(amqpMessage.BodyStream, Encoding.UTF8);
             string jsonString = await reader.ReadToEndAsync().ConfigureAwait(false);
-            return JsonConvert.DeserializeObject<T>(jsonString);
+            return JsonConvert.DeserializeObject<T>(jsonString, JsonSerializerSettingsInitializer.GetJsonSerializerSettings());
         }
     }
 }

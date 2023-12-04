@@ -49,9 +49,6 @@ namespace Microsoft.Azure.Devices
             _defaultErrorMapping = defaultErrorMapping;
             _defaultOperationTimeout = timeout;
 
-            // Specify the JsonSerializerSettings. Check JsonSerializerSettingsInitializer for more details.
-            JsonConvert.DefaultSettings = JsonSerializerSettingsInitializer.GetJsonSerializerSettingsDelegate();
-
             // We need two types of HttpClients, one with our default operation timeout, and one without. The one without will rely on
             // a cancellation token.
 
@@ -312,7 +309,7 @@ namespace Microsoft.Azure.Devices
             }
 
             string str = await message.Content.ReadHttpContentAsStringAsync(token).ConfigureAwait(false);
-            T entity = JsonConvert.DeserializeObject<T>(str);
+            T entity = JsonConvert.DeserializeObject<T>(str, JsonSerializerSettingsInitializer.GetJsonSerializerSettings());
 
             // Etag in the header is considered authoritative
             var eTagHolder = entity as IETagHolder;
@@ -575,7 +572,7 @@ namespace Microsoft.Azure.Devices
                     }
                     else
                     {
-                        string str = JsonConvert.SerializeObject(entity);
+                        string str = JsonConvert.SerializeObject(entity, JsonSerializerSettingsInitializer.GetJsonSerializerSettings());
                         requestMsg.Content = new StringContent(str, System.Text.Encoding.UTF8, ApplicationJson);
                     }
                 }

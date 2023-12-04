@@ -223,7 +223,7 @@ namespace Microsoft.Azure.Devices.Serialization
         /// <returns>A string of the json payload.</returns>
         public string Serialize()
         {
-            return JsonConvert.SerializeObject(_ops);
+            return JsonConvert.SerializeObject(_ops, JsonSerializerSettingsInitializer.GetJsonSerializerSettings());
         }
     }
 }

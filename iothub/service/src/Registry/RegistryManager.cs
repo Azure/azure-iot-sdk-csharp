@@ -1937,7 +1937,7 @@ namespace Microsoft.Azure.Devices
                 }
 
                 // TODO: Do we need to deserialize Twin, only to serialize it again?
-                Twin twin = JsonConvert.DeserializeObject<Twin>(jsonTwinPatch);
+                Twin twin = JsonConvert.DeserializeObject<Twin>(jsonTwinPatch, JsonSerializerSettingsInitializer.GetJsonSerializerSettings());
                 return UpdateTwinAsync(deviceId, twin, etag, cancellationToken);
             }
             catch (Exception ex)
@@ -2014,7 +2014,7 @@ namespace Microsoft.Azure.Devices
                 }
 
                 // TODO: Do we need to deserialize Twin, only to serialize it again?
-                Twin twin = JsonConvert.DeserializeObject<Twin>(jsonTwinPatch);
+                Twin twin = JsonConvert.DeserializeObject<Twin>(jsonTwinPatch, JsonSerializerSettingsInitializer.GetJsonSerializerSettings());
                 return UpdateTwinAsync(deviceId, moduleId, twin, etag, cancellationToken);
             }
             catch (Exception ex)
@@ -2134,7 +2134,7 @@ namespace Microsoft.Azure.Devices
                 }
 
                 // TODO: Do we need to deserialize Twin, only to serialize it again?
-                Twin twin = JsonConvert.DeserializeObject<Twin>(newTwinJson);
+                Twin twin = JsonConvert.DeserializeObject<Twin>(newTwinJson, JsonSerializerSettingsInitializer.GetJsonSerializerSettings());
                 return ReplaceTwinAsync(deviceId, twin, etag, cancellationToken);
             }
             catch (Exception ex)
@@ -2207,7 +2207,7 @@ namespace Microsoft.Azure.Devices
             }
 
             // TODO: Do we need to deserialize Twin, only to serialize it again?
-            Twin twin = JsonConvert.DeserializeObject<Twin>(newTwinJson);
+            Twin twin = JsonConvert.DeserializeObject<Twin>(newTwinJson, JsonSerializerSettingsInitializer.GetJsonSerializerSettings());
             return ReplaceTwinAsync(deviceId, moduleId, twin, etag, cancellationToken);
         }
 

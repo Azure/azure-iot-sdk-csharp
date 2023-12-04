@@ -4,7 +4,7 @@
 using System;
 using Newtonsoft.Json;
 
-namespace Microsoft.Azure.Devices
+namespace Microsoft.Azure.Devices.E2ETests
 {
     /// <summary>
     /// A class to initialize JsonSerializerSettings which can be applied to the project.

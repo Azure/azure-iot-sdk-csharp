@@ -39,7 +39,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 throw new ProvisioningServiceClientHttpException(contractApiResponse, true);
             }
 
-            return JsonConvert.DeserializeObject<DeviceRegistrationState>(contractApiResponse.Body);
+            return JsonConvert.DeserializeObject<DeviceRegistrationState>(contractApiResponse.Body, JsonSerializerSettingsInitializer.GetJsonSerializerSettings());
         }
 
         internal static async Task DeleteAsync(

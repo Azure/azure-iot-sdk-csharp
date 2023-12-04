@@ -598,7 +598,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         private static StringContent CreateContent<T>(T entity)
         {
-            return new StringContent(JsonConvert.SerializeObject(entity), Encoding.UTF8, "application/json");
+            return new StringContent(JsonConvert.SerializeObject(entity, JsonSerializerSettingsInitializer.GetJsonSerializerSettings()), Encoding.UTF8, "application/json");
         }
 
         private static async Task<T> ReadAsAsync<T>(HttpContent content, CancellationToken token)

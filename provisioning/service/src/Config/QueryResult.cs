@@ -128,15 +128,15 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             switch (Type)
             {
                 case QueryResultType.Enrollment:
-                    Items = JsonConvert.DeserializeObject<IEnumerable<IndividualEnrollment>>(bodyString);
+                    Items = JsonConvert.DeserializeObject<IEnumerable<IndividualEnrollment>>(bodyString, JsonSerializerSettingsInitializer.GetJsonSerializerSettings());
                     break;
 
                 case QueryResultType.EnrollmentGroup:
-                    Items = JsonConvert.DeserializeObject<IEnumerable<EnrollmentGroup>>(bodyString);
+                    Items = JsonConvert.DeserializeObject<IEnumerable<EnrollmentGroup>>(bodyString, JsonSerializerSettingsInitializer.GetJsonSerializerSettings());
                     break;
 
                 case QueryResultType.DeviceRegistration:
-                    Items = JsonConvert.DeserializeObject<IEnumerable<DeviceRegistrationState>>(bodyString);
+                    Items = JsonConvert.DeserializeObject<IEnumerable<DeviceRegistrationState>>(bodyString, JsonSerializerSettingsInitializer.GetJsonSerializerSettings());
                     break;
 
                 default:
@@ -148,13 +148,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                     {
                         try
                         {
-                            Items = JsonConvert.DeserializeObject<IEnumerable<JObject>>(bodyString);
+                            Items = JsonConvert.DeserializeObject<IEnumerable<JObject>>(bodyString, JsonSerializerSettingsInitializer.GetJsonSerializerSettings());
                         }
                         catch (ArgumentException)
                         {
                             try
                             {
-                                Items = JsonConvert.DeserializeObject<IEnumerable<object>>(bodyString);
+                                Items = JsonConvert.DeserializeObject<IEnumerable<object>>(bodyString, JsonSerializerSettingsInitializer.GetJsonSerializerSettings());
                             }
                             catch (ArgumentException)
                             {
@@ -163,7 +163,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                         }
                         catch (JsonSerializationException)
                         {
-                            Items = JsonConvert.DeserializeObject<IEnumerable<object>>(bodyString);
+                            Items = JsonConvert.DeserializeObject<IEnumerable<object>>(bodyString, JsonSerializerSettingsInitializer.GetJsonSerializerSettings());
                         }
                         catch (JsonReaderException)
                         {

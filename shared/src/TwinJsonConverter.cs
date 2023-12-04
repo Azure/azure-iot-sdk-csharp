@@ -96,7 +96,7 @@ namespace Microsoft.Azure.Devices.Shared
             if (twin.Status != null)
             {
                 writer.WritePropertyName(StatusTag);
-                writer.WriteRawValue(JsonConvert.SerializeObject(twin.Status));
+                writer.WriteRawValue(JsonConvert.SerializeObject(twin.Status, JsonSerializerSettingsInitializer.GetJsonSerializerSettings()));
             }
 
             if (!string.IsNullOrWhiteSpace(twin.StatusReason))
@@ -277,7 +277,7 @@ namespace Microsoft.Azure.Devices.Shared
 
                     case StatusTag:
                         string status = reader.Value as string;
-                        twin.Status = status?[0] == '\"' ? JsonConvert.DeserializeObject<DeviceStatus>(status) : serializer.Deserialize<DeviceStatus>(reader);
+                        twin.Status = status?[0] == '\"' ? JsonConvert.DeserializeObject<DeviceStatus>(status, JsonSerializerSettingsInitializer.GetJsonSerializerSettings()) : serializer.Deserialize<DeviceStatus>(reader);
                         break;
 
                     case StatusReasonTag:
@@ -291,7 +291,7 @@ namespace Microsoft.Azure.Devices.Shared
                     case ConnectionStateTag:
                         string connectionState = reader.Value as string;
                         twin.ConnectionState = connectionState?[0] == '\"'
-                            ? JsonConvert.DeserializeObject<DeviceConnectionState>(connectionState)
+                            ? JsonConvert.DeserializeObject<DeviceConnectionState>(connectionState, JsonSerializerSettingsInitializer.GetJsonSerializerSettings())
                             : serializer.Deserialize<DeviceConnectionState>(reader);
                         break;
 
@@ -306,7 +306,7 @@ namespace Microsoft.Azure.Devices.Shared
                     case AuthenticationTypeTag:
                         string authenticationType = reader.Value as string;
                         twin.AuthenticationType = authenticationType?[0] == '\"'
-                            ? JsonConvert.DeserializeObject<AuthenticationType>(authenticationType)
+                            ? JsonConvert.DeserializeObject<AuthenticationType>(authenticationType, JsonSerializerSettingsInitializer.GetJsonSerializerSettings())
                             : serializer.Deserialize<AuthenticationType>(reader);
                         break;
 

@@ -27,7 +27,7 @@ namespace Microsoft.Azure.Devices.Shared
 #if NET451
             requestMessage.Content = new ObjectContent<T>(entity, s_jsonFormatter);
 #else
-            string str = JsonConvert.SerializeObject(entity);
+            string str = JsonConvert.SerializeObject(entity, JsonSerializerSettingsInitializer.GetJsonSerializerSettings());
             requestMessage.Content = new StringContent(str, Encoding.UTF8, ApplicationJson);
 #endif
         }

@@ -31,7 +31,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             '\n',
         };
 
-        [TestMethodWithRetry(Max=3)]
+        [TestMethodWithRetry(Max = 3)]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         [TestCategory("LongRunning")]
         [DoNotParallelize] // the number of jobs that can be run at a time are limited anyway
@@ -239,7 +239,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                     break;
                 }
 
-                ExportImportDevice exportedDevice = JsonConvert.DeserializeObject<ExportImportDevice>(serializedDevice);
+                ExportImportDevice exportedDevice = JsonConvert.DeserializeObject<ExportImportDevice>(serializedDevice, JsonSerializerSettingsInitializer.GetJsonSerializerSettings());
 
                 if (StringComparer.Ordinal.Equals(exportedDevice.Id, edge1.Id) && exportedDevice.Capabilities.IotEdge)
                 {
@@ -281,7 +281,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             bool foundConfig = false;
             foreach (string serializedConfig in serializedConfigs)
             {
-                Configuration exportedConfig = JsonConvert.DeserializeObject<Configuration>(serializedConfig);
+                Configuration exportedConfig = JsonConvert.DeserializeObject<Configuration>(serializedConfig, JsonSerializerSettingsInitializer.GetJsonSerializerSettings());
                 if (StringComparer.Ordinal.Equals(exportedConfig.Id, configuration.Id))
                 {
                     VerboseTestLogger.WriteLine($"Found config in export as [{serializedConfig}]");

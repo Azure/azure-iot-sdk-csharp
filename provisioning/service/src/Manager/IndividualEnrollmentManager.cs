@@ -44,7 +44,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                     HttpMethod.Put,
                     GetEnrollmentUri(individualEnrollment.RegistrationId),
                     null,
-                    JsonConvert.SerializeObject(individualEnrollment),
+                    JsonConvert.SerializeObject(individualEnrollment, JsonSerializerSettingsInitializer.GetJsonSerializerSettings()),
                     individualEnrollment.ETag,
                     cancellationToken)
                 .ConfigureAwait(false);
@@ -54,7 +54,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 throw new ProvisioningServiceClientHttpException(contractApiResponse, true);
             }
 
-            return JsonConvert.DeserializeObject<IndividualEnrollment>(contractApiResponse.Body);
+            return JsonConvert.DeserializeObject<IndividualEnrollment>(contractApiResponse.Body, JsonSerializerSettingsInitializer.GetJsonSerializerSettings());
         }
 
         internal static async Task<BulkEnrollmentOperationResult> BulkOperationAsync(
@@ -88,7 +88,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 throw new ProvisioningServiceClientHttpException(contractApiResponse, true);
             }
 
-            return JsonConvert.DeserializeObject<BulkEnrollmentOperationResult>(contractApiResponse.Body);
+            return JsonConvert.DeserializeObject<BulkEnrollmentOperationResult>(contractApiResponse.Body, JsonSerializerSettingsInitializer.GetJsonSerializerSettings());
         }
 
         internal static async Task<IndividualEnrollment> GetAsync(
@@ -111,7 +111,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 throw new ProvisioningServiceClientHttpException(contractApiResponse, true);
             }
 
-            return JsonConvert.DeserializeObject<IndividualEnrollment>(contractApiResponse.Body);
+            return JsonConvert.DeserializeObject<IndividualEnrollment>(contractApiResponse.Body, JsonSerializerSettingsInitializer.GetJsonSerializerSettings());
         }
 
         internal static async Task DeleteAsync(
@@ -203,7 +203,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 throw new ProvisioningServiceClientHttpException(contractApiResponse, true);
             }
 
-            return JsonConvert.DeserializeObject<AttestationMechanism>(contractApiResponse.Body);
+            return JsonConvert.DeserializeObject<AttestationMechanism>(contractApiResponse.Body, JsonSerializerSettingsInitializer.GetJsonSerializerSettings());
         }
 
         private static Uri GetEnrollmentAttestationUri(string enrollmentGroupId)

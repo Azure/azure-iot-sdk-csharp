@@ -45,7 +45,7 @@ namespace Microsoft.Azure.Devices.Shared
         /// </remarks>
         /// <param name="twinJson">JSON fragment containing the twin data.</param>
         public TwinCollection(string twinJson)
-            : this(JsonConvert.DeserializeObject<JObject>(twinJson))
+            : this(JsonConvert.DeserializeObject<JObject>(twinJson, JsonSerializerSettingsInitializer.GetJsonSerializerSettings()))
         {
         }
 

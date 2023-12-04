@@ -140,7 +140,7 @@ namespace Microsoft.Azure.Devices
                 .ConfigureAwait(false);
             return new HttpOperationResponse<T, DigitalTwinGetHeaders>
             {
-                Body = typeof(T) == typeof(string) ? (T)(object)response.Body : JsonConvert.DeserializeObject<T>(response.Body),
+                Body = typeof(T) == typeof(string) ? (T)(object)response.Body : JsonConvert.DeserializeObject<T>(response.Body, JsonSerializerSettingsInitializer.GetJsonSerializerSettings()),
                 Headers = response.Headers,
                 Request = response.Request,
                 Response = response.Response
