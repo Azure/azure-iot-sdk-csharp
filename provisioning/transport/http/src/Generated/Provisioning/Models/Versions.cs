@@ -8,13 +8,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Models
 {
 
     /// <summary>
-    /// Defines values for EndpointType.
+    /// Defines values for Versions.
     /// </summary>
-    public static class EndpointType
+    public static class Versions
     {
         /// <summary>
-        /// Azure Event Grid MQTT Broker.
+        /// The 2023-12-01-preview version.
         /// </summary>
-        public const string MicrosoftEventGridBroker = "MicrosoftEventGridBroker";
+        public const string V20231201Preview = "2023-12-01-preview";
     }
 }

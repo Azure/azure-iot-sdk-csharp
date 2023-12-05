@@ -40,7 +40,7 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Samples
             Console.WriteLine($"Initialized for registration Id {security.GetRegistrationID()}.");
 
             Console.WriteLine("Getting nonce for challenge... ");
-            string nonce = await client.IssueChallengeAsync();
+            byte[] nonce = await client.IssueChallengeAsync();
 
             Console.WriteLine($"Received nonce");
 
@@ -48,9 +48,7 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Samples
 
             Console.WriteLine($"Received endpoint: {onboardingInfo.EdgeProvisioningEndpoint}");
 
-            using var cert = new X509Certificate2(onboardingInfo.ProvisioningCertificate.Export(X509ContentType.Pfx));
-
-            using SecurityProvider provSecurity = new SecurityProviderX509Certificate(cert);
+            using SecurityProvider provSecurity = new SecurityProviderX509Certificate(onboardingInfo.ProvisioningCertificate[0], onboardingInfo.ProvisioningCertificate);
 
             Console.WriteLine("Initializing transport");
             using ProvisioningTransportHandlerHttp provTransport = new ProvisioningTransportHandlerHttp();

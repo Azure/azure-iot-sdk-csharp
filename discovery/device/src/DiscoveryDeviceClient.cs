@@ -63,9 +63,9 @@ namespace Microsoft.Azure.Devices.Discovery.Client
         /// <summary>
         /// Issues challenge to authenticate device.
         /// </summary>
-        /// <param name="cancellationToken"></param>
+        /// <param name="cancellationToken">Cancellation token for async tasks</param>
         /// <returns>nonce for authentication challenge</returns>
-        public Task<string> IssueChallengeAsync(CancellationToken cancellationToken = default)
+        public Task<byte[]> IssueChallengeAsync(CancellationToken cancellationToken = default)
         {
             Logging.IssueChallengeAsync(this, _globalDeviceEndpoint, _transport, _security);
 
@@ -82,10 +82,10 @@ namespace Microsoft.Azure.Devices.Discovery.Client
         /// <summary>
         /// Gets information necessary to onboard device
         /// </summary>
-        /// <param name="nonce"></param>
-        /// <param name="cancellationToken"></param>
+        /// <param name="nonce">Authentication nonce to be signed and sent to discovery service</param>
+        /// <param name="cancellationToken">Cancellation token for async tasks</param>
         /// <returns></returns>
-        public Task<OnboardingInfo> GetOnboardingInfoAsync(string nonce, CancellationToken cancellationToken = default)
+        public Task<OnboardingInfo> GetOnboardingInfoAsync(byte[] nonce, CancellationToken cancellationToken = default)
         {
             Logging.GetOnboardingInfoAsync(this, _globalDeviceEndpoint, _transport, _security);
 

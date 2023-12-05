@@ -31,15 +31,14 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 new ApiVersionDelegatingHandler());
         }
 
-        public override EdgeProvisioningService CreateOnboardingClient(Uri uri, HttpClientHandler httpClientHandler)
+        public override MicrosoftFairfieldGardens CreateOnboardingClient(Uri uri, HttpClientHandler httpClientHandler)
         {
-            _certificate = _security.GetAuthenticationCertificate();
+            var certificates = _security.GetAuthenticationCertificateChain();
 
-            return new EdgeProvisioningService(
+            return new MicrosoftFairfieldGardens(
                 uri,
-                new CertificateChainCredentials(new[] { _certificate }),
-                httpClientHandler,
-                new ApiVersionDelegatingHandler());
+                new CertificateCollectionCredentials(certificates),
+                httpClientHandler);
         }
 
         public override DeviceRegistration CreateDeviceRegistration()

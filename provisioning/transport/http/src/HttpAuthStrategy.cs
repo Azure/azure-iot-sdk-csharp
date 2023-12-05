@@ -13,7 +13,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
         public abstract DeviceProvisioningServiceRuntimeClient CreateClient(Uri uri, HttpClientHandler httpClientHandler);
 
-        public abstract EdgeProvisioningService CreateOnboardingClient(Uri uri, HttpClientHandler httpClientHandler);
+        public abstract MicrosoftFairfieldGardens CreateOnboardingClient(Uri uri, HttpClientHandler httpClientHandler);
 
         public abstract DeviceRegistration CreateDeviceRegistration();
 

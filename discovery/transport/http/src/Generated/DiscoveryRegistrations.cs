@@ -9,7 +9,10 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport.Http
     using Microsoft.Rest;
     using Models;
     using Newtonsoft.Json;
+    using System.Collections;
     using System.Collections.Generic;
+    using System.IO;
+    using System.Linq;
     using System.Net;
     using System.Net.Http;
     using System.Threading;
@@ -18,7 +21,7 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport.Http
     /// <summary>
     /// DiscoveryRegistrations operations.
     /// </summary>
-    public partial class DiscoveryRegistrations : IServiceOperations<EdgeDiscoveryService>, IDiscoveryRegistrations
+    public partial class DiscoveryRegistrations : IServiceOperations<MicrosoftFairfieldGardensDiscovery>, IDiscoveryRegistrations
     {
         /// <summary>
         /// Initializes a new instance of the DiscoveryRegistrations class.
@@ -29,7 +32,7 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport.Http
         /// <exception cref="System.ArgumentNullException">
         /// Thrown when a required parameter is null
         /// </exception>
-        public DiscoveryRegistrations(EdgeDiscoveryService client)
+        public DiscoveryRegistrations(MicrosoftFairfieldGardensDiscovery client)
         {
             if (client == null)
             {
@@ -39,16 +42,22 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport.Http
         }
 
         /// <summary>
-        /// Gets a reference to the EdgeDiscoveryService
+        /// Gets a reference to the MicrosoftFairfieldGardensDiscovery
         /// </summary>
-        public EdgeDiscoveryService Client { get; private set; }
+        public MicrosoftFairfieldGardensDiscovery Client { get; private set; }
 
         /// <summary>
         /// Get Onboarding Information.
         /// </summary>
+        /// <param name='apiVersion'>
+        /// The API version to use for this operation.
+        /// </param>
         /// <param name='body'>
         /// </param>
-        /// <param name="credentials"></param>
+        /// <param name='clientRequestId'>
+        /// An opaque, globally-unique, client-generated string identifier for the
+        /// request.
+        /// </param>
         /// <param name='customHeaders'>
         /// Headers that will be added to request.
         /// </param>
@@ -70,8 +79,19 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport.Http
         /// <return>
         /// A response object containing the response body and response headers.
         /// </return>
-        public async Task<HttpOperationResponse<BootstrapResponse,DiscoveryRegistrationsGetOnboardingInfoHeaders>> GetOnboardingInfoWithHttpMessagesAsync(BootstrapRequest body, TokenCredentials credentials, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<HttpOperationResponse<BootstrapResponse,DiscoveryRegistrationsGetOnboardingInfoHeaders>> GetOnboardingInfoWithHttpMessagesAsync(string apiVersion, BootstrapRequest body, System.Guid? clientRequestId = default(System.Guid?), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
         {
+            if (apiVersion == null)
+            {
+                throw new ValidationException(ValidationRules.CannotBeNull, "apiVersion");
+            }
+            if (apiVersion != null)
+            {
+                if (apiVersion.Length < 1)
+                {
+                    throw new ValidationException(ValidationRules.MinLength, "apiVersion", 1);
+                }
+            }
             if (body == null)
             {
                 throw new ValidationException(ValidationRules.CannotBeNull, "body");
@@ -87,14 +107,20 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport.Http
             {
                 _invocationId = ServiceClientTracing.NextInvocationId.ToString();
                 Dictionary<string, object> tracingParameters = new Dictionary<string, object>();
+                tracingParameters.Add("apiVersion", apiVersion);
+                tracingParameters.Add("clientRequestId", clientRequestId);
                 tracingParameters.Add("body", body);
                 tracingParameters.Add("cancellationToken", cancellationToken);
                 ServiceClientTracing.Enter(_invocationId, this, "GetOnboardingInfo", tracingParameters);
             }
             // Construct URL
             var _baseUrl = Client.BaseUri.AbsoluteUri;
-            var _url = new System.Uri(_baseUrl + (_baseUrl.EndsWith("/") ? "" : "/")) + "devices:getOnboardingInfo";
+            var _url = new System.Uri(new System.Uri(_baseUrl + (_baseUrl.EndsWith("/") ? "" : "/")), "getOnboardingInfo").ToString();
             List<string> _queryParameters = new List<string>();
+            if (apiVersion != null)
+            {
+                _queryParameters.Add(string.Format("api-version={0}", System.Uri.EscapeDataString(apiVersion)));
+            }
             if (_queryParameters.Count > 0)
             {
                 _url += "?" + string.Join("&", _queryParameters);
@@ -105,6 +131,14 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport.Http
             _httpRequest.Method = new HttpMethod("POST");
             _httpRequest.RequestUri = new System.Uri(_url);
             // Set Headers
+            if (clientRequestId != null)
+            {
+                if (_httpRequest.Headers.Contains("x-ms-client-request-id"))
+                {
+                    _httpRequest.Headers.Remove("x-ms-client-request-id");
+                }
+                _httpRequest.Headers.TryAddWithoutValidation("x-ms-client-request-id", Rest.Serialization.SafeJsonConvert.SerializeObject(clientRequestId, Client.SerializationSettings).Trim('"'));
+            }
 
 
             if (customHeaders != null)
@@ -121,13 +155,7 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport.Http
 
             // Serialize Request
             string _requestContent = null;
-            // Set Credentials
-            if (credentials != null)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                await credentials.ProcessHttpRequestAsync(_httpRequest, cancellationToken).ConfigureAwait(false);
-            }
-            if (body != null)
+            if(body != null)
             {
                 _requestContent = Rest.Serialization.SafeJsonConvert.SerializeObject(body, Client.SerializationSettings);
                 _httpRequest.Content = new StringContent(_requestContent, System.Text.Encoding.UTF8);
@@ -222,7 +250,14 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport.Http
         /// Issue TPM Challenge. Will return an encrypted nonce, that can be used to
         /// sign a SAS Token for the GetOnboardingInfo request.
         /// </summary>
+        /// <param name='apiVersion'>
+        /// The API version to use for this operation.
+        /// </param>
         /// <param name='body'>
+        /// </param>
+        /// <param name='clientRequestId'>
+        /// An opaque, globally-unique, client-generated string identifier for the
+        /// request.
         /// </param>
         /// <param name='customHeaders'>
         /// Headers that will be added to request.
@@ -245,8 +280,19 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport.Http
         /// <return>
         /// A response object containing the response body and response headers.
         /// </return>
-        public async Task<HttpOperationResponse<Challenge,DiscoveryRegistrationsIssueChallengeHeaders>> IssueChallengeWithHttpMessagesAsync(ChallengeRequest body, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<HttpOperationResponse<Challenge,DiscoveryRegistrationsIssueChallengeHeaders>> IssueChallengeWithHttpMessagesAsync(string apiVersion, ChallengeRequest body, System.Guid? clientRequestId = default(System.Guid?), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
         {
+            if (apiVersion == null)
+            {
+                throw new ValidationException(ValidationRules.CannotBeNull, "apiVersion");
+            }
+            if (apiVersion != null)
+            {
+                if (apiVersion.Length < 1)
+                {
+                    throw new ValidationException(ValidationRules.MinLength, "apiVersion", 1);
+                }
+            }
             if (body == null)
             {
                 throw new ValidationException(ValidationRules.CannotBeNull, "body");
@@ -262,14 +308,20 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport.Http
             {
                 _invocationId = ServiceClientTracing.NextInvocationId.ToString();
                 Dictionary<string, object> tracingParameters = new Dictionary<string, object>();
+                tracingParameters.Add("apiVersion", apiVersion);
+                tracingParameters.Add("clientRequestId", clientRequestId);
                 tracingParameters.Add("body", body);
                 tracingParameters.Add("cancellationToken", cancellationToken);
                 ServiceClientTracing.Enter(_invocationId, this, "IssueChallenge", tracingParameters);
             }
             // Construct URL
             var _baseUrl = Client.BaseUri.AbsoluteUri;
-            var _url = new System.Uri(_baseUrl + (_baseUrl.EndsWith("/") ? "" : "/")) + "devices:issueChallenge";
+            var _url = new System.Uri(new System.Uri(_baseUrl + (_baseUrl.EndsWith("/") ? "" : "/")), "issueChallenge").ToString();
             List<string> _queryParameters = new List<string>();
+            if (apiVersion != null)
+            {
+                _queryParameters.Add(string.Format("api-version={0}", System.Uri.EscapeDataString(apiVersion)));
+            }
             if (_queryParameters.Count > 0)
             {
                 _url += "?" + string.Join("&", _queryParameters);
@@ -280,6 +332,14 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport.Http
             _httpRequest.Method = new HttpMethod("POST");
             _httpRequest.RequestUri = new System.Uri(_url);
             // Set Headers
+            if (clientRequestId != null)
+            {
+                if (_httpRequest.Headers.Contains("x-ms-client-request-id"))
+                {
+                    _httpRequest.Headers.Remove("x-ms-client-request-id");
+                }
+                _httpRequest.Headers.TryAddWithoutValidation("x-ms-client-request-id", Rest.Serialization.SafeJsonConvert.SerializeObject(clientRequestId, Client.SerializationSettings).Trim('"'));
+            }
 
 
             if (customHeaders != null)

@@ -28,13 +28,15 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport.Http.Models
         /// </summary>
         /// <param name="registrationId">The device serial number.</param>
         /// <param name="endorsementKey">Endorsement Key.</param>
-        /// <param name="storageRootKey">Storage Root Key.</param>
-        /// <param name="csr">Certificate Signing Request.</param>
-        public BootstrapRequest(string registrationId, string endorsementKey, string storageRootKey, string csr)
+        /// <param name="signingKey">Signing Key.</param>
+        /// <param name="csr">A DER-encoded certificate signing request (CSR).
+        /// The CN field of the CSR must be set to the device
+        /// registrationId.</param>
+        public BootstrapRequest(string registrationId, byte[] endorsementKey, byte[] signingKey, byte[] csr)
         {
             RegistrationId = registrationId;
             EndorsementKey = endorsementKey;
-            StorageRootKey = storageRootKey;
+            SigningKey = signingKey;
             Csr = csr;
             CustomInit();
         }
@@ -54,19 +56,20 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport.Http.Models
         /// Gets or sets endorsement Key.
         /// </summary>
         [JsonProperty(PropertyName = "endorsementKey")]
-        public string EndorsementKey { get; set; }
+        public byte[] EndorsementKey { get; set; }
 
         /// <summary>
-        /// Gets or sets storage Root Key.
+        /// Gets or sets signing Key.
         /// </summary>
-        [JsonProperty(PropertyName = "storageRootKey")]
-        public string StorageRootKey { get; set; }
+        [JsonProperty(PropertyName = "signingKey")]
+        public byte[] SigningKey { get; set; }
 
         /// <summary>
-        /// Gets or sets certificate Signing Request.
+        /// Gets or sets a DER-encoded certificate signing request (CSR). The
+        /// CN field of the CSR must be set to the device registrationId.
         /// </summary>
         [JsonProperty(PropertyName = "csr")]
-        public string Csr { get; set; }
+        public byte[] Csr { get; set; }
 
         /// <summary>
         /// Validate the object.
@@ -84,9 +87,9 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport.Http.Models
             {
                 throw new ValidationException(ValidationRules.CannotBeNull, "EndorsementKey");
             }
-            if (StorageRootKey == null)
+            if (SigningKey == null)
             {
-                throw new ValidationException(ValidationRules.CannotBeNull, "StorageRootKey");
+                throw new ValidationException(ValidationRules.CannotBeNull, "SigningKey");
             }
             if (Csr == null)
             {

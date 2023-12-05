@@ -27,7 +27,7 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport.Http.Models
         /// Initializes a new instance of the Challenge class.
         /// </summary>
         /// <param name="key">The encrypted nonce.</param>
-        public Challenge(string key)
+        public Challenge(byte[] key)
         {
             Key = key;
             CustomInit();
@@ -42,7 +42,7 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport.Http.Models
         /// Gets or sets the encrypted nonce.
         /// </summary>
         [JsonProperty(PropertyName = "key")]
-        public string Key { get; set; }
+        public byte[] Key { get; set; }
 
         /// <summary>
         /// Validate the object.

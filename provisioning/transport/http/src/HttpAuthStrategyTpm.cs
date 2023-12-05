@@ -44,7 +44,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             return new DeviceRegistration(_security.GetRegistrationID(), new TpmAttestation(ek, srk));
         }
 
-        public override EdgeProvisioningService CreateOnboardingClient(Uri uri, HttpClientHandler httpClientHandler)
+        public override MicrosoftFairfieldGardens CreateOnboardingClient(Uri uri, HttpClientHandler httpClientHandler)
         {
             throw new NotImplementedException();
         }

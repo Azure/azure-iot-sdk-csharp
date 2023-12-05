@@ -11,17 +11,17 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport
     public class DiscoveryTransportGetOnboardingInfoRequest : DiscoveryTransportRequest
     {
         /// <summary>
-        /// 
+        /// Security nonce that is to be signed for authentication.
         /// </summary>
-        public string Nonce { get; private set; }
+        public byte[] Nonce { get; private set; }
 
         /// <summary>
-        /// 
+        /// Creates a new instance of the DiscoveryTransportGetOnboardingInfoRequest class.
         /// </summary>
-        /// <param name="globalDeviceEndpoint"></param>
-        /// <param name="security"></param>
-        /// <param name="nonce"></param>
-        public DiscoveryTransportGetOnboardingInfoRequest(string globalDeviceEndpoint, SecurityProviderTpm security, string nonce) : base(globalDeviceEndpoint, security)
+        /// <param name="globalDeviceEndpoint">The Global Device Endpoint for this message.</param>
+        /// <param name="security">The SecurityProvider used to authenticate the client.</param>
+        /// <param name="nonce">Security nonce that is to be signed for authentication.</param>
+        public DiscoveryTransportGetOnboardingInfoRequest(string globalDeviceEndpoint, SecurityProviderTpm security, byte[] nonce) : base(globalDeviceEndpoint, security)
         {
             Nonce = nonce;
         }

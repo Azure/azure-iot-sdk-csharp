@@ -4,15 +4,14 @@
 // regenerated.
 // </auto-generated>
 
-namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
+namespace Microsoft.Azure.Devices.Discovery.Client.Transport.Http
 {
-    using Microsoft.Rest;
     using Models;
     using Newtonsoft.Json;
 
     /// <summary>
     /// </summary>
-    public partial interface IEdgeProvisioningService : System.IDisposable
+    public partial interface IMicrosoftFairfieldGardensDiscovery : System.IDisposable
     {
         /// <summary>
         /// The base URI of the service.
@@ -29,17 +28,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         /// </summary>
         JsonSerializerSettings DeserializationSettings { get; }
 
-        /// <summary>
-        /// Subscription credentials which uniquely identify client
-        /// subscription.
-        /// </summary>
-        ServiceClientCredentials Credentials { get; }
-
 
         /// <summary>
-        /// Gets the IDevices.
+        /// Gets the IDiscoveryRegistrations.
         /// </summary>
-        IDevices Devices { get; }
+        IDiscoveryRegistrations DiscoveryRegistrations { get; }
 
     }
 }

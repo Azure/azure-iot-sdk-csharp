@@ -8,6 +8,7 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport.Http
 {
     using Microsoft.Rest;
     using Models;
+    using System.Collections;
     using System.Collections.Generic;
     using System.Threading;
     using System.Threading.Tasks;
@@ -20,9 +21,15 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport.Http
         /// <summary>
         /// Get Onboarding Information.
         /// </summary>
+        /// <param name='apiVersion'>
+        /// The API version to use for this operation.
+        /// </param>
         /// <param name='body'>
         /// </param>
-        /// <param name="credentials"></param>
+        /// <param name='clientRequestId'>
+        /// An opaque, globally-unique, client-generated string identifier for
+        /// the request.
+        /// </param>
         /// <param name='customHeaders'>
         /// The headers that will be added to request.
         /// </param>
@@ -38,12 +45,19 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport.Http
         /// <exception cref="Microsoft.Rest.ValidationException">
         /// Thrown when a required parameter is null
         /// </exception>
-        Task<HttpOperationResponse<BootstrapResponse,DiscoveryRegistrationsGetOnboardingInfoHeaders>> GetOnboardingInfoWithHttpMessagesAsync(BootstrapRequest body, TokenCredentials credentials, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        Task<HttpOperationResponse<BootstrapResponse,DiscoveryRegistrationsGetOnboardingInfoHeaders>> GetOnboardingInfoWithHttpMessagesAsync(string apiVersion, BootstrapRequest body, System.Guid? clientRequestId = default(System.Guid?), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
         /// <summary>
         /// Issue TPM Challenge. Will return an encrypted nonce, that can be
         /// used to sign a SAS Token for the GetOnboardingInfo request.
         /// </summary>
+        /// <param name='apiVersion'>
+        /// The API version to use for this operation.
+        /// </param>
         /// <param name='body'>
+        /// </param>
+        /// <param name='clientRequestId'>
+        /// An opaque, globally-unique, client-generated string identifier for
+        /// the request.
         /// </param>
         /// <param name='customHeaders'>
         /// The headers that will be added to request.
@@ -60,6 +74,6 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport.Http
         /// <exception cref="Microsoft.Rest.ValidationException">
         /// Thrown when a required parameter is null
         /// </exception>
-        Task<HttpOperationResponse<Challenge,DiscoveryRegistrationsIssueChallengeHeaders>> IssueChallengeWithHttpMessagesAsync(ChallengeRequest body, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        Task<HttpOperationResponse<Challenge,DiscoveryRegistrationsIssueChallengeHeaders>> IssueChallengeWithHttpMessagesAsync(string apiVersion, ChallengeRequest body, System.Guid? clientRequestId = default(System.Guid?), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
     }
 }

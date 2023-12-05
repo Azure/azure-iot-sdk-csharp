@@ -11,6 +11,6 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport
     {
         public static readonly TimeSpan TimeoutConstant = TimeSpan.FromSeconds(90);
 
-        public abstract EdgeDiscoveryService CreateClient(Uri uri, HttpClientHandler httpClientHandler);
+        public abstract MicrosoftFairfieldGardensDiscovery CreateClient(Uri uri, HttpClientHandler httpClientHandler);
     }
 }

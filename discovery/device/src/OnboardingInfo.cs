@@ -18,14 +18,14 @@ namespace Microsoft.Azure.Devices.Discovery.Client
         /// <summary>
         /// Credentials to authenticate with the provisioning service
         /// </summary>
-        public X509Certificate2 ProvisioningCertificate { get; private set; }
+        public X509Certificate2Collection ProvisioningCertificate { get; private set; }
 
         /// <summary>
         /// Creates an instance of the OnboardingInfo class
         /// </summary>
         /// <param name="edgeProvisioningEndpoint"></param>
         /// <param name="provisioningCertificate"></param>
-        public OnboardingInfo(string edgeProvisioningEndpoint, X509Certificate2 provisioningCertificate)
+        public OnboardingInfo(string edgeProvisioningEndpoint, X509Certificate2Collection provisioningCertificate)
         {
             EdgeProvisioningEndpoint = edgeProvisioningEndpoint;
             ProvisioningCertificate = provisioningCertificate;

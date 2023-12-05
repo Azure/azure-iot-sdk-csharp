@@ -46,6 +46,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Discovery
         private static readonly string s_resourceGroup2 = TestConfiguration.Discovery.ResourceGroup2;
         private static readonly string s_resourceOwner = TestConfiguration.Discovery.ResourceOwner;
         private static readonly string s_registrationId = TestConfiguration.Discovery.RegistrationId;
+        private static readonly string s_skipArtifacts = TestConfiguration.Discovery.SkipArtifacts;
         private static readonly string s_proxyServerAddress = "";
 
         private static readonly HashSet<Type> s_retryableExceptions = new() { typeof(ProvisioningServiceClientHttpException) };
@@ -177,7 +178,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Discovery
             using var cts = new CancellationTokenSource(PassingTimeoutMiliseconds);
 
             Console.WriteLine("Getting nonce for challenge... ");
-            string nonce = await client.IssueChallengeAsync(cts.Token);
+            byte[] nonce = await client.IssueChallengeAsync(cts.Token);
 
             Console.WriteLine($"Received nonce");
 
@@ -185,14 +186,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Discovery
 
             Console.WriteLine($"Received endpoint: {onboardingInfo.EdgeProvisioningEndpoint}");
 
-            using var cert = new X509Certificate2(onboardingInfo.ProvisioningCertificate.Export(X509ContentType.Pfx));
-
-            using ProvisioningTransportHandler provTranspot = new ProvisioningTransportHandlerHttp();
-            using SecurityProvider provSecurity = new SecurityProviderX509Certificate(cert);
+            using ProvisioningTransportHandler provTransport = new ProvisioningTransportHandlerHttp();
+            using SecurityProvider provSecurity = new SecurityProviderX509Certificate(onboardingInfo.ProvisioningCertificate[0], onboardingInfo.ProvisioningCertificate);
 
             if (setCustomProxy)
             {
-                provTranspot.Proxy = proxyServerAddress == null
+                provTransport.Proxy = proxyServerAddress == null
                     ? null
                     : new WebProxy(s_proxyServerAddress);
             }
@@ -207,7 +206,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Discovery
             var provClient = ProvisioningDeviceClient.Create(
                 provisioningEndpoint,
                 provSecurity,
-                provTranspot);
+                provTransport);
 
             DeviceOnboardingResult onboardingResult = await provClient.OnboardAsync("random string", cts.Token);
 
@@ -216,6 +215,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Discovery
 
         private async Task UploadArtifacts(bool invalidSrk = false, bool invalidEk = false)
         {
+            if (string.Equals(s_skipArtifacts.Trim(), "true", StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+
             string subscriptionId = s_subscriptionId;
             string resourceGroupName = s_resourceGroup1;
             string resourceGroupName2 = s_resourceGroup2;

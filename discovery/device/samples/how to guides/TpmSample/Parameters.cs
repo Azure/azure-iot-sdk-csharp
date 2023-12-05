@@ -25,7 +25,7 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Samples
         [Option(
             'd',
             "DiscoveryDeviceEndpoint",
-            Default = "dev1.eastus.device.discovery.edgeprov-dev.azure.net",
+            Default = "int1.eastus.device.discovery.edgeprov-dev.azure.net",
             HelpText = "The discovery service endpoint for devices to connect to.")]
         public string DiscoveryDeviceEndpoint { get; set; }
 

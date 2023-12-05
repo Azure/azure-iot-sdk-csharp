@@ -4,34 +4,38 @@
 // regenerated.
 // </auto-generated>
 
-namespace Microsoft.Azure.Devices.Discovery.Client.Transport.Http.Models
+namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Models
 {
     using Microsoft.Rest;
     using Newtonsoft.Json;
     using System.Linq;
 
     /// <summary>
-    /// A device registration.
+    /// The certificate issuance request.
     /// </summary>
-    public partial class DiscoveryRegistration
+    public partial class CertificateRequest
     {
         /// <summary>
-        /// Initializes a new instance of the DiscoveryRegistration class.
+        /// Initializes a new instance of the CertificateRequest class.
         /// </summary>
-        public DiscoveryRegistration()
+        public CertificateRequest()
         {
             CustomInit();
         }
 
         /// <summary>
-        /// Initializes a new instance of the DiscoveryRegistration class.
+        /// Initializes a new instance of the CertificateRequest class.
         /// </summary>
         /// <param name="registrationId">Unique identifier for the device.
         /// Allow lowercase alphanumeric and '-', '.', '_', ':' only. Last
         /// character can only be lowercase alphanumeric or '-'.</param>
-        public DiscoveryRegistration(string registrationId)
+        /// <param name="csr">A DER-encoded certificate signing request (CSR).
+        /// The CN field of the CSR must be set to the device
+        /// registrationId.</param>
+        public CertificateRequest(string registrationId, byte[] csr)
         {
             RegistrationId = registrationId;
+            Csr = csr;
             CustomInit();
         }
 
@@ -49,6 +53,13 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport.Http.Models
         public string RegistrationId { get; set; }
 
         /// <summary>
+        /// Gets or sets a DER-encoded certificate signing request (CSR). The
+        /// CN field of the CSR must be set to the device registrationId.
+        /// </summary>
+        [JsonProperty(PropertyName = "csr")]
+        public byte[] Csr { get; set; }
+
+        /// <summary>
         /// Validate the object.
         /// </summary>
         /// <exception cref="ValidationException">
@@ -59,6 +70,10 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport.Http.Models
             if (RegistrationId == null)
             {
                 throw new ValidationException(ValidationRules.CannotBeNull, "RegistrationId");
+            }
+            if (Csr == null)
+            {
+                throw new ValidationException(ValidationRules.CannotBeNull, "Csr");
             }
             if (RegistrationId != null)
             {

@@ -17,11 +17,11 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport
             _security = security;
         }
 
-        public override EdgeDiscoveryService CreateClient(Uri uri, HttpClientHandler httpClientHandler)
+        public override MicrosoftFairfieldGardensDiscovery CreateClient(Uri uri, HttpClientHandler httpClientHandler)
         {
             var apiVersionDelegatingHandler = new ApiVersionDelegatingHandler();
 
-            var dpsClient = new EdgeDiscoveryService(
+            var dpsClient = new MicrosoftFairfieldGardensDiscovery(
                 uri,
                 httpClientHandler,
                 apiVersionDelegatingHandler);
