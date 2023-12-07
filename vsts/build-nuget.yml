@@ -99,27 +99,27 @@ jobs:
             gci -Path $(Build.SourcesDirectory)/bin -Recurse -Force
 
 #TODO: fix this script to get partner secret from key vault and copy file (avoid update needed for key rotation)
-#      - task: AzureCLI@2
-#        displayName: 'Copy nuget packages to Partner Release Pipeline Storage'
-#        inputs:
-#          azureSubscription: azuresdkpartnerdrops
-#          scriptType: ps
-#          scriptLocation: inlineScript
-#          inlineScript: |
-#            Write-Host "Copy release package to partner pipeline drops/azure-iot-sdk/net/pkgs_$(BUILD_PKG.NUGET_PKG_DATE)"
-#            $env:AZCOPY_SPA_CLIENT_SECRET=get-AzKeyVaultSecret -VaultName azuresdkpartnerdrops-kv -Name azuresdkpartnerdrops-service-principal-key -AsPlainText
-#            $env:AZCOPY_SPA_CLIENT_SECRET_APP=get-AzKeyVaultSecret -VaultName azuresdkpartnerdrops-kv -Name azuresdkpartnerdrops-application-id -AsPlainText
-#            azcopy login --service-principal --application-id $env:AZCOPY_SPA_CLIENT_SECRET_APP
-#            azcopy copy "$(Build.SourcesDirectory)/bin" "https://azuresdkpartnerdrops.blob.core.windows.net/drops/azure-iot-sdk/net" --recursive
-
-      - task: AzureFileCopy@2
+      - task: AzureCLI@2
         displayName: 'Copy nuget packages to Partner Release Pipeline Storage'
         inputs:
-          SourcePath: '$(Build.SourcesDirectory)/bin'
           azureSubscription: azuresdkpartnerdrops
-          Destination: AzureBlob
-          storage: azuresdkpartnerdrops
-          ContainerName: 'drops/asz-ztp/net'
+          scriptType: ps
+          scriptLocation: inlineScript
+          inlineScript: |
+            Write-Host "Copy release package to partner pipeline drops/azure-iot-sdk/net/pkgs_$(BUILD_PKG.NUGET_PKG_DATE)"
+            $env:AZCOPY_SPA_CLIENT_SECRET=get-AzKeyVaultSecret -VaultName azuresdkpartnerdrops-kv -Name azuresdkpartnerdrops-service-principal-key -AsPlainText
+            $env:AZCOPY_SPA_CLIENT_SECRET_APP=get-AzKeyVaultSecret -VaultName azuresdkpartnerdrops-kv -Name azuresdkpartnerdrops-application-id -AsPlainText
+            azcopy login --service-principal --application-id $env:AZCOPY_SPA_CLIENT_SECRET_APP
+            azcopy copy "$(Build.SourcesDirectory)/bin" "https://azuresdkpartnerdrops.blob.core.windows.net/drops/asz-ztp/net" --recursive
+
+      # - task: AzureFileCopy@2
+      #   displayName: 'Copy nuget packages to Partner Release Pipeline Storage'
+      #   inputs:
+      #     SourcePath: '$(Build.SourcesDirectory)/bin'
+      #     azureSubscription: azuresdkpartnerdrops
+      #     Destination: AzureBlob
+      #     storage: azuresdkpartnerdrops
+      #     ContainerName: 'drops/asz-ztp/net'
 
 #      - task: AzureArtifacts.manifest-generator-task.manifest-generator-task.ManifestGeneratorTask@0
 #        displayName: 'SBOM Generation Task'
