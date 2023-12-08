@@ -24,14 +24,12 @@ jobs:
 
     steps:
 
-      - task: DownloadPackage@1
+      - task: NuGetCommand@2
         inputs:
-          packageType: 'nuget'
-          feed: '/32c885bd-55c9-4aab-8e98-108975177a75'
-          view: 
-          definition: 'd7ef274e-7454-4cc4-9dda-ad6c5001502f'
-          version: '0.0.7-preview'
-          downloadPath: '$(System.ArtifactsDirectory)'
+          command: 'restore'
+          restoreSolution: '**/*.sln'
+          feedsToUse: 'config'
+          nugetConfigPath: '$(Build.SourcesDirectory)/nuget.config'
 
       - task: PowerShell@2
         displayName: 'Build Packages'
