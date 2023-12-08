@@ -37,7 +37,7 @@ jobs:
         inputs:
           targetType: 'inline'
           script: |
-            $(Build.SourcesDirectory)/versionupdate.ps1 -update -suffix $env:FILE_DATE_$(BuildID)
+            $(Build.SourcesDirectory)/versionupdate.ps1 -update -suffix $env:FILE_DATE_$(Build.BuildID)
 
       - task: PowerShell@2
         displayName: 'Build Packages'
