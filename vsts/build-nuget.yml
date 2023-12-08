@@ -28,8 +28,8 @@ jobs:
         inputs:
           command: 'restore'
           restoreSolution: '**/*.sln'
-          feedsToUse: 'config'
-          nugetConfigPath: '$(Build.SourcesDirectory)/nuget.config'
+          feedsToUse: 'select'
+          vstsFeed: '/32c885bd-55c9-4aab-8e98-108975177a75'
 
       - task: PowerShell@2
         displayName: 'Build Packages'
