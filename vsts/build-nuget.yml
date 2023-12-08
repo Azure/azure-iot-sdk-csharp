@@ -27,7 +27,7 @@ jobs:
       - task: NuGetCommand@2
         inputs:
           command: 'restore'
-          restoreSolution: '**/*.sln'
+          restoreSolution: '$(Build.SourcesDirectory)/*.sln'
           feedsToUse: 'select'
           vstsFeed: '/32c885bd-55c9-4aab-8e98-108975177a75'
 
