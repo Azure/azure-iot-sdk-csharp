@@ -1,9 +1,9 @@
 [
     {
-        "version" : "1.42.0"
+        "version" : "1.42.1"
     },
     {
-        "version" : "2.0.0-preview005",
-        "eol" : "2023-07-26"
+        "version" : "2.0.0-preview007",
+        "eol" : "2024-02-17"
     }
 ]
