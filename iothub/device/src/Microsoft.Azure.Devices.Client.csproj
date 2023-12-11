@@ -34,7 +34,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <Version>1.42.0</Version>
+    <Version>1.42.1</Version>
     <Title>Microsoft Azure IoT Device Client SDK</Title>
     <IncludeSource>True</IncludeSource>
     <IncludeSymbols>True</IncludeSymbols>
