@@ -37,7 +37,7 @@ jobs:
         inputs:
           targetType: 'inline'
           script: |
-            $(Build.SourcesDirectory)/versionupdate.ps1 -update -suffix "$(get-date -f yyyy-MM-dd)_$(Build.BuildID)"
+            $(Build.SourcesDirectory)/versionupdate.ps1 -update -suffix "$(get-date -f yyyy-MM-dd)-$(Build.BuildID)"
 
       - task: PowerShell@2
         displayName: 'Build Packages'
@@ -51,6 +51,30 @@ jobs:
             Write-Host "##vso[task.setvariable variable=NUGET_PKG_DATE;isoutput=true;]$env:FILE_DATE"
             Write-Host Start building release package with $(Agent.Id):$(Agent.MachineName) on $env:FILE_DATE
             $(Build.SourcesDirectory)/build.ps1 -build -clean -configuration Release -package
+
+      - task: PowerShell@2
+        displayName: 'Clean build packages'
+        name: CLEAN_PKG
+        inputs:
+          targetType: 'inline'
+          script: |
+            # Import the CSV file
+            $csv = Import-Csv $(Build.SourcesDirectory)/versions.csv
+
+            # Get the project names without the extension
+            $names = $csv.AssemblyPath | ForEach-Object {
+              Split-Path -Path $_ -Leaf -Resolve | ForEach-Object {
+                $_ -replace '\.csproj$',''
+              }
+            }
+
+            # Join the project names into a single pattern
+            $pattern = $names -join '|'
+
+            # Delete the files that do not match the pattern
+            Get-ChildItem -Path $(Build.SourcesDirectory)/bin/pkg -File | Where-Object {
+              $_.BaseName -notmatch $pattern
+            } | Remove-Item -Force
 
       - task: CopyFiles@2
         displayName: 'Copy nuget package files to the artifacts folder'
