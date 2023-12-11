@@ -452,6 +452,64 @@ jobs:
           testRunTitle: "Linux Tests ($(FRAMEWORK)) (Attempt $(System.JobAttempt))"
         condition: always()
 
+
+  ### Upload the unsigned packages to E4K feed ###
+  - job: Upload_to_E4K_Feed
+    displayName: Upload Nuget Packages to E4K Feed
+    timeoutInMinutes: 15
+
+    condition: and(succeeded(), eq(variables['UPLOAD_TO_E4K_FEED'], 'true'))
+    dependsOn:
+      - Build_Packages
+
+    pool:
+      vmImage: windows-2022
+
+    variables:
+      NUGET_PACKGE_FOLDER: $[ dependencies.Build_Packages.outputs['BUILD_PKG.NUGET_PKG_DATE'] ]
+
+    steps:
+      - task: DownloadPipelineArtifact@2
+        displayName: 'Download nuget packages from pipeline artifacts'
+        inputs:
+          buildType: 'current'
+          artifactName: 'unsigned_nuget_packages'
+          itemPattern: '**/*.*nupkg'
+          targetPath: '$(Build.SourcesDirectory)/bin'
+
+      - task: PowerShell@2
+        displayName: 'Downloaded nuget package files checkpoint'
+        inputs:
+          targetType: 'inline'
+          script: |
+            Write-Host "Download contents:"
+            gci -Path $(Build.SourcesDirectory)/bin/nuget -Recurse -Force
+
+      - task: PowerShell@2
+        displayName: 'Rename Packages for Partner Release Pipeline'
+        inputs:
+          targetType: 'inline'
+          script: |
+            Write-Host ""
+            Rename-Item $(Build.SourcesDirectory)/bin/nuget $(Build.SourcesDirectory)/bin/pkgs_$(NUGET_PACKGE_FOLDER)
+            Write-Host " "
+            Write-Host "Package contents (renamed):"
+            gci -Path $(Build.SourcesDirectory)/bin -Recurse -Force
+
+      - task: NuGetAuthenticate@0
+        displayName: 'NuGet Authenticate'
+        inputs:
+          nuGetServiceConnections: 'nugetServiceConnection-tmahmood' # Update with the name of your NuGet service connection
+
+      - task: NuGetCommand@2
+        displayName: 'NuGet Push'
+        inputs:
+          command: 'push'
+          packagesToPush: '$(Build.SourcesDirectory)/bin/pkgs_$(NUGET_PACKGE_FOLDER)/*.nupkg'
+          nuGetFeedType: 'external'
+          publishFeed: 'https://pkgs.dev.azure.com/e4k-sdk/SdkLite/_packaging/sdklite-previews/nuget/v3/index.json'
+          versioningScheme: 'off'  
+
   ### Upload unisgned packages for partner signing and release pipeline ###
   - job: Upload_Packages
     displayName: Upload Nuget Packages
