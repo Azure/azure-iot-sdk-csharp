@@ -67,6 +67,7 @@ foreach ($project in $csv) {
         {
             Write-Host -Foreground Green "`tVersion: $actualVersion Desired: $desiredVersion"
             UpdateVersion $project.AssemblyPath $actualVersion $desiredVersion
+            $requireUpdate--
         }
         else
         {
