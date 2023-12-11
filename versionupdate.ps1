@@ -47,6 +47,8 @@ $csv = Import-Csv versions.csv
 
 $requireUpdate = 0
 
+Write-Host -ForegroundColor Cyan "Desired suffix: $suffix"
+
 foreach ($project in $csv) {
 
     Write-Host -ForegroundColor Cyan (Split-Path -leaf $project.AssemblyPath)
