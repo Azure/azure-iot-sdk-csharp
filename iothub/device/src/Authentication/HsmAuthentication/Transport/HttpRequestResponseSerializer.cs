@@ -78,7 +78,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.Transport
             HttpBufferedStream bufferedStream,
             CancellationToken cancellationToken)
         {
-            IList<string> headers = new List<string>();
+            var headers = new List<string>();
             string line = await bufferedStream.ReadLineAsync(cancellationToken).ConfigureAwait(false);
             while (!string.IsNullOrWhiteSpace(line))
             {

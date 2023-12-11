@@ -152,7 +152,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return s_networkExceptions.Any(baseExceptionType => baseExceptionType.IsInstanceOfType(singleException));
         }
 
-        private Task ExecuteWithExceptionRemappingAsync(Func<Task> asyncOperation)
+        private Task<bool> ExecuteWithExceptionRemappingAsync(Func<Task> asyncOperation)
         {
             return RunWithExceptionRemappingAsync(async () =>
             {

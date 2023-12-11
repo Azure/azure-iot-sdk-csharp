@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Threading;
 using Newtonsoft.Json;
 using System.Net.Http;
+using System.Globalization;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
@@ -36,7 +37,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
             if (pageSizeHint != null)
             {
-                headers.Add(PageSizeHeaderKey, pageSizeHint.ToString());
+                headers.Add(PageSizeHeaderKey, pageSizeHint?.ToString(CultureInfo.InvariantCulture));
             }
 
             headers.Add("Content-Type", "application/json");

@@ -13,7 +13,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
     {
         private static readonly AmqpUnitManager s_instance = new();
 
-        private readonly IDictionary<string, IAmqpUnitManager> _amqpConnectionPools;
+        private readonly Dictionary<string, IAmqpUnitManager> _amqpConnectionPools;
         private readonly object _connectionPoolLock = new();
 
         internal AmqpUnitManager()

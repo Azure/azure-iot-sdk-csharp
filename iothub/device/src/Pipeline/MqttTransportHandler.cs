@@ -156,6 +156,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         internal IMqttClient _mqttClient;
 
         private MqttClientOptions _mqttClientOptions;
+        internal static readonly char[] separator = new[] { '/' };
 
         internal MqttTransportHandler(PipelineContext context, IDelegatingHandler nextHandler)
             : base(context, nextHandler)
@@ -1398,7 +1399,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             // Format 1 - going to the device - devices/{deviceId}/messages/devicebound/{properties}/
             // Format 2 - going to module endpoint - devices/{deviceId}/modules/{moduleId/endpoints/{endpointId}/{properties}/
             // So choose the right format to deserialize properties.
-            string[] topicSegments = mqttMessage.Topic.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
+            string[] topicSegments = mqttMessage.Topic.Split(separator, StringSplitOptions.RemoveEmptyEntries);
             string propertiesSegment = topicSegments.Length > 6 ? topicSegments[6] : topicSegments[4];
 
             Dictionary<string, string> properties = UrlEncodedDictionarySerializer.Deserialize(propertiesSegment, 0);

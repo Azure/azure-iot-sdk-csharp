@@ -12,7 +12,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.Transport
     {
         private const char CR = '\r';
         private const char LF = '\n';
-        private readonly Stream _innerStream;
+        private readonly BufferedStream _innerStream;
 
         internal HttpBufferedStream(Stream stream)
         {

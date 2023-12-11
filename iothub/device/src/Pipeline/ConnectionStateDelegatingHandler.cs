@@ -469,7 +469,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
-        private Task ValidateStateAndPerformOperationAsync(Func<CancellationToken, Task> asyncOperation, string operationName, CancellationToken cancellationToken)
+        private Task<bool> ValidateStateAndPerformOperationAsync(Func<CancellationToken, Task> asyncOperation, string operationName, CancellationToken cancellationToken)
         {
             return ValidateStateAndPerformOperationAsync(async (ct) =>
             {

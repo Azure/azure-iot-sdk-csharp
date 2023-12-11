@@ -43,12 +43,14 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
         public string Signature { get; private set; }
 
+        internal static readonly char[] trimChars = new char[] { '/' };
+
         internal static SharedAccessSignature Parse(string serviceName, string sharedAccessSignature)
         {
             Debug.Assert(!string.IsNullOrWhiteSpace(serviceName), "Service name cannot be null or white space.");
             Debug.Assert(!string.IsNullOrWhiteSpace(sharedAccessSignature), "Shared access signature cannot be null or white space.");
 
-            IDictionary<string, string> parsedFields = ExtractFieldValues(sharedAccessSignature);
+            Dictionary<string, string> parsedFields = ExtractFieldValues(sharedAccessSignature);
 
             if (!parsedFields.TryGetValue(SharedAccessSignatureConstants.SignatureFieldName, out string signature))
             {
@@ -84,7 +86,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 return false;
             }
 
-            IDictionary<string, string> parsedFields = ExtractFieldValues(sharedAccessSignature);
+            Dictionary<string, string> parsedFields = ExtractFieldValues(sharedAccessSignature);
             bool isSharedAccessSignature = parsedFields.TryGetValue(SharedAccessSignatureConstants.SignatureFieldName, out _);
 
             return isSharedAccessSignature;
@@ -147,7 +149,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
             string target = targetAddress.Host + targetAddress.AbsolutePath;
 
-            if (!target.StartsWith(Audience.TrimEnd(new char[] { '/' }), StringComparison.OrdinalIgnoreCase))
+            if (!target.StartsWith(Audience.TrimEnd(trimChars), StringComparison.OrdinalIgnoreCase))
             {
                 throw new ProvisioningServiceException("Invalid target audience.", HttpStatusCode.Unauthorized);
             }
@@ -166,7 +168,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             return Convert.ToBase64String(hmac.ComputeHash(Encoding.UTF8.GetBytes(value)));
         }
 
-        private static IDictionary<string, string> ExtractFieldValues(string sharedAccessSignature)
+        private static Dictionary<string, string> ExtractFieldValues(string sharedAccessSignature)
         {
             string[] lines = sharedAccessSignature.Split();
 
@@ -176,7 +178,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 throw new FormatException("Malformed signature");
             }
 
-            IDictionary<string, string> parsedFields = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            Dictionary<string, string> parsedFields = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             string[] fields = lines[1].Trim().Split(new string[] { SharedAccessSignatureConstants.PairSeparator }, StringSplitOptions.None);
 
             foreach (string field in fields)

@@ -219,7 +219,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
         internal bool IsEmpty()
         {
-            return !_amqpUnits.Any();
+            return _amqpUnits.Count == 0;
         }
 
         private void OnConnectionClosed(object o, EventArgs args)

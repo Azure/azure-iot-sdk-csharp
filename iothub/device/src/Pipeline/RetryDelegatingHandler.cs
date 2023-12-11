@@ -91,7 +91,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                                         tasks.Add(base.EnableReceiveMessageAsync(cancellationToken));
                                     }
 
-                                    if (tasks.Any())
+                                    if (tasks.Count != 0)
                                     {
                                         await Task.WhenAll(tasks).ConfigureAwait(false);
                                     }

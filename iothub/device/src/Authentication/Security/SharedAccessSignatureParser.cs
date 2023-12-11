@@ -21,7 +21,7 @@ namespace Microsoft.Azure.Devices.Client
         {
             Argument.AssertNotNullOrWhiteSpace(rawToken, nameof(rawToken));
 
-            IDictionary<string, string> parsedFields = ExtractFieldValues(rawToken);
+            Dictionary<string, string> parsedFields = ExtractFieldValues(rawToken);
 
             // sig
             if (!parsedFields.TryGetValue(SharedAccessSignatureConstants.SignatureFieldName, out string signature))
@@ -51,7 +51,7 @@ namespace Microsoft.Azure.Devices.Client
                 encodedAudience);
         }
 
-        private static IDictionary<string, string> ExtractFieldValues(string sharedAccessSignature)
+        private static Dictionary<string, string> ExtractFieldValues(string sharedAccessSignature)
         {
             string[] lines = sharedAccessSignature.Split();
 
@@ -61,7 +61,7 @@ namespace Microsoft.Azure.Devices.Client
                 throw new FormatException("Malformed signature.");
             }
 
-            IDictionary<string, string> parsedFields = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            Dictionary<string, string> parsedFields = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             string[] fields = lines[1].Trim().Split(SharedAccessSignatureConstants.PairSeparator);
 
             foreach (string field in fields)

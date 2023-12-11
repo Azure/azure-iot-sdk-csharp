@@ -686,7 +686,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
             try
             {
-                ICollection<Task> tasks = new List<Task>(2);
+                var tasks = new List<Task>(2);
                 if (_twinReceivingLink != null)
                 {
                     tasks.Add(_twinReceivingLink.CloseAsync(cancellationToken));
@@ -697,7 +697,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                     tasks.Add(_twinSendingLink.CloseAsync(cancellationToken));
                 }
 
-                if (tasks.Any())
+                if (tasks.Count != 0)
                 {
                     await Task.WhenAll(tasks).ConfigureAwait(false);
                     _twinReceivingLink = null;
@@ -736,7 +736,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
             try
             {
-                ICollection<Task> tasks = new List<Task>(2);
+                var tasks = new List<Task>(2);
                 if (_methodReceivingLink != null)
                 {
                     tasks.Add(_methodReceivingLink.CloseAsync(cancellationToken));
@@ -747,7 +747,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                     tasks.Add(_methodSendingLink.CloseAsync(cancellationToken));
                 }
 
-                if (tasks.Any())
+                if (tasks.Count != 0)
                 {
                     await Task.WhenAll(tasks).ConfigureAwait(false);
                     _methodReceivingLink = null;
