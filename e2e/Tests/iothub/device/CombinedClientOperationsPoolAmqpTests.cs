@@ -57,7 +57,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             async Task InitOperationAsync(TestDevice testDevice, TestDeviceCallbackHandler testDeviceCallbackHandler, CancellationToken ct)
             {
-                IList<Task> initOperations = new List<Task>();
+                var initOperations = new List<Task>();
                 await serviceClient.Messages.OpenAsync(ct).ConfigureAwait(false);
 
                 // Set incoming message callback
@@ -80,7 +80,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             async Task TestOperationAsync(TestDevice testDevice, TestDeviceCallbackHandler testDeviceCallbackHandler, CancellationToken ct)
             {
-                IList<Task> clientOperations = new List<Task>();
+                var clientOperations = new List<Task>();
                 await testDevice.OpenWithRetryAsync(ct).ConfigureAwait(false);
 
                 // D2C Operation

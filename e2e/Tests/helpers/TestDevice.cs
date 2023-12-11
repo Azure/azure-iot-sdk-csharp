@@ -199,6 +199,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
 
             if (type == TestDeviceType.X509)
             {
+#pragma warning disable CA2000 // Dispose objects before losing scope
                 requestDevice.Authentication = new AuthenticationMechanism
                 {
                     X509Thumbprint = new X509Thumbprint
@@ -206,11 +207,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                         PrimaryThumbprint = TestConfiguration.IotHub.GetCertificateWithPrivateKey().Thumbprint
                     }
                 };
-
-#pragma warning disable CA2000 // Dispose objects before losing scope - X509Certificate and ClientAuthenticationWithX509Certificate are disposed when TestDevice is disposed.
                 authCertificate = TestConfiguration.IotHub.GetCertificateWithPrivateKey();
                 auth = new ClientAuthenticationWithX509Certificate(authCertificate, deviceName);
-#pragma warning restore CA2000 // Dispose objects before losing scope - X509Certificate and ClientAuthenticationWithX509Certificate are disposed when TestDevice is disposed.
+#pragma warning restore CA2000 // Dispose objects before losing scope
             }
 
             Device device = null;
