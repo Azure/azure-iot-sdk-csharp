@@ -486,7 +486,7 @@ jobs:
             gci -Path $(Build.SourcesDirectory)/bin/nuget -Recurse -Force
 
       - task: PowerShell@2
-        displayName: 'Rename Packages for Partner Release Pipeline'
+        displayName: 'Rename Packages'
         inputs:
           targetType: 'inline'
           script: |
@@ -505,9 +505,10 @@ jobs:
         displayName: 'NuGet Push'
         inputs:
           command: 'push'
-          SourcePath: '$(Build.SourcesDirectory)/bin'
+          SourcePath: '$(Build.SourcesDirectory)/bin/pkgs_$(NUGET_PACKGE_FOLDER)'
           packagesToPush: '$(Build.SourcesDirectory)/bin/pkgs_$(NUGET_PACKGE_FOLDER)/*.nupkg'
           nuGetFeedType: 'external'
+          externalEndpoint: 'nugetServiceConnection-tmahmood'
           feedPublish: 'https://pkgs.dev.azure.com/e4k-sdk/SdkLite/_packaging/sdklite-previews/nuget/v3/index.json'
           versioningScheme: 'off'  
 
