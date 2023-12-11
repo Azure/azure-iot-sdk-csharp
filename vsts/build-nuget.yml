@@ -37,7 +37,7 @@ jobs:
         inputs:
           targetType: 'inline'
           script: |
-            $(Build.SourcesDirectory)/versionupdate.ps1 -update -suffix "$(get-date -f yyyy-MM-dd-hh-mm-ss.f)_$(Build.BuildID)"
+            $(Build.SourcesDirectory)/versionupdate.ps1 -update -suffix "$(get-date -f yyyy-MM-dd)_$(Build.BuildID)"
 
       - task: PowerShell@2
         displayName: 'Build Packages'
