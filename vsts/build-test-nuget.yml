@@ -61,16 +61,8 @@ jobs:
       matrix:
         .Net 6.0:
           FRAMEWORK: net6.0
-        .Net 5.0:
-          FRAMEWORK: net5.0
-        .Net Core 3.1:
-          FRAMEWORK: netcoreapp3.1
-        .Net Core 2.1.30:
-          FRAMEWORK: netcoreapp2.1.30
-        .Net Framwork 4.7.2:
-          FRAMEWORK: net472
-        .Net Framework 4.5.1:
-          FRAMEWORK: net451
+        .Net 7.0:
+          FRAMEWORK: net7.0
 
     condition: and(succeeded(), ne(variables.runTests, 'false'))
     dependsOn: Build_Packages
@@ -107,26 +99,10 @@ jobs:
           installationPath: $(Agent.ToolsDirectory)/net
 
       - task: UseDotNet@2
-        displayName: 'Use .NET SDK 5.x'
+        displayName: 'Use .NET SDK 7.x'
         inputs:
           packageType: sdk
-          version: 5.x
-          performMultiLevelLookup: true
-          installationPath: $(Agent.ToolsDirectory)/net
-
-      - task: UseDotNet@2
-        displayName: 'Use .NET Core SDK 3.x'
-        inputs:
-          packageType: sdk
-          version: 3.1.x
-          performMultiLevelLookup: true
-          installationPath: $(Agent.ToolsDirectory)/net
-
-      - task: UseDotNet@2
-        displayName: 'Use .NET core SDK 2.x'
-        inputs:
-          packageType: sdk
-          version: 2.1.x
+          version: 7.x
           performMultiLevelLookup: true
           installationPath: $(Agent.ToolsDirectory)/net
  
@@ -231,10 +207,6 @@ jobs:
           FRAMEWORK: net6.0
         .Net 5.0:
           FRAMEWORK: net5.0
-        .Net Core 3.1:
-          FRAMEWORK: netcoreapp3.1
-        .Net Core 2.1.30:
-          FRAMEWORK: netcoreapp2.1.30
 
     condition: and(succeeded(), ne(variables.runTests, 'false'))
     dependsOn: Build_Packages
@@ -270,26 +242,10 @@ jobs:
           installationPath: $(Agent.ToolsDirectory)/net
 
       - task: UseDotNet@2
-        displayName: 'Use .NET SDK 5.x'
+        displayName: 'Use .NET SDK 7.x'
         inputs:
           packageType: sdk
-          version: 5.x
-          performMultiLevelLookup: true
-          installationPath: $(Agent.ToolsDirectory)/net
-
-      - task: UseDotNet@2
-        displayName: 'Use .NET Core SDK 3.x'
-        inputs:
-          packageType: sdk
-          version: 3.1.x
-          performMultiLevelLookup: true
-          installationPath: $(Agent.ToolsDirectory)/net
-
-      - task: UseDotNet@2
-        displayName: 'Use .NET Core SDK 2.x'
-        inputs:
-          packageType: sdk
-          version: 2.1.x
+          version: 7.x
           performMultiLevelLookup: true
           installationPath: $(Agent.ToolsDirectory)/net
   
