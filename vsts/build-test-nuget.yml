@@ -6,10 +6,6 @@ parameters:
   type: number
   # Reasonable target to avoid throttling and contention with several PRs running.
   default: 3
-- name: uploadToE4KFeed
-  displayName: Whether to upload nuget packages to E4K feed or not.
-  type: boolean
-  default: true
 
 resources:
   - repo: self
@@ -462,7 +458,7 @@ jobs:
     displayName: Upload Nuget Packages to E4K Feed
     timeoutInMinutes: 15
 
-    condition: and(succeeded(), eq(parameters.uploadToE4KFeed, 'true'))
+    condition: and(succeeded(), eq(variables['$(UPLOAD_TO_E4K_FEED)'], 'true'))
     dependsOn:
       - Build_Packages
 
