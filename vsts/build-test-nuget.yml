@@ -458,7 +458,7 @@ jobs:
     displayName: Upload Nuget Packages to E4K Feed
     timeoutInMinutes: 15
 
-    condition: and(succeeded(), eq(variables['$(UPLOAD_TO_E4K_FEED)'], 'true'))
+    condition: succeeded()
     dependsOn:
       - Build_Packages
 
