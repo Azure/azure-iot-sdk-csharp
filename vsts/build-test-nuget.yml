@@ -499,7 +499,7 @@ jobs:
       - task: NuGetAuthenticate@1
         displayName: 'NuGet Authenticate'
         inputs:
-          nuGetServiceConnections: 'nugetServiceConnection-tmahmood'
+          nuGetServiceConnections: 'nugetServiceConnection_.NET_SDK'    ## Update Public Access Token (PAT) from the sdklite-previews feed 
 
       - script: |
           nuget push -src https://pkgs.dev.azure.com/e4k-sdk/SdkLite/_packaging/sdklite-previews/nuget/v3/index.json -ApiKey nuget $(Build.SourcesDirectory)/bin/pkgs_$(NUGET_PACKGE_FOLDER)/**/*.nupkg
