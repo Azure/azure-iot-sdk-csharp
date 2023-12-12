@@ -37,7 +37,7 @@ jobs:
         inputs:
           targetType: 'inline'
           script: |
-            $(Build.SourcesDirectory)/versionupdate.ps1 -update -suffix "$(get-date -f yyyyMMdd-hhmm)"
+            $(Build.SourcesDirectory)/versionupdate.ps1 -update -$previewSuffix "ztp" -$metadataSuffix "$(get-date -f yyyyMMdd-hhmm)"
 
       - task: PowerShell@2
         displayName: 'Build Packages'

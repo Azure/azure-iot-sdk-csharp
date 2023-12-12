@@ -26,7 +26,8 @@ https://github.com/azure/azure-iot-sdk-csharp
 
 Param(
     [switch] $update,
-	[string] $suffix
+	[string] $previewSuffix,
+    [string] $metadataSuffix
 )
 
 Function GetVersion($path) {
@@ -47,14 +48,15 @@ $csv = Import-Csv versions.csv
 
 $requireUpdate = 0
 
-Write-Host -ForegroundColor Cyan "Desired suffix: $suffix"
-
 foreach ($project in $csv) {
 
     Write-Host -ForegroundColor Cyan (Split-Path -leaf $project.AssemblyPath)
     $desiredVersion = $project.Version
-	if ($suffix -ne "") {
-		$desiredVersion = "$desiredVersion+$suffix"
+    if ($previewSuffix -ne "") {
+		$desiredVersion = "$desiredVersion-$previewSuffix"
+	}
+	if ($metadataSuffix -ne "") {
+		$desiredVersion = "$desiredVersion+$metadataSuffix"
 	}
     $actualVersionNode = GetVersion($project.AssemblyPath)
     $actualVersion = $actualVersionNode.Node.InnerText
