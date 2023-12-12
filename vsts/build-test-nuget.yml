@@ -499,7 +499,7 @@ jobs:
       - task: NuGetAuthenticate@0
         displayName: 'NuGet Authenticate'
         inputs:
-          nuGetServiceConnections: 'nugetServiceConnection-tmahmood' # Update with the name of your NuGet service connection
+          nuGetServiceConnections: 'nugetServiceConnection-.NET_SDK' # Update with the name of your NuGet service connection
 
       - task: NuGetCommand@2
         displayName: 'NuGet Push'
@@ -508,7 +508,7 @@ jobs:
           SourcePath: '$(Build.SourcesDirectory)/bin/pkgs_$(NUGET_PACKGE_FOLDER)'
           packagesToPush: '$(Build.SourcesDirectory)/bin/pkgs_$(NUGET_PACKGE_FOLDER)/*.nupkg'
           nuGetFeedType: 'external'
-          externalEndpoint: 'nugetServiceConnection-tmahmood'
+          externalEndpoint: 'nugetServiceConnection-.NET_SDK'
           feedPublish: 'https://pkgs.dev.azure.com/e4k-sdk/SdkLite/_packaging/sdklite-previews/nuget/v3/index.json'
           versioningScheme: 'off'  
 
