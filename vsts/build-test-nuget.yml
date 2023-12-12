@@ -496,21 +496,14 @@ jobs:
             Write-Host "Package contents (renamed):"
             gci -Path $(Build.SourcesDirectory)/bin -Recurse -Force
 
-      - task: NuGetAuthenticate@0
+      - task: NuGetAuthenticate@1
         displayName: 'NuGet Authenticate'
         inputs:
-          nuGetServiceConnections: 'nugetServiceConnection-.NET_SDK' # Update with the name of your NuGet service connection
+          nuGetServiceConnections: 'nugetServiceConnection-APIKey'
 
-      - task: NuGetCommand@2
-        displayName: 'NuGet Push'
-        inputs:
-          command: 'push'
-          SourcePath: '$(Build.SourcesDirectory)/bin'
-          packagesToPush: '$(Build.SourcesDirectory)/bin/pkgs_$(NUGET_PACKGE_FOLDER)/*.nupkg'
-          nuGetFeedType: 'external'
-          externalEndpoint: 'nugetServiceConnection-.NET_SDK'
-          feedPublish: 'https://pkgs.dev.azure.com/e4k-sdk/SdkLite/_packaging/sdklite-previews/nuget/v3/index.json'
-          versioningScheme: 'off'  
+      - script: |
+          nuget push '$(Build.SourcesDirectory)/bin/pkgs_$(NUGET_PACKGE_FOLDER)/*.nupkg' -src https://pkgs.dev.azure.com/e4k-sdk/SdkLite/_packaging/sdklite-previews/nuget/v3/index.json -ApiKey hqehkiyqizzxuxdbvwnbehmkatl346kr5wndulu45rar77vxmkjq
+        displayName: "Push"   
 
   ### Upload unisgned packages for partner signing and release pipeline ###
   - job: Upload_Packages
