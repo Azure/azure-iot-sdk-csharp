@@ -1,7 +1,7 @@
 AssemblyPath, Version
-provisioning\device\src\Microsoft.Azure.Devices.Provisioning.Client.csproj, 1.19.3
-provisioning\transport\http\src\Microsoft.Azure.Devices.Provisioning.Transport.Http.csproj, 1.15.3
+provisioning\device\src\Microsoft.Azure.Devices.Provisioning.Client.csproj, 1.19.4
+provisioning\transport\http\src\Microsoft.Azure.Devices.Provisioning.Transport.Http.csproj, 1.15.4
 provisioning\transport\amqp\src\Microsoft.Azure.Devices.Provisioning.Transport.Amqp.csproj, 1.16.5
 provisioning\transport\mqtt\src\Microsoft.Azure.Devices.Provisioning.Transport.Mqtt.csproj, 1.17.3
-discovery\device\src\Microsoft.Azure.Devices.Discovery.Client.csproj, 1.1.0
-discovery\transport\http\src\Microsoft.Azure.Devices.Discovery.Transport.Http.csproj, 1.1.0
+discovery\device\src\Microsoft.Azure.Devices.Discovery.Client.csproj, 1.1.1
+discovery\transport\http\src\Microsoft.Azure.Devices.Discovery.Transport.Http.csproj, 1.1.1
