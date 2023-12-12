@@ -54,7 +54,7 @@ foreach ($project in $csv) {
     Write-Host -ForegroundColor Cyan (Split-Path -leaf $project.AssemblyPath)
     $desiredVersion = $project.Version
 	if ($suffix -ne "") {
-		$desiredVersion = "$desiredVersion-$suffix"
+		$desiredVersion = "$desiredVersion+$suffix"
 	}
     $actualVersionNode = GetVersion($project.AssemblyPath)
     $actualVersion = $actualVersionNode.Node.InnerText
