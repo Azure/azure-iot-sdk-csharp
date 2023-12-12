@@ -26,7 +26,7 @@ https://github.com/azure/azure-iot-sdk-csharp
 
 Param(
     [switch] $update,
-	[string] $previewSuffix,
+    [string] $previewSuffix,
     [string] $metadataSuffix
 )
 
