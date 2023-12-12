@@ -502,10 +502,7 @@ jobs:
           nuGetServiceConnections: 'nugetServiceConnection-tmahmood'
 
       - script: |
-          $nupkgFiles = Get-ChildItem -Path "$(Build.SourcesDirectory)/bin/pkgs_$(NUGET_PACKGE_FOLDER)" -Filter *.nupkg
-          foreach ($file in $nupkgFiles) {
-              nuget push $file.FullName -src https://pkgs.dev.azure.com/e4k-sdk/SdkLite/_packaging/sdklite-previews/nuget/v3/index.json -ApiKey nuget token
-          }
+          nuget push -src https://pkgs.dev.azure.com/e4k-sdk/SdkLite/_packaging/sdklite-previews/nuget/v3/index.json -ApiKey nuget $(Build.SourcesDirectory)/bin/pkgs_$(NUGET_PACKGE_FOLDER)/**/*.nupkg
         displayName: "Push"   
 
   ### Upload unisgned packages for partner signing and release pipeline ###
