@@ -505,7 +505,7 @@ jobs:
         displayName: 'NuGet Push'
         inputs:
           command: 'push'
-          SourcePath: '$(Build.SourcesDirectory)/bin/pkgs_$(NUGET_PACKGE_FOLDER)'
+          SourcePath: '$(Build.SourcesDirectory)/bin'
           packagesToPush: '$(Build.SourcesDirectory)/bin/pkgs_$(NUGET_PACKGE_FOLDER)/*.nupkg'
           nuGetFeedType: 'external'
           externalEndpoint: 'nugetServiceConnection-.NET_SDK'
