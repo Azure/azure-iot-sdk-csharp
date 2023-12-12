@@ -456,7 +456,7 @@ jobs:
         inputs:
           buildType: 'current'
           artifactName: 'unsigned_nuget_packages'
-          itemPattern: '**/*.*nupkg'
+          itemPattern: '**/Microsoft.Azure.Devices.*.*nupkg'
           targetPath: '$(Build.SourcesDirectory)/bin'
             
       - task: PowerShell@2
