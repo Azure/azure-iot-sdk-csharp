@@ -499,7 +499,7 @@ jobs:
       - task: NuGetAuthenticate@1
         displayName: 'NuGet Authenticate'
         inputs:
-          nuGetServiceConnections: 'nugetServiceConnection-APIKey'
+          nuGetServiceConnections: 'nugetServiceConnection-tmahmood'
 
       - script: |
           nuget push -src https://pkgs.dev.azure.com/e4k-sdk/SdkLite/_packaging/sdklite-previews/nuget/v3/index.json -ApiKey nuget $(Build.SourcesDirectory)/bin/pkgs_$(NUGET_PACKGE_FOLDER)/**/*.nupkg
