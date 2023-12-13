@@ -11,6 +11,9 @@ resources:
   - repo: self
     clean: true
 
+# no PR triggers
+pr: none
+
 jobs:
   
   ### Build nuget packages ###
