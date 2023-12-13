@@ -1,4 +1,4 @@
-name: $(BuildID)_$(BuildDefinitionName)_$(SourceBranchName)_$(Date:yyyyMMdd)$(Rev:.r)
+name: $(Date:yyyyMMdd).$(Rev:.r)
 
 parameters:
 - name: maxParallelJobs
@@ -37,7 +37,7 @@ jobs:
         inputs:
           targetType: 'inline'
           script: |
-            $(Build.SourcesDirectory)/versionupdate.ps1 -update -previewSuffix "ztp" -metadataSuffix "$(get-date -f yyyyMMdd-hhmm)"
+            $(Build.SourcesDirectory)/versionupdate.ps1 -update -previewSuffix "ztp.$(Build.BuildNumber)"
 
       - task: PowerShell@2
         displayName: 'Build Packages'
