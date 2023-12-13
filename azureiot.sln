@@ -72,6 +72,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{719D18A7-E943-461B-B777-0AAEC43916F5}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
+		vsts\build-nuget.yml = vsts\build-nuget.yml
 		.github\CODEOWNERS = .github\CODEOWNERS
 		configure_tls_protocol_version_and_ciphers.md = configure_tls_protocol_version_and_ciphers.md
 		device_connection_and_reliability_readme.md = device_connection_and_reliability_readme.md
@@ -369,7 +370,6 @@ Global
 		{77099E2D-9B4F-4B11-9B25-6D675B26FAD6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{77099E2D-9B4F-4B11-9B25-6D675B26FAD6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{77099E2D-9B4F-4B11-9B25-6D675B26FAD6}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{77099E2D-9B4F-4B11-9B25-6D675B26FAD6}.Release|Any CPU.Build.0 = Release|Any CPU
 		{2BB16A15-0E86-4A30-84B5-07293787DF7E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{2BB16A15-0E86-4A30-84B5-07293787DF7E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2BB16A15-0E86-4A30-84B5-07293787DF7E}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -425,7 +425,6 @@ Global
 		{65A77CA6-E5E2-406D-8DD4-8C00CFE655F5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{65A77CA6-E5E2-406D-8DD4-8C00CFE655F5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{65A77CA6-E5E2-406D-8DD4-8C00CFE655F5}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{65A77CA6-E5E2-406D-8DD4-8C00CFE655F5}.Release|Any CPU.Build.0 = Release|Any CPU
 		{EDE1FB8E-5BD4-49E7-9745-6599687D34CD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{EDE1FB8E-5BD4-49E7-9745-6599687D34CD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EDE1FB8E-5BD4-49E7-9745-6599687D34CD}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -445,7 +444,6 @@ Global
 		{59BAEBAA-E431-4FF4-B70B-DDF633EB3F48}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{59BAEBAA-E431-4FF4-B70B-DDF633EB3F48}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{59BAEBAA-E431-4FF4-B70B-DDF633EB3F48}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{59BAEBAA-E431-4FF4-B70B-DDF633EB3F48}.Release|Any CPU.Build.0 = Release|Any CPU
 		{D67D8B88-B321-4B6D-8780-9C432BC7C98A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{D67D8B88-B321-4B6D-8780-9C432BC7C98A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D67D8B88-B321-4B6D-8780-9C432BC7C98A}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -457,7 +455,6 @@ Global
 		{B0562F71-1772-4451-9379-EC42D2A57C96}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{B0562F71-1772-4451-9379-EC42D2A57C96}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B0562F71-1772-4451-9379-EC42D2A57C96}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B0562F71-1772-4451-9379-EC42D2A57C96}.Release|Any CPU.Build.0 = Release|Any CPU
 		{184F07FC-A5CA-43F5-8742-0B6DF6825A1F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{184F07FC-A5CA-43F5-8742-0B6DF6825A1F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{184F07FC-A5CA-43F5-8742-0B6DF6825A1F}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -473,7 +470,6 @@ Global
 		{0DFB9289-A00A-44F1-BFDB-24571154AB38}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{0DFB9289-A00A-44F1-BFDB-24571154AB38}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0DFB9289-A00A-44F1-BFDB-24571154AB38}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0DFB9289-A00A-44F1-BFDB-24571154AB38}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

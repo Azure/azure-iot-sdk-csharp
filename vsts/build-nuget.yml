@@ -1,0 +1,148 @@
+name: $(Date:yyyyMMdd).$(Rev:r)
+
+parameters:
+- name: maxParallelJobs
+  displayName: Maximum jobs to run in parallel. Change maxParallel to 1 make OS builds run in serial rather than in parallel.
+  type: number
+  # Reasonable target to avoid throttling and contention with several PRs running.
+  default: 3
+
+resources:
+  - repo: self
+    clean: true
+
+# no PR triggers
+pr: none
+
+jobs:
+  
+  ### Build nuget packages ###
+  - job: Build_Packages
+    displayName: Build Nuget Packages
+    timeoutInMinutes: 15
+
+    condition: succeeded()
+    pool:
+      vmImage: windows-2022
+
+    steps:
+
+      - task: NuGetCommand@2
+        inputs:
+          command: 'restore'
+          restoreSolution: '$(Build.SourcesDirectory)/*.sln'
+          feedsToUse: 'select'
+          vstsFeed: '/32c885bd-55c9-4aab-8e98-108975177a75'
+
+      - task: PowerShell@2
+        displayName: 'Rename Packages'
+        name: RENAME_PKG
+        inputs:
+          targetType: 'inline'
+          script: |
+            $(Build.SourcesDirectory)/versionupdate.ps1 -update -previewSuffix "ztp.$(Build.BuildNumber)"
+
+      - task: PowerShell@2
+        displayName: 'Build Packages'
+        name: BUILD_PKG
+        inputs:
+          targetType: 'inline'
+          script: |
+            $env:FILE_DATE = get-date -f yyyy-MM-dd-hh-mm-ss.f
+            Set-Content -Path "$(Build.ArtifactStagingDirectory)/partner-file-path.txt" -Value "azure-iot-sdk/net/pkgs_$env:FILE_DATE"
+            Write-Host Package Folder will be appended with date suffix: $env:FILE_DATE
+            Write-Host "##vso[task.setvariable variable=NUGET_PKG_DATE;isoutput=true;]$env:FILE_DATE"
+            Write-Host Start building release package with $(Agent.Id):$(Agent.MachineName) on $env:FILE_DATE
+            $(Build.SourcesDirectory)/build.ps1 -build -clean -configuration Release -package
+
+      - task: PowerShell@2
+        displayName: 'Clean build packages'
+        name: CLEAN_PKG
+        inputs:
+          targetType: 'inline'
+          script: |
+            # Import the CSV file
+            $csv = Import-Csv $(Build.SourcesDirectory)/versions.csv
+
+            # Get the project names without the extension
+            $names = $csv.AssemblyPath | ForEach-Object {
+              Split-Path -Path $_ -Leaf -Resolve | ForEach-Object {
+                $_ -replace '\.csproj$',''
+              }
+            }
+
+            # Join the project names into a single pattern
+            $pattern = $names -join '|'
+
+            # Delete the files that do not match the pattern
+            Get-ChildItem -Path $(Build.SourcesDirectory)/bin/pkg -File | Where-Object {
+              $_.BaseName -notmatch $pattern
+            } | Remove-Item -Force
+
+      - task: CopyFiles@2
+        displayName: 'Copy nuget package files to the artifacts folder'
+        inputs:
+          SourceFolder: '$(Build.SourcesDirectory)/bin/pkg'
+          Contents: '**/*.*nupkg'
+          TargetFolder: '$(Build.ArtifactStagingDirectory)/nuget'
+        condition: always()
+
+      - task: PublishBuildArtifacts@1
+        displayName: 'Publish: Unsigned nuget packages'
+        inputs:
+          ArtifactName: unsigned_nuget_packages
+        condition: always()
+
+  ### Upload unisgned packages for partner signing and release pipeline ###
+  - job: Upload_Packages
+    displayName: Upload Nuget Packages
+    timeoutInMinutes: 15
+
+    condition: succeeded()
+    dependsOn:
+      - Build_Packages
+
+    pool:
+      vmImage: windows-2022
+
+    variables:
+      NUGET_PACKGE_FOLDER: $[ dependencies.Build_Packages.outputs['BUILD_PKG.NUGET_PKG_DATE'] ]
+
+    steps:
+
+      - task: DownloadPipelineArtifact@2
+        displayName: 'Download nuget packages from pipeline artifacts'
+        inputs:
+          buildType: 'current'
+          artifactName: 'unsigned_nuget_packages'
+          itemPattern: '**/*.*nupkg'
+          targetPath: '$(Build.SourcesDirectory)/bin'
+            
+      - task: PowerShell@2
+        displayName: 'Downloaded nuget package files checkpoint'
+        inputs:
+          targetType: 'inline'
+          script: |
+            Write-Host "Download contents:"
+            gci -Path $(Build.SourcesDirectory)/bin/nuget -Recurse -Force
+
+      - task: PowerShell@2
+        displayName: 'Rename Packages for Partner Release Pipeline'
+        inputs:
+          targetType: 'inline'
+          script: |
+            Write-Host ""
+            Rename-Item $(Build.SourcesDirectory)/bin/nuget $(Build.SourcesDirectory)/bin/pkgs_$(NUGET_PACKGE_FOLDER)
+            Write-Host " "
+            Write-Host "Package contents (renamed):"
+            gci -Path $(Build.SourcesDirectory)/bin -Recurse -Force
+
+      - task: AzureFileCopy@2
+        displayName: 'Copy nuget packages to Partner Release Pipeline Storage'
+        inputs:
+          SourcePath: '$(Build.SourcesDirectory)/bin'
+          azureSubscription: asz-ztp-azuresdkpartnerdrops
+          Destination: AzureBlob
+          storage: azuresdkpartnerdrops
+          ContainerName: 'drops/asz-ztp/dotnet'
+

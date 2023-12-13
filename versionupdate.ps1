@@ -25,7 +25,9 @@ https://github.com/azure/azure-iot-sdk-csharp
 #>
 
 Param(
-    [switch] $update
+    [switch] $update,
+    [string] $previewSuffix,
+    [string] $metadataSuffix
 )
 
 Function GetVersion($path) {
@@ -50,6 +52,12 @@ foreach ($project in $csv) {
 
     Write-Host -ForegroundColor Cyan (Split-Path -leaf $project.AssemblyPath)
     $desiredVersion = $project.Version
+    if (![string]::IsNullOrWhitespace($previewSuffix)) {
+		$desiredVersion = "$desiredVersion-$previewSuffix"
+	}
+	if (![string]::IsNullOrWhitespace($metadataSuffix)) {
+		$desiredVersion = "$desiredVersion+$metadataSuffix"
+	}
     $actualVersionNode = GetVersion($project.AssemblyPath)
     $actualVersion = $actualVersionNode.Node.InnerText
 
@@ -61,6 +69,7 @@ foreach ($project in $csv) {
         {
             Write-Host -Foreground Green "`tVersion: $actualVersion Desired: $desiredVersion"
             UpdateVersion $project.AssemblyPath $actualVersion $desiredVersion
+            $requireUpdate--
         }
         else
         {
