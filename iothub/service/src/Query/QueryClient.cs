@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Net.Http;
@@ -263,7 +264,7 @@ namespace Microsoft.Azure.Devices
 
             if (pageSizeHint != null)
             {
-                request.Headers.Add(PageSizeHeader, pageSizeHint.ToString());
+                request.Headers.Add(PageSizeHeader, pageSizeHint?.ToString(CultureInfo.InvariantCulture));
             }
 
             if (request.Content != null)

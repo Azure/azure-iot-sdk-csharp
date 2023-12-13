@@ -30,7 +30,7 @@
   <!-- NetCore and .NET 4.7.2 -->
   <ItemGroup>
     <PackageReference Include="Microsoft.Azure.Storage.Blob" Version="11.2.3" />
-    <PackageReference Include="Azure.Identity" Version="1.8.2" />
+    <PackageReference Include="Azure.Identity" Version="1.10.4" />
   </ItemGroup>
 
   <ItemGroup>

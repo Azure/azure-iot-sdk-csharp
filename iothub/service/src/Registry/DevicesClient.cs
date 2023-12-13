@@ -1044,7 +1044,7 @@ namespace Microsoft.Azure.Devices
                 UriKind.Relative);
         }
 
-        private static IEnumerable<ExportImportDevice> GenerateExportImportDeviceListForBulkOperations(IEnumerable<Device> devices, ImportMode importMode)
+        private static List<ExportImportDevice> GenerateExportImportDeviceListForBulkOperations(IEnumerable<Device> devices, ImportMode importMode)
         {
             const string eTagNotSetWhileUpdatingDevice = "ETagNotSetWhileUpdatingDevice";
             const string eTagNotSetWhileDeletingDevice = "ETagNotSetWhileDeletingDevice";

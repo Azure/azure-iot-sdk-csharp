@@ -401,7 +401,7 @@ namespace Microsoft.Azure.Devices.Client
             return tcs.Task;
         }
 
-        private static IAsyncResult ToAsyncResult<TResult>(Task<TResult> task, AsyncCallback callback, object state)
+        private static Task<TResult> ToAsyncResult<TResult>(Task<TResult> task, AsyncCallback callback, object state)
         {
             if (task.AsyncState == state)
             {

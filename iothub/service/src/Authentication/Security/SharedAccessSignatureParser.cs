@@ -21,7 +21,7 @@ namespace Microsoft.Azure.Devices
             Argument.AssertNotNullOrWhiteSpace(iotHubName, nameof(iotHubName));
             Argument.AssertNotNullOrWhiteSpace(rawToken, nameof(rawToken));
 
-            IDictionary<string, string> parsedFields = ExtractFieldValues(rawToken);
+            Dictionary<string, string> parsedFields = ExtractFieldValues(rawToken);
 
             if (!parsedFields.TryGetValue(SharedAccessSignatureConstants.SignatureFieldName, out string signature))
             {
@@ -70,13 +70,13 @@ namespace Microsoft.Azure.Devices
                 return false;
             }
 
-            IDictionary<string, string> parsedFields = ExtractFieldValues(rawSignature);
+            Dictionary<string, string> parsedFields = ExtractFieldValues(rawSignature);
             bool isSharedAccessSignature = parsedFields.TryGetValue(SharedAccessSignatureConstants.SignatureFieldName, out _);
 
             return isSharedAccessSignature;
         }
 
-        private static IDictionary<string, string> ExtractFieldValues(string sharedAccessSignature)
+        private static Dictionary<string, string> ExtractFieldValues(string sharedAccessSignature)
         {
             string[] lines = sharedAccessSignature.Split();
 
@@ -88,7 +88,7 @@ namespace Microsoft.Azure.Devices
                 throw new FormatException("Malformed signature");
             }
 
-            IDictionary<string, string> parsedFields = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            Dictionary<string, string> parsedFields = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             string[] fields = lines[1].Trim().Split(new string[] { SharedAccessSignatureConstants.PairSeparator }, StringSplitOptions.None);
 
             foreach (string field in fields)

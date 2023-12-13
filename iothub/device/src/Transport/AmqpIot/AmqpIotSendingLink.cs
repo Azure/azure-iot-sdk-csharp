@@ -95,7 +95,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
             foreach (TelemetryMessage message in messages)
             {
+#pragma warning disable CA2000 // Dispose objects before losing scope
                 using AmqpMessage amqpMessage = AmqpIotMessageConverter.OutgoingMessageToAmqpMessage(message);
+#pragma warning restore CA2000 // Dispose objects before losing scope
                 var data = new Data
                 {
                     Value = AmqpIotMessageConverter.ReadStream(amqpMessage.ToStream()),

@@ -504,7 +504,7 @@ namespace Microsoft.Azure.Devices
             }
         }
 
-        private static IEnumerable<ExportImportDevice> GenerateExportImportDeviceListForTwinBulkOperations(IEnumerable<ClientTwin> twins, ImportMode importMode)
+        private static List<ExportImportDevice> GenerateExportImportDeviceListForTwinBulkOperations(IEnumerable<ClientTwin> twins, ImportMode importMode)
         {
             Debug.Assert(twins != null);
             Debug.Assert(twins.Any());

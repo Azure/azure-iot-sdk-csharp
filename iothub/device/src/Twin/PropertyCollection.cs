@@ -77,9 +77,9 @@ namespace Microsoft.Azure.Devices.Client
         {
             propertyValue = default;
 
-            if (_properties.ContainsKey(propertyKey))
+            if (_properties.TryGetValue(propertyKey, out object value))
             {
-                if (ObjectConversionHelper.TryCastOrConvert<T>(_properties[propertyKey], PayloadConvention, out propertyValue))
+                if (ObjectConversionHelper.TryCastOrConvert<T>(value, PayloadConvention, out propertyValue))
                 {
                     return true;
                 }

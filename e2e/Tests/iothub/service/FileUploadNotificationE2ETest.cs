@@ -62,7 +62,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 async Task<AcknowledgementType> OnFileUploadNotificationReceived(FileUploadNotification fileUploadNotification)
                 {
                     string fileName = fileUploadNotification.BlobName.Substring(fileUploadNotification.BlobName.IndexOf('/') + 1);
-                    if (!files.ContainsKey(fileName))
+                    if (!files.TryGetValue(fileName, out bool value))
                     {
                         // Notification does not belong to this test
                         VerboseTestLogger.WriteLine($"Received notification for unrelated file {fileName}.");
@@ -70,7 +70,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                     }
 
                     VerboseTestLogger.WriteLine($"Received notification for {fileName}.");
-                    if (!files[fileName])
+                    if (files[fileName] = !value)
                     {
                         files[fileName] = true;
                         CloudBlob blob = storage.CloudBlobContainer.GetBlobReference(fileUploadNotification.BlobName);

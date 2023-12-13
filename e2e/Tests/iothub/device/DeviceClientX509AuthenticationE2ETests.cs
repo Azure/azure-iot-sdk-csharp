@@ -181,12 +181,12 @@ namespace Microsoft.Azure.Devices.E2ETests
             await deviceClient.SendTelemetryAsync(message, ct).ConfigureAwait(false);
         }
 
-        private static IotHubClientTransportSettings CreateMqttTransportSettingWithCertificateRevocationCheck(IotHubClientTransportProtocol transportProtocol)
+        private static IotHubClientMqttSettings CreateMqttTransportSettingWithCertificateRevocationCheck(IotHubClientTransportProtocol transportProtocol)
         {
             return new IotHubClientMqttSettings(transportProtocol) { CertificateRevocationCheck = true };
         }
 
-        private static IotHubClientTransportSettings CreateAmqpTransportSettingWithCustomWebSocket(IotHubClientTransportProtocol transportProtocol)
+        private static IotHubClientAmqpSettings CreateAmqpTransportSettingWithCustomWebSocket(IotHubClientTransportProtocol transportProtocol)
         {
             var websocket = new ClientWebSocket();
             websocket.Options.AddSubProtocol(Amqpwsb10);
@@ -199,7 +199,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             };
         }
 
-        private static IotHubClientTransportSettings CreateAmqpTransportSettingWithCertificateRevocationCheck(IotHubClientTransportProtocol transportProtocol)
+        private static IotHubClientAmqpSettings CreateAmqpTransportSettingWithCertificateRevocationCheck(IotHubClientTransportProtocol transportProtocol)
         {
             return new IotHubClientAmqpSettings(transportProtocol) { CertificateRevocationCheck = true };
         }
