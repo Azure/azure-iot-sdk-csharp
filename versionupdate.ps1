@@ -52,10 +52,10 @@ foreach ($project in $csv) {
 
     Write-Host -ForegroundColor Cyan (Split-Path -leaf $project.AssemblyPath)
     $desiredVersion = $project.Version
-    if ($previewSuffix -ne "") {
+    if (![string]::IsNullOrWhitespace($previewSuffix)) {
 		$desiredVersion = "$desiredVersion-$previewSuffix"
 	}
-	if ($metadataSuffix -ne "") {
+	if (![string]::IsNullOrWhitespace($metadataSuffix)) {
 		$desiredVersion = "$desiredVersion+$metadataSuffix"
 	}
     $actualVersionNode = GetVersion($project.AssemblyPath)
