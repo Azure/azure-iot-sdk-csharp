@@ -18,7 +18,7 @@ parameters:
     - default
     - all
     - min-matrix
-    - net7.0
+    - net8.0
     - net6.0
     - net4.7.2
   default: default
@@ -40,7 +40,7 @@ variables:
   testNet60: ${{ or(eq(variables['minMatrix'], 'True'), contains(parameters['testTargets'], 'net6.0')) }}
 
 # The remaining build/test targets.
-  testNet70: ${{ or(eq(variables['allTestTargets'], 'True'), contains(parameters['testTargets'], 'net7.0')) }}
+  testNet80: ${{ or(eq(variables['allTestTargets'], 'True'), contains(parameters['testTargets'], 'net8.0')) }}
   testNet472: ${{ or(eq(variables['allTestTargets'], 'True'), contains(parameters['testTargets'], 'net4.7.2')) }}
 
 trigger:
@@ -72,9 +72,9 @@ jobs:
           FRAMEWORK: net6.0
           # Can't find a good way to skip matrix elements so for now we set an environment variable that the script will use to bail out.
           SHOULD_RUN: ${{ eq(variables['testNet60'], 'True') }}
-        .NET 7.0:
-          FRAMEWORK: net7.0
-          SHOULD_RUN: ${{ eq(variables['testNet70'], 'True') }}
+        .NET 8.0:
+          FRAMEWORK: net8.0
+          SHOULD_RUN: ${{ eq(variables['testNet80'], 'True') }}
     pool:
       # If this is changed, don't forget to update supported_platforms.md in the root directory. That document outlines what OS we test on and should stay up to date.
       vmImage: ubuntu-20.04
@@ -89,19 +89,19 @@ jobs:
             Write-Host "maxParallelJobs: ${{ parameters.maxParallelJobs }}"
             Write-Host "minMatrix: ${{ variables.minMatrix }}"
             Write-Host "testNet60: ${{ variables.testNet60 }}"
-            Write-Host "testNet70: ${{ variables.testNet70 }}"
+            Write-Host "testNet80: ${{ variables.testNet80 }}"
             Write-Host "testNetcore31: ${{ variables.testNetcore31 }}"
             Write-Host "testNetcore21: ${{ variables.testNetcore21 }}"
             Write-Host "testNet472: ${{ variables.testNet472 }}"
 
       # https://docs.microsoft.com/azure/devops/pipelines/tasks/tool/dotnet-core-tool-installer?view=azure-devops
 
-      # Linux requires .NET 7.0 install for tests to run, no matter which framework target is being tested
+      # Linux requires .NET 8.0 install for tests to run, no matter which framework target is being tested
       - task: UseDotNet@2
-        displayName: 'Use .NET SDK 7.0'
+        displayName: 'Use .NET SDK 8.0'
         inputs:
          packageType: sdk
-         version: 7.x
+         version: 8.x
          performMultiLevelLookup: true
          installationPath: $(Agent.ToolsDirectory)/dotnet
 
@@ -329,9 +329,9 @@ jobs:
         .NET 6.0:
           FRAMEWORK: net6.0
           SHOULD_RUN: ${{ eq(variables['testNet60'], 'True') }}
-        .NET 7.0:
-          FRAMEWORK: net7.0
-          SHOULD_RUN: ${{ eq(variables['testNet70'], 'True') }}
+        .NET 8.0:
+          FRAMEWORK: net8.0
+          SHOULD_RUN: ${{ eq(variables['testNet80'], 'True') }}
         .NET 4.7.2:
           FRAMEWORK: net472
           SHOULD_RUN: ${{ eq(variables['testNet472'], 'True') }}
@@ -350,7 +350,7 @@ jobs:
             Write-Host "maxParallelJobs: ${{ parameters.maxParallelJobs }}"
             Write-Host "minMatrix: ${{ variables.minMatrix }}"
             Write-Host "testNet60: ${{ variables.testNet60 }}"
-            Write-Host "testNet70: ${{ variables.testNet70 }}"
+            Write-Host "testNet80: ${{ variables.testNet80 }}"
             Write-Host "testNetcore31: ${{ variables.testNetcore31 }}"
             Write-Host "testNetcore21: ${{ variables.testNetcore21 }}"
             Write-Host "testNet472: ${{ variables.testNet472 }}"
@@ -364,12 +364,12 @@ jobs:
             performMultiLevelLookup: true
             installationPath: $(Agent.ToolsDirectory)/dotnet
 
-      - ${{ if eq(variables['testNet70'], 'True') }}:
+      - ${{ if eq(variables['testNet80'], 'True') }}:
         - task: UseDotNet@2
-          displayName: 'Use .NET SDK 7.0'
+          displayName: 'Use .NET SDK 8.0'
           inputs:
             packageType: sdk
-            version: 7.x
+            version: 8.x
             performMultiLevelLookup: true
             installationPath: $(Agent.ToolsDirectory)/dotnet
 
