@@ -8,13 +8,14 @@ using System.Net.Http;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure.Storage.Blobs.Models;
+using Azure.Storage.Blobs.Specialized;
 using FluentAssertions;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Devices.Client.Transport;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Microsoft.WindowsAzure.Storage.Blob;
 
 namespace Microsoft.Azure.Devices.E2ETests
 {
@@ -41,7 +42,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await UploadFileAsync(Client.TransportType.Http1, smallFile).ConfigureAwait(false);
         }
 
-        [TestMethodWithRetry(Max=3)]
+        [TestMethodWithRetry(Max = 3)]
         [Timeout(TestTimeoutMilliseconds)]
         [TestCategory("LongRunning")]
         public async Task FileUpload_GetFileUploadSasUri_Http_NoFileTransportSettingSpecified()
@@ -50,7 +51,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await GetSasUriAsync(Client.TransportType.Http1, smallFileBlobName).ConfigureAwait(false);
         }
 
-        [TestMethodWithRetry(Max=3)]
+        [TestMethodWithRetry(Max = 3)]
         [Timeout(TestTimeoutMilliseconds)]
         [TestCategory("LongRunning")]
         public async Task FileUpload_GetFileUploadSasUri_Http_x509_NoFileTransportSettingSpecified()
@@ -59,7 +60,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await GetSasUriAsync(Client.TransportType.Http1, smallFileBlobName, true).ConfigureAwait(false);
         }
 
-        [TestMethodWithRetry(Max=3)]
+        [TestMethodWithRetry(Max = 3)]
         [Timeout(TestTimeoutMilliseconds)]
         [TestCategory("LongRunning")]
         public async Task FileUpload_GetFileUploadSasUri_Mqtt_x509_NoFileTransportSettingSpecified()
@@ -94,7 +95,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await UploadFileAsync(Client.TransportType.Http1, smallFile, true).ConfigureAwait(false);
         }
 
-        [TestMethodWithRetry(Max=3)]
+        [TestMethodWithRetry(Max = 3)]
         [Timeout(TestTimeoutMilliseconds)]
         [TestCategory("LongRunning")]
         public async Task FileUpload_SmallFile_Http_GranularSteps()
@@ -106,7 +107,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await UploadFileGranularAsync(fileStreamSource, filename, fileUploadTransportSettings).ConfigureAwait(false);
         }
 
-        [TestMethodWithRetry(Max=3)]
+        [TestMethodWithRetry(Max = 3)]
         [Timeout(TestTimeoutMilliseconds)]
         [TestCategory("LongRunning")]
         public async Task FileUpload_SmallFile_Http_GranularSteps_x509()
@@ -118,7 +119,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await UploadFileGranularAsync(fileStreamSource, filename, fileUploadTransportSettings, useX509auth: true).ConfigureAwait(false);
         }
 
-        [TestMethodWithRetry(Max=3)]
+        [TestMethodWithRetry(Max = 3)]
         [Timeout(TestTimeoutMilliseconds)]
         [TestCategory("LongRunning")]
         [TestCategory("Proxy")]
@@ -135,7 +136,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         // File upload requests can be configured to use a user-provided HttpClient
-        [TestMethodWithRetry(Max=3)]
+        [TestMethodWithRetry(Max = 3)]
         public async Task FileUpload_UsesCustomHttpClient()
         {
             using TestDevice testDevice =
@@ -205,14 +206,13 @@ namespace Microsoft.Azure.Devices.E2ETests
             {
                 FileUploadSasUriResponse fileUploadSasUriResponse = await deviceClient.GetFileUploadSasUriAsync(fileUploadSasUriRequest).ConfigureAwait(false);
 
-                var blob = new CloudBlockBlob(fileUploadSasUriResponse.GetBlobUri());
-                Task uploadTask = blob.UploadFromStreamAsync(source);
-                await uploadTask.ConfigureAwait(false);
+                var blockBlobClient = new BlockBlobClient(fileUploadSasUriResponse.GetBlobUri());
+                var uploadTask = await blockBlobClient.UploadAsync(source, new BlobUploadOptions()).ConfigureAwait(false);
 
                 var notification = new FileUploadCompletionNotification
                 {
                     CorrelationId = fileUploadSasUriResponse.CorrelationId,
-                    IsSuccess = uploadTask.IsCompleted
+                    IsSuccess = uploadTask.Value.LastModified.Subtract(DateTimeOffset.Now) <= new TimeSpan(100)
                 };
 
                 await deviceClient.CompleteFileUploadAsync(notification).ConfigureAwait(false);
