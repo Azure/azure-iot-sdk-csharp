@@ -210,12 +210,12 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 // 2. Use SAS URI to send data to Azure Storage Blob (PUT)
                 var blockBlobClient = new BlockBlobClient(new Uri(putString));
-                var uploadTask = await blockBlobClient.UploadAsync(source, new BlobUploadOptions(), cancellationToken).ConfigureAwait(false);
+                await blockBlobClient.UploadAsync(source, new BlobUploadOptions(), cancellationToken).ConfigureAwait(false);
 
                 notification.CorrelationId = fileUploadResponse.CorrelationId;
-                notification.IsSuccess = uploadTask.Value.LastModified.Subtract(DateTimeOffset.Now) <= new TimeSpan(100);
-                notification.StatusCode = notification.IsSuccess ? 0 : -1;
-                notification.StatusDescription = notification.IsSuccess ? null : "Failed to upload to storage.";
+                notification.IsSuccess = true;
+                notification.StatusCode = 0;
+                notification.StatusDescription = null;
 
                 // 3. POST to IoTHub with upload status
                 await _httpClientHelper
