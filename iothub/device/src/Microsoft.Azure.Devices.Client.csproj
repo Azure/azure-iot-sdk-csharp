@@ -88,7 +88,6 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Azure.Amqp" Version="2.5.12" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
-    <PackageReference Include="WindowsAzure.Storage" Version="9.3.2" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
@@ -97,11 +96,13 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' != 'net451' ">
+    <PackageReference Include="Azure.Storage.Blobs" Version="12.19.1" />
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.4.1" />
     <PackageReference Include="Microsoft.Win32.Registry" Version="4.5.0" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net451' ">
+    <PackageReference Include="WindowsAzure.Storage" Version="9.3.2" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Net.Http.WebRequest" />
     <Reference Include="System.Transactions" />
