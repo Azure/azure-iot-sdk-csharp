@@ -43,6 +43,10 @@
     <common>$(RootDir)\common\src</common>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netcoreapp3.1|AnyCPU'">
+    <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
+  </PropertyGroup>
+
   <ItemGroup>
     <Compile Include="$(common)\service\CommonResources.cs" Link="Common\CommonResources.cs" />
     <Compile Include="$(common)\service\EventTraceActivity.cs" Link="Common\EventTraceActivity.cs" />

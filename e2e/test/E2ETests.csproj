@@ -9,6 +9,9 @@
     <AssemblyName>Microsoft.Azure.Devices.E2ETests</AssemblyName>
     <RootDir>$(MSBuildProjectDirectory)\..\..</RootDir>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netcoreapp3.1|AnyCPU'">
+    <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
+  </PropertyGroup>
 
   <!-- Legacy .NET 4.5.1 -->
   <ItemGroup Condition=" '$(TargetFramework)' == 'net451' ">

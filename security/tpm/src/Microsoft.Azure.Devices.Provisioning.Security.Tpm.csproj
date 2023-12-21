@@ -43,6 +43,10 @@
     <PackageTags>Microsoft Azure IoT Provisioning Device Security TPM Client .NET</PackageTags>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netcoreapp3.1|AnyCPU'">
+    <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
+  </PropertyGroup>
+
   <ItemGroup>
     <None Include="$(RootDir)\LICENSE" Pack="true" PackagePath="" />
     <None Include="$(RootDir)\shared\icons\nugetIcon.png" Pack="true" PackagePath="" />
