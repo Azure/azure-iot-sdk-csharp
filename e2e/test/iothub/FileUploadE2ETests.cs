@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Net;
 using System.Security.Cryptography.X509Certificates;
@@ -11,7 +10,13 @@ using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Client.Transport;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Microsoft.WindowsAzure.Storage.Blob;
+
+#if !NET451
+
+using Azure.Storage.Blobs.Models;
+using Azure.Storage.Blobs.Specialized;
+
+#endif
 
 namespace Microsoft.Azure.Devices.E2ETests
 {
@@ -145,8 +150,8 @@ namespace Microsoft.Azure.Devices.E2ETests
             };
 
             FileUploadSasUriResponse fileUploadSasUriResponse = await deviceClient.GetFileUploadSasUriAsync(fileUploadSasUriRequest).ConfigureAwait(false);
-
-            var blob = new CloudBlockBlob(fileUploadSasUriResponse.GetBlobUri());
+#if NET451
+            var blob = new WindowsAzure.Storage.Blob.CloudBlockBlob(fileUploadSasUriResponse.GetBlobUri());
             Task uploadTask = blob.UploadFromStreamAsync(source);
             await uploadTask.ConfigureAwait(false);
 
@@ -155,7 +160,18 @@ namespace Microsoft.Azure.Devices.E2ETests
                 CorrelationId = fileUploadSasUriResponse.CorrelationId,
                 IsSuccess = uploadTask.IsCompleted
             };
+#endif
+#if !NET451
+            var blockBlobClient = new BlockBlobClient(fileUploadSasUriResponse.GetBlobUri());
+            await blockBlobClient.UploadAsync(source, new BlobUploadOptions()).ConfigureAwait(false);
 
+            var notification = new FileUploadCompletionNotification
+            {
+                CorrelationId = fileUploadSasUriResponse.CorrelationId,
+                IsSuccess = true
+            };
+
+#endif
             await deviceClient.CompleteFileUploadAsync(notification).ConfigureAwait(false);
         }
 
