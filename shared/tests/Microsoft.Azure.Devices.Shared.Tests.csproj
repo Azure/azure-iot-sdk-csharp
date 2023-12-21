@@ -7,33 +7,10 @@
     <IsTestProject Condition="'$(OS)' != 'Windows_NT' And '$(TargetFramework)' != 'netcoreapp3.1' And '$(TargetFramework)' != 'netcoreapp2.1.18'">False</IsTestProject>
 
     <LangVersion>8.0</LangVersion>
+    <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
     <IsPackable>false</IsPackable>
     <RunAnalyzersDuringBuild>false</RunAnalyzersDuringBuild>
     <RunAnalyzersDuringLiveAnalysis>false</RunAnalyzersDuringLiveAnalysis>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netcoreapp3.1|AnyCPU'">
-    <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netcoreapp2.1.18|AnyCPU'">
-    <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net472|AnyCPU'">
-    <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net451|AnyCPU'">
-    <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|netcoreapp3.1|AnyCPU'">
-    <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|netcoreapp2.1.18|AnyCPU'">
-    <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net472|AnyCPU'">
-    <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net451|AnyCPU'">
-    <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' != 'net451'">
