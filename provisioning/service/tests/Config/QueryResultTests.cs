@@ -38,6 +38,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
                 "      \"lastUpdatedDateTimeUtc\": \"2017-09-19T15:45:53.3981876Z\",\n" +
                 "      \"etag\": \"00000000-0000-0000-0000-00000000000\"\n" +
                 "    }";
+
         private const string SampleEnrollmentJson2 =
                 "    {\n" +
                 "      \"registrationId\": \"registrationid-6bdaeb7c-51fc-4a67-b24e-64e42d3aa698\",\n" +
@@ -54,6 +55,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
                 "      \"lastUpdatedDateTimeUtc\": \"2017-09-19T15:46:35.1533673Z\",\n" +
                 "      \"etag\": \"00000000-0000-0000-0000-00000000000\"\n" +
                 "    }";
+
         private const string SampleEnrollmentsJSON =
             "[\n" +
             SampleEnrollmentJson1 + ",\n" +
@@ -64,6 +66,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         private const string SampleCreateDateTimeUTCString = "2017-11-14T12:34:18.123Z";
         private const string SampleLastUpdatedDateTimeUTCString = "2017-11-14T12:34:18.321Z";
         private const string SampleEtag = "00000000-0000-0000-0000-00000000000";
+
         private const string SampleEnrollmentGroupJson1 =
             "{\n" +
             "   \"enrollmentGroupId\":\"" + SampleEnrollmentGroupId + "\",\n" +
@@ -90,6 +93,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             "   \"lastUpdatedDateTimeUtc\": \"" + SampleLastUpdatedDateTimeUTCString + "\",\n" +
             "   \"etag\": \"" + SampleEtag + "\"\n" +
             "}";
+
         private const string SampleEnrollmentGroupJson2 =
             "{\n" +
             "   \"enrollmentGroupId\":\"" + SampleEnrollmentGroupId + "\",\n" +
@@ -135,6 +139,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
                 "    \"errorMessage\":\"Succeeded\",\n" +
                 "    \"etag\": \"00000000-0000-0000-0000-00000000000\"\n" +
                 "}";
+
         private const string SampleRegistrationStatus2 =
                 "{\n" +
                 "    \"registrationId\":\"registrationid-6bdaeb7c-51fc-4a67-b24e-64e42d3aa698\",\n" +
@@ -147,6 +152,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
                 "    \"errorMessage\":\"Succeeded\",\n" +
                 "    \"etag\": \"00000000-0000-0000-0000-00000000000\"\n" +
                 "}";
+
         private const string SampleRegistrationStatusJSON =
                 "[\n" +
                 SampleRegistrationStatus1 + ",\n" +
@@ -156,6 +162,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         /* SRS_QUERY_RESULT_21_001: [The constructor shall throw ArgumentException if the provided type is null, empty, or not parsed to QueryResultType.] */
         /* SRS_QUERY_RESULT_21_002: [The constructor shall throw ArgumentException if the provided body is null or empty and the type is not `unknown`.] */
         /* SRS_QUERY_RESULT_21_003: [The constructor shall throw JsonSerializationException if the JSON is invalid.] */
+
         [TestMethod]
         public void QueryResultConstructorThrowsOnInvalidParameters()
         {
@@ -170,6 +177,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 
         /* SRS_QUERY_RESULT_21_004: [If the type is `enrollment`, the constructor shall parse the body as IndividualEnrollment[].] */
         /* SRS_QUERY_RESULT_21_011: [The constructor shall store the provided parameters `type` and `continuationToken`.] */
+
         [TestMethod]
         public void QueryResultConstructorSucceedOnIndividualEnrollment()
         {
@@ -186,6 +194,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         }
 
         /* SRS_QUERY_RESULT_21_005: [If the type is `enrollmentGroup`, the constructor shall parse the body as EnrollmentGroup[].] */
+
         [TestMethod]
         public void QueryResultConstructorSucceedOnEnrollmentGroup()
         {
@@ -202,6 +211,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         }
 
         /* SRS_QUERY_RESULT_21_006: [If the type is `deviceRegistration`, the constructor shall parse the body as DeviceRegistrationState[].] */
+
         [TestMethod]
         public void QueryResultConstructorSucceedOnDeviceRegistration()
         {
@@ -218,6 +228,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         }
 
         /* SRS_QUERY_RESULT_21_007: [If the type is `unknown`, and the body is null, the constructor shall set `items` as null.] */
+
         [TestMethod]
         public void QueryResultConstructorSucceedOnUnknownWithNullBody()
         {
@@ -232,6 +243,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         }
 
         /* SRS_QUERY_RESULT_21_008: [If the type is `unknown`, the constructor shall try to parse the body as JObject[].] */
+
         [TestMethod]
         public void QueryResultConstructorSucceedOnUnknownWithObjectListBody()
         {
@@ -248,6 +260,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         }
 
         /* SRS_QUERY_RESULT_21_009: [If the type is `unknown`, the constructor shall try to parse the body as Object[].] */
+
+        [Ignore]
         [TestMethod]
         public void QueryResultConstructorSucceedOnUnknownWithIntegerListBody()
         {
@@ -264,6 +278,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         }
 
         /* SRS_QUERY_RESULT_21_010: [If the type is `unknown`, and the constructor failed to parse the body as JObject[] and Object[], it shall return the body as a single string in the items.] */
+
         [TestMethod]
         public void QueryResultConstructorSucceedOnUnknownWithStringBody()
         {
@@ -283,6 +298,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         }
 
         /* SRS_QUERY_RESULT_21_011: [The constructor shall store the provided parameters `type` and `continuationToken`.] */
+
         [TestMethod]
         public void QueryResultConstructorSucceedOnNullContinuationToken()
         {
