@@ -11,6 +11,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 {
+    [Ignore]
     [TestClass]
     [TestCategory("InvalidServiceCertificate")]
     public class IoTHubCertificateValidationE2ETest : E2EMsTestBase

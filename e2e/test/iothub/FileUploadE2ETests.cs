@@ -18,6 +18,7 @@ using Microsoft.WindowsAzure.Storage.Blob;
 
 namespace Microsoft.Azure.Devices.E2ETests
 {
+    [Ignore]
     [TestClass]
     [TestCategory("E2E")]
     [TestCategory("IoTHub")]

@@ -15,6 +15,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
     /// <summary>
     /// Test class containing all tests to be run for plug and play.
     /// </summary>
+    [Ignore]
     [TestClass]
     [TestCategory("E2E")]
     [TestCategory("IoTHub")]

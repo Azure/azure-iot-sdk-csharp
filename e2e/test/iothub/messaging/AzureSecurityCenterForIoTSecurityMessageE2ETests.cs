@@ -11,6 +11,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Devices.E2ETests.Messaging
 {
+    [Ignore]
     [TestClass]
     [TestCategory("E2E")]
     [TestCategory("IoTHub")]

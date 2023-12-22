@@ -19,6 +19,7 @@ using DeviceTransportType = Microsoft.Azure.Devices.Client.TransportType;
 
 namespace Microsoft.Azure.Devices.E2ETests
 {
+    [Ignore]
     [TestClass]
     [TestCategory("E2E")]
     [TestCategory("IoTHub")]

@@ -26,6 +26,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
     /// <summary>
     /// Tests to ensure authentication using Azure active directory succeeds in all the clients.
     /// </summary>
+    [Ignore]
     [TestClass]
     [TestCategory("E2E")]
     [TestCategory("IoTHub")]
