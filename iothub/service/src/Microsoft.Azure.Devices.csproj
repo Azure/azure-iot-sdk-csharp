@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.1;netstandard2.0;net472;net451</TargetFrameworks>
+    <TargetFrameworks>netstandard2.1;netstandard2.0;net472</TargetFrameworks>
     <TargetFrameworks Condition="'$(OS)' != 'Windows_NT'">netstandard2.1;netstandard2.0</TargetFrameworks>
     <LangVersion>8.0</LangVersion>
     <!-- TODO #176: Enable warnings as errors. -->
@@ -11,7 +11,7 @@
     <OutputPath>.\bin\$(Configuration)</OutputPath>
     <DocumentationFile>$(OutputPath)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
     <!-- Don't auto-compile platform specific files: -->
-    <DefaultItemExcludes>ModernDotNet/**;net451/**;DigitalTwin/**;$(DefaultItemExcludes)</DefaultItemExcludes>
+    <DefaultItemExcludes>ModernDotNet/**;DigitalTwin/**;$(DefaultItemExcludes)</DefaultItemExcludes>
     <RootDir>$(MSBuildProjectDirectory)\..\..\..</RootDir>
   </PropertyGroup>
 
@@ -27,7 +27,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <Version>1.31.5</Version>
+    <Version>1.32.0</Version>
     <Title>Microsoft Azure IoT Service Client SDK</Title>
     <IncludeSource>True</IncludeSource>
     <IncludeSymbols>True</IncludeSymbols>
@@ -129,24 +129,6 @@
 
   <ItemGroup>
     <ProjectReference Include="$(RootDir)\shared\src\Microsoft.Azure.Devices.Shared.csproj" />
-  </ItemGroup>
-
-  <!-- Net451 -->
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net451' ">
-    <Compile Include="$(Common)\DefaultWebProxySettings.cs" />
-    <Compile Include="net451\Common\ActionItem.cs" />
-    <Compile Include="net451\Common\IOThreadTimer.cs" />
-    <Compile Include="net451\Common\SynchronizedPool.cs" />
-    <Compile Include="net451\Common\Interop\UnsafeNativeMethods.cs" />
-  </ItemGroup>
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net451' ">
-    <Reference Include="System.Configuration" />
-    <Reference Include="System.Transactions" />
-    <Reference Include="System.Web" Version="4.0.0.0" />
-    <Reference Include="System.Net.Http" />
-    <PackageReference Include="Microsoft.AspNet.WebApi.Client" Version="5.2.3" />
-    <PackageReference Include="Microsoft.Owin" Version="4.0.0" />
-    <PackageReference Include="System.ValueTuple" Version="4.5.0" />
   </ItemGroup>
 
   <!-- net472 -->
