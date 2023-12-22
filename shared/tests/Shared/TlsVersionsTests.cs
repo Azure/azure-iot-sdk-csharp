@@ -1,53 +1,40 @@
+// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 using System.Net;
 using System.Security.Authentication;
 using FluentAssertions;
 using Microsoft.Azure.Devices.Shared;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Azure.Devices.Shared.Tests
 {
     // By setting a collection, it causes xunit to not run in parallel, which we need because these test a static object
-    [Collection("TlsVersions")]
-    [Trait("TestCategory", "Unit")]
+    [TestClass]
+    [TestCategory("Unit")]
     public class TlsVersionsTests
     {
-        [Fact]
+        [TestMethod]
         public void MinimumTlsVersions_DefaultsToTls12()
         {
             // assert
             new TlsVersions().MinimumTlsVersions.Should().Be(SslProtocols.Tls12);
         }
 
-        [Fact]
+        [TestMethod]
         public void Preferred_DefaultsToNone()
         {
             // assert
             new TlsVersions().Preferred.Should().Be(SslProtocols.None);
         }
 
-        [Fact]
+        [TestMethod]
         public void CheckCertificationList_DefaultsToFalse()
         {
             // assert
             new TlsVersions().CertificateRevocationCheck.Should().BeFalse();
         }
 
-#if NET451
-        [Fact]
-        public void SetLegacyAcceptableVersions_Sets()
-        {
-            // arrange
-            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls11;
-
-            // act
-            new TlsVersions().SetLegacyAcceptableVersions();
-
-            // assert
-            ServicePointManager.SecurityProtocol.Should().Be(SecurityProtocolType.Tls12);
-        }
-#endif
-
-        [Fact]
+        [TestMethod]
         public void SetMinimumTlsVersions_CanSetToNone()
         {
             // arrange
@@ -64,7 +51,7 @@ namespace Microsoft.Azure.Devices.Shared.Tests
             tlsVersions.Preferred.Should().Be(SslProtocols.None);
         }
 
-        [Fact]
+        [TestMethod]
         public void SetMinimumTlsVersions_CanSetToTls12()
         {
             // arrange
@@ -79,11 +66,11 @@ namespace Microsoft.Azure.Devices.Shared.Tests
             tlsVersions.Preferred.Should().Be(expected);
         }
 
-        [Theory]
-        [InlineData(SslProtocols.Tls)]
-        [InlineData(SslProtocols.Tls11)]
-        [InlineData(SslProtocols.Tls | SslProtocols.Tls11)]
-        [InlineData(SslProtocols.Tls | SslProtocols.Tls11 | SslProtocols.Tls12)]
+        [TestMethod]
+        [DataRow(SslProtocols.Tls)]
+        [DataRow(SslProtocols.Tls11)]
+        [DataRow(SslProtocols.Tls | SslProtocols.Tls11)]
+        [DataRow(SslProtocols.Tls | SslProtocols.Tls11 | SslProtocols.Tls12)]
         public void SetMinimumTlsVersions_CanSetToOlderTls(SslProtocols protocol)
         {
             // arrange
@@ -100,10 +87,10 @@ namespace Microsoft.Azure.Devices.Shared.Tests
 
 #pragma warning disable 0618
 
-        [Theory]
-        [InlineData(SslProtocols.Ssl2)]
-        [InlineData(SslProtocols.Ssl3)]
-        [InlineData(SslProtocols.Ssl2 | SslProtocols.Ssl3)]
+        [TestMethod]
+        [DataRow(SslProtocols.Ssl2)]
+        [DataRow(SslProtocols.Ssl3)]
+        [DataRow(SslProtocols.Ssl2 | SslProtocols.Ssl3)]
         public void SetMinimumTlsVersions_CannotSetOther(SslProtocols protocol)
         {
             // arrange

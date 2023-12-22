@@ -43,7 +43,6 @@ variables:
 # The remaining build/test targets.
   testNetcore21: ${{ or(eq(variables['allTestTargets'], 'True'), contains(parameters['testTargets'], 'netcore2.1')) }}
   testNet472: ${{ or(eq(variables['allTestTargets'], 'True'), contains(parameters['testTargets'], 'net4.7.2')) }}
-  testNet451: ${{ or(eq(variables['allTestTargets'], 'True'), contains(parameters['testTargets'], 'net4.5.1')) }}
 
 trigger:
   batch: true
@@ -92,7 +91,6 @@ jobs:
             Write-Host "testNetcore31: ${{ variables.testNetcore31 }}"
             Write-Host "testNetcore21: ${{ variables.testNetcore21 }}"
             Write-Host "testNet472: ${{ variables.testNet472 }}"
-            Write-Host "testNet451: ${{ variables.testNet451 }}"
 
       # https://docs.microsoft.com/azure/devops/pipelines/tasks/tool/dotnet-core-tool-installer?view=azure-devops
 
@@ -369,9 +367,6 @@ jobs:
         .NET 4.7.2:
           FRAMEWORK: net472
           SHOULD_RUN: ${{ eq(variables['testNet472'], 'True') }}
-        .NET 4.5.1:
-          FRAMEWORK: net451
-          SHOULD_RUN: ${{ eq(variables['testNet451'], 'True') }}
 
     condition: succeeded()
     pool:
@@ -389,7 +384,6 @@ jobs:
             Write-Host "testNetcore31: ${{ variables.testNetcore31 }}"
             Write-Host "testNetcore21: ${{ variables.testNetcore21 }}"
             Write-Host "testNet472: ${{ variables.testNet472 }}"
-            Write-Host "testNet451: ${{ variables.testNet451 }}"
 
       - ${{ if eq(variables['testNetcore31'], 'True') }}:
         - task: UseDotNet@2
@@ -401,21 +395,15 @@ jobs:
             installationPath: $(Agent.ToolsDirectory)/dotnet
 
         - task: CmdLine@2
-          displayName: 'Install .NET Core 2.1'
+          displayName: 'Install .NET Core 3.1'
           inputs:
-            script: 'choco install dotnetcore-2.1-sdk'
+            script: 'choco install dotnetcore-3.1-sdk'
 
       - ${{ if eq(variables['testNet472'], 'True') }}:
         - task: CmdLine@2
           displayName: 'Install .NET 4.7.2'
           inputs:
             script: 'choco install netfx-4.7.2-devpack'
-
-      - ${{ if eq(variables['testNet451'], 'True') }}:
-        - task: CmdLine@2
-          displayName: 'Install .NET 4.5.1'
-          inputs:
-            script: 'choco install dotnet4.5.1'
 
       - script: |
           choco install -y squid

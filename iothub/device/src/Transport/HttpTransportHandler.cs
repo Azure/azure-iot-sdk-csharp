@@ -15,8 +15,9 @@ using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Devices.Client.Extensions;
 using Microsoft.Azure.Devices.Shared;
-using Microsoft.WindowsAzure.Storage.Blob;
 using Newtonsoft.Json;
+using Azure.Storage.Blobs.Models;
+using Azure.Storage.Blobs.Specialized;
 
 namespace Microsoft.Azure.Devices.Client.Transport
 {
@@ -185,14 +186,13 @@ namespace Microsoft.Azure.Devices.Client.Transport
             try
             {
                 // 2. Use SAS URI to send data to Azure Storage Blob (PUT)
-                var blob = new CloudBlockBlob(new Uri(putString));
-                Task uploadTask = blob.UploadFromStreamAsync(source, null, null, null, cancellationToken);
-                await uploadTask.ConfigureAwait(false);
+                var blockBlobClient = new BlockBlobClient(new Uri(putString));
+                await blockBlobClient.UploadAsync(source, new BlobUploadOptions(), cancellationToken).ConfigureAwait(false);
 
                 notification.CorrelationId = fileUploadResponse.CorrelationId;
-                notification.IsSuccess = uploadTask.IsCompleted;
-                notification.StatusCode = uploadTask.IsCompleted ? 0 : -1;
-                notification.StatusDescription = uploadTask.IsCompleted ? null : "Failed to upload to storage.";
+                notification.IsSuccess = true;
+                notification.StatusCode = 0;
+                notification.StatusDescription = null;
 
                 // 3. POST to IoTHub with upload status
                 await _httpClientHelper.PostAsync(
