@@ -15,6 +15,10 @@
     <RootDir>$(MSBuildProjectDirectory)\..\..\..</RootDir>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <NoWarn>NU1902,NU1903</NoWarn>
+  </PropertyGroup>
+
   <!-- delay sign the assembly for Release build -->
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' AND '$(AZURE_IOT_DONOTSIGN.ToUpper())' != 'TRUE' ">
     <AssemblyOriginatorKeyFile>$(RootDir)\35MSSharedLib1024.snk</AssemblyOriginatorKeyFile>

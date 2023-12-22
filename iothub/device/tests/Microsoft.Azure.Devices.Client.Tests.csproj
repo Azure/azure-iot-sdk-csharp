@@ -15,6 +15,10 @@
     <DefaultItemExcludes>HsmAuthentication/**;$(DefaultItemExcludes)</DefaultItemExcludes>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <NoWarn>NU1902,NU1903</NoWarn>
+  </PropertyGroup>
+
   <ItemGroup Condition=" '$(TargetFramework)' == 'net451' ">
     <PackageReference Include="DotNetty.Codecs.Mqtt" Version="0.6.0" />
     <PackageReference Include="DotNetty.Handlers" Version="0.6.0" />

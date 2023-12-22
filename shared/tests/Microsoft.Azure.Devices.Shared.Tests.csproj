@@ -13,6 +13,10 @@
     <RunAnalyzersDuringLiveAnalysis>false</RunAnalyzersDuringLiveAnalysis>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <NoWarn>NU1902,NU1903</NoWarn>
+  </PropertyGroup>
+
   <ItemGroup Condition="'$(TargetFramework)' != 'net451'">
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.9.0" />
     <PackageReference Include="xunit" Version="2.4.1" />

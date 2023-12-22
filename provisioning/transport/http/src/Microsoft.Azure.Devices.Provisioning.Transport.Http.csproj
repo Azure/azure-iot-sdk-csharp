@@ -45,6 +45,10 @@
     <generated>..\..\generated\src</generated>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <NoWarn>NU1902,NU1903</NoWarn>
+  </PropertyGroup>
+
   <ItemGroup>
     <Compile Include="$(Common)\Logging.Common.cs">
       <Link>Common\Logging.Common.cs</Link>
