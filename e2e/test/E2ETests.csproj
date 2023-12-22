@@ -46,9 +46,9 @@
 
   <!-- We're specifying the minor versions explicitly instead of referring to 1.* since LTS patches might have a lower version number than the latest released package.-->
   <ItemGroup Condition=" '$(AZURE_IOT_LOCALPACKAGES)' != '' ">
-    <PackageReference Include="Microsoft.Azure.Devices" Version="1.32.*" />
+    <PackageReference Include="Microsoft.Azure.Devices" Version="1.31.*" />
     <PackageReference Include="Microsoft.Azure.Devices.Shared" Version="1.27.*" />
-    <PackageReference Include="Microsoft.Azure.Devices.Client" Version="1.37.*" />
+    <PackageReference Include="Microsoft.Azure.Devices.Client" Version="1.36.*" />
   </ItemGroup>
   <ItemGroup Condition=" ('$(AZURE_IOT_LOCALPACKAGES.ToUpper())' != '') And ( '$(TargetFramework)' != 'net451' ) ">
     <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Client" Version="1.16.*" />
