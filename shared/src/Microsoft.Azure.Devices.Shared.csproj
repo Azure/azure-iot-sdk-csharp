@@ -18,6 +18,10 @@
   </PropertyGroup>
 
   <PropertyGroup>
+    <NoWarn>NU1902,NU1903</NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup>
     <Version>1.27.2</Version>
     <Title>Microsoft Azure IoT Devices Shared</Title>
     <IncludeSource>True</IncludeSource>

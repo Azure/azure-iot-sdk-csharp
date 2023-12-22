@@ -19,6 +19,10 @@
   </PropertyGroup>
 
   <PropertyGroup>
+    <NoWarn>NU1902,NU1903</NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup>
     <Version>1.16.5</Version>
     <Title>Microsoft Azure IoT Provisioning Service Client SDK</Title>
     <IncludeSource>True</IncludeSource>
