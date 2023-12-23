@@ -6,6 +6,10 @@
     <RootNamespace>Microsoft.Azure.Devices.Provisioning.Security</RootNamespace>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <NoWarn>NU1605,NU1902,NU1903</NoWarn>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Security.Tpm" Version="1.12.*" />
     <PackageReference Include="Microsoft.TSS" Version="2.1.1" />
