@@ -10,8 +10,14 @@
     <RootDir>$(MSBuildProjectDirectory)\..\..</RootDir>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <NoWarn>NU1605,NU1902,NU1903</NoWarn>
+  </PropertyGroup>
+
   <!-- All Platforms -->
   <ItemGroup>
+    <PackageReference Include="Microsoft.Azure.Storage.Blob" Version="11.1.3" />
+    <PackageReference Include="Azure.Storage.Blobs" Version="12.19.1" />
     <PackageReference Include="FluentAssertions" Version="5.10.0" />
     <PackageReference Include="Microsoft.ApplicationInsights" Version="2.14.0" />
     <PackageReference Include="Microsoft.IdentityModel.Clients.ActiveDirectory" Version="5.2.0" />
@@ -19,10 +25,6 @@
     <PackageReference Include="MSTest.TestAdapter" Version="3.0.0" />
     <PackageReference Include="MSTest.TestFramework" Version="3.0.0" />
     <PackageReference Include="Microsoft.CSharp" Version="4.7" />
-  </ItemGroup>
-  <!-- NetCore and .NET 4.7.2 -->
-  <ItemGroup>
-    <PackageReference Include="Microsoft.Azure.Storage.Blob" Version="11.1.3" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(AZURE_IOT_LOCALPACKAGES)' == '' ">
