@@ -33,7 +33,10 @@ namespace Microsoft.Azure.Devices.E2ETests
             // discovery endpoint
 
             public static string GlobalDeviceEndpoint =>
-                GetValue("DPS_GLOBALDISCOVERYENDPOINT", "int1.eastus.device.discovery.edgeprov-dev.azure.net");
+                GetValue("DPS_GLOBALDISCOVERYENDPOINT", "prod.eastus2euap.device.discovery.ffg.azure.net");
+
+            public static string DiscoveryServiceCertificatePath =>
+                GetValue("DISCOVERY_SERVICE_CERTIFICATE_PATH", "");
         }
     }
 }

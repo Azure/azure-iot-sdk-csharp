@@ -28,6 +28,11 @@ using Microsoft.Azure.Devices.Provisioning.Security;
 using Azure.ResourceManager.Resources.Models;
 using System.Security.Cryptography.X509Certificates;
 using System.Globalization;
+using System.Security.Authentication;
+using System.Runtime.ConstrainedExecution;
+using System.Linq;
+using Microsoft.VisualStudio.TestPlatform.CommunicationUtilities;
+using System.IO;
 
 namespace Microsoft.Azure.Devices.E2ETests.Discovery
 {
@@ -48,6 +53,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Discovery
         private static readonly string s_registrationId = TestConfiguration.Discovery.RegistrationId;
         private static readonly string s_skipArtifacts = TestConfiguration.Discovery.SkipArtifacts;
         private static readonly string s_proxyServerAddress = "";
+        private static readonly string provResourceApiVersion = "?api-version=2023-12-01-preview";
 
         private static readonly HashSet<Type> s_retryableExceptions = new() { typeof(ProvisioningServiceClientHttpException) };
         private static readonly IRetryPolicy s_provisioningServiceRetryPolicy = new ProvisioningServiceRetryPolicy();
@@ -60,7 +66,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Discovery
         [ClassInitialize]
         public static void TestClassSetup(TestContext _)
         {
-
         }
 
         [TestInitialize]
@@ -72,10 +77,19 @@ namespace Microsoft.Azure.Devices.E2ETests.Discovery
         }
 
         [TestMethod]
-        [Timeout(TestTimeoutMilliseconds)]
+        [Timeout(LongerRunningTestTimeoutMilliseconds)]
         public async Task DPS_Onboard_Ok()
         {
-            await UploadArtifacts();
+            await UploadDevice();
+
+            await ClientValidOnboardingAsyncOk(false).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        [Timeout(LongerRunningTestTimeoutMilliseconds)]
+        public async Task DPS_Onboard_Discovery_Service_Ok()
+        {
+            await UploadDevice(uploadWithOrderingService: false);
 
             await ClientValidOnboardingAsyncOk(false).ConfigureAwait(false);
         }
@@ -86,7 +100,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Discovery
         [Timeout(TestTimeoutMilliseconds)]
         public async Task DPS_Onboard_InvalidProvisioningAddress()
         {
-            await UploadArtifacts();
+            await UploadDevice();
 
             await Assert.ThrowsExceptionAsync<ProvisioningTransportException>(() => ClientValidOnboardingAsyncOk(false, invalidProvisioningEndpoint: true));
         }
@@ -95,7 +109,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Discovery
         [Timeout(TestTimeoutMilliseconds)]
         public async Task DPS_Onboard_InvalidDiscoveryAddress()
         {
-            await UploadArtifacts();
+            await UploadDevice();
 
             await Assert.ThrowsExceptionAsync<DiscoveryTransportException>(() => ClientValidOnboardingAsyncOk(false, discoveryEndpoint: InvalidGlobalAddress));
         }
@@ -108,7 +122,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Discovery
         [Timeout(TestTimeoutMilliseconds)]
         public async Task DPS_Onboard_InvalidSrk()
         {
-            await UploadArtifacts(invalidSrk: true);
+            await UploadDevice(invalidSrk: true);
 
             await Assert.ThrowsExceptionAsync<ProvisioningTransportException>(() => ClientValidOnboardingAsyncOk(false, invalidProvisioningEndpoint: true));
         }
@@ -117,7 +131,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Discovery
         [Timeout(TestTimeoutMilliseconds)]
         public async Task DPS_Onboard_InvalidEk()
         {
-            await UploadArtifacts(invalidEk: true);
+            await UploadDevice(invalidEk: true);
 
             await Assert.ThrowsExceptionAsync<DiscoveryTransportException>(() => ClientValidOnboardingAsyncOk(false, discoveryEndpoint: InvalidGlobalAddress));
         }
@@ -126,7 +140,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Discovery
         [Timeout(TestTimeoutMilliseconds)]
         public async Task DPS_Onboard_InvalidSrkEk()
         {
-            await UploadArtifacts(invalidEk: true, invalidSrk: true);
+            await UploadDevice(invalidEk: true, invalidSrk: true);
 
             await Assert.ThrowsExceptionAsync<DiscoveryTransportException>(() => ClientValidOnboardingAsyncOk(false, discoveryEndpoint: InvalidGlobalAddress));
         }
@@ -180,7 +194,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Discovery
             Console.WriteLine("Getting nonce for challenge... ");
             byte[] nonce = await client.IssueChallengeAsync(cts.Token);
 
-            Console.WriteLine($"Received nonce");
+            Console.WriteLine($"Received nonce {Convert.ToBase64String(nonce, 0, 10)}");
 
             OnboardingInfo onboardingInfo = await client.GetOnboardingInfoAsync(nonce, cts.Token);
 
@@ -213,13 +227,25 @@ namespace Microsoft.Azure.Devices.E2ETests.Discovery
             Console.WriteLine($"Successfully onboarded {onboardingResult.Id} {onboardingResult.Result.RegistrationId}");
         }
 
-        private async Task UploadArtifacts(bool invalidSrk = false, bool invalidEk = false)
+        private async Task UploadDevice(bool uploadWithOrderingService = true, bool invalidSrk = false, bool invalidEk = false)
         {
             if (string.Equals(s_skipArtifacts.Trim(), "true", StringComparison.OrdinalIgnoreCase))
             {
                 return;
             }
 
+            if (uploadWithOrderingService)
+            {
+                await UploadDeviceWithOrderingService(invalidSrk, invalidEk);
+            }
+            else
+            {
+                await UploadDeviceWithDiscoveryService(invalidSrk, invalidEk);
+            }
+        }
+
+        private async Task UploadDeviceWithOrderingService(bool invalidSrk, bool invalidEk)
+        {
             string subscriptionId = s_subscriptionId;
             string resourceGroupName = s_resourceGroup1;
             string resourceGroupName2 = s_resourceGroup2;
@@ -266,6 +292,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Discovery
                 Console.WriteLine($"Got token: {siteKeyObj.Token.Substring(0,32)}");
 
                 // upload artifacts
+                
                 var armClientOptions = new ArmClientOptions()
                 {
                     Diagnostics =
@@ -325,9 +352,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Discovery
                     provResourceName = GetRandomResourceName(serialNumber);
                 }
 
-                string provResourceApiVersion = "?api-version=2023-12-01-preview";
-
-                string provisioningResourceFullyQualifiedName = $"/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName2}/providers/Private.BbeeSta1/provisioningResources/{provResourceName}";
+                string provisioningResourceFullyQualifiedName = $"/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName2}/providers/Microsoft.FairfieldGardens/provisioningResources/{provResourceName}";
                 string provisioningResourceBaseUri = $"eastus2euap.management.azure.com{provisioningResourceFullyQualifiedName}";
                 string provisioningResourceUri = $"{provisioningResourceBaseUri}{provResourceApiVersion}";
 
@@ -365,40 +390,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Discovery
                     azureResources.Add(provisioningResourceUri);
                 }
 
-                // make arc device resource
-
-                string arcDeviceApiVersion = "?api-version=2023-03-15-preview";
-
-                string arcDeviceUri = $"management.azure.com/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName2}/providers/Microsoft.HybridCompute/machines/{serialNumber}";
-
-                var deviceResource = new ArcDeviceResource()
-                {
-                    Location = "eastus",
-                    Tags = azureTags
-                };
-
-                var arcDeviceResourceUri = $"{arcDeviceUri}{arcDeviceApiVersion}";
-
-                await MakeAzurePutCall(arcDeviceResourceUri, deviceResource, "Arc device");
-
-                // make arc device extension resource
-
-                var deviceExtensionResource = new ArcDeviceExtensionResource()
-                {
-                    Properties = new ArcDeviceExtensionResource.ArcDeviceExtensionResourceProperties()
-                    {
-                        registrationId = serialNumber,
-                        provisioningPolicyResourceId = provisioningResourcePolicyFullyQualifiedName,
-                    }
-                };
-
-                var deviceExtensionUri = $"eastus2euap.{arcDeviceUri}/providers/Private.BBeeSta1/DeviceProvisioningStates/default{provResourceApiVersion}";
-
-                await MakeAzurePutCall(deviceExtensionUri, deviceExtensionResource, "Arc device extension");
-
-                // add the resources in order of how they should be deleted
-                azureResources.Add(deviceExtensionUri);
-                azureResources.Add(arcDeviceResourceUri);
+                // create arc device and extension
+                await CreateArcDeviceAndExtension(azureTags, provisioningResourcePolicyFullyQualifiedName);
 
                 // patch the order
                 string edgeOrderPatchUri = $"management.azure.com/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.EdgeOrder/orderItems/{serialNumber}?api-version=2023-05-01-preview";
@@ -407,21 +400,142 @@ namespace Microsoft.Azure.Devices.E2ETests.Discovery
                 {
                     Properties = new EdgeOrderPatch.EdgeOrderPatchProperties()
                     {
-                        ProvisioningDetails = new EdgeOrderPatch.EdgeOrderPatchProperties.EdgeOrderPatchProvisioningDetails()
+                        OrderItemDetails = new EdgeOrderPatch.EdgeOrderPatchProperties.EdgeOrderPatchOrderItemDetails()
                         {
-                            SerialNumber = serialNumber,
-                            ReadyToConnectArmId = provisioningResourcePolicyFullyQualifiedName,
-                            ProvisioningArmId = provisioningResourceFullyQualifiedName,
-                            ProvisioningEndpoint = $"{provResourceName}.eastus.test.edgeprov-dev.azure.net"
+                            ProductDetails = new EdgeOrderPatch.EdgeOrderPatchProperties.EdgeOrderPatchOrderItemDetails.EdgeOrderPatchProductDetails()
+                            {
+                                ProvisioningDetails = new EdgeOrderPatch.EdgeOrderPatchProperties.EdgeOrderPatchOrderItemDetails.EdgeOrderPatchProductDetails.EdgeOrderPatchProvisioningDetails()
+                                {
+                                    SerialNumber = serialNumber,
+                                    ReadyToConnectArmId = provisioningResourcePolicyFullyQualifiedName,
+                                    ProvisioningArmId = provisioningResourceFullyQualifiedName,
+                                    ProvisioningEndpoint = $"{provResourceName}.eastus2euap.ffg.azure.net"
+                                }
+                            }
                         }
                     }
                 };
+
                 content = new StringContent(JsonConvert.SerializeObject(patch), Encoding.UTF8, "application/json");
                 response = await client.PatchAsync($"https://{edgeOrderPatchUri}", content);
                 content.Dispose();
 
                 Console.WriteLine($"Patch order: {response.StatusCode}");
                 Console.WriteLine(await response.Content.ReadAsStringAsync());
+
+                response = await client.GetAsync($"https://{edgeOrderPatchUri}");
+                Console.WriteLine(await response.Content.ReadAsStringAsync());
+
+                Console.WriteLine($"Sleeping 60s");
+                Thread.Sleep(60000);
+            }
+            finally
+            {
+
+            }
+        }
+
+        private async Task UploadDeviceWithDiscoveryService(bool invalidSrk, bool invalidEk)
+        {
+            using SecurityProviderTpm security = new SecurityProviderTpmHsm(s_registrationId);
+
+            try
+            {
+                var azureTags = new AzureResourceTags()
+                {
+                    owner = s_resourceOwner,
+                    purpose = "e2etesting"
+                };
+
+                // check for or create provisioning resource
+
+                string provResourceName = TestConfiguration.Discovery.ProvisioningResourceName;
+
+                bool shouldMakeProvResource = string.IsNullOrEmpty(provResourceName);
+
+                if (shouldMakeProvResource)
+                {
+                    provResourceName = GetRandomResourceName(s_registrationId);
+                }
+
+                string provResourceApiVersion = "?api-version=2023-12-01-preview";
+
+                string provisioningResourceFullyQualifiedName = $"/subscriptions/{s_subscriptionId}/resourceGroups/{s_resourceGroup2}/providers/Microsoft.FairfieldGardens/provisioningResources/{provResourceName}";
+                string provisioningResourceBaseUri = $"eastus2euap.management.azure.com{provisioningResourceFullyQualifiedName}";
+                string provisioningResourceUri = $"{provisioningResourceBaseUri}{provResourceApiVersion}";
+
+                if (shouldMakeProvResource)
+                {
+                    await MakeProvisioningResource(azureTags, provisioningResourceUri);
+                }
+
+                // check for or create provisioning resource policy
+
+                string provResourcePolicyName = TestConfiguration.Discovery.ProvisioningPolicyResourceName;
+
+                bool shouldMakeProvResourcePolicy = string.IsNullOrEmpty(provResourcePolicyName);
+
+                if (shouldMakeProvResourcePolicy)
+                {
+                    provResourcePolicyName = GetRandomResourceName(s_registrationId);
+                }
+
+                string provisioningResourcePolicyFullyQualifiedName = $"{provisioningResourceFullyQualifiedName}/provisioningPolicies/{provResourcePolicyName}";
+                string provisioningResourcePolicyUri = $"{provisioningResourceBaseUri}/provisioningPolicies/{provResourcePolicyName}{provResourceApiVersion}";
+
+                if (shouldMakeProvResourcePolicy)
+                {
+                    await MakeProvisioningResourcePolicy(azureTags, provisioningResourcePolicyUri);
+                }
+
+                // add the resources in order of how they should be deleted
+                if (shouldMakeProvResourcePolicy)
+                {
+                    azureResources.Add(provisioningResourcePolicyUri);
+                }
+                if (shouldMakeProvResource)
+                {
+                    azureResources.Add(provisioningResourceUri);
+                }
+
+                // create arc device and extension
+                await CreateArcDeviceAndExtension(azureTags, provisioningResourcePolicyFullyQualifiedName);
+
+                // patch discovery device
+                string discoveryPatchUri = $"prod.eastus2euap.service.discovery.ffg.azure.net/discovery/devices/{s_registrationId}";
+
+                var patch = new DiscoveryDevicePatch()
+                {
+                    TpmDetails = new DiscoveryDevicePatch.DiscoveryDeviceTpmDetails()
+                    {
+                        EndorsementKey = Convert.ToBase64String(security.GetEndorsementKey()),
+                        SigningKey = Convert.ToBase64String(security.GetStorageRootKey())
+                    },
+                    EdgeProvisioningEndpoint = $"{provResourceName}.eastus2euap.ffg.azure.net",
+                    RegistrationId = s_registrationId
+                };
+
+                var handler = new HttpClientHandler();
+                handler.ClientCertificateOptions = ClientCertificateOption.Manual;
+                handler.SslProtocols = SslProtocols.Tls12;
+
+                var cert = new X509Certificate2(TestConfiguration.Discovery.DiscoveryServiceCertificatePath);
+
+                handler.ClientCertificates.Add(cert);
+                var discoveryServiceClient = new HttpClient(handler);
+
+                var content = new StringContent(JsonConvert.SerializeObject(patch), Encoding.UTF8, "application/json");
+                var response = await discoveryServiceClient.PutAsync($"https://{discoveryPatchUri}?api-version=2023-12-01-preview", content);
+                content.Dispose();
+
+                discoveryServiceClient.Dispose();
+                handler.Dispose();
+
+                Console.WriteLine($"Patch order: {response.StatusCode}");
+                Console.WriteLine(await response.Content.ReadAsStringAsync());
+
+                Console.WriteLine($"Sleeping 60s");
+                Thread.Sleep(60000);
             }
             finally
             {
@@ -463,28 +577,102 @@ namespace Microsoft.Azure.Devices.E2ETests.Discovery
             // make provisioning resource
             var provisioningResource = new ProvisioningResource()
             {
-                Location = "eastus",
+                Location = "eastus2euap",
                 Tags = azureTags,
                 Properties = new ProvisioningResource.ProvisioningProperties()
+                {
+                    enableOperationalCertificates = true
+                }
             };
 
-            await MakeAzurePutCall(provisioningResourceUri, provisioningResource, "Provisioning resource");
+            await PollForAzurePut(provisioningResourceUri, provisioningResource, "Provisioning resource");
         }
 
         private async Task MakeProvisioningResourcePolicy(AzureResourceTags azureTags, string provisioningResourcePolicyUri)
         {
             var provisioningResourcePolicy = new ProvisioningPolicyResource()
             {
-                Location = "eastus",
+                Location = "eastus2euap",
                 Tags = azureTags,
                 Properties = new ProvisioningPolicyResource.ProvisioningPolicyProperties()
                 {
                     BootstrapAuthentication = new ProvisioningPolicyResource.ProvisioningPolicyProperties.ProvisioningPolicyPropertyAuth() { Type = "Discovery" },
-                    ResourceDetails = new ProvisioningPolicyResource.ProvisioningPolicyProperties.ProvisioningPolicyResourceDetails() { ResourceType = "Microsoft.HybridCompute/machines" }
+                    ResourceDetails = new ProvisioningPolicyResource.ProvisioningPolicyProperties.ProvisioningPolicyResourceDetails() { ResourceType = "Microsoft.HybridCompute/machines" },
+                    Status = true
                 },
             };
 
-            await MakeAzurePutCall(provisioningResourcePolicyUri, provisioningResourcePolicy, "Provisioning policy resource");
+            await PollForAzurePut(provisioningResourcePolicyUri, provisioningResourcePolicy, "Provisioning policy resource");
+        }
+
+        private async Task CreateArcDeviceAndExtension(AzureResourceTags azureTags, string provisioningResourcePolicyFullyQualifiedName)
+        {
+            // make arc device resource
+
+            string arcDeviceApiVersion = "?api-version=2023-03-15-preview";
+
+            string arcDeviceUri = $"management.azure.com/subscriptions/{s_subscriptionId}/resourceGroups/{s_resourceGroup2}/providers/Microsoft.HybridCompute/machines/{s_registrationId}";
+
+            var deviceResource = new ArcDeviceResource()
+            {
+                Location = "eastus2euap",
+                Tags = azureTags
+            };
+
+            var arcDeviceResourceUri = $"{arcDeviceUri}{arcDeviceApiVersion}";
+
+            await MakeAzurePutCall(arcDeviceResourceUri, deviceResource, "Arc device");
+
+            // make arc device extension resource
+
+            var deviceExtensionResource = new ArcDeviceExtensionResource()
+            {
+                Properties = new ArcDeviceExtensionResource.ArcDeviceExtensionResourceProperties()
+                {
+                    registrationId = s_registrationId,
+                    provisioningPolicyResourceId = provisioningResourcePolicyFullyQualifiedName,
+                }
+            };
+
+            //var deviceExtensionUri = $"eastus2euap.{arcDeviceUri}/providers/Private.BBeeSta1/DeviceProvisioningStates/default{provResourceApiVersion}";
+            var deviceExtensionUri = $"eastus2euap.{arcDeviceUri}/providers/Microsoft.FairfieldGardens/DeviceProvisioningStates/default{provResourceApiVersion}";
+
+            await MakeAzurePutCall(deviceExtensionUri, deviceExtensionResource, "Arc device extension");
+
+            // add the resources in order of how they should be deleted
+            azureResources.Add(deviceExtensionUri);
+            azureResources.Add(arcDeviceResourceUri);
+        }
+
+        /// <summary>
+        /// Polls azure resource until it is in a succeeded state
+        /// </summary>
+        /// <param name="uri"></param>
+        /// <param name="data"></param>
+        /// <param name="description"></param>
+        /// <returns></returns>
+        private async Task PollForAzurePut(string uri, object data, string description)
+        {
+            await MakeAzurePutCall(uri, data, description);
+
+            HttpResponseMessage response = null;
+            int secondsDelay = 10;
+
+            for (int i = 0; i < 20; i++)
+            {
+                await Task.Delay(secondsDelay * 1000);
+
+                response = await client.GetAsync($"https://{uri}");
+                Console.WriteLine($"Get prov resource after {secondsDelay}s: {response.StatusCode}");
+                string responseContent = await response.Content.ReadAsStringAsync();
+
+                bool result = responseContent.IndexOf("succeeded", StringComparison.OrdinalIgnoreCase) >= 0;
+
+                if (result)
+                {
+                    break;
+                }
+            }
         }
 
         private async Task MakeAzurePutCall(string uri, object data, string description)

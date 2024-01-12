@@ -5,7 +5,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Discovery
 {
     public class ProvisioningResource : AzureResource
     {
-        public class ProvisioningProperties { }
+        public class ProvisioningProperties 
+        { 
+            public bool enableOperationalCertificates { get; set; }
+        }
         public ProvisioningProperties Properties { get; set; }
     }
 }
