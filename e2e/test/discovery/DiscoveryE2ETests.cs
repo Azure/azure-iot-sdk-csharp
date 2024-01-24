@@ -393,6 +393,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Discovery
                 // create arc device and extension
                 await CreateArcDeviceAndExtension(azureTags, provisioningResourcePolicyFullyQualifiedName);
 
+                // wait a bit
+                Console.WriteLine($"Sleeping 180s");
+                Thread.Sleep(180 * 1000);
+
                 // patch the order
                 string edgeOrderPatchUri = $"management.azure.com/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.EdgeOrder/orderItems/{serialNumber}?api-version=2023-05-01-preview";
 
@@ -629,7 +633,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Discovery
             {
                 Properties = new ArcDeviceExtensionResource.ArcDeviceExtensionResourceProperties()
                 {
-                    registrationId = s_registrationId,
+                    registrationId = s_registrationId.ToLowerInvariant(),
                     provisioningPolicyResourceId = provisioningResourcePolicyFullyQualifiedName,
                 }
             };
@@ -658,7 +662,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Discovery
             HttpResponseMessage response = null;
             int secondsDelay = 10;
 
-            for (int i = 0; i < 20; i++)
+            for (int i = 0; i < 40; i++)
             {
                 await Task.Delay(secondsDelay * 1000);
 
@@ -667,12 +671,20 @@ namespace Microsoft.Azure.Devices.E2ETests.Discovery
                 string responseContent = await response.Content.ReadAsStringAsync();
 
                 bool result = responseContent.IndexOf("succeeded", StringComparison.OrdinalIgnoreCase) >= 0;
+                bool failed = responseContent.IndexOf("failed", StringComparison.OrdinalIgnoreCase) >= 0;
 
                 if (result)
                 {
+                    Console.WriteLine($"Finally succeeded!");
                     break;
                 }
+
+                if (failed)
+                {
+                    throw new Exception("Failed to create provisioning resource");
+                }
             }
+            Console.WriteLine($"Polling completed: ${await response.Content.ReadAsStringAsync()}");
         }
 
         private async Task MakeAzurePutCall(string uri, object data, string description)
