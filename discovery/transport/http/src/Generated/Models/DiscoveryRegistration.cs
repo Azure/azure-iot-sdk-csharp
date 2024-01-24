@@ -27,8 +27,8 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport.Http.Models
         /// Initializes a new instance of the DiscoveryRegistration class.
         /// </summary>
         /// <param name="registrationId">Unique identifier for the device.
-        /// Allow lowercase alphanumeric and '-', '.', '_', ':' only. Last
-        /// character can only be lowercase alphanumeric or '-'.</param>
+        /// Allow alphanumeric and '-', '.', '_', ':' only. Last character can
+        /// only be alphanumeric or '-'.</param>
         public DiscoveryRegistration(string registrationId)
         {
             RegistrationId = registrationId;
@@ -41,9 +41,9 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport.Http.Models
         partial void CustomInit();
 
         /// <summary>
-        /// Gets or sets unique identifier for the device. Allow lowercase
-        /// alphanumeric and '-', '.', '_', ':' only. Last character can only
-        /// be lowercase alphanumeric or '-'.
+        /// Gets or sets unique identifier for the device. Allow alphanumeric
+        /// and '-', '.', '_', ':' only. Last character can only be
+        /// alphanumeric or '-'.
         /// </summary>
         [JsonProperty(PropertyName = "registrationId")]
         public string RegistrationId { get; set; }
@@ -66,9 +66,9 @@ namespace Microsoft.Azure.Devices.Discovery.Client.Transport.Http.Models
                 {
                     throw new ValidationException(ValidationRules.MaxLength, "RegistrationId", 128);
                 }
-                if (!System.Text.RegularExpressions.Regex.IsMatch(RegistrationId, "^([a-z0-9-._:]{0,127}[a-z0-9-])$"))
+                if (!System.Text.RegularExpressions.Regex.IsMatch(RegistrationId, "^([a-zA-Z0-9-._:]{0,127}[a-zA-Z0-9-])$"))
                 {
-                    throw new ValidationException(ValidationRules.Pattern, "RegistrationId", "^([a-z0-9-._:]{0,127}[a-z0-9-])$");
+                    throw new ValidationException(ValidationRules.Pattern, "RegistrationId", "^([a-zA-Z0-9-._:]{0,127}[a-zA-Z0-9-])$");
                 }
             }
         }
