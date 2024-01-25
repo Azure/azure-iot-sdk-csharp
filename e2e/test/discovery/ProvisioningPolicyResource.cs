@@ -19,11 +19,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Discovery
             public ProvisioningPolicyPropertyAuth BootstrapAuthentication { get; set; }
             public class ProvisioningPolicyResourceDetails
             {
-                [JsonProperty(PropertyName = "resourceType")]
+                [JsonProperty(PropertyName = "type")]
                 public string ResourceType { get; set; }
             }
             [JsonProperty(PropertyName = "resourceDetails")]
             public ProvisioningPolicyResourceDetails ResourceDetails { get; set; }
+            [JsonProperty(PropertyName = "status")]
+            public bool Status { get; set; }
         }
         public ProvisioningPolicyProperties Properties { get; set; }
     }

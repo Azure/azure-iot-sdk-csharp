@@ -27,6 +27,9 @@ namespace Microsoft.Azure.Devices.E2ETests
         // The test timeout for long running e2e tests
         protected const int LongRunningTestTimeoutMilliseconds = 5 * 60 * 1000; // 5 minutes
 
+        // The test timeout for longer running e2e tests
+        protected const int LongerRunningTestTimeoutMilliseconds = 10 * 60 * 1000; // 10 minutes
+
         // The test timeout for long running e2e tests the inspect the connection status change logic on disabling a device.
         protected const int ConnectionStateChangeTestTimeoutMilliseconds = 10 * 60 * 1000; // 10 minutes
 

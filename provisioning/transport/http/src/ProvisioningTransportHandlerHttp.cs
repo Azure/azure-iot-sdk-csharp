@@ -450,6 +450,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                     ++attempts;
                 }
 
+                if (operation.Status == OperationState.Failed)
+                {
+                    throw new ProvisioningTransportException(operation.Error.Message, null, false);
+                }
+
                 return ConvertToOnboardingResult(operation);
             }
             catch (HttpOperationException ex)
