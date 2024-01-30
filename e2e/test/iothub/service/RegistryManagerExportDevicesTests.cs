@@ -31,6 +31,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             '\n',
         };
 
+        [Ignore] // skip tests here for now while we are investigating with service team. The issue happens on GWv2.
         [TestMethodWithRetry(Max = 3)]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         [TestCategory("LongRunning")]

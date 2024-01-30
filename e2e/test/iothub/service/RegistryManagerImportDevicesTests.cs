@@ -27,6 +27,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         private const int MaxIterationWait = 180;
         private static readonly TimeSpan s_waitDuration = TimeSpan.FromSeconds(5);
 
+        [Ignore] // skip tests here for now while we are investigating with service team. The issue happens on GWv2.
         [DataTestMethod]
         [TestCategory("LongRunning")]
         [Timeout(LongRunningTestTimeoutMilliseconds)] // the number of jobs that can be run at a time are limited anyway
