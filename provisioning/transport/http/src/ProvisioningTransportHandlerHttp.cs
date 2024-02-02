@@ -395,7 +395,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                     {
                         operation = await client
                             .Devices.GetOperationStatusAsync(
-                                "v1",
+                                Versions.V20231201Preview,
                                 registrationId,
                                 operationId,
                                 cancellationToken: cancellationToken)
