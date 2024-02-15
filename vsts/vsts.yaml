@@ -18,7 +18,7 @@ parameters:
     - default
     - all
     - min-matrix
-    - net7.0
+    - net8.0
     - net6.0
     - net4.7.2
     - net4.5.1
@@ -41,7 +41,7 @@ variables:
   testNet60: ${{ or(eq(variables['minMatrix'], 'True'), contains(parameters['testTargets'], 'net6.0')) }}
 
 # The remaining build/test targets.
-  testNet70: ${{ or(eq(variables['allTestTargets'], 'True'), contains(parameters['testTargets'], 'net7.0')) }}
+  testNet70: ${{ or(eq(variables['allTestTargets'], 'True'), contains(parameters['testTargets'], 'net8.0')) }}
   testNet472: ${{ or(eq(variables['allTestTargets'], 'True'), contains(parameters['testTargets'], 'net4.7.2')) }}
   testNet451: ${{ or(eq(variables['allTestTargets'], 'True'), contains(parameters['testTargets'], 'net4.5.1')) }}
 
@@ -74,8 +74,8 @@ jobs:
           FRAMEWORK: net6.0
           # Can't find a good way to skip matrix elements so for now we set an environment variable that the script will use to bail out.
           SHOULD_RUN: ${{ eq(variables['testNet60'], 'True') }}
-        .NET 7.0:
-          FRAMEWORK: net7.0
+        .NET 8.0:
+          FRAMEWORK: net8.0
           SHOULD_RUN: ${{ eq(variables['testNet70'], 'True') }}
     pool:
       # If this is changed, don't forget to update supported_platforms.md in the root directory. That document outlines what OS we test on and should stay up to date.
@@ -99,12 +99,12 @@ jobs:
 
       # https://docs.microsoft.com/azure/devops/pipelines/tasks/tool/dotnet-core-tool-installer?view=azure-devops
 
-      # Linux requires .NET 7.0 install for tests to run, no matter which framework target is being tested
+      # Linux requires .NET 8.0 install for tests to run, no matter which framework target is being tested
       - task: UseDotNet@2
-        displayName: 'Use .NET SDK 7.0'
+        displayName: 'Use .NET SDK 8.0'
         inputs:
          packageType: sdk
-         version: 7.x
+         version: 8.x
          performMultiLevelLookup: true
          installationPath: $(Agent.ToolsDirectory)/dotnet
 
@@ -332,8 +332,8 @@ jobs:
         .NET 6.0:
           FRAMEWORK: net6.0
           SHOULD_RUN: ${{ eq(variables['testNet60'], 'True') }}
-        .NET 7.0:
-          FRAMEWORK: net7.0
+        .NET 8.0:
+          FRAMEWORK: net8.0
           SHOULD_RUN: ${{ eq(variables['testNet70'], 'True') }}
         .NET 4.7.2:
           FRAMEWORK: net472
@@ -373,10 +373,10 @@ jobs:
 
       - ${{ if eq(variables['testNet70'], 'True') }}:
         - task: UseDotNet@2
-          displayName: 'Use .NET SDK 7.0'
+          displayName: 'Use .NET SDK 8.0'
           inputs:
             packageType: sdk
-            version: 7.x
+            version: 8.x
             performMultiLevelLookup: true
             installationPath: $(Agent.ToolsDirectory)/dotnet
 
