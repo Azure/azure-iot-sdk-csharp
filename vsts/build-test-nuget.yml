@@ -61,8 +61,8 @@ jobs:
       matrix:
         .Net 6.0:
           FRAMEWORK: net6.0
-        .Net 7.0:
-          FRAMEWORK: net7.0
+        .Net 8.0:
+          FRAMEWORK: net8.0
 
     condition: and(succeeded(), ne(variables.runTests, 'false'))
     dependsOn: Build_Packages
@@ -99,10 +99,10 @@ jobs:
           installationPath: $(Agent.ToolsDirectory)/net
 
       - task: UseDotNet@2
-        displayName: 'Use .NET SDK 7.x'
+        displayName: 'Use .NET SDK 8.x'
         inputs:
           packageType: sdk
-          version: 7.x
+          version: 8.x
           performMultiLevelLookup: true
           installationPath: $(Agent.ToolsDirectory)/net
  
@@ -205,8 +205,8 @@ jobs:
       matrix:
         .Net 6.0:
           FRAMEWORK: net6.0
-        .Net 7.0:
-          FRAMEWORK: net7.0
+        .Net 8.0:
+          FRAMEWORK: net8.0
 
     condition: and(succeeded(), ne(variables.runTests, 'false'))
     dependsOn: Build_Packages
@@ -242,10 +242,10 @@ jobs:
           installationPath: $(Agent.ToolsDirectory)/net
 
       - task: UseDotNet@2
-        displayName: 'Use .NET SDK 7.x'
+        displayName: 'Use .NET SDK 8.x'
         inputs:
           packageType: sdk
-          version: 7.x
+          version: 8.x
           performMultiLevelLookup: true
           installationPath: $(Agent.ToolsDirectory)/net
   

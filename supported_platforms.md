@@ -6,11 +6,9 @@ This SDK is tested nightly on a mix of .NET implementations on both Windows 10 a
 
 The NuGet packages provide support for the following .NET versions:
 - .NET 6.0
-- .NET 7.0
 - .NET Standard 2.1
 - .NET Standard 2.0
 - .NET Framework 4.7.2 (IoT Hub SDKs only)
-- .NET Framework 4.5.1 (IoT Hub SDKs only)
 
 This SDK _may_ work with newer versions of .NET, but there are no guarantees that they will _always_ work for those until we officially add support for them nor are there guarantees that we will fix bugs that are only present on those versions.
 
@@ -26,7 +24,6 @@ Nightly test platform details:
 - .NET 6.0
 - .NET 7.0
 - .NET Framework 4.7.2 (only IoT Hub SDKs tested)
-- .NET Framework 4.5.1 (only IoT Hub SDKs tested)
 
 
 Default locale: en_US, platform encoding: Cp1252
