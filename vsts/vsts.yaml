@@ -40,7 +40,7 @@ variables:
   testNet60: ${{ or(eq(variables['minMatrix'], 'True'), contains(parameters['testTargets'], 'net6.0')) }}
 
 # The remaining build/test targets.
-  testNet70: ${{ or(eq(variables['allTestTargets'], 'True'), contains(parameters['testTargets'], 'net8.0')) }}
+  testNet80: ${{ or(eq(variables['allTestTargets'], 'True'), contains(parameters['testTargets'], 'net8.0')) }}
   testNet472: ${{ or(eq(variables['allTestTargets'], 'True'), contains(parameters['testTargets'], 'net4.7.2')) }}
 
 trigger:
@@ -350,7 +350,7 @@ jobs:
             Write-Host "maxParallelJobs: ${{ parameters.maxParallelJobs }}"
             Write-Host "minMatrix: ${{ variables.minMatrix }}"
             Write-Host "testNet60: ${{ variables.testNet60 }}"
-            Write-Host "testNet70: ${{ variables.testNet70 }}"
+            Write-Host "testNet80: ${{ variables.testNet80 }}"
             Write-Host "testNetcore31: ${{ variables.testNetcore31 }}"
             Write-Host "testNetcore21: ${{ variables.testNetcore21 }}"
             Write-Host "testNet472: ${{ variables.testNet472 }}"
