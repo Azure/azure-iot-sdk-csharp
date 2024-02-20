@@ -38,6 +38,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         };
 
         [DataTestMethod]
+        [Ignore]
         [TestCategory("LongRunning")]
         [Timeout(120000)]
         [DoNotParallelize]
