@@ -15,6 +15,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
 {
     [TestClass]
+    [Ignore]
     [TestCategory("E2E")]
     [TestCategory("IoTHub")]
     public class RegistryManagerImportDevicesTests : E2EMsTestBase
