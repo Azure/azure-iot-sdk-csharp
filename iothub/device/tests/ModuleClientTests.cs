@@ -1,6 +1,11 @@
-﻿using System;
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
 
@@ -351,6 +356,34 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             // act
             _ = new MethodInvokeRequest(request.Name, request.DataAsJson, request.ResponseTimeout, request.ConnectionTimeout);
+        }
+
+        [TestMethod]
+        public async Task SendEventBatchToOutputSetOutputNameIfNotSet()
+        {
+            // arrange
+            var moduleClient = ModuleClient.CreateFromConnectionString(FakeConnectionString, TransportType.Mqtt_Tcp_Only);
+
+            var innerHandler = Substitute.For<IDelegatingHandler>();
+            innerHandler.SendEventAsync(Arg.Any<Message>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(0));
+            moduleClient.InnerHandler = innerHandler;
+
+            // act
+            var messageWithoutOutputName = new Message();
+            var messageWithOutputName = new Message();
+
+            messageWithOutputName.SystemProperties.Remove(MessageSystemPropertyNames.OutputName);
+            string initialOutputName = "someInitialOutputName";
+            messageWithOutputName.SystemProperties.Add(MessageSystemPropertyNames.OutputName, initialOutputName);
+
+            string newOutputName = "someNewOutputName";
+            await moduleClient.SendEventBatchAsync(newOutputName, new List<Message> { messageWithoutOutputName, messageWithOutputName }).ConfigureAwait(false);
+
+            // assert
+            messageWithoutOutputName.SystemProperties.Keys.Should().Contain(MessageSystemPropertyNames.OutputName);
+            messageWithoutOutputName.SystemProperties[MessageSystemPropertyNames.OutputName].Should().Equals(newOutputName);
+            messageWithOutputName.SystemProperties.Keys.Should().Contain(MessageSystemPropertyNames.OutputName);
+            messageWithOutputName.SystemProperties[MessageSystemPropertyNames.OutputName].Should().Equals(newOutputName);
         }
     }
 }
