@@ -206,6 +206,14 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         JobNotFound = 404002,
 
         /// <summary>
+        /// The operation failed because the device is offline or the direct method callback isn't registered.
+        /// <para>
+        /// For more information, see <see href="https://aka.ms/iothub404103">404103 Device not online</see>.
+        /// </para>
+        /// </summary>
+        DeviceNotOnline = 404103,
+
+        /// <summary>
         /// The error is internal to IoT hub and is likely transient.
         /// <para>
         /// For more information, see <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-troubleshoot-error-503003-partitionnotfound">503003 PartitionNotFound</see>.
