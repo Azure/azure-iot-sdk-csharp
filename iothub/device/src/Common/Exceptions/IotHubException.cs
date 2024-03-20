@@ -9,7 +9,9 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
     /// <summary>
     /// The exception that is thrown when an error occurs during DeviceClient or ModuleClient operation.
     /// </summary>
+#if !NET8_0
     [Serializable]
+#endif
     public class IotHubException : Exception
     {
         [NonSerialized]
@@ -113,21 +115,21 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
             TrackingId = trackingId;
         }
 
-        /// <summary>
-        /// Creates an instance of this class with the <see cref="SerializationInfo"/>
-        /// and <see cref="StreamingContext"/> associated with the exception.
-        /// </summary>
-        /// <param name="info">The <see cref="SerializationInfo"/> that holds the serialized object data about the exception being thrown.</param>
-        /// <param name="context">The <see cref="StreamingContext"/> that contains contextual information about the source or destination.</param>
-        protected IotHubException(SerializationInfo info, StreamingContext context)
-            : base(info, context)
-        {
-            if (info != null)
-            {
-                IsTransient = info.GetBoolean(IsTransientValueSerializationStoreName);
-                TrackingId = info.GetString(TrackingIdValueSerializationStoreName);
-            }
-        }
+        ///// <summary>
+        ///// Creates an instance of this class with the <see cref="SerializationInfo"/>
+        ///// and <see cref="StreamingContext"/> associated with the exception.
+        ///// </summary>
+        ///// <param name="info">The <see cref="SerializationInfo"/> that holds the serialized object data about the exception being thrown.</param>
+        ///// <param name="context">The <see cref="StreamingContext"/> that contains contextual information about the source or destination.</param>
+        //protected IotHubException(SerializationInfo info, StreamingContext context)
+        //    : base(info, context)
+        //{
+        //    if (info != null)
+        //    {
+        //        IsTransient = info.GetBoolean(IsTransientValueSerializationStoreName);
+        //        TrackingId = info.GetString(TrackingIdValueSerializationStoreName);
+        //    }
+        //}
 
         internal IotHubException(bool isTransient)
             : base()
@@ -151,6 +153,9 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
         /// </summary>
         /// <param name="info">The <see cref="SerializationInfo"/> that holds the serialized object data about the exception being thrown.</param>
         /// <param name="context">The <see cref="StreamingContext"/> that contains contextual information about the source or destination.</param>
+#if NET8_0_OR_GREATER
+    [Obsolete(DiagnosticId = "SYSLIB0051")]
+#endif
         public override void GetObjectData(SerializationInfo info, StreamingContext context)
         {
             base.GetObjectData(info, context);

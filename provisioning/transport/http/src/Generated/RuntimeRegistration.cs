@@ -291,7 +291,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             string baseUrl = Client.BaseUri.AbsoluteUri;
             string url = new Uri(
                     new Uri(baseUrl + (baseUrl.EndsWith("/", StringComparison.Ordinal) ? "" : "/")),
-                    $"{Uri.EscapeUriString(idScope)}/registrations/{Uri.EscapeUriString(registrationId)}")
+                    $"{Uri.EscapeDataString(idScope)}/registrations/{Uri.EscapeDataString(registrationId)}")
                 .ToString();
 
             // Create HTTP transport objects

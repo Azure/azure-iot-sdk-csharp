@@ -27,6 +27,9 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication
         /// </summary>
         /// <param name="info">An object that holds the serialized object data about the exception being thrown.</param>
         /// <param name="context">An object that contains contextual information about the source or destination.</param>
+#if NET8_0_OR_GREATER
+    [Obsolete(DiagnosticId = "SYSLIB0051")]
+#endif
         protected HttpHsmComunicationException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {

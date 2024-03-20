@@ -44,6 +44,7 @@ namespace Microsoft.Azure.Devices.Shared
 #endif
 
 #pragma warning disable CA5397 // Do not use deprecated SslProtocols values
+#pragma warning disable SYSLIB0039 // .NET8: TLS1.0 and 1.1 are obsolete
         private const SslProtocols AllowedProtocols = SslProtocols.Tls | SslProtocols.Tls11 | SslProtocols.Tls12;
         private const SslProtocols PreferredProtocol = SslProtocols.Tls12;
 

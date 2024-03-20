@@ -262,9 +262,18 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 client.AmqpSession.ReceivingLink.AcceptMessage(amqpResponse);
 
                 using var streamReader = new StreamReader(amqpResponse.BodyStream);
-                string jsonResponse = await streamReader
-                    .ReadToEndAsync()
-                    .ConfigureAwait(false);
+
+                string jsonResponse;
+
+#if NET8_0
+                jsonResponse = await streamReader
+                                    .ReadToEndAsync(CancellationToken.None)
+                                    .ConfigureAwait(false);
+#else
+                jsonResponse = await streamReader
+                                    .ReadToEndAsync()
+                                    .ConfigureAwait(false);
+#endif
                 RegistrationOperationStatus status = JsonConvert.DeserializeObject<RegistrationOperationStatus>(jsonResponse);
                 status.RetryAfter = ProvisioningErrorDetailsAmqp.GetRetryAfterFromApplicationProperties(amqpResponse, s_defaultOperationPollingInterval);
                 return status;
@@ -305,7 +314,18 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
             using var streamReader = new StreamReader(amqpResponse.BodyStream);
 
-            string jsonResponse = await streamReader.ReadToEndAsync().ConfigureAwait(false);
+            string jsonResponse;
+
+#if NET8_0
+                jsonResponse = await streamReader
+                                    .ReadToEndAsync(CancellationToken.None)
+                                    .ConfigureAwait(false);
+#else
+            jsonResponse = await streamReader
+                                .ReadToEndAsync()
+                                .ConfigureAwait(false);
+#endif
+
             RegistrationOperationStatus status = JsonConvert.DeserializeObject<RegistrationOperationStatus>(jsonResponse);
             status.RetryAfter = ProvisioningErrorDetailsAmqp.GetRetryAfterFromApplicationProperties(amqpResponse, s_defaultOperationPollingInterval);
 
