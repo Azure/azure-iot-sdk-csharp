@@ -24,8 +24,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
         // https://github.com/Azure/azure-sdk-for-net/issues/10476
 
         private const string ImportFileNameDefault = "devices.txt";
-        private const int MaxIterationWait = 30;
-        private static readonly TimeSpan s_waitDuration = TimeSpan.FromSeconds(5);
+        private const int MaxIterationWait = 120;
+        private static readonly TimeSpan s_waitDuration = TimeSpan.FromSeconds(2);
 
         private static readonly IReadOnlyList<JobStatus> s_incompleteJobs = new[]
         {
@@ -106,7 +106,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
                 // wait for job to complete
                 for (int i = 0; i < MaxIterationWait; ++i)
                 {
-                    await Task.Delay(1000).ConfigureAwait(false);
+                    await Task.Delay(s_waitDuration).ConfigureAwait(false);
                     importJobResponse = await registryManager.GetJobAsync(importJobResponse.JobId).ConfigureAwait(false);
                     Logger.Trace($"Job {importJobResponse.JobId} is {importJobResponse.Status} with progress {importJobResponse.Progress}%");
                     if (!s_incompleteJobs.Contains(importJobResponse.Status))
