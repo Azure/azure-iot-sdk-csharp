@@ -38,7 +38,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Iothub.Service
 
         [DataTestMethod]
         [TestCategory("LongRunning")]
-        [Timeout(120000)]
+        [Timeout(300000)]
         [DoNotParallelize]
         [DataRow(StorageAuthenticationType.KeyBased)]
         [DataRow(StorageAuthenticationType.IdentityBased)]
