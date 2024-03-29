@@ -64,8 +64,6 @@ jobs:
           FRAMEWORK: netcoreapp2.1.18
         .Net Framwork 4.7.2:
           FRAMEWORK: net472
-        .Net Framework 4.5.1:
-          FRAMEWORK: net451
 
     condition: and(succeeded(), ne(variables.runTests, 'false'))
     dependsOn: Build_Packages
