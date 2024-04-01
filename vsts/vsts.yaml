@@ -21,7 +21,6 @@ parameters:
     - netcore3.1
     - netcore2.1
     - net4.7.2
-    - net4.5.1
   default: default
 
 variables:

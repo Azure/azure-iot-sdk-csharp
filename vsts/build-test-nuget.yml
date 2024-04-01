@@ -64,8 +64,6 @@ jobs:
           FRAMEWORK: netcoreapp2.1.18
         .Net Framwork 4.7.2:
           FRAMEWORK: net472
-        .Net Framework 4.5.1:
-          FRAMEWORK: net451
 
     condition: and(succeeded(), ne(variables.runTests, 'false'))
     dependsOn: Build_Packages
@@ -110,11 +108,6 @@ jobs:
         displayName: 'Install .NET 4.7.2'
         inputs:
           script: 'choco install netfx-4.7.2-devpack'
-
-      - task: CmdLine@2
-        displayName: 'Install .NET 4.5.1'
-        inputs:
-          script: 'choco install dotnet4.5.1'
 
       - task: UseDotNet@2
         displayName: 'Use .NET core SDK 2.x'
