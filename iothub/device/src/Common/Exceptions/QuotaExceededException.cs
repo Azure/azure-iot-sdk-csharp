@@ -47,18 +47,5 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
             : base(message, innerException, isTransient: true)
         {
         }
-
-//        /// <summary>
-//        /// Initializes a new instance of the class with the specified serialization and context information.
-//        /// </summary>
-//        /// <param name="info">An object that holds the serialized object data about the exception being thrown.</param>
-//        /// <param name="context">An object that contains contextual information about the source or destination.</param>
-//#if NET8_0_OR_GREATER
-//    [Obsolete(DiagnosticId = "SYSLIB0051")]
-//#endif
-//        private QuotaExceededException(SerializationInfo info, StreamingContext context)
-//            : base(info, context)
-//        {
-//        }
     }
 }

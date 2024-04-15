@@ -60,12 +60,5 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         }
 
         internal int MaximumQueueDepth { get; private set; }
-
-        ///// <inheritdoc />
-        //public override void GetObjectData(SerializationInfo info, StreamingContext context)
-        //{
-        //    base.GetObjectData(info, context);
-        //    info.AddValue("MaximumQueueDepth", MaximumQueueDepth);
-        //}
     }
 }

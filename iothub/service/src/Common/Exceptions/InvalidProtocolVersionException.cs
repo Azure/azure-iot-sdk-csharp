@@ -27,20 +27,6 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
             RequestedVersion = version;
         }
 
-
-        /////<inheritdoc/>
-        //public override void GetObjectData(SerializationInfo info, StreamingContext context)
-        //{
-        //    if (info == null)
-        //    {
-        //        throw new ArgumentException("SerializationInfo should not be null.", nameof(info));
-        //    }
-
-        //    info.AddValue("RequestedVersion", RequestedVersion);
-
-        //    base.GetObjectData(info, context);
-        //}
-
         internal InvalidProtocolVersionException()
             : base()
         {

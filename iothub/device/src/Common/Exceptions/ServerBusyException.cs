@@ -40,12 +40,5 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
             : base(message, innerException, isTransient: true)
         {
         }
-
-
-        //private ServerBusyException(SerializationInfo info, StreamingContext context)
-        //    : base(info, context)
-        //{
-        //    IsTransient = true;
-        //}
     }
 }
