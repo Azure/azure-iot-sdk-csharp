@@ -37,11 +37,5 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
 
             IsTransient = true;
         }
-
-        private JobQuotaExceededException(SerializationInfo info, StreamingContext context)
-            : base(info, context)
-        {
-            IsTransient = true;
-        }
     }
 }

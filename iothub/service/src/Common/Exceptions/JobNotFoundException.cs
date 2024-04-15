@@ -30,10 +30,5 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
             : base(message, innerException)
         {
         }
-
-        private JobNotFoundException(SerializationInfo info, StreamingContext context)
-            : base(info, context)
-        {
-        }
     }
 }

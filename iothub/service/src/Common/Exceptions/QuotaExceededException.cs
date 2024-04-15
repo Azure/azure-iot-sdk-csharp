@@ -47,11 +47,5 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
             : base(message, innerException, isTransient: true)
         {
         }
-
-        private QuotaExceededException(SerializationInfo info, StreamingContext context)
-            : base(info, context)
-        {
-            IsTransient = true;
-        }
     }
 }

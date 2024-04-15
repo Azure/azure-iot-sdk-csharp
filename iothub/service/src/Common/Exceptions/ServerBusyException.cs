@@ -13,7 +13,6 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
     /// This exception typically means the service is unavailable due to high load or an unexpected error and is usually transient.
     /// The best course of action is to retry your operation after some time.
     /// </remarks>
-    [Serializable]
     public sealed class ServerBusyException : IotHubException
     {
         /// <summary>
@@ -44,11 +43,6 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         /// <param name="innerException">The exception that is the cause of the current exception.</param>
         public ServerBusyException(string message, Exception innerException)
             : base(message, innerException, isTransient: true)
-        {
-        }
-
-        private ServerBusyException(SerializationInfo info, StreamingContext context)
-            : base(info, context)
         {
         }
     }
