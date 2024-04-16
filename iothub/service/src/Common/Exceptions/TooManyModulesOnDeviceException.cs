@@ -47,10 +47,5 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
             : base()
         {
         }
-
-        private TooManyModulesOnDeviceException(SerializationInfo info, StreamingContext context)
-            : base(info, context)
-        {
-        }
     }
 }

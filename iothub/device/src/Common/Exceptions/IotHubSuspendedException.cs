@@ -17,6 +17,9 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
         /// <summary>
         /// Initializes a new instance of the class.
         /// </summary>
+#if NET8_0_OR_GREATER
+    [Obsolete(DiagnosticId = "SYSLIB0051")]
+#endif
         public IotHubSuspendedException()
         {
         }
@@ -48,17 +51,6 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
         /// <param name="innerException">The exception that is the cause of the current exception</param>
         public IotHubSuspendedException(string message, Exception innerException)
             : base(message, innerException, isTransient: false)
-        {
-        }
-
-        /// <summary>
-        /// Creates an instance of with the <see cref="SerializationInfo"/>
-        /// and <see cref="StreamingContext"/> associated with the exception.
-        /// </summary>
-        /// <param name="info">The serialized data about the exception being thrown.</param>
-        /// <param name="context">The contextual information about the source or destination.</param>
-        protected IotHubSuspendedException(SerializationInfo info, StreamingContext context)
-            : base(info, context)
         {
         }
     }

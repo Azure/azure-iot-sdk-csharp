@@ -94,6 +94,7 @@ namespace Microsoft.Azure.Devices.Discovery.Client
         /// </summary>
         /// <param name="info">The SerializationInfo that holds the serialized object data about the exception being thrown.</param>
         /// <param name="context">The StreamingContext that contains contextual information about the source or destination.</param>
+        [Obsolete]
         protected DiscoveryTransportException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
@@ -118,16 +119,5 @@ namespace Microsoft.Azure.Devices.Discovery.Client
         /// Service reported error details. Use this when reporting a service issue.
         /// </summary>
         public string ErrorDetails { get; private set; }
-
-        /// <summary>
-        /// Sets the <see cref="SerializationInfo"/> with information about the exception.
-        /// </summary>
-        /// <param name="info">The SerializationInfo that holds the serialized object data about the exception being thrown.</param>
-        /// <param name="context">The StreamingContext that contains contextual information about the source or destination.</param>
-        public override void GetObjectData(SerializationInfo info, StreamingContext context)
-        {
-            base.GetObjectData(info, context);
-            info.AddValue(IsTransientValueSerializationStoreName, IsTransient);
-        }
     }
 }

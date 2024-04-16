@@ -34,6 +34,7 @@ namespace Microsoft.Azure.Devices.Client
 
             switch (messageHandler)
             {
+#if !NET8_0
                 case HttpClientHandler httpClientHandler:
 #if !NET451
                     httpClientHandler.MaxConnectionsPerServer = DefaultMaxConnectionsPerServer;
@@ -41,6 +42,7 @@ namespace Microsoft.Azure.Devices.Client
                     ServicePoint servicePoint = ServicePointManager.FindServicePoint(baseUri);
                     servicePoint.ConnectionLeaseTimeout = connectionLeaseTimeoutMilliseconds;
                     break;
+#endif
 #if NETCOREAPP2_1_OR_GREATER || NET5_0_OR_GREATER
                 // SocketsHttpHandler is only available in netcore2.1 and onwards and .NET 5 and onwards.
                 // This library does not target netcore2.1+ though, so there is no way to set these timeouts

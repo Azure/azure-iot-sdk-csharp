@@ -28,6 +28,7 @@ namespace Microsoft.Azure.Devices
         {
             switch (messageHandler)
             {
+#if !NET8_0
                 case HttpClientHandler httpClientHandler:
 #if !NET451
                     httpClientHandler.MaxConnectionsPerServer = DefaultMaxConnectionsPerServer;
@@ -35,6 +36,7 @@ namespace Microsoft.Azure.Devices
                     ServicePoint servicePoint = ServicePointManager.FindServicePoint(baseUri);
                     servicePoint.ConnectionLeaseTimeout = connectionLeaseTimeoutMilliseconds;
                     break;
+#endif
 #if NETCOREAPP2_1_OR_GREATER || NET5_0_OR_GREATER
                 // SocketsHttpHandler is only available in netcore2.1 and onwards
                 case SocketsHttpHandler socketsHttpHandler:

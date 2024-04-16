@@ -22,6 +22,9 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
         /// <summary>
         /// Initializes a new instance of the class.
         /// </summary>
+#if NET8_0_OR_GREATER
+    [Obsolete(DiagnosticId = "SYSLIB0051")]
+#endif
         public MessageTooLargeException()
         {
         }
@@ -57,16 +60,6 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
         /// <param name="innerException">The exception that is the cause of the current exception</param>
         public MessageTooLargeException(string message, Exception innerException)
             : base(message, innerException, isTransient: false)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the class with the specified serialization and context information.
-        /// </summary>
-        /// <param name="info">An object that holds the serialized object data about the exception being thrown.</param>
-        /// <param name="context">An object that contains contextual information about the source or destination.</param>
-        private MessageTooLargeException(SerializationInfo info, StreamingContext context)
-            : base(info, context)
         {
         }
     }

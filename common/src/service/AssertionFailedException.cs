@@ -27,10 +27,5 @@ namespace Microsoft.Azure.Devices.Common
             : base(CommonResources.GetString(CommonResources.ShipAssertExceptionMessage, description))
         {
         }
-
-        protected AssertionFailedException(SerializationInfo info, StreamingContext context)
-            : base(info, context)
-        {
-        }
     }
 }

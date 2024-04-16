@@ -23,6 +23,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         {
         }
 
+#if NET8_0_OR_GREATER
+    [Obsolete(DiagnosticId = "SYSLIB0051")]
+#endif
         internal AmqpIotResourceException()
             : base()
         {

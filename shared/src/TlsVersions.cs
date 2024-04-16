@@ -20,9 +20,9 @@ namespace Microsoft.Azure.Devices.Shared
         public static readonly TlsVersions Instance = new TlsVersions();
 
         /// <summary>
-        /// Internal constructor for testing. The SDK and users should use the static Instance property.
+        /// Public constructor for testing. The SDK and users should use the static Instance property.
         /// </summary>
-        internal TlsVersions()
+        public TlsVersions()
         {
         }
 
@@ -43,8 +43,7 @@ namespace Microsoft.Azure.Devices.Shared
         private System.Net.SecurityProtocolType _net451Protocol = (System.Net.SecurityProtocolType)PreferredProtocol;
 #endif
 
-#pragma warning disable CA5397 // Do not use deprecated SslProtocols values
-        private const SslProtocols AllowedProtocols = SslProtocols.Tls | SslProtocols.Tls11 | SslProtocols.Tls12;
+        private const SslProtocols AllowedProtocols = SslProtocols.Tls12;
         private const SslProtocols PreferredProtocol = SslProtocols.Tls12;
 
         /// <summary>
@@ -79,12 +78,13 @@ namespace Microsoft.Azure.Devices.Shared
             }
 
             // ensure the preferred TLS version is included
-            if (((protocols & SslProtocols.Tls) != 0
-                    || (protocols & SslProtocols.Tls11) != 0)
-                && (protocols & PreferredProtocol) == 0)
-            {
-                protocols ^= PreferredProtocol;
-            }
+            //if (((protocols & SslProtocols.Tls) != 0
+            //        || (protocols & SslProtocols.Tls11) != 0)
+            //    && (protocols & PreferredProtocol) == 0)
+            //{
+            //    protocols ^= PreferredProtocol;
+            //}
+            protocols ^= PreferredProtocol;
 
             MinimumTlsVersions = Preferred = protocols;
 #if NET451
@@ -92,8 +92,6 @@ namespace Microsoft.Azure.Devices.Shared
             _net451Protocol = (System.Net.SecurityProtocolType)protocols;
 #endif
         }
-
-#pragma warning restore CA5397 // Do not use deprecated SslProtocols values
 
         /// <summary>
         /// Sets the acceptable versions of TLS over HTTPS or websocket for .NET framework 4.5.1, as it does not offer a "SystemDefault" option. No-op for other .NET versions. 

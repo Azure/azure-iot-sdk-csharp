@@ -14,7 +14,9 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
     /// <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-troubleshoot-error-401003-iothubunauthorized">401003 IoTHubUnauthorized</see> 
     /// guide for more information.
     /// </remarks>
+#if !NET8_0
     [Serializable]
+#endif
     public sealed class UnauthorizedException : IotHubException
     {
         /// <summary>
@@ -40,11 +42,6 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
         /// <param name="innerException">The exception instance that caused the current exception.</param>
         public UnauthorizedException(string message, Exception innerException)
             : base(message, innerException, isTransient: false)
-        {
-        }
-
-        private UnauthorizedException(SerializationInfo info, StreamingContext context)
-            : base(info, context)
         {
         }
     }
