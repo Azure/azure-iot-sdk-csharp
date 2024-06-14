@@ -52,7 +52,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     ///     the point where you stopped. Just recreating the query with the same <see cref="QuerySpecification"/> and calling
     ///     the <see cref="NextAsync(string)"/> passing the stored <c>ContinuationToken</c>.
     /// </remarks>
-    public interface IQuery
+    public interface IQuery :IDisposable
     {
         /// <summary>
         /// The number of items in the current page.
