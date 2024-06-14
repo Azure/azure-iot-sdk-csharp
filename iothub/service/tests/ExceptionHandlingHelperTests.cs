@@ -34,6 +34,25 @@ namespace Microsoft.Azure.Devices.Test
         }
 
         [TestMethod]
+        public async Task GetExceptionCodeAsync_ContentAndHeadersMatch_ValidErrorCode_DeviceNotOnline()
+        {
+            // arrange
+            var httpResponseMessage = new HttpResponseMessage(System.Net.HttpStatusCode.BadRequest);
+            var exceptionResult = new IoTHubExceptionResult
+            {
+                Message = "{\"errorCode\":404103}"
+            };
+            httpResponseMessage.Content = new StringContent(JsonConvert.SerializeObject(exceptionResult));
+            httpResponseMessage.Headers.Add(CommonConstants.HttpErrorCodeName, "DeviceNotOnline");
+
+            // act
+            ErrorCode errorCode = await ExceptionHandlingHelper.GetExceptionCodeAsync(httpResponseMessage);
+
+            // assert
+            Assert.AreEqual(ErrorCode.DeviceNotOnline, errorCode);
+        }
+
+        [TestMethod]
         public async Task GetExceptionCodeAsync_ContentAndHeadersMisMatch_InvalidErrorCode()
         {
             // arrange
