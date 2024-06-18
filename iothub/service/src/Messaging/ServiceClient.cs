@@ -290,9 +290,7 @@ namespace Microsoft.Azure.Devices
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Opening AmqpServiceClient", nameof(OpenAsync));
 
-            using var ctx = new CancellationTokenSource(_openTimeout);
-
-            await _faultTolerantSendingLink.OpenAsync(ctx.Token).ConfigureAwait(false);
+            await _faultTolerantSendingLink.OpenAsync(_openTimeout).ConfigureAwait(false);
             await _feedbackReceiver.OpenAsync().ConfigureAwait(false);
 
             if (Logging.IsEnabled)
