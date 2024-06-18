@@ -3,7 +3,6 @@
 
 using System;
 using System.Diagnostics;
-using System.Diagnostics.Tracing;
 using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
