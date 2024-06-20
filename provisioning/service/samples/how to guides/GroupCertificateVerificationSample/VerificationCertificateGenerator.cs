@@ -92,11 +92,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
             certGenerator.SetNotAfter(notAfter);
 
             certGenerator.AddExtension(
-                X509Extensions.ExtendedKeyUsage, 
-                true, 
+                X509Extensions.ExtendedKeyUsage,
+                true,
                 ExtendedKeyUsage.GetInstance(new DerSequence(KeyPurposeID.IdKPClientAuth)));
 
-            ISignatureFactory signatureFactory = 
+            ISignatureFactory signatureFactory =
                 new Asn1SignatureFactory("SHA256WITHECDSA", privateSigningKey, random);
 
             Org.BouncyCastle.X509.X509Certificate certificate = certGenerator.Generate(signatureFactory);
