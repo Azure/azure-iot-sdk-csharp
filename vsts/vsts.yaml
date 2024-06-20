@@ -77,7 +77,7 @@ jobs:
           SHOULD_RUN: ${{ eq(variables['testNet80'], 'True') }}
     pool:
       # If this is changed, don't forget to update supported_platforms.md in the root directory. That document outlines what OS we test on and should stay up to date.
-      name: 'sdk-c--ubuntu-22'
+      name: 'sdk-net--ubuntu-20'
     steps:
       - task: PowerShell@2
         displayName: 'Print vars'
