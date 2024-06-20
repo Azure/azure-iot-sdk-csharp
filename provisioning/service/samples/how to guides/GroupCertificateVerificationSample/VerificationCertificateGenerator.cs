@@ -69,7 +69,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
             X509Name issuerName,
             AsymmetricKeyParameter privateSigningKey)
         {
-            var randomGenerator = new CryptoApiRandomGenerator();
+            using var randomGenerator = new CryptoApiRandomGenerator();
             var random = new SecureRandom(randomGenerator);
             var certGenerator = new X509V3CertificateGenerator();
 
@@ -94,7 +94,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
             certGenerator.AddExtension(
                 X509Extensions.ExtendedKeyUsage, 
                 true, 
-                ExtendedKeyUsage.GetInstance(new DerSequence(KeyPurposeID.IdKPClientAuth)));
+                ExtendedKeyUsage.GetInstance(new DerSequence(KeyPurposeID.id_kp_clientAuth)));
 
             ISignatureFactory signatureFactory = 
                 new Asn1SignatureFactory("SHA256WITHECDSA", privateSigningKey, random);
