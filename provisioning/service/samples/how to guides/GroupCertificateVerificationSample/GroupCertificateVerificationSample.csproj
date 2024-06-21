@@ -6,7 +6,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="BouncyCastle.Cryptography" Version="2.4.0" />
+    <PackageReference Include="BouncyCastle.Cryptography" Version="2.4.0">
+	  <NoWarn>NU1701</NoWarn>
+	</PackageReference>
   </ItemGroup>
 
 </Project>
