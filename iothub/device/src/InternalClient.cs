@@ -1570,7 +1570,7 @@ namespace Microsoft.Azure.Devices.Client
                     throw new ArgumentNullException(nameof(messages));
                 }
 
-                messagesList.ForEach(m => m.SystemProperties.Add(MessageSystemPropertyNames.OutputName, outputName));
+                messagesList.ForEach(m => m.SystemProperties[MessageSystemPropertyNames.OutputName] = outputName);
 
                 return InnerHandler.SendEventAsync(messagesList, cancellationToken);
             }
