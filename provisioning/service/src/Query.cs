@@ -58,7 +58,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     ///     the point where you stopped. Just recreating the query with the same <see cref="QuerySpecification"/> and calling
     ///     the <see cref="NextAsync(string)"/> passing the stored <c>ContinuationToken</c>.
     /// </remarks>
-    public class Query : IDisposable
+    public class Query : IQuery, IDisposable
     {
         private const string ContinuationTokenHeaderKey = "x-ms-continuation";
         private const string ItemTypeHeaderKey = "x-ms-item-type";
