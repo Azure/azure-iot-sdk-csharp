@@ -3,7 +3,6 @@
 
 using System;
 using System.Diagnostics;
-using System.Diagnostics.Tracing;
 using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -85,6 +84,20 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 MessageId = messageId,
             };
             await sender.SendAsync(testDevice.Id, message).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
+        [DataRow(TransportType.Amqp)]
+        [DataRow(TransportType.Amqp_WebSocket_Only)]
+        public async Task ServiceClient_Open(TransportType transportType)
+        {
+            // arrange
+            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
+            using var client = ServiceClient.CreateFromConnectionString(TestConfiguration.IotHub.ConnectionString, transportType);
+
+            // act and expect no exception
+            await client.OpenAsync().ConfigureAwait(false);
         }
 
         // Unfortunately, the way AmqpServiceClient is implemented, it makes mocking the required amqp types difficult
