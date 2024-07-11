@@ -377,7 +377,7 @@ jobs:
         - task: CmdLine@2
           displayName: 'Install .NET 4.7.2'
           inputs:
-            script: 'choco install netfx-4.7.2-devpack'
+            script: 'choco install -y netfx-4.7.2-devpack'
 
       - script: |
           choco install -y squid
