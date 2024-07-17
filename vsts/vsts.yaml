@@ -379,6 +379,13 @@ jobs:
           inputs:
             script: 'choco install -y netfx-4.7.2-devpack'
 
+      - task: Docker@2
+        displayName: "Login to ACR"
+        condition: eq(variables.SHOULD_RUN, 'True')
+        inputs:
+          command: "login"
+          containerRegistry: "Azure IoT ACR"
+
       - task: Docker@1
         displayName: "Start Test Proxy"
         condition: eq(variables.SHOULD_RUN, 'True')
