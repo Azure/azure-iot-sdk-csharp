@@ -337,7 +337,7 @@ jobs:
           SHOULD_RUN: ${{ eq(variables['testNet472'], 'True') }}
     pool:
       # If this is changed, don't forget to update supported_platforms.md in the root directory. That document outlines what OS we test on and should stay up to date.
-      name: 'sdk-net--win-vs2022'
+      name: 'sdk-c--win-vs2022'
     steps:
       - task: PowerShell@2
         displayName: 'Print vars'
