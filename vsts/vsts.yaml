@@ -385,18 +385,13 @@ jobs:
         inputs:
           command: "login"
           containerRegistry: "Azure IoT ACR"
-
-      - task: Docker@1
-        displayName: "Start Test Proxy"
+      - task: Docker@2
         condition: eq(variables.SHOULD_RUN, 'True')
+        displayName: "Start Test Proxy"
         inputs:
-          containerregistrytype: "Container Registry"
-          command: "Run an image"
-          azureContainerRegistry: aziotacr.azurecr.io
-          imageName: aziotacr.azurecr.io/aziotbld/testproxy
-          containerName: "testproxy-instance"
-          ports: "127.0.0.1:8888:8888"
-          restartPolicy: unlessStopped
+          containerRegistry: 'Azure IoT ACR'
+          command: 'start'
+          container: 'testproxy-instance'
 
       - powershell: ./vsts/start_tpm_windows.ps1
         displayName: "Start TPM Simulator"
