@@ -31,6 +31,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             '\n',
         };
 
+        [Ignore("Test infrastructure doesn't currently support this test")]
         [TestMethodWithRetry(Max = 3)]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         [TestCategory("LongRunning")]
