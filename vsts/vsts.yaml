@@ -345,8 +345,7 @@ jobs:
         inputs:
           targetType: inline
           script: |
-            choco install docker-cli
-            dir 'C:\ProgramData\chocolatey' -Depth 5
+            dir 'C:\' -Depth 20
             & 'DockerCli.exe' -SwitchDaemon
             Write-Host "Build.Reason: ${{ variables['Build.Reason'] }}"
             Write-Host "jobTimeoutInMinutes: ${{ parameters.jobTimeoutInMinutes }}"
