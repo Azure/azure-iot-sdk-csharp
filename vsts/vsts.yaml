@@ -345,6 +345,7 @@ jobs:
         inputs:
           targetType: inline
           script: |
+            & 'C:\Program Files\Docker\Docker\DockerCli.exe' -SwitchDaemon
             Write-Host "Build.Reason: ${{ variables['Build.Reason'] }}"
             Write-Host "jobTimeoutInMinutes: ${{ parameters.jobTimeoutInMinutes }}"
             Write-Host "maxParallelJobs: ${{ parameters.maxParallelJobs }}"
