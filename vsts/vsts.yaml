@@ -384,6 +384,17 @@ jobs:
 
         displayName: "Install Squid"
 
+      - script: |
+          cd c:/
+          dir
+          cd Squid
+          dir
+          cd bin
+          dir
+          c:/Squid/bin/squid.exe
+
+        displayName: "Run Squid"
+
       - powershell: ./vsts/start_tpm_windows.ps1
         displayName: "Start TPM Simulator"
         condition: eq(variables.SHOULD_RUN, 'True')
