@@ -387,7 +387,7 @@ jobs:
       - script: |
           cd D:/Squid/bin
           dir
-          ./squid.exe
+          squid.exe
 
         displayName: "Run Squid"
 
