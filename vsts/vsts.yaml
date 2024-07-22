@@ -380,7 +380,7 @@ jobs:
             script: 'choco install -y netfx-4.7.2-devpack'
 
       - script: |
-          choco install -y squid
+          choco install -y squid --force
 
         displayName: "Install Squid"
 
