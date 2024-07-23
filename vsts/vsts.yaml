@@ -385,7 +385,7 @@ jobs:
         displayName: "Install Squid"
 
       - script: |
-          copy D:/Squid $(Build.SourcesDirectory)
+          Xcopy /E /I D:\Squid $(Build.SourcesDirectory)
           dir
           cd $(Build.SourcesDirectory)/Squid/bin
           dir
