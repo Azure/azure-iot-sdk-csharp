@@ -380,18 +380,9 @@ jobs:
             script: 'choco install -y netfx-4.7.2-devpack'
 
       - script: |
-          choco install -y squid --force
+          choco install -y squid
 
-        displayName: "Install Squid"
-
-      - script: |
-          Xcopy /E /I D:\Squid $(Build.SourcesDirectory)
-          dir
-          cd $(Build.SourcesDirectory)/Squid/bin
-          dir
-          squid.exe
-
-        displayName: "Run Squid"
+        displayName: "Install Squid" # TODO this no longer starts the proxy, needs investigation
 
       - powershell: ./vsts/start_tpm_windows.ps1
         displayName: "Start TPM Simulator"
