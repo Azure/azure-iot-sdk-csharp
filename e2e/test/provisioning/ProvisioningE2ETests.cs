@@ -590,6 +590,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
+        [Ignore("Azure DevOps Windows test environment doesn't support generating test certificates currently")]
         public async Task DPS_Registration_MqttWs_X509_IndividualEnrollment_InvalidGlobalAddress_RegisterFail()
         {
             await ProvisioningDeviceClientInvalidGlobalAddressRegisterFailAsync(Client.TransportType.Mqtt_WebSocket_Only, AttestationMechanismType.X509, EnrollmentType.Individual).ConfigureAwait(false);
@@ -597,6 +598,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
+        [Ignore("Azure DevOps Windows test environment doesn't support generating test certificates currently")]
         public async Task DPS_Registration_Http_X509_IndividualEnrollment_InvalidGlobalAddress_RegisterFail()
         {
             await ProvisioningDeviceClientInvalidGlobalAddressRegisterFailAsync(Client.TransportType.Http1, AttestationMechanismType.X509, EnrollmentType.Individual, null).ConfigureAwait(false);
@@ -606,6 +608,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         [TestCategory("LongRunning")]
+        [Ignore("Azure DevOps Windows test environment doesn't support generating test certificates currently")]
         public async Task DPS_Registration_Amqp_X509_IndividualEnrollment_InvalidGlobalAddress_RegisterFail()
         {
             await ProvisioningDeviceClientInvalidGlobalAddressRegisterFailAsync(Client.TransportType.Amqp_Tcp_Only, AttestationMechanismType.X509, EnrollmentType.Individual).ConfigureAwait(false);
@@ -613,6 +616,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
+        [Ignore("Azure DevOps Windows test environment doesn't support generating test certificates currently")]
         public async Task DPS_Registration_AmqpWs_X509_IndividualEnrollment_InvalidGlobalAddress_RegisterFail()
         {
             await ProvisioningDeviceClientInvalidGlobalAddressRegisterFailAsync(Client.TransportType.Amqp_WebSocket_Only, AttestationMechanismType.X509, EnrollmentType.Individual).ConfigureAwait(false);
