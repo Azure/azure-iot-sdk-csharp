@@ -72,6 +72,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
+        [Ignore("Azure DevOps Windows test environment doesn't support proxies currently")]
         public async Task DPS_Registration_Http_X509_IndividualEnrollment_RegisterOk()
         {
             await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Http1, AttestationMechanismType.X509, EnrollmentType.Individual, false).ConfigureAwait(false);
@@ -79,6 +80,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
+        [Ignore("Azure DevOps Windows test environment doesn't support proxies currently")]
         public async Task DPS_Registration_Http_X509_GroupEnrollment_RegisterOk()
         {
             await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Http1, AttestationMechanismType.X509, EnrollmentType.Group, false).ConfigureAwait(false);
@@ -583,6 +585,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         [TestCategory("LongRunning")]
+        [Ignore("Azure DevOps Windows test environment doesn't support proxies currently")]
         public async Task DPS_Registration_Mqtt_X509_IndividualEnrollment_InvalidGlobalAddress_RegisterFail()
         {
             await ProvisioningDeviceClientInvalidGlobalAddressRegisterFailAsync(Client.TransportType.Mqtt_Tcp_Only, AttestationMechanismType.X509, EnrollmentType.Individual).ConfigureAwait(false);
