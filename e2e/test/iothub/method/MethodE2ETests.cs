@@ -115,7 +115,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
 
         [TestMethodWithRetry(Max = 3)]
         [Timeout(TestTimeoutMilliseconds)]
-        [Ignore("Azure DevOps Windows test environment doesn't support proxies currently")]
         public async Task Method_ServiceSendsMethodThroughProxyWithDefaultTimeout()
         {
             var serviceClientTransportSettings = new ServiceClientTransportSettings
@@ -133,7 +132,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         [TestMethodWithRetry(Max = 3)]
         [Timeout(TestTimeoutMilliseconds)]
         [TestCategory("Proxy")]
-        [Ignore("Azure DevOps Windows test environment doesn't support proxies currently")]
         public async Task Method_ServiceSendsMethodThroughProxyWithCustomTimeout()
         {
             var serviceClientTransportSettings = new ServiceClientTransportSettings
