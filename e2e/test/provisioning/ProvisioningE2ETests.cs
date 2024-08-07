@@ -50,15 +50,16 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         [ClassInitialize]
         public static void TestClassSetup(TestContext _)
         {
+            //TODO disabling these while x509 certificate generation isn't supported by our test pipelines
             // Create a folder to hold the DPS client certificates and X509 self-signed certificates. If a folder by the same name already exists, it will be used.
-            s_x509CertificatesFolder = Directory.CreateDirectory($"x509Certificates-{nameof(ProvisioningE2ETests)}-{Guid.NewGuid()}");
+            //s_x509CertificatesFolder = Directory.CreateDirectory($"x509Certificates-{nameof(ProvisioningE2ETests)}-{Guid.NewGuid()}");
 
             // Extract the public certificate and private key information from the intermediate certificate pfx file.
             // These keys will be used to sign the test leaf device certificates.
-            s_intermediateCertificateSubject = X509Certificate2Helper.ExtractPublicCertificateAndPrivateKeyFromPfxAndReturnSubject(
+            /*s_intermediateCertificateSubject = X509Certificate2Helper.ExtractPublicCertificateAndPrivateKeyFromPfxAndReturnSubject(
                 TestConfiguration.Provisioning.GetGroupEnrollmentIntermediatePfxCertificateBase64(),
                 s_certificatePassword,
-                s_x509CertificatesFolder);
+                s_x509CertificatesFolder);*/
         }
 
         [TestMethod]
