@@ -382,7 +382,8 @@ jobs:
       - script: |
           choco install -y squid
 
-        displayName: "Install Squid" # TODO this no longer starts the proxy, needs investigation
+        displayName: "Install Squid"
+        condition: eq(variables.SHOULD_RUN, 'True')
 
       - powershell: ./vsts/start_tpm_windows.ps1
         displayName: "Start TPM Simulator"
@@ -423,7 +424,7 @@ jobs:
           E2E_IKEY: $(E2E-IKEY)
 
           # Environment variables for the DevOps pipeline
-          PROXY_SERVER_ADDRESS: 127.0.0.1:8888
+          PROXY_SERVER_ADDRESS: 127.0.0.1:3128
           TARGET_BRANCH: $(System.PullRequest.TargetBranch)
           FRAMEWORK: $(FRAMEWORK)
 
