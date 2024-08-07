@@ -48,6 +48,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         [TestCategory("Proxy")]
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
+        [Ignore("Azure DevOps Windows test environment doesn't support proxies currently")]
         public async Task Message_TcpConnectionLossSendRecovery_AmqpWs_WithProxy()
         {
             await SendMessageRecoveryAsync(
@@ -84,6 +85,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         [TestCategory("Proxy")]
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
+        [Ignore("Azure DevOps Windows test environment doesn't support proxies currently")]
         public async Task Message_TcpConnectionLossSendRecovery_MqttWs_WithProxy()
         {
             await SendMessageRecoveryAsync(
