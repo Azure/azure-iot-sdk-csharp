@@ -17,6 +17,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
     [TestCategory("E2E")]
     [TestCategory("IoTHub")]
     [TestCategory("Proxy")]
+    [Ignore("Azure DevOps Windows test environment doesn't support proxies currently")]
     public class IoTHubServiceProxyE2ETests : E2EMsTestBase
     {
         private readonly string DevicePrefix = $"{nameof(IoTHubServiceProxyE2ETests)}_";

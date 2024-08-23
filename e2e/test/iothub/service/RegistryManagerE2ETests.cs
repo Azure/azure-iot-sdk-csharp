@@ -25,6 +25,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         [Timeout(TestTimeoutMilliseconds)]
         [TestCategory("Proxy")]
         [ExpectedException(typeof(Common.Exceptions.IotHubCommunicationException))]
+        [Ignore("Azure DevOps Windows test environment doesn't support proxies currently")]
         public async Task RegistryManager_BadProxy_ThrowsException()
         {
             // arrange
@@ -330,6 +331,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         [TestMethodWithRetry(Max = 3)]
         [Timeout(TestTimeoutMilliseconds)]
         [TestCategory("Proxy")]
+        [Ignore("Azure DevOps Windows test environment doesn't support proxies currently")]
         public async Task RegistryManager_AddDeviceWithProxy()
         {
             string deviceId = _idPrefix + Guid.NewGuid();
