@@ -17,6 +17,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
     [TestCategory("E2E")]
     [TestCategory("IoTHub")]
     [TestCategory("Proxy")]
+    [Ignore("Azure DevOps Windows test environment doesn't support proxies currently")]
     public class IoTHubServiceProxyE2ETests : E2EMsTestBase
     {
         private readonly string DevicePrefix = $"{nameof(IoTHubServiceProxyE2ETests)}_";
@@ -123,7 +124,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             string payload = Guid.NewGuid().ToString();
             string p1Value = Guid.NewGuid().ToString();
 
-            VerboseTestLogger.WriteLine($"{nameof(ComposeD2CTestMessage)}: messageId='{messageId}' payload='{payload.Substring(0,32)}' p1Value='{p1Value}'");
+            VerboseTestLogger.WriteLine($"{nameof(ComposeD2CTestMessage)}: messageId='{messageId}' payload='{payload.Substring(0, 32)}' p1Value='{p1Value}'");
             var message = new Message(Encoding.UTF8.GetBytes(payload))
             {
                 MessageId = messageId,
