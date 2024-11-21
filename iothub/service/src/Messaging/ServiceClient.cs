@@ -156,6 +156,33 @@ namespace Microsoft.Azure.Devices
             ServiceClientTransportSettings transportSettings = default,
             ServiceClientOptions options = default)
         {
+            return Create(hostName, credential, CommonConstants.IotHubAadTokenScopes, transportType, transportSettings, options);
+        }
+
+        /// <summary>
+        /// Creates ServiceClient, authenticating using an identity in Azure Active Directory (AAD).
+        /// </summary>
+        /// <remarks>
+        /// For more about information on the options of authenticating using a derived instance of <see cref="TokenCredential"/>, see
+        /// <see href="https://docs.microsoft.com/dotnet/api/overview/azure/identity-readme"/>.
+        /// For more information on configuring IoT hub with Azure Active Directory, see
+        /// <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-dev-guide-azure-ad-rbac"/>
+        /// </remarks>
+        /// <param name="hostName">IoT hub host name.</param>
+        /// <param name="credential">Azure Active Directory credentials to authenticate with IoT hub. See <see cref="TokenCredential"/></param>
+        /// <param name="transportType">Specifies whether Amqp or Amqp_WebSocket_Only transport is used.</param>
+        /// <param name="scopes">The custom scopes to use when authenticating.</param>
+        /// <param name="transportSettings">Specifies the AMQP_WS and HTTP proxy settings for service client.</param>
+        /// <param name="options">The options that allow configuration of the service client instance during initialization.</param>
+        /// <returns>A ServiceClient instance.</returns>
+        public static ServiceClient Create(
+            string hostName,
+            TokenCredential credential,
+            string[] scopes,
+            TransportType transportType = TransportType.Amqp,
+            ServiceClientTransportSettings transportSettings = default,
+            ServiceClientOptions options = default)
+        {
             if (string.IsNullOrEmpty(hostName))
             {
                 throw new ArgumentNullException($"{nameof(hostName)}, Parameter cannot be null or empty");
@@ -166,7 +193,7 @@ namespace Microsoft.Azure.Devices
                 throw new ArgumentNullException($"{nameof(credential)},  Parameter cannot be null");
             }
 
-            var tokenCredentialProperties = new IotHubTokenCrendentialProperties(hostName, credential);
+            var tokenCredentialProperties = new IotHubTokenCrendentialProperties(hostName, credential, scopes);
             bool useWebSocketOnly = transportType == TransportType.Amqp_WebSocket_Only;
 
             return new ServiceClient(

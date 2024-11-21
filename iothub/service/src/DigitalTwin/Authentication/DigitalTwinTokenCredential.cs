@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
 using System.Threading;
 using Azure.Core;
 using Microsoft.Azure.Devices.Authentication;
@@ -18,10 +19,18 @@ namespace Microsoft.Azure.Devices.DigitalTwin.Authentication
         private readonly object _tokenLock = new object();
         private AccessToken? _cachedAccessToken;
         private readonly TokenCredential _credential;
+        private string[] _scopes;
 
         public DigitalTwinTokenCredential(TokenCredential credential)
         {
             _credential = credential;
+            _scopes = CommonConstants.IotHubAadTokenScopes;
+        }
+
+        public DigitalTwinTokenCredential(TokenCredential credential, string[] scopes)
+        {
+            _credential = credential;
+            _scopes = scopes;
         }
 
         public override string GetAuthorizationHeader()
@@ -33,7 +42,7 @@ namespace Microsoft.Azure.Devices.DigitalTwin.Authentication
                     || TokenHelper.IsCloseToExpiry(_cachedAccessToken.Value.ExpiresOn))
                 {
                     _cachedAccessToken = _credential.GetToken(
-                        new TokenRequestContext(CommonConstants.IotHubAadTokenScopes),
+                        new TokenRequestContext(_scopes),
                         new CancellationToken());
                 }
             }
