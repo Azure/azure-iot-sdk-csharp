@@ -34,7 +34,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <Version>1.39.1</Version>
+    <Version>1.40.0</Version>
     <Title>Microsoft Azure IoT Service Client SDK</Title>
     <IncludeSource>True</IncludeSource>
     <IncludeSymbols>True</IncludeSymbols>
@@ -136,12 +136,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="6.0.0">
+    <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="Microsoft.Azure.Amqp" Version="2.5.12" />
+    <PackageReference Include="Microsoft.Azure.Amqp" Version="2.6.9" />
   </ItemGroup>
 
   <ItemGroup>
@@ -182,6 +182,6 @@
     <PackageReference Include="System.Diagnostics.TraceSource" Version="4.3.0" />
     <PackageReference Include="System.Diagnostics.Contracts" Version="4.3.0" />
     <PackageReference Include="Microsoft.Rest.ClientRuntime" Version="2.3.24" />
-    <PackageReference Include="Azure.Core" Version="1.36.0" />
+    <PackageReference Include="Azure.Core" Version="1.44.1" />
   </ItemGroup>
 </Project>

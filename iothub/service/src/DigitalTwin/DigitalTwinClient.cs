@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Azure;
 using Azure.Core;
 using Microsoft.Azure.Devices.Authentication;
+using Microsoft.Azure.Devices.Common;
 using Microsoft.Azure.Devices.DigitalTwin.Authentication;
 using Microsoft.Azure.Devices.Extensions;
 using Microsoft.Azure.Devices.Generated;
@@ -81,6 +82,32 @@ namespace Microsoft.Azure.Devices
         public static DigitalTwinClient Create(
             string hostName,
             TokenCredential credential,
+            params DelegatingHandler[] handlers)
+        {
+            return Create(hostName, credential, CommonConstants.IotHubAadTokenScopes, handlers);
+        }
+
+        /// <summary>
+        /// Creates DigitalTwinClient, authenticating using an identity in Azure Active Directory (AAD).
+        /// </summary>
+        /// <remarks>
+        /// For more about information on the options of authenticating using a derived instance of <see cref="TokenCredential"/>, see
+        /// <see href="https://docs.microsoft.com/dotnet/api/overview/azure/identity-readme"/>.
+        /// For more information on configuring IoT hub with Azure Active Directory, see
+        /// <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-dev-guide-azure-ad-rbac"/>
+        /// </remarks>
+        /// <param name="hostName">IoT hub host name.</param>
+        /// <param name="credential">Azure Active Directory (AAD) credentials to authenticate with IoT hub. See <see cref="TokenCredential"/></param>
+        /// <param name="handlers">
+        /// The delegating handlers to add to the http client pipeline. You can add handlers for tracing,
+        /// implementing a retry strategy, routing requests through a proxy, etc.
+        /// </param>
+        /// <param name="scopes">The custom scopes to use when authenticating.</param>
+        /// <returns>A DigitalTwinsClient instance.</returns>
+        public static DigitalTwinClient Create(
+            string hostName,
+            TokenCredential credential,
+            string[] scopes,
             params DelegatingHandler[] handlers)
         {
             if (string.IsNullOrEmpty(hostName))

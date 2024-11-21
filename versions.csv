@@ -1,6 +1,6 @@
 AssemblyPath, Version
 iothub\device\src\Microsoft.Azure.Devices.Client.csproj, 1.42.3
-iothub\service\src\Microsoft.Azure.Devices.csproj, 1.39.1
+iothub\service\src\Microsoft.Azure.Devices.csproj, 1.40.0
 shared\src\Microsoft.Azure.Devices.Shared.csproj, 1.30.4
 provisioning\device\src\Microsoft.Azure.Devices.Provisioning.Client.csproj, 1.19.4
 provisioning\service\src\Microsoft.Azure.Devices.Provisioning.Service.csproj, 1.18.4

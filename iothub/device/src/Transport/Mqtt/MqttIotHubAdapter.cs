@@ -23,7 +23,9 @@ using Microsoft.Azure.Devices.Client.Extensions;
 using Microsoft.Azure.Devices.Shared;
 
 #if NET5_0_OR_GREATER
+
 using TaskCompletionSource = System.Threading.Tasks.TaskCompletionSource;
+
 #else
 using TaskCompletionSource = Microsoft.Azure.Devices.Shared.TaskCompletionSource;
 #endif
@@ -1108,7 +1110,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         {
             Stream bodyStream = message.GetBodyStream();
             byte[] buffer = new byte[bodyStream.Length];
-            bodyStream.Read(buffer, 0, buffer.Length);
+            _ = bodyStream.Read(buffer, 0, buffer.Length);
             IByteBuffer copiedBuffer = Unpooled.CopiedBuffer(buffer);
             return copiedBuffer;
         }
