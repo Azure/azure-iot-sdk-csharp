@@ -369,7 +369,7 @@ namespace Microsoft.Azure.Devices
             {
                 // We can trust Amqp bufferListStream.Length;
                 byte[] bytes = new byte[listStream.Length];
-                listStream.Read(bytes, 0, bytes.Length);
+                _ = listStream.Read(bytes, 0, bytes.Length);
                 return bytes;
             }
 
