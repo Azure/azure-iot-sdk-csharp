@@ -231,7 +231,7 @@ jobs:
           ports: "127.0.0.1:8888:8888"
           restartPolicy: unlessStopped
 
-      - powershell: ./vsts/gatedBuild.ps1
+      - powershell: .\vsts\gatedBuild.ps1
         displayName: build
         condition: eq(variables.SHOULD_RUN, 'True')
         env:
@@ -385,11 +385,11 @@ jobs:
         displayName: "Install Squid"
         condition: eq(variables.SHOULD_RUN, 'True')
 
-      - powershell: ./vsts/start_tpm_windows.ps1
+      - powershell: .\vsts\start_tpm_windows.ps1
         displayName: "Start TPM Simulator"
         condition: eq(variables.SHOULD_RUN, 'True')
 
-      - powershell: ./vsts/gatedBuild.ps1
+      - powershell: .\vsts\gatedBuild.ps1
         displayName: build
         condition: eq(variables.SHOULD_RUN, 'True')
         env:
