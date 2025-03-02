@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <OutputType>Exe</OutputType>
     <TargetFrameworks>net6.0;net8.0</TargetFrameworks>
     <!-- By setting this as not a test project for other frameworks, we can run "dotnet test" for a specific framework from the root directory without dotnet throwing if any test project in the solution doesn't support that framework -->
     <IsTestProject Condition="'$(TargetFramework)' != 'net6.0' And '$(TargetFramework)' != 'net8.0'">False</IsTestProject>    <LangVersion>8.0</LangVersion>
@@ -11,9 +12,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
-    <PackageReference Include="MSTest.TestAdapter" Version="3.6.3" />
-    <PackageReference Include="MSTest.TestFramework" Version="3.6.3" />
+    <PackageReference Include="MSTest.TestAdapter" Version="3.8.2" />
+    <PackageReference Include="MSTest.TestFramework" Version="3.8.2" />
     <PackageReference Include="NSubstitute" Version="5.3.0" />
   </ItemGroup>
 

@@ -1,5 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
+    <OutputType>Exe</OutputType>
     <RootNamespace>Microsoft.Azure.Devices.Shared.Tests</RootNamespace>
     <TargetFrameworks Condition="'$(OS)' == 'Windows_NT'">net6.0;net8.0;net472</TargetFrameworks>
     <TargetFrameworks Condition="'$(OS)' != 'Windows_NT'">net6.0;net8.0</TargetFrameworks>
@@ -16,9 +17,8 @@
 
   <ItemGroup>
     <PackageReference Include="FluentAssertions" Version="5.10.0" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
-    <PackageReference Include="MSTest.TestAdapter" Version="3.6.3" />
-    <PackageReference Include="MSTest.TestFramework" Version="3.6.3" />
+    <PackageReference Include="MSTest.TestAdapter" Version="3.8.2" />
+    <PackageReference Include="MSTest.TestFramework" Version="3.8.2" />
     <PackageReference Include="Moq" Version="4.20.72" />
   </ItemGroup>
 
