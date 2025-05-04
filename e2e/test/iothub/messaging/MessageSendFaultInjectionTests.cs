@@ -48,6 +48,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         [TestCategory("Proxy")]
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
+        [Ignore("Azure DevOps Windows test environment doesn't support proxies currently")]
         public async Task Message_TcpConnectionLossSendRecovery_AmqpWs_WithProxy()
         {
             await SendMessageRecoveryAsync(
@@ -84,6 +85,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         [TestCategory("Proxy")]
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
+        [Ignore("Azure DevOps Windows test environment doesn't support proxies currently")]
         public async Task Message_TcpConnectionLossSendRecovery_MqttWs_WithProxy()
         {
             await SendMessageRecoveryAsync(
@@ -171,7 +173,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 .ConfigureAwait(false);
         }
 
-        [TestMethodWithRetry(Max=3)]
+        [TestMethodWithRetry(Max = 3)]
         [Timeout(TestTimeoutMilliseconds)]
         [TestCategory("Flaky")]
         public async Task Message_ThrottledConnectionRecovery_AmqpWs()
@@ -183,7 +185,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 .ConfigureAwait(false);
         }
 
-        [TestMethodWithRetry(Max=3)]
+        [TestMethodWithRetry(Max = 3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Message_ThrottledConnectionLongTimeNoRecovery_Amqp()
         {
@@ -206,7 +208,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             catch (TimeoutException) { }
         }
 
-        [TestMethodWithRetry(Max=3)]
+        [TestMethodWithRetry(Max = 3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Message_ThrottledConnectionLongTimeNoRecovery_AmqpWs()
         {
@@ -228,7 +230,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             catch (TimeoutException) { }
         }
 
-        [TestMethodWithRetry(Max=3)]
+        [TestMethodWithRetry(Max = 3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Message_ThrottledConnectionLongTimeNoRecovery_Http()
         {
@@ -251,7 +253,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             catch (TimeoutException) { }
         }
 
-        [TestMethodWithRetry(Max=3)]
+        [TestMethodWithRetry(Max = 3)]
         [Timeout(TestTimeoutMilliseconds)]
         [ExpectedException(typeof(DeviceMaximumQueueDepthExceededException))]
         public async Task Message_QuotaExceededRecovery_Amqp()
@@ -263,7 +265,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 .ConfigureAwait(false);
         }
 
-        [TestMethodWithRetry(Max=3)]
+        [TestMethodWithRetry(Max = 3)]
         [Timeout(TestTimeoutMilliseconds)]
         [ExpectedException(typeof(DeviceMaximumQueueDepthExceededException))]
         public async Task Message_QuotaExceededRecovery_AmqpWs()
@@ -275,7 +277,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 .ConfigureAwait(false);
         }
 
-        [TestMethodWithRetry(Max=3)]
+        [TestMethodWithRetry(Max = 3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Message_QuotaExceededRecovery_Http()
         {
@@ -334,7 +336,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 .ConfigureAwait(false);
         }
 
-        [TestMethodWithRetry(Max=3)]
+        [TestMethodWithRetry(Max = 3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Message_GracefulShutdownSendRecovery_Amqp()
         {
@@ -345,7 +347,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 .ConfigureAwait(false);
         }
 
-        [TestMethodWithRetry(Max=3)]
+        [TestMethodWithRetry(Max = 3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Message_GracefulShutdownSendRecovery_AmqpWs()
         {
@@ -356,7 +358,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 .ConfigureAwait(false);
         }
 
-        [TestMethodWithRetry(Max=3)]
+        [TestMethodWithRetry(Max = 3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Message_GracefulShutdownSendRecovery_Mqtt()
         {
@@ -367,7 +369,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 .ConfigureAwait(false);
         }
 
-        [TestMethodWithRetry(Max=3)]
+        [TestMethodWithRetry(Max = 3)]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task Message_GracefulShutdownSendRecovery_MqttWs()
         {

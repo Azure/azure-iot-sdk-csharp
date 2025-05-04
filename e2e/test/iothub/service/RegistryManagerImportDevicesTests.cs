@@ -34,6 +34,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         [DataRow(StorageAuthenticationType.KeyBased, false)]
         [DataRow(StorageAuthenticationType.IdentityBased, false)]
         [DataRow(StorageAuthenticationType.IdentityBased, true)]
+        [Ignore("Azure DevOps test environment storage account doesn't support key-based authentication")]
         public async Task RegistryManager_ImportDevices(StorageAuthenticationType storageAuthenticationType, bool isUserAssignedMsi)
         {
             // arrange
