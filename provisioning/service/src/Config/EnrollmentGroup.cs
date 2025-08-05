@@ -269,6 +269,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         public string IotHubHostName { get; set; }
 
         /// <summary>
+        /// Linked Azure Device Registry credential policy name (optional).
+        /// </summary>
+        [JsonProperty(PropertyName = "credentialPolicyName", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        public string CredentialPolicyName { get; set; }
+
+        /// <summary>
         /// Initial twin state.
         /// </summary>
         [JsonProperty(PropertyName = "initialTwin", DefaultValueHandling = DefaultValueHandling.Ignore)]
