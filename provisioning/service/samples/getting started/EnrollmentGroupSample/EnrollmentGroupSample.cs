@@ -32,6 +32,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
             Attestation attestation = new SymmetricKeyAttestation(null, null); // let the service generate keys
             var group = new EnrollmentGroup(s_enrollmentGroupId, attestation);
 
+            // Optionally, set credentialPolicyName if you are using a certificate management service
+            // group.CredentialPolicyName = "your-azure-device-registry-credential-policy-name";
+
             group = await _provisioningServiceClient.CreateOrUpdateEnrollmentGroupAsync(group);
             Console.WriteLine($"Created {group.EnrollmentGroupId}: {JsonConvert.SerializeObject(group)}");
         }
