@@ -71,7 +71,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
                         ["Brand"] = "Contoso",
                         ["Model"] = "SSC4",
                         ["Color"] = "White",
-                    })
+                    }),
+                // Optionally, set credentialPolicyName if you are using a certificate management service
+                // CredentialPolicyName = "your-azure-device-registry-credential-policy-name"
             };
 
             Console.WriteLine("Adding new individualEnrollment...");

@@ -18,6 +18,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         private const string SampleLastUpdatedDateTimeUTCString = "2017-11-14T12:34:18.321Z";
         private DateTime SampleLastUpdatedDateTimeUTC = new DateTime(2017, 11, 14, 12, 34, 18, 321, DateTimeKind.Utc);
         private const string SampleEtag = "00000000-0000-0000-0000-00000000000";
+        private const string SampleCredentialPolicyName = "testCredentialPolicyName";
         private const string SamplePublicKeyCertificateString =
             "-----BEGIN CERTIFICATE-----\n" +
             "MIIBiDCCAS2gAwIBAgIFWks8LR4wCgYIKoZIzj0EAwIwNjEUMBIGA1UEAwwLcmlv\n" +
@@ -63,6 +64,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             "       }\n" +
             "   },\n" +
             "   \"iotHubHostName\":\"" + SampleIotHubHostName + "\",\n" +
+            "   \"credentialPolicyName\":\"" + SampleCredentialPolicyName + "\",\n" +
             "   \"initialTwin\":{\n" +
             "       \"tags\":{\n" +
             "           \"tag1\":\"val1\",\n" +
@@ -131,6 +133,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             Assert.AreEqual(SampleEnrollmentGroupId, enrollmentGroup.EnrollmentGroupId);
             Assert.IsTrue(enrollmentGroup.Attestation is X509Attestation);
             Assert.AreEqual(SampleIotHubHostName, enrollmentGroup.IotHubHostName);
+            Assert.AreEqual(SampleCredentialPolicyName, enrollmentGroup.CredentialPolicyName);
             Assert.IsNotNull(enrollmentGroup.InitialTwinState);
             Assert.AreEqual(SampleProvisioningStatus, enrollmentGroup.ProvisioningStatus);
             Assert.AreEqual(SampleCreateDateTimeUTC, enrollmentGroup.CreatedDateTimeUtc);

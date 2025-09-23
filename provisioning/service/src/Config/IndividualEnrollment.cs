@@ -195,6 +195,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         public string DeviceId { get; set; }
 
         /// <summary>
+        /// Linked Azure Device Registry credential policy name (optional).
+        /// </summary>
+        [JsonProperty(PropertyName = "credentialPolicyName", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        public string CredentialPolicyName { get; set; }
+
+        /// <summary>
         /// Current registration state.
         /// </summary>
         [JsonProperty(PropertyName = "registrationState", DefaultValueHandling = DefaultValueHandling.Ignore)]
