@@ -76,8 +76,7 @@ jobs:
           FRAMEWORK: net8.0
           SHOULD_RUN: ${{ eq(variables['testNet80'], 'True') }}
     pool:
-      # If this is changed, don't forget to update supported_platforms.md in the root directory. That document outlines what OS we test on and should stay up to date.
-      name: 'sdk-net--ubuntu-20'
+      vmImage: ubuntu-latest
     steps:
       - task: PowerShell@2
         displayName: 'Print vars'
@@ -162,8 +161,7 @@ jobs:
           FRAMEWORK: net472
           SHOULD_RUN: ${{ eq(variables['testNet472'], 'True') }}
     pool:
-      # If this is changed, don't forget to update supported_platforms.md in the root directory. That document outlines what OS we test on and should stay up to date.
-      name: 'sdk-net--win-vs2022'
+      vmImage: windows-2022
     steps:
       - task: PowerShell@2
         displayName: 'Print vars'
