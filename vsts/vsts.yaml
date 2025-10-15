@@ -12,14 +12,13 @@ parameters:
   type: number
   default: 150
 - name: testTargets
-  displayName: The .NET test targets to build and run. 'all' and 'min-matrix' (net6.0) are aggregates of the remaining values.
+  displayName: The .NET test targets to build and run. 'all' and 'min-matrix' (net8.0) are aggregates of the remaining values.
   type: string
   values:
     - default
     - all
     - min-matrix
     - net8.0
-    - net6.0
     - net4.7.2
   default: default
 
@@ -35,9 +34,6 @@ variables:
     allTestTargets: ${{ contains(parameters['testTargets'], 'all') }}
     # We wish to run the minimum test matrix targets if 1) directly specified, 2) if all targets was chosen.
     minMatrix: ${{ or(eq(parameters['testTargets'], 'min-matrix'), eq(variables['allTestTargets'], 'True')) }}
-
-# The minimum matrix build/test targets.
-  testNet60: ${{ or(eq(variables['minMatrix'], 'True'), contains(parameters['testTargets'], 'net6.0')) }}
 
 # The remaining build/test targets.
   testNet80: ${{ or(eq(variables['allTestTargets'], 'True'), contains(parameters['testTargets'], 'net8.0')) }}
@@ -68,10 +64,6 @@ jobs:
     strategy:
       maxParallel: ${{ parameters.maxParallelJobs }}
       matrix:
-        .NET 6.0:
-          FRAMEWORK: net6.0
-          # Can't find a good way to skip matrix elements so for now we set an environment variable that the script will use to bail out.
-          SHOULD_RUN: ${{ eq(variables['testNet60'], 'True') }}
         .NET 8.0:
           FRAMEWORK: net8.0
           SHOULD_RUN: ${{ eq(variables['testNet80'], 'True') }}
@@ -103,15 +95,6 @@ jobs:
          version: 8.x
          performMultiLevelLookup: true
          installationPath: $(Agent.ToolsDirectory)/dotnet
-
-      - ${{ if eq(variables['testNet60'], 'True') }}:
-        - task: UseDotNet@2
-          displayName: 'Use .NET SDK 6.0'
-          inputs:
-            packageType: sdk
-            version: 6.x
-            performMultiLevelLookup: true
-            installationPath: $(Agent.ToolsDirectory)/dotnet
 
       - task: PowerShell@2
         displayName: 'build'
@@ -151,9 +134,6 @@ jobs:
     strategy:
       maxParallel: ${{ parameters.maxParallelJobs }}
       matrix:
-        .NET 6.0:
-          FRAMEWORK: net6.0
-          SHOULD_RUN: ${{ eq(variables['testNet60'], 'True') }}
         .NET 8.0:
           FRAMEWORK: net8.0
           SHOULD_RUN: ${{ eq(variables['testNet80'], 'True') }}
@@ -178,15 +158,6 @@ jobs:
             Write-Host "testNetcore31: ${{ variables.testNetcore31 }}"
             Write-Host "testNetcore21: ${{ variables.testNetcore21 }}"
             Write-Host "testNet472: ${{ variables.testNet472 }}"
-
-      - ${{ if eq(variables['testNet60'], 'True') }}:
-        - task: UseDotNet@2
-          displayName: 'Use .NET SDK 6.0'
-          inputs:
-            packageType: sdk
-            version: 6.x
-            performMultiLevelLookup: true
-            installationPath: $(Agent.ToolsDirectory)/dotnet
 
       - ${{ if eq(variables['testNet80'], 'True') }}:
         - task: UseDotNet@2
