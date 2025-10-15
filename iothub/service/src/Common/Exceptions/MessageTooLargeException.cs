@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Serialization;
 
 namespace Microsoft.Azure.Devices.Common.Exceptions
@@ -77,19 +78,6 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         {
         }
 
-        private MessageTooLargeException(SerializationInfo info, StreamingContext context)
-            : base(info, context)
-        {
-            MaximumMessageSizeInBytes = info.GetInt32("MaximumMessageSizeInBytes");
-        }
-
         internal int MaximumMessageSizeInBytes { get; private set; }
-
-        /// <inheritdoc />
-        public override void GetObjectData(SerializationInfo info, StreamingContext context)
-        {
-            base.GetObjectData(info, context);
-            info.AddValue("MaximumMessageSizeInBytes", MaximumMessageSizeInBytes);
-        }
     }
 }

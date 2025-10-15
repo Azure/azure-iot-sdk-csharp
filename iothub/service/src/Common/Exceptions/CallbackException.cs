@@ -22,11 +22,6 @@ namespace Microsoft.Azure.Devices.Common
             Fx.Assert(!Fx.IsFatal(innerException), "CallbackException can't be used to wrap fatal exceptions.");
         }
 
-        protected CallbackException(SerializationInfo info, StreamingContext context)
-            : base(info, context)
-        {
-        }
-
         internal CallbackException(string message)
             : base(message)
         {

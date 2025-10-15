@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
     /// </summary>
     /// <remarks>
     /// This exception means the client is not authorized to use the specified IoT hub. Please review the
-    /// <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-troubleshoot-error-401003-iothubunauthorized">401003 IoTHubUnauthorized</see> 
+    /// <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-troubleshoot-error-401003-iothubunauthorized">401003 IoTHubUnauthorized</see>
     /// guide for more information.
     /// </remarks>
     [Serializable]
@@ -40,11 +40,6 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
         /// <param name="innerException">The exception instance that caused the current exception.</param>
         public UnauthorizedException(string message, Exception innerException)
             : base(message, innerException, isTransient: false)
-        {
-        }
-
-        private UnauthorizedException(SerializationInfo info, StreamingContext context)
-            : base(info, context)
         {
         }
     }

@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 // Copyright (c) Microsoft. All rights reserved. Licensed under the MIT license. See LICENSE file in the project root
 // for full license information.
 
@@ -25,11 +27,6 @@ namespace Microsoft.Azure.Devices.Common
 
         public AssertionFailedException(string description)
             : base(CommonResources.GetString(CommonResources.ShipAssertExceptionMessage, description))
-        {
-        }
-
-        protected AssertionFailedException(SerializationInfo info, StreamingContext context)
-            : base(info, context)
         {
         }
     }
