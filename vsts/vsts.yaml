@@ -97,7 +97,7 @@ jobs:
          installationPath: $(Agent.ToolsDirectory)/dotnet
 
       - task: PowerShell@2
-        displayName: 'build'
+        displayName: 'build and run unit tests'
         condition: eq(variables.SHOULD_RUN, 'True')
         inputs:
           targetType: inline
@@ -175,7 +175,7 @@ jobs:
             script: 'choco install -y netfx-4.7.2-devpack'
 
       - task: PowerShell@2
-        displayName: 'build'
+        displayName: 'build and run unit tests'
         condition: eq(variables.SHOULD_RUN, 'True')
         inputs:
           targetType: inline
