@@ -102,7 +102,7 @@ jobs:
         inputs:
           targetType: inline
           script: |
-            dotnet build
+            dotnet test --filter TestCategory=Unit
 
       - task: CopyFiles@2
         displayName: "Copy files to the artifacts folder"
@@ -180,7 +180,7 @@ jobs:
         inputs:
           targetType: inline
           script: |
-            dotnet build
+            dotnet test --filter TestCategory=Unit
 
       - task: ComponentGovernanceComponentDetection@0
         displayName: Component Governance Detection
