@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Serialization;
 
 namespace Microsoft.Azure.Devices.Client.Exceptions
@@ -113,22 +114,6 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
             TrackingId = trackingId;
         }
 
-        /// <summary>
-        /// Creates an instance of this class with the <see cref="SerializationInfo"/>
-        /// and <see cref="StreamingContext"/> associated with the exception.
-        /// </summary>
-        /// <param name="info">The <see cref="SerializationInfo"/> that holds the serialized object data about the exception being thrown.</param>
-        /// <param name="context">The <see cref="StreamingContext"/> that contains contextual information about the source or destination.</param>
-        protected IotHubException(SerializationInfo info, StreamingContext context)
-            : base(info, context)
-        {
-            if (info != null)
-            {
-                IsTransient = info.GetBoolean(IsTransientValueSerializationStoreName);
-                TrackingId = info.GetString(TrackingIdValueSerializationStoreName);
-            }
-        }
-
         internal IotHubException(bool isTransient)
             : base()
         {
@@ -144,18 +129,5 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
         /// The service returned tracking Id associated with this particular error.
         /// </summary>
         public string TrackingId { get; set; }
-
-        /// <summary>
-        /// Sets the <see cref="SerializationInfo"/> with information about the exception.
-        /// Use this to set <see cref="IsTransient"/> and <see cref="TrackingId"/> to the serialized object data.
-        /// </summary>
-        /// <param name="info">The <see cref="SerializationInfo"/> that holds the serialized object data about the exception being thrown.</param>
-        /// <param name="context">The <see cref="StreamingContext"/> that contains contextual information about the source or destination.</param>
-        public override void GetObjectData(SerializationInfo info, StreamingContext context)
-        {
-            base.GetObjectData(info, context);
-            info.AddValue(IsTransientValueSerializationStoreName, IsTransient);
-            info.AddValue(TrackingIdValueSerializationStoreName, TrackingId);
-        }
     }
 }

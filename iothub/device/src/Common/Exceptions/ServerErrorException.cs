@@ -44,10 +44,5 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
             : base(message, innerException, isTransient: true)
         {
         }
-
-        private ServerErrorException(SerializationInfo info, StreamingContext context)
-            : base(info, context)
-        {
-        }
     }
 }

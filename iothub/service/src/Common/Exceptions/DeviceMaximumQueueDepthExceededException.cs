@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Serialization;
 
 namespace Microsoft.Azure.Devices.Common.Exceptions
@@ -58,20 +59,6 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
             : base()
         {
         }
-
-        private DeviceMaximumQueueDepthExceededException(SerializationInfo info, StreamingContext context)
-            : base(info, context)
-        {
-            MaximumQueueDepth = info.GetInt32("MaximumQueueDepth");
-        }
-
         internal int MaximumQueueDepth { get; private set; }
-
-        /// <inheritdoc />
-        public override void GetObjectData(SerializationInfo info, StreamingContext context)
-        {
-            base.GetObjectData(info, context);
-            info.AddValue("MaximumQueueDepth", MaximumQueueDepth);
-        }
     }
 }
