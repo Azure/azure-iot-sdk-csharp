@@ -57,6 +57,8 @@ resources:
 
 jobs:
   - job: DeployCloudTestResources
+    pool:
+      vmImage: windows-2022
     steps:
     - task: AzureCLI@2
       inputs:
@@ -64,10 +66,9 @@ jobs:
         scriptType: 'ps'
         scriptLocation: 'inlineScript'
         inlineScript: 
-          $guid = New-Guid
-          $resourceGroup = CSharpGateResources-$guid
+          $resourceGroup = CSharpGateResources-$(Build.BuildNumber)
           az group create --name $resourceGroup --location westcentralus
-          $iotHubName = CSharpGateIotHub-$guid
+          $iotHubName = CSharpGateIotHub-$(Build.BuildNumber)
           az iot hub create --name $iotHubName --resource-group $resourceGroup
 
 
@@ -315,3 +316,15 @@ jobs:
 
 # END: SDL and Compliance tasks #
 
+  - job: TearDownCloudTestResources
+    pool:
+      vmImage: windows-2022
+    steps:
+    - task: AzureCLI@2
+      inputs:
+        azureSubscription: 'aziotclb - Build System subscription (db2f889d-dd6c-4269-8d41-a38efcdace46)'
+        scriptType: 'ps'
+        scriptLocation: 'inlineScript'
+        inlineScript: 
+          $resourceGroup = CSharpGateResources-$(Build.BuildNumber)
+          az group delete --name $resourceGroup --location westcentralus --yes
