@@ -66,10 +66,8 @@ jobs:
         scriptType: 'ps'
         scriptLocation: 'inlineScript'
         inlineScript: 
-          $resourceGroup = CSharpGateResources-$(Build.BuildNumber)
-          az group create --name $resourceGroup --location westcentralus
-          $iotHubName = CSharpGateIotHub-$(Build.BuildNumber)
-          az iot hub create --name $iotHubName --resource-group $resourceGroup
+          az group create --name CSharpGateResources-$(Build.BuildNumber) --location westcentralus
+          az iot hub create --name CSharpGateIotHub-$(Build.BuildNumber) --resource-group CSharpGateResources-$(Build.BuildNumber)
 
 
   ### Linux build ###
