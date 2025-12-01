@@ -62,7 +62,7 @@ jobs:
     steps:
     - task: AzureCLI@2
       inputs:
-        azureSubscription: 'aziotclb - Build System subscription (db2f889d-dd6c-4269-8d41-a38efcdace46)'
+        azureSubscription: 'iot hub sdk service connection'
         scriptType: 'ps'
         scriptLocation: 'inlineScript'
         inlineScript: 
@@ -326,7 +326,7 @@ jobs:
     steps:
     - task: AzureCLI@2
       inputs:
-        azureSubscription: 'aziotclb - Build System subscription (db2f889d-dd6c-4269-8d41-a38efcdace46)'
+        azureSubscription: 'iot hub sdk service connection'
         scriptType: 'ps'
         scriptLocation: 'inlineScript'
         inlineScript: 
