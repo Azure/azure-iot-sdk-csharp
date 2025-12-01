@@ -330,4 +330,4 @@ jobs:
         scriptType: 'ps'
         scriptLocation: 'inlineScript'
         inlineScript: 
-          az group delete --name CSharpGateResources --location
+          az group delete --name CSharpGateResources
