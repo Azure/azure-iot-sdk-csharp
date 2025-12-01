@@ -69,7 +69,8 @@ jobs:
           az group delete --name CSharpGateResources --location westcentralus --yes
           az group create --name CSharpGateResources --location westcentralus
           az iot hub create --name CSharpGateIotHub --resource-group CSharpGateResources
-
+          az iot dps create --name CSharpGateDPS --resource-group CSharpGateResources --sku S1 --location westcentralus
+          az iot dps linked-hub create --dps-name CSharpGateDPS --hub-name CSharpGateIotHub --resource-group CSharpGateResources
 
   ### Linux build ###
   - job: LINUX
@@ -329,5 +330,5 @@ jobs:
         azureSubscription: 'iot hub sdk service connection'
         scriptType: 'ps'
         scriptLocation: 'inlineScript'
-        inlineScript: 
+        inlineScript: |
           az group delete --name CSharpGateResources --y
