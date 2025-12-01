@@ -65,7 +65,7 @@ jobs:
         azureSubscription: 'iot hub sdk service connection'
         scriptType: 'ps'
         scriptLocation: 'inlineScript'
-        inlineScript: 
+        inlineScript: |
           az group delete --name CSharpGateResources --location westcentralus --yes
           az group create --name CSharpGateResources --location westcentralus
           az iot hub create --name CSharpGateIotHub --resource-group CSharpGateResources
