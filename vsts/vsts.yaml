@@ -317,6 +317,10 @@ jobs:
 # END: SDL and Compliance tasks #
 
   - job: TearDownCloudTestResources
+    dependsOn:
+      - WINDOWS
+      - LINUX
+      - DeployCloudTestResources
     pool:
       vmImage: windows-2022
     steps:
