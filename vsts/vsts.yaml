@@ -316,6 +316,7 @@ jobs:
 # END: SDL and Compliance tasks #
 
   - job: TearDownCloudTestResources
+    condition: always()
     dependsOn:
       - WINDOWS
       - LINUX
@@ -329,4 +330,4 @@ jobs:
         scriptType: 'ps'
         scriptLocation: 'inlineScript'
         inlineScript: 
-          az group delete --name CSharpGateResources --location westcentralus --yes
+          az group delete --name CSharpGateResources --location
