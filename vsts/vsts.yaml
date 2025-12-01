@@ -56,9 +56,25 @@ resources:
     clean: true
 
 jobs:
+  - job: DeployCloudTestResources
+    steps:
+    - task: AzureCLI@2
+      inputs:
+        azureSubscription: 'aziotclb - Build System subscription (db2f889d-dd6c-4269-8d41-a38efcdace46)'
+        scriptType: 'ps'
+        scriptLocation: 'inlineScript'
+        inlineScript: 
+          $guid = New-Guid
+          $resourceGroup = CSharpGateResources-$guid
+          az group create --name $resourceGroup --location westcentralus
+          $iotHubName = CSharpGateIotHub-$guid
+          az iot hub create --name $iotHubName --resource-group $resourceGroup
+
+
   ### Linux build ###
   - job: LINUX
     displayName: Linux
+    dependsOn: DeployCloudTestResources
     condition: succeeded()
     timeoutInMinutes: ${{ parameters.jobTimeoutInMinutes }}
     strategy:
@@ -136,6 +152,7 @@ jobs:
 
  ### Windows build ###
   - job: WINDOWS
+    dependsOn: DeployCloudTestResources
     displayName: Windows
     condition: succeeded()
     timeoutInMinutes: ${{ parameters.jobTimeoutInMinutes }}
