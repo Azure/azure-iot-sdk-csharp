@@ -66,7 +66,7 @@ jobs:
         scriptType: 'ps'
         scriptLocation: 'inlineScript'
         inlineScript: |
-          az group delete --name CSharpGateResources --location westcentralus --yes
+          az group delete --name CSharpGateResources --yes
           az group create --name CSharpGateResources --location westcentralus
           az iot hub create --name CSharpGateIotHub --resource-group CSharpGateResources
           az iot dps create --name CSharpGateDPS --resource-group CSharpGateResources --sku S1 --location westcentralus
