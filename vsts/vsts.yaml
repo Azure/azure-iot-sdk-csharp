@@ -68,7 +68,7 @@ jobs:
         inlineScript: |
           $subscriptionId = az account show | jq -r '.id'
           $(Build.SourcesDirectory)/e2e/test/prerequisites/E2ETestsSetup/e2eTestsSetup -SubscriptionId $subscriptionId -Region westcentralus -ResourceGroup CSharpGateResources -GroupCertificatePassword someCertPass -InstallDependencies
-
+          
   ### Linux build ###
   - job: LINUX
     displayName: Linux
