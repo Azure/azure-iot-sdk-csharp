@@ -71,6 +71,22 @@ jobs:
           az iot hub create --name CSharpGateIotHub --resource-group CSharpGateResources
           az iot dps create --name CSharpGateDPS --resource-group CSharpGateResources --sku S1 --location westcentralus
           az iot dps linked-hub create --dps-name CSharpGateDPS --hub-name CSharpGateIotHub --resource-group CSharpGateResources
+          
+          # Get the IoT hub connection string
+          $jsonContent = az iot hub connection-string show --hub-name CSharpGateIotHub
+          $iotHubConnectionString = $jsonContent.connectionString
+
+          # Get the DPS connection string
+          $jsonContent = az iot dps connection-string show --dps-name CSharpGateDPS --resource-group CSharpGateResources | ConvertFrom-Json
+          $dpsConnectionString = $jsonContent.connectionString
+
+          # Get the DPS ID Scope
+          $jsonContent = az iot dps show --name CSharpGateDPS --resource-group CSharpGateResources | ConvertFrom-Json
+          $dpsIdScope = $jsonContent.properties.idScope
+
+          Write-Host "##vso[task.setvariable variable=iotHubConnectionString;isOutput=true]$iothubConnectionString"
+          Write-Host "##vso[task.setvariable variable=dpsConnectionString;isOutput=true]$dpsConnectionString"
+          Write-Host "##vso[task.setvariable variable=dpsIdScope;isOutput=true]$dpsIdScope"
 
   ### Linux build ###
   - job: LINUX
@@ -78,6 +94,10 @@ jobs:
     dependsOn: DeployCloudTestResources
     condition: succeeded()
     timeoutInMinutes: ${{ parameters.jobTimeoutInMinutes }}
+    variables:
+      iotHubConnectionString: $[ dependencies.A.outputs['setvarStep.iotHubConnectionString'] ]  
+      dpsConnectionString: $[ dependencies.A.outputs['setvarStep.dpsConnectionString'] ]  
+      dpsIdScope: $[ dependencies.A.outputs['setvarStep.dpsIdScope'] ]
     strategy:
       maxParallel: ${{ parameters.maxParallelJobs }}
       matrix:
@@ -119,7 +139,61 @@ jobs:
         inputs:
           targetType: inline
           script: |
-            dotnet test --filter TestCategory=Unit
+            dotnet test
+        env:
+          # Environment variables for IoT Hub E2E tests
+          IOTHUB_CONNECTION_STRING: $(iotHubConnectionString)
+          #IOTHUB_DEVICE_CONN_STRING: $(IOTHUB-DEVICE-CONN-STRING)
+          #IOTHUB_X509_DEVICE_PFX_CERTIFICATE: $(IOTHUB-X509-DEVICE-PFX-CERTIFICATE)
+          #IOTHUB_X509_DEVICE_PFX_THUMBPRINT: $(IOTHUB-X509-DEVICE-PFX-THUMBPRINT)
+
+          #IOTHUB_X509_CHAIN_DEVICE_NAME: $(IOTHUB-X509-CHAIN-DEVICE-NAME)
+          #IOTHUB_X509_CHAIN_DEVICE_PFX_CERTIFICATE: $(IOTHUB-X509-CHAIN-DEVICE-PFX-CERTIFICATE)
+          #IOTHUB_USER_ASSIGNED_MSI_RESOURCE_ID: $(IOTHUB-USER-ASSIGNED-MSI-RESOURCE-ID)
+          #IOT_HUB_SAS_KEY: $(IOTHUB-SAS-KEY)
+          #IOT_HUB_SAS_KEY_NAME: $(IOTHUB-SAS-KEY-NAME)
+
+          # Environment variables for DPS E2E tests
+          DPS_IDSCOPE: $(dpsIdScope)
+          PROVISIONING_CONNECTION_STRING: $(dpsConnectionString)
+          DPS_GLOBALDEVICEENDPOINT: global.azure-devices-provisioning.net
+          #DPS_X509_PFX_CERTIFICATE_PASSWORD: $(DPS-X509-PFX-CERTIFICATE-PASSWORD)
+          #DPS_X509_GROUP_ENROLLMENT_NAME: $(DPS-X509-GROUP-ENROLLMENT-NAME)
+
+          # Environment variables for Azure resources used for E2E tests (common)
+          #X509_CHAIN_ROOT_CA_CERTIFICATE: $(X509-CHAIN-ROOT-CA-CERTIFICATE)
+          #X509_CHAIN_INTERMEDIATE1_CERTIFICATE: $(X509-CHAIN-INTERMEDIATE1-CERTIFICATE)
+          #X509_CHAIN_INTERMEDIATE2_CERTIFICATE: $(X509-CHAIN-INTERMEDIATE2-CERTIFICATE)
+          #X509_CHAIN_INTERMEDIATE2_PFX_CERTIFICATE: $(X509-CHAIN-INTERMEDIATE2-PFX-CERTIFICATE)
+          #STORAGE_ACCOUNT_CONNECTION_STRING: $(STORAGE-ACCOUNT-CONNECTION-STRING)
+          #MSFT_TENANT_ID: $(MSFT-TENANT-ID)
+          #E2E_TEST_AAD_APP_CLIENT_ID: $(E2E-TEST-AAD-APP-CLIENT-ID)
+          #E2E_TEST_AAD_APP_CLIENT_SECRET: $(E2E-TEST-AAD-APP-CLIENT-SECRET)
+          #E2E_IKEY: $(E2E-IKEY)
+
+          # Environment variables for the DevOps pipeline
+          #PROXY_SERVER_ADDRESS: 127.0.0.1:8888
+          TARGET_BRANCH: $(System.PullRequest.TargetBranch)
+          FRAMEWORK: $(FRAMEWORK)
+
+          # Environment variables for invalid certificate tests
+          #IOTHUB_DEVICE_CONN_STRING_INVALIDCERT: $(IOTHUB-DEVICE-CONN-STRING-INVALIDCERT)
+          #IOTHUB_CONN_STRING_INVALIDCERT: $(IOTHUB-CONN-STRING-INVALIDCERT)
+          #DPS_GLOBALDEVICEENDPOINT_INVALIDCERT: $(DPS-GLOBALDEVICEENDPOINT-INVALIDCERT)
+          #PROVISIONING_CONNECTION_STRING_INVALIDCERT: $(PROVISIONING-CONNECTION-STRING-INVALIDCERT)
+
+          # Environment variables used by Log Analytics Workspace for Azure Security Center
+          #LA_AAD_APP_ID: $(LA-AAD-APP-ID)
+          #LA_AAD_APP_CERT_BASE64: $(LA-AAD-APP-CERT-BASE64)
+          #LA_WORKSPACE_ID: $(LA-WORKSPACE-ID)
+
+          # Environment variable for running samples/cleanups
+          #PATH_TO_DEVICE_PREFIX_FOR_DELETION_FILE: $(PATH-TO-DEVICE-PREFIX-FOR-DELETION-FILE)
+          #PNP_TC_DEVICE_CONN_STRING: $(PNP-TC-DEVICE-CONN-STRING)
+          #PNP_THERMOSTAT_DEVICE_CONN_STRING: $(PNP-THERMOSTAT-DEVICE-CONN-STRING)
+          #DPS_SYMMETRIC_KEY_INDIVIDUAL_ENROLLMENT_REGISTRATION_ID: $(DPS-SYMMETRIC-KEY-INDIVIDUAL-ENROLLMENT-REGISTRATION-ID)
+          #DPS_SYMMETRIC_KEY_INDIVIDUAL_ENROLLEMNT_PRIMARY_KEY: $(DPS-SYMMETRIC-KEY-INDIVIDUAL-ENROLLEMNT-PRIMARY-KEY)
+            
 
       - task: PublishTestResults@2
         displayName: "Publish Test Results **/*.trx"
