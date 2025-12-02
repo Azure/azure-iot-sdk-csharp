@@ -66,28 +66,8 @@ jobs:
         scriptType: 'ps'
         scriptLocation: 'inlineScript'
         inlineScript: |
-          az extension add --name azure-iot
-          az group delete --name CSharpGateResources --yes
-          az group create --name CSharpGateResources --location westcentralus
-          az iot hub create --name CSharpGateIotHub --resource-group CSharpGateResources
-          az iot dps create --name CSharpGateDPS --resource-group CSharpGateResources --sku S1 --location westcentralus
-          az iot dps linked-hub create --dps-name CSharpGateDPS --hub-name CSharpGateIotHub --resource-group CSharpGateResources
-          
-          # Get the IoT hub connection string
-          $jsonContent = az iot hub connection-string show --hub-name CSharpGateIotHub
-          $iotHubConnectionString = $jsonContent.connectionString
-
-          # Get the DPS connection string
-          $jsonContent = az iot dps connection-string show --dps-name CSharpGateDPS --resource-group CSharpGateResources | ConvertFrom-Json
-          $dpsConnectionString = $jsonContent.connectionString
-
-          # Get the DPS ID Scope
-          $jsonContent = az iot dps show --name CSharpGateDPS --resource-group CSharpGateResources | ConvertFrom-Json
-          $dpsIdScope = $jsonContent.properties.idScope
-
-          Write-Host "##vso[task.setvariable variable=iotHubConnectionString;isOutput=true]$iothubConnectionString"
-          Write-Host "##vso[task.setvariable variable=dpsConnectionString;isOutput=true]$dpsConnectionString"
-          Write-Host "##vso[task.setvariable variable=dpsIdScope;isOutput=true]$dpsIdScope"
+          $subscriptionId = az account show | jq -r '.id'
+          $(Build.SourcesDirectory)/e2e/test/prerequisites/E2ETestsSetup/e2eTestsSetup -SubscriptionId $subscriptionId -Region westcentralus -ResourceGroup CSharpGateResources -GroupCertificatePassword someCertPass -InstallDependencies
 
   ### Linux build ###
   - job: LINUX
