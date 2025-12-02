@@ -66,6 +66,7 @@ jobs:
         scriptType: 'ps'
         scriptLocation: 'inlineScript'
         inlineScript: |
+          az extension add --name azure-iot
           az group delete --name CSharpGateResources --yes
           az group create --name CSharpGateResources --location westcentralus
           az iot hub create --name CSharpGateIotHub --resource-group CSharpGateResources
@@ -406,3 +407,4 @@ jobs:
         scriptLocation: 'inlineScript'
         inlineScript: |
           az group delete --name CSharpGateResources --y
+          # don't forget to delete RBAC resources as well
