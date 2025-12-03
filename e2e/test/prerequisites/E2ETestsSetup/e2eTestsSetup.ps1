@@ -124,12 +124,12 @@ Function CleanUp-Certs()
     Write-Host "`nCleaning up old certs and files that may cause conflicts."
     $certsToDelete = Get-ChildItem "Cert:\LocalMachine\My" | Where-Object { $_.Issuer.Contains("CN=$subjectPrefix") }
 
-    $title = "Cleaning up certs."
+    #$title = "Cleaning up certs."
     $certsToDeleteSubjectNames = $certsToDelete | foreach-object  {$_.Subject}
     $certsToDeleteSubjectNames = $certsToDeleteSubjectNames -join "`n"
-    $question = "Are you sure you want to delete the following certs?`n`n$certsToDeleteSubjectNames"
-    $choices  = '&Yes', '&No'
-    $decision = $Host.UI.PromptForChoice($title, $question, $choices, 1)
+    #$question = "Are you sure you want to delete the following certs?`n`n$certsToDeleteSubjectNames"
+    #$choices  = '&Yes', '&No'
+    #$decision = $Host.UI.PromptForChoice($title, $question, $choices, 1)
 
     if ($certsToDelete.Count -ne 0)
     {

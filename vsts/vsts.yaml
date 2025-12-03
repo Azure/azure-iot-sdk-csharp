@@ -68,7 +68,7 @@ jobs:
         Inline: |
           $azContext = Get-AzContext
           $subscriptionId = $azContext.Subscription.Id
-          $(Build.SourcesDirectory)/e2e/test/prerequisites/E2ETestsSetup/e2eTestsSetup.ps1 -SubscriptionId $subscriptionId -Region westcentralus -ResourceGroup netsdkgate -GroupCertificatePassword someCertPass -InstallDependencies
+          $(Build.SourcesDirectory)/e2e/test/prerequisites/E2ETestsSetup/e2eTestsSetup.ps1 -SubscriptionId $subscriptionId -Region westcentralus -ResourceGroup netsdkgate -GroupCertificatePassword someCertPass -InstallDependencies -GenerateResourcesForTestDevOpsPipeline
         pwsh: true
             
 
