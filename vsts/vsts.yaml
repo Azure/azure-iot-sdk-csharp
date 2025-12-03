@@ -63,7 +63,7 @@ jobs:
     - task: AzureCLI@2
       inputs:
         azureSubscription: 'iot hub sdk service connection'
-        scriptType: 'ps'
+        scriptType: 'pscore'
         scriptLocation: 'inlineScript'
         pwsh: true
         inlineScript: |
