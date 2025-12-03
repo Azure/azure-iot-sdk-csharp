@@ -68,7 +68,7 @@ jobs:
         Inline: |
           $azContext = Get-AzContext
           $subscriptionId = $azContext.Subscription.Id
-          $(Build.SourcesDirectory)/e2e/test/prerequisites/E2ETestsSetup/e2eTestsSetup.ps1 -SubscriptionId $subscriptionId -Region westcentralus -ResourceGroup csharpgateresources -GroupCertificatePassword someCertPass -InstallDependencies
+          $(Build.SourcesDirectory)/e2e/test/prerequisites/E2ETestsSetup/e2eTestsSetup.ps1 -SubscriptionId $subscriptionId -Region westcentralus -ResourceGroup netsdkgate -GroupCertificatePassword someCertPass -InstallDependencies
         pwsh: true
             
 
@@ -389,5 +389,5 @@ jobs:
         scriptType: 'ps'
         scriptLocation: 'inlineScript'
         inlineScript: |
-          az group delete --name csharpgateresources --y
+          az group delete --name netsdkgate --y
           # don't forget to delete RBAC resources as well
