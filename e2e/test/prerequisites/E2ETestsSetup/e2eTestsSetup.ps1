@@ -334,23 +334,6 @@ if ($InstallDependencies -And $InstallDockerDesktopOnWindows)
     docker pull aziotacr.azurecr.io/aziotbld/testproxy
 }
 
-#######################################################################################################
-# Install azure iot extension.
-#######################################################################################################
-
-if ($InstallDependencies)
-{
-    Write-Host "`nInstalling azure iot cli extensions."
-    az extension add --name azure-iot
-}
-
-######################################################################################################
-# Setup azure context.
-######################################################################################################
-
-$azureContext = Connect-AzureSubscription
-$userObjectId = az ad signed-in-user show --query id --output tsv
-
 ######################################################################################################
 # Get-ResourceGroup - Finds or creates the resource group to be used by the
 # deployment.
