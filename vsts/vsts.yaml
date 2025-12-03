@@ -60,16 +60,16 @@ jobs:
     pool:
       vmImage: windows-2022
     steps:     
-    - task: AzurePowerShell@5
+    - task: AzureCLI@2
       inputs:
         azureSubscription: 'iot hub sdk service connection'
-        ScriptType: 'InlineScript'
-        azurePowerShellVersion: 'LatestVersion'
-        Inline: |
+        scriptType: 'ps'
+        scriptLocation: 'inlineScript'
+        pwsh: true
+        inlineScript: |
           $azContext = Get-AzContext
           $subscriptionId = $azContext.Subscription.Id
           $(Build.SourcesDirectory)/e2e/test/prerequisites/E2ETestsSetup/e2eTestsSetup.ps1 -SubscriptionId $subscriptionId -Region westcentralus -ResourceGroup netsdkgate -GroupCertificatePassword someCertPass -InstallDependencies -GenerateResourcesForTestDevOpsPipeline
-        pwsh: true
             
 
   ### Linux build ###
