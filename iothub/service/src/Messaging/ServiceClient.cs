@@ -71,7 +71,7 @@ namespace Microsoft.Azure.Devices
         private readonly IHttpClientHelper _httpClientHelper;
         private readonly string _iotHubName;
         private readonly ServiceClientOptions _clientOptions;
-        private readonly TimeSpan _openTimeout;
+        private readonly TimeSpan _defaultOpenTimeout;
         private readonly TimeSpan _operationTimeout;
 
         private int _sendingDeliveryTag;
@@ -91,7 +91,7 @@ namespace Microsoft.Azure.Devices
             ServiceClientOptions options)
         {
             Connection = new IotHubConnection(connectionProperties, useWebSocketOnly, transportSettings); ;
-            _openTimeout = IotHubConnection.DefaultOpenTimeout;
+            _defaultOpenTimeout = IotHubConnection.DefaultOpenTimeout;
             _operationTimeout = IotHubConnection.DefaultOperationTimeout;
             _faultTolerantSendingLink = new FaultTolerantAmqpObject<SendingAmqpLink>(CreateSendingLinkAsync, Connection.CloseLink);
             _feedbackReceiver = new AmqpFeedbackReceiver(Connection);
@@ -311,13 +311,14 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Open the ServiceClient instance. This call is made over AMQP.
         /// </summary>
-        public virtual async Task OpenAsync()
+        public virtual async Task OpenAsync(TimeSpan? timeout = null)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Opening AmqpServiceClient", nameof(OpenAsync));
 
-            await _faultTolerantSendingLink.OpenAsync(_openTimeout).ConfigureAwait(false);
-            await _feedbackReceiver.OpenAsync().ConfigureAwait(false);
+            timeout ??= _defaultOpenTimeout;
+            await _faultTolerantSendingLink.OpenAsync(timeout.Value).ConfigureAwait(false);
+            await _feedbackReceiver.OpenAsync(timeout.Value).ConfigureAwait(false);
 
             if (Logging.IsEnabled)
                 Logging.Exit(this, $"Opening AmqpServiceClient", nameof(OpenAsync));
@@ -345,8 +346,18 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         /// <param name="deviceId">The device identifier for the target device.</param>
         /// <param name="message">The cloud-to-device message.</param>
-        /// <param name="timeout">The operation timeout, which defaults to 1 minute if unspecified.</param>
-        public virtual async Task SendAsync(string deviceId, Message message, TimeSpan? timeout = null)
+        /// <param name="timeout">
+        /// The timeout for sending the message on an open AMQP connection. This value has no impact on how
+        /// long this method will wait for the connection to open before timing out.
+        /// </param>
+        /// <param name="connectTimeout">
+        /// The timeout for opening the AMQP connection (if it needs to be opened). This value has no impact on how
+        /// long this method  will wait for the message to be sent on the connection before timing out.
+        /// </param>
+        /// <remarks>
+        /// This function will open an AMQP connection for you if it isn't already open.
+        /// </remarks>
+        public virtual async Task SendAsync(string deviceId, Message message, TimeSpan? timeout = null, TimeSpan? connectTimeout = null)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Sending message with Id [{message?.MessageId}] for device {deviceId}", nameof(SendAsync));
@@ -378,7 +389,7 @@ namespace Microsoft.Azure.Devices
 
             try
             {
-                SendingAmqpLink sendingLink = await GetSendingLinkAsync().ConfigureAwait(false);
+                SendingAmqpLink sendingLink = await GetSendingLinkAsync(connectTimeout).ConfigureAwait(false);
                 Outcome outcome = await sendingLink
                     .SendMessageAsync(amqpMessage, IotHubConnection.GetNextDeliveryTag(ref _sendingDeliveryTag), AmqpConstants.NullBinary, timeout.Value)
                     .ConfigureAwait(false);
@@ -628,7 +639,7 @@ namespace Microsoft.Azure.Devices
             return Connection.CreateSendingLinkAsync(_sendingPath, timeout);
         }
 
-        private async Task<SendingAmqpLink> GetSendingLinkAsync()
+        private async Task<SendingAmqpLink> GetSendingLinkAsync(TimeSpan? timeout = null)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"_faultTolerantSendingLink = {_faultTolerantSendingLink?.GetHashCode()}", nameof(GetSendingLinkAsync));
@@ -637,7 +648,8 @@ namespace Microsoft.Azure.Devices
             {
                 if (!_faultTolerantSendingLink.TryGetOpenedObject(out SendingAmqpLink sendingLink))
                 {
-                    sendingLink = await _faultTolerantSendingLink.GetOrCreateAsync(_openTimeout).ConfigureAwait(false);
+                    timeout ??= _defaultOpenTimeout;
+                    sendingLink = await _faultTolerantSendingLink.GetOrCreateAsync(timeout.Value).ConfigureAwait(false);
                 }
 
                 if (Logging.IsEnabled)
