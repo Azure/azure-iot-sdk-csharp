@@ -34,13 +34,6 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         internal JobQuotaExceededException(string message, Exception innerException)
             : base(message, innerException)
         {
-
-            IsTransient = true;
-        }
-
-        private JobQuotaExceededException(SerializationInfo info, StreamingContext context)
-            : base(info, context)
-        {
             IsTransient = true;
         }
     }

@@ -32,10 +32,5 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
             : base(message, innerException)
         {
         }
-
-        private JobCancelledException(SerializationInfo info, StreamingContext context)
-            : base(info, context)
-        {
-        }
     }
 }

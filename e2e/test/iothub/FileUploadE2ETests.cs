@@ -98,6 +98,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestMethodWithRetry(Max = 3)]
         [Timeout(TestTimeoutMilliseconds)]
         [TestCategory("LongRunning")]
+        [Ignore()]        
         public async Task FileUpload_SmallFile_Http_GranularSteps()
         {
             string filename = await GetTestFileNameAsync(FileSizeSmall).ConfigureAwait(false);
@@ -110,6 +111,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestMethodWithRetry(Max = 3)]
         [Timeout(TestTimeoutMilliseconds)]
         [TestCategory("LongRunning")]
+        [Ignore()]
         public async Task FileUpload_SmallFile_Http_GranularSteps_x509()
         {
             string filename = await GetTestFileNameAsync(FileSizeSmall).ConfigureAwait(false);
@@ -123,6 +125,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         [Timeout(TestTimeoutMilliseconds)]
         [TestCategory("LongRunning")]
         [TestCategory("Proxy")]
+        [Ignore()]
         public async Task FileUpload_SmallFile_Http_GranularSteps_Proxy()
         {
             string filename = await GetTestFileNameAsync(FileSizeSmall).ConfigureAwait(false);

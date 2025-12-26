@@ -118,6 +118,29 @@ namespace Microsoft.Azure.Devices
             TokenCredential credential,
             HttpTransportSettings transportSettings = default)
         {
+            return Create(hostName, credential, CommonConstants.IotHubAadTokenScopes, transportSettings);
+        }
+
+        /// <summary>
+        /// Creates JobClient, authenticating using an identity in Azure Active Directory (AAD).
+        /// </summary>
+        /// <remarks>
+        /// For more about information on the options of authenticating using a derived instance of <see cref="TokenCredential"/>, see
+        /// <see href="https://docs.microsoft.com/dotnet/api/overview/azure/identity-readme"/>.
+        /// For more information on configuring IoT hub with Azure Active Directory, see
+        /// <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-dev-guide-azure-ad-rbac"/>
+        /// </remarks>
+        /// <param name="hostName">IoT hub host name.</param>
+        /// <param name="credential">Azure Active Directory (AAD) credentials to authenticate with IoT hub. See <see cref="TokenCredential"/></param>
+        /// <param name="transportSettings">The HTTP transport settings.</param>
+        /// <param name="scopes">The custom scopes to authenticate with.</param>
+        /// <returns>A JobClient instance.</returns>
+        public static JobClient Create(
+            string hostName,
+            TokenCredential credential,
+            string[] scopes,
+            HttpTransportSettings transportSettings = default)
+        {
             if (string.IsNullOrEmpty(hostName))
             {
                 throw new ArgumentNullException(nameof(hostName));
@@ -128,7 +151,7 @@ namespace Microsoft.Azure.Devices
                 throw new ArgumentNullException(nameof(credential));
             }
 
-            var tokenCredentialProperties = new IotHubTokenCrendentialProperties(hostName, credential);
+            var tokenCredentialProperties = new IotHubTokenCrendentialProperties(hostName, credential, scopes);
             return new JobClient(tokenCredentialProperties, transportSettings ?? new HttpTransportSettings());
         }
 

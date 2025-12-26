@@ -71,7 +71,7 @@ namespace Microsoft.Azure.Devices
         private readonly IHttpClientHelper _httpClientHelper;
         private readonly string _iotHubName;
         private readonly ServiceClientOptions _clientOptions;
-        private readonly TimeSpan _openTimeout;
+        private readonly TimeSpan _defaultOpenTimeout;
         private readonly TimeSpan _operationTimeout;
 
         private int _sendingDeliveryTag;
@@ -91,7 +91,7 @@ namespace Microsoft.Azure.Devices
             ServiceClientOptions options)
         {
             Connection = new IotHubConnection(connectionProperties, useWebSocketOnly, transportSettings); ;
-            _openTimeout = IotHubConnection.DefaultOpenTimeout;
+            _defaultOpenTimeout = IotHubConnection.DefaultOpenTimeout;
             _operationTimeout = IotHubConnection.DefaultOperationTimeout;
             _faultTolerantSendingLink = new FaultTolerantAmqpObject<SendingAmqpLink>(CreateSendingLinkAsync, Connection.CloseLink);
             _feedbackReceiver = new AmqpFeedbackReceiver(Connection);
@@ -156,6 +156,33 @@ namespace Microsoft.Azure.Devices
             ServiceClientTransportSettings transportSettings = default,
             ServiceClientOptions options = default)
         {
+            return Create(hostName, credential, CommonConstants.IotHubAadTokenScopes, transportType, transportSettings, options);
+        }
+
+        /// <summary>
+        /// Creates ServiceClient, authenticating using an identity in Azure Active Directory (AAD).
+        /// </summary>
+        /// <remarks>
+        /// For more about information on the options of authenticating using a derived instance of <see cref="TokenCredential"/>, see
+        /// <see href="https://docs.microsoft.com/dotnet/api/overview/azure/identity-readme"/>.
+        /// For more information on configuring IoT hub with Azure Active Directory, see
+        /// <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-dev-guide-azure-ad-rbac"/>
+        /// </remarks>
+        /// <param name="hostName">IoT hub host name.</param>
+        /// <param name="credential">Azure Active Directory credentials to authenticate with IoT hub. See <see cref="TokenCredential"/></param>
+        /// <param name="transportType">Specifies whether Amqp or Amqp_WebSocket_Only transport is used.</param>
+        /// <param name="scopes">The custom scopes to use when authenticating.</param>
+        /// <param name="transportSettings">Specifies the AMQP_WS and HTTP proxy settings for service client.</param>
+        /// <param name="options">The options that allow configuration of the service client instance during initialization.</param>
+        /// <returns>A ServiceClient instance.</returns>
+        public static ServiceClient Create(
+            string hostName,
+            TokenCredential credential,
+            string[] scopes,
+            TransportType transportType = TransportType.Amqp,
+            ServiceClientTransportSettings transportSettings = default,
+            ServiceClientOptions options = default)
+        {
             if (string.IsNullOrEmpty(hostName))
             {
                 throw new ArgumentNullException($"{nameof(hostName)}, Parameter cannot be null or empty");
@@ -166,7 +193,7 @@ namespace Microsoft.Azure.Devices
                 throw new ArgumentNullException($"{nameof(credential)},  Parameter cannot be null");
             }
 
-            var tokenCredentialProperties = new IotHubTokenCrendentialProperties(hostName, credential);
+            var tokenCredentialProperties = new IotHubTokenCrendentialProperties(hostName, credential, scopes);
             bool useWebSocketOnly = transportType == TransportType.Amqp_WebSocket_Only;
 
             return new ServiceClient(
@@ -284,13 +311,14 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Open the ServiceClient instance. This call is made over AMQP.
         /// </summary>
-        public virtual async Task OpenAsync()
+        public virtual async Task OpenAsync(TimeSpan? timeout = null)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Opening AmqpServiceClient", nameof(OpenAsync));
 
-            await _faultTolerantSendingLink.OpenAsync(_openTimeout).ConfigureAwait(false);
-            await _feedbackReceiver.OpenAsync().ConfigureAwait(false);
+            timeout ??= _defaultOpenTimeout;
+            await _faultTolerantSendingLink.OpenAsync(timeout.Value).ConfigureAwait(false);
+            await _feedbackReceiver.OpenAsync(timeout.Value).ConfigureAwait(false);
 
             if (Logging.IsEnabled)
                 Logging.Exit(this, $"Opening AmqpServiceClient", nameof(OpenAsync));
@@ -318,8 +346,18 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         /// <param name="deviceId">The device identifier for the target device.</param>
         /// <param name="message">The cloud-to-device message.</param>
-        /// <param name="timeout">The operation timeout, which defaults to 1 minute if unspecified.</param>
-        public virtual async Task SendAsync(string deviceId, Message message, TimeSpan? timeout = null)
+        /// <param name="timeout">
+        /// The timeout for sending the message on an open AMQP connection. This value has no impact on how
+        /// long this method will wait for the connection to open before timing out.
+        /// </param>
+        /// <param name="connectTimeout">
+        /// The timeout for opening the AMQP connection (if it needs to be opened). This value has no impact on how
+        /// long this method  will wait for the message to be sent on the connection before timing out.
+        /// </param>
+        /// <remarks>
+        /// This function will open an AMQP connection for you if it isn't already open.
+        /// </remarks>
+        public virtual async Task SendAsync(string deviceId, Message message, TimeSpan? timeout = null, TimeSpan? connectTimeout = null)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Sending message with Id [{message?.MessageId}] for device {deviceId}", nameof(SendAsync));
@@ -351,7 +389,7 @@ namespace Microsoft.Azure.Devices
 
             try
             {
-                SendingAmqpLink sendingLink = await GetSendingLinkAsync().ConfigureAwait(false);
+                SendingAmqpLink sendingLink = await GetSendingLinkAsync(connectTimeout).ConfigureAwait(false);
                 Outcome outcome = await sendingLink
                     .SendMessageAsync(amqpMessage, IotHubConnection.GetNextDeliveryTag(ref _sendingDeliveryTag), AmqpConstants.NullBinary, timeout.Value)
                     .ConfigureAwait(false);
@@ -601,7 +639,7 @@ namespace Microsoft.Azure.Devices
             return Connection.CreateSendingLinkAsync(_sendingPath, timeout);
         }
 
-        private async Task<SendingAmqpLink> GetSendingLinkAsync()
+        private async Task<SendingAmqpLink> GetSendingLinkAsync(TimeSpan? timeout = null)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"_faultTolerantSendingLink = {_faultTolerantSendingLink?.GetHashCode()}", nameof(GetSendingLinkAsync));
@@ -610,7 +648,8 @@ namespace Microsoft.Azure.Devices
             {
                 if (!_faultTolerantSendingLink.TryGetOpenedObject(out SendingAmqpLink sendingLink))
                 {
-                    sendingLink = await _faultTolerantSendingLink.GetOrCreateAsync(_openTimeout).ConfigureAwait(false);
+                    timeout ??= _defaultOpenTimeout;
+                    sendingLink = await _faultTolerantSendingLink.GetOrCreateAsync(timeout.Value).ConfigureAwait(false);
                 }
 
                 if (Logging.IsEnabled)

@@ -9,6 +9,8 @@ using System.Runtime.InteropServices;
 using Microsoft.Azure.Devices.Shared;
 using Tpm2Lib;
 
+#pragma warning disable CA1416
+
 namespace Microsoft.Azure.Devices.Provisioning.Security.Samples
 {
     /// <summary>
@@ -69,7 +71,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Security.Samples
                 {
                     process?.Kill();
                 }
+#pragma warning disable CA1031
                 catch (Exception)
+#pragma warning restore CA1030
                 {
                 }
             }
@@ -133,3 +137,5 @@ namespace Microsoft.Azure.Devices.Provisioning.Security.Samples
         }
     }
 }
+
+#pragma warning restore CA1416

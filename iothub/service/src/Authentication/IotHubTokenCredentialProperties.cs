@@ -26,6 +26,8 @@ namespace Microsoft.Azure.Devices
         private readonly TokenCredential _credential;
         private readonly object _tokenLock = new object();
         private AccessToken? _cachedAccessToken;
+        private string[] _scopes;
+
 #endif
 
 #if NET451
@@ -39,6 +41,13 @@ namespace Microsoft.Azure.Devices
         public IotHubTokenCrendentialProperties(string hostName, TokenCredential credential) : base(hostName)
         {
             _credential = credential;
+            _scopes = CommonConstants.IotHubAadTokenScopes;
+        }
+
+        public IotHubTokenCrendentialProperties(string hostName, TokenCredential credential, string[] scopes) : base(hostName)
+        {
+            _credential = credential;
+            _scopes = scopes;
         }
 
 #endif
@@ -57,7 +66,7 @@ namespace Microsoft.Azure.Devices
                     || TokenHelper.IsCloseToExpiry(_cachedAccessToken.Value.ExpiresOn))
                 {
                     _cachedAccessToken = _credential.GetToken(
-                        new TokenRequestContext(CommonConstants.IotHubAadTokenScopes),
+                        new TokenRequestContext(_scopes),
                         new CancellationToken());
                 }
             }
@@ -69,7 +78,7 @@ namespace Microsoft.Azure.Devices
 #pragma warning disable CS1998 // Disabled as we need to throw exception for NET 451.
 
         // The AMQP protocol uses this method to get a CBS token for authentication.
-        public async override Task<CbsToken> GetTokenAsync(Uri namespaceAddress, string appliesTo, string[] requiredClaims)
+        public override async Task<CbsToken> GetTokenAsync(Uri namespaceAddress, string appliesTo, string[] requiredClaims)
         {
 #pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
 #if NET451
