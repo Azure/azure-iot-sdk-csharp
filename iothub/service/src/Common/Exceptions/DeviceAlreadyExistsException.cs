@@ -61,18 +61,5 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
             : base()
         {
         }
-
-        /// <summary>
-        /// Creates an instance of <see cref="DeviceAlreadyExistsException"/> with the <see cref="SerializationInfo"/>
-        /// and <see cref="StreamingContext"/> associated with the exception.
-        /// </summary>
-        /// <param name="info">The <see cref="SerializationInfo"/> that holds the serialized object data about the exception being thrown.</param>
-        /// <param name="context">The <see cref="StreamingContext"/> that contains contextual information about the source or destination.</param>
-        [SuppressMessage("Usage", "CA2229:Implement serialization constructors",
-            Justification = "Cannot modify public API surface since it will be a breaking change")]
-        public DeviceAlreadyExistsException(SerializationInfo info, StreamingContext context)
-            : base(info, context)
-        {
-        }
     }
 }

@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Serialization;
 using DotNetty.Transport.Channels;
 
@@ -23,16 +24,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             : base(string.Empty, innerException)
         {
             Context = context;
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ChannelMessageProcessingException"/> class with the specified serialization and context information.
-        /// </summary>
-        /// <param name="info">An object that holds the serialized object data about the exception being thrown.</param>
-        /// <param name="context">An object that contains contextual information about the source or destination.</param>
-        protected ChannelMessageProcessingException(SerializationInfo info, StreamingContext context)
-            : base(info, context)
-        {
         }
 
         internal ChannelMessageProcessingException()

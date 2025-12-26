@@ -24,7 +24,6 @@ namespace Microsoft.Azure.Devices.Client
         private long _originalStreamPosition = StreamCannotSeek;
 
         private int _getBodyCalled;
-        private long _sizeInBytesCalled;
 
         /// <summary>
         /// Default constructor with no body data
@@ -256,7 +255,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         internal IDictionary<string, object> SystemProperties { get; private set; }
 
-        bool IReadOnlyIndicator.IsReadOnly => Interlocked.Read(ref _sizeInBytesCalled) == 1;
+        bool IReadOnlyIndicator.IsReadOnly => false;
 
         /// <summary>
         /// The body stream of the current event data instance
