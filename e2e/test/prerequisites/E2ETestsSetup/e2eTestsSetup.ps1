@@ -348,7 +348,7 @@ if ($InstallDependencies)
 # Setup azure context.
 ######################################################################################################
 
-$azureContext = Connect-AzureSubscription
+#$azureContext = Connect-AzureSubscription
 $userObjectId = az ad signed-in-user show --query id --output tsv
 
 Write-Host "objectId: " $userObjectId
