@@ -631,28 +631,28 @@ if ($Region.EndsWith('euap', 'CurrentCultureIgnoreCase'))
 #$proxyServerAddress = "127.0.0.1:8888"
 
     # Environment variables for IoT Hub E2E tests
-    Write-Host "##vso[task.setvariable variable=IOTHUB-CONNECTION-STRING]$iotHubConnectionString;"
-    Write-Host "##vso[task.setvariable variable=IOTHUB-X509-DEVICE-PFX-CERTIFICATE]$iothubX509DevicePfxBase64;"
+    Write-Host "##vso[task.setvariable variable=IOTHUB-CONNECTION-STRING]$iotHubConnectionString"
+    Write-Host "##vso[task.setvariable variable=IOTHUB-X509-DEVICE-PFX-CERTIFICATE]$iothubX509DevicePfxBase64"
     Write-Host "##vso[task.setvariable variable=IOTHUB-X509-CHAIN-DEVICE-NAME]$iotHubX509CertChainDeviceCommonName";
-    Write-Host "##vso[task.setvariable variable=IOTHUB-X509-CHAIN-DEVICE-PFX-CERTIFICATE]$iothubX509ChainDevicePfxBase64;"
-    Write-Host "##vso[task.setvariable variable=IOTHUB-USER-ASSIGNED-MSI-RESOURCE-ID]$msiResourceId;""
+    Write-Host "##vso[task.setvariable variable=IOTHUB-X509-CHAIN-DEVICE-PFX-CERTIFICATE]$iothubX509ChainDevicePfxBase64"
+    Write-Host "##vso[task.setvariable variable=IOTHUB-USER-ASSIGNED-MSI-RESOURCE-ID]$msiResourceId"
 
     # Environment variables for DPS E2E tests
-    Write-Host "##vso[task.setvariable variable=DPS-IDSCOPE]$dpsIdScope;"
-    Write-Host "##vso[task.setvariable variable=PROVISIONING-CONNECTION-STRING]$dpsConnectionString;"
-    Write-Host "##vso[task.setvariable variable=DPS-GLOBALDEVICEENDPOINT]$dpsEndpoint;"
-    Write-Host "##vso[task.setvariable variable=DPS-X509-PFX-CERTIFICATE-PASSWORD]$GroupCertificatePassword;"
-    Write-Host "##vso[task.setvariable variable=DPS-X509-GROUP-ENROLLMENT-NAME]$groupEnrollmentId;"
+    Write-Host "##vso[task.setvariable variable=DPS-IDSCOPE]$dpsIdScope"
+    Write-Host "##vso[task.setvariable variable=PROVISIONING-CONNECTION-STRING]$dpsConnectionString"
+    Write-Host "##vso[task.setvariable variable=DPS-GLOBALDEVICEENDPOINT]$dpsEndpoint"
+    Write-Host "##vso[task.setvariable variable=DPS-X509-PFX-CERTIFICATE-PASSWORD]$GroupCertificatePassword"
+    Write-Host "##vso[task.setvariable variable=DPS-X509-GROUP-ENROLLMENT-NAME]$groupEnrollmentId"
 
     # Environment variables for Azure resources used for E2E tests (common)
-    Write-Host "##vso[task.setvariable variable=X509-CHAIN-ROOT-CA-CERTIFICATE]$x509ChainRootCACertBase64;"
-    Write-Host "##vso[task.setvariable variable=X509-CHAIN-INTERMEDIATE1-CERTIFICATE]$x509ChainIntermediate1CertBase64;"
-    Write-Host "##vso[task.setvariable variable=X509-CHAIN-INTERMEDIATE2-CERTIFICATE]$x509ChainIntermediate2CertBase64;"
-    Write-Host "##vso[task.setvariable variable=X509-CHAIN-INTERMEDIATE2-PFX-CERTIFICATE]$x509ChainIntermediate2PfxBase64;"
-    Write-Host "##vso[task.setvariable variable=STORAGE-ACCOUNT-CONNECTION-STRING]$storageAccountConnectionString;"
-    Write-Host "##vso[task.setvariable variable=MSFT-TENANT-ID]72f988bf-86f1-41af-91ab-2d7cd011db47;"
-    Write-Host "##vso[task.setvariable variable=E2E-TEST-AAD-APP-CLIENT-ID]$e2eTestAadAppId;"
-    Write-Host "##vso[task.setvariable variable=E2E-TEST-AAD-APP-CLIENT-SECRET]$e2eTestAadAppPassword;"
+    Write-Host "##vso[task.setvariable variable=X509-CHAIN-ROOT-CA-CERTIFICATE]$x509ChainRootCACertBase64"
+    Write-Host "##vso[task.setvariable variable=X509-CHAIN-INTERMEDIATE1-CERTIFICATE]$x509ChainIntermediate1CertBase64"
+    Write-Host "##vso[task.setvariable variable=X509-CHAIN-INTERMEDIATE2-CERTIFICATE]$x509ChainIntermediate2CertBase64"
+    Write-Host "##vso[task.setvariable variable=X509-CHAIN-INTERMEDIATE2-PFX-CERTIFICATE]$x509ChainIntermediate2PfxBase64"
+    Write-Host "##vso[task.setvariable variable=STORAGE-ACCOUNT-CONNECTION-STRING]$storageAccountConnectionString"
+    Write-Host "##vso[task.setvariable variable=MSFT-TENANT-ID]72f988bf-86f1-41af-91ab-2d7cd011db47"
+    Write-Host "##vso[task.setvariable variable=E2E-TEST-AAD-APP-CLIENT-ID]$e2eTestAadAppId"
+    Write-Host "##vso[task.setvariable variable=E2E-TEST-AAD-APP-CLIENT-SECRET]$e2eTestAadAppPassword"
 
     # Environment variables for the DevOps pipeline
     Write-Host "##vso[task.setvariable variable=PIPELINE-ENVIRONMENT]prod";
@@ -661,17 +661,17 @@ if ($Region.EndsWith('euap', 'CurrentCultureIgnoreCase'))
     # Environment variables for invalid certificate tests
     # The connection strings below point to servers with incorrect TLS server certificates. Tests will attempt to connect and expect that the TLS connection ends in a security exception.
     <#[SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="fake shared access token")]#>
-    Write-Host "##vso[task.setvariable variable=IOTHUB-DEVICE-CONN-STRING-INVALIDCERT]HostName=invalidcertiothub1.westus.cloudapp.azure.com;DeviceId=DoNotDelete1;SharedAccessKey=zWmeTGWmjcgDG1dpuSCVjc5ZY4TqVnKso5+g1wt/K3E=;"
+    Write-Host "##vso[task.setvariable variable=IOTHUB-DEVICE-CONN-STRING-INVALIDCERT]HostName=invalidcertiothub1.westus.cloudapp.azure.com;DeviceId=DoNotDelete1;SharedAccessKey=zWmeTGWmjcgDG1dpuSCVjc5ZY4TqVnKso5+g1wt/K3E="
     <#[SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="fake shared access token")]#>
-    Write-Host "##vso[task.setvariable variable=IOTHUB-CONN-STRING-INVALIDCERT]HostName=invalidcertiothub1.westus.cloudapp.azure.com;SharedAccessKeyName=iothubowner;SharedAccessKey=Fk1H0asPeeAwlRkUMTybJasksTYTd13cgI7SsteB05U=;"
-    Write-Host "##vso[task.setvariable variable=DPS-GLOBALDEVICEENDPOINT-INVALIDCERT]invalidcertgde1.westus.cloudapp.azure.com;"
+    Write-Host "##vso[task.setvariable variable=IOTHUB-CONN-STRING-INVALIDCERT]HostName=invalidcertiothub1.westus.cloudapp.azure.com;SharedAccessKeyName=iothubowner;SharedAccessKey=Fk1H0asPeeAwlRkUMTybJasksTYTd13cgI7SsteB05U="
+    Write-Host "##vso[task.setvariable variable=DPS-GLOBALDEVICEENDPOINT-INVALIDCERT]invalidcertgde1.westus.cloudapp.azure.com"
     <#[SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="fake shared access token")]#>
-    Write-Host "##vso[task.setvariable variable=PROVISIONING-CONNECTION-STRING-INVALIDCERT]HostName=invalidcertdps1.westus.cloudapp.azure.com;SharedAccessKeyName=provisioningserviceowner;SharedAccessKey=lGO7OlXNhXlFyYV1rh9F/lUCQC1Owuh5f/1P0I1AFSY=;"
+    Write-Host "##vso[task.setvariable variable=PROVISIONING-CONNECTION-STRING-INVALIDCERT]HostName=invalidcertdps1.westus.cloudapp.azure.com;SharedAccessKeyName=provisioningserviceowner;SharedAccessKey=lGO7OlXNhXlFyYV1rh9F/lUCQC1Owuh5f/1P0I1AFSY="
 
     # These environment variables are only used in Java
-    Write-Host "##vso[task.setvariable variable=IOT-DPS-CONNECTION-STRING]$dpsConnectionString;"
-    Write-Host "##vso[task.setvariable variable=IOT-DPS-ID-SCOPE]$dpsIdScope;"
-    Write-Host "##vso[task.setvariable variable=IS-BASIC-TIER-HUB]false;"
+    Write-Host "##vso[task.setvariable variable=IOT-DPS-CONNECTION-STRING]$dpsConnectionString"
+    Write-Host "##vso[task.setvariable variable=IOT-DPS-ID-SCOPE]$dpsIdScope"
+    Write-Host "##vso[task.setvariable variable=IS-BASIC-TIER-HUB]false"
 
 
 ###################################################################################################################################
