@@ -351,6 +351,8 @@ if ($InstallDependencies)
 $azureContext = Connect-AzureSubscription
 $userObjectId = az ad signed-in-user show --query id --output tsv
 
+Write-Host "objectId: " $userObjectId
+
 ######################################################################################################
 # Get-ResourceGroup - Finds or creates the resource group to be used by the
 # deployment.
