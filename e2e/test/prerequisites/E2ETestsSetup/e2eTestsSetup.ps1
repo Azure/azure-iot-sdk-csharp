@@ -405,52 +405,52 @@ $iotHubName = az deployment group show -g $ResourceGroup -n $deploymentName --qu
 # Configure an AAD app to authenticate Log Analytics Workspace, if specified.
 #################################################################################################################################################
 
-if ($EnableIotHubSecuritySolution)
-{
-    Write-Host "`nCreating app registration $logAnalyticsAppRegnName"
-    $logAnalyticsAppRegUrl = "http://$logAnalyticsAppRegnName"
-    $logAnalyticsAppId = az ad sp create-for-rbac -n $logAnalyticsAppRegUrl --role "Reader" --scope $resourceGroupId --query "appId" --output tsv
-    Write-Host "`nCreated application $logAnalyticsAppRegnName with Id $logAnalyticsAppId."
-}
+#if ($EnableIotHubSecuritySolution)
+#{
+#    Write-Host "`nCreating app registration $logAnalyticsAppRegnName"
+#    $logAnalyticsAppRegUrl = "http://$logAnalyticsAppRegnName"
+#    $logAnalyticsAppId = az ad sp create-for-rbac -n $logAnalyticsAppRegUrl --role "Reader" --scope $resourceGroupId --query "appId" --output tsv
+#    Write-Host "`nCreated application $logAnalyticsAppRegnName with Id $logAnalyticsAppId."
+#}
 
 #################################################################################################################################################
 # Configure an AAD app and assign it contributor role to perform IoT hub data actions.
 #################################################################################################################################################
 
-Write-Host "`nCreating app registration $e2eTestAadAppRegName for IoT hub data actions"
-$iotHubDataContributorRoleId = "4fc6c259987e4a07842ec321cc9d413f"
-$iotHubScope = "/subscriptions/$SubscriptionId/resourceGroups/$ResourceGroup/providers/Microsoft.Devices/IotHubs/$iotHubName"
-$e2eTestAadAppInfo = az ad sp create-for-rbac -n $e2eTestAadAppRegName --role $iotHubDataContributorRoleId --scope $iotHubScope --query '{appId:appId, password:password}' | ConvertFrom-Json
+#Write-Host "`nCreating app registration $e2eTestAadAppRegName for IoT hub data actions"
+#$iotHubDataContributorRoleId = "4fc6c259987e4a07842ec321cc9d413f"
+#$iotHubScope = "/subscriptions/$SubscriptionId/resourceGroups/$ResourceGroup/providers/Microsoft.Devices/IotHubs/$iotHubName"
+#$e2eTestAadAppInfo = az ad sp create-for-rbac -n $e2eTestAadAppRegName --role $iotHubDataContributorRoleId --scope $iotHubScope --query '{appId:appId, password:password}' | ConvertFrom-Json
 
-$e2eTestAadAppId = $e2eTestAadAppInfo.appId
-$e2eTestAadAppPassword = $e2eTestAadAppInfo.password
-Write-Host "`nCreated application $e2eTestAadAppRegName with Id $e2eTestAadAppId."
+#$e2eTestAadAppId = $e2eTestAadAppInfo.appId
+#$e2eTestAadAppPassword = $e2eTestAadAppInfo.password
+#Write-Host "`nCreated application $e2eTestAadAppRegName with Id $e2eTestAadAppId."
 
 #################################################################################################################################################
 # Configure the above created AAD app to perform DPS data actions.
 #################################################################################################################################################
 
-Write-Host "`nGiving app registration $e2eTestAadAppRegName data contributor permission on DPS instance $dpsName"
-$dpsContributorId = "dfce44e4-17b7-4bd1-a6d1-04996ec95633"
-$dpsScope = "/subscriptions/$SubscriptionId/resourceGroups/$ResourceGroup/providers/Microsoft.Devices/ProvisioningServices/$dpsName"
-az role assignment create --role $dpsContributorId --assignee $e2eTestAadAppId --scope $dpsScope
+#Write-Host "`nGiving app registration $e2eTestAadAppRegName data contributor permission on DPS instance $dpsName"
+#$dpsContributorId = "dfce44e4-17b7-4bd1-a6d1-04996ec95633"
+#$dpsScope = "/subscriptions/$SubscriptionId/resourceGroups/$ResourceGroup/providers/Microsoft.Devices/ProvisioningServices/$dpsName"
+#az role assignment create --role $dpsContributorId --assignee $e2eTestAadAppId --scope $dpsScope
 
 #################################################################################################################################################
 # Add role assignement for User assinged managed identity to be able to perform import and export jobs on the IoT hub.
 #################################################################################################################################################
 
-Write-Host "`nGranting the user assigned managed identity $managedIdentityName Storage Blob Data Contributor permissions on resource group: $ResourceGroup."
-$msiPrincipalId = az identity show -n $managedIdentityName -g $ResourceGroup --query principalId --output tsv
-$msiResourceId = "/subscriptions/$SubscriptionId/resourceGroups/$ResourceGroup/providers/Microsoft.ManagedIdentity/userAssignedIdentities/$managedIdentityName"
-az role assignment create --assignee $msiPrincipalId --role 'Storage Blob Data Contributor' --scope $resourceGroupId --output none
+#Write-Host "`nGranting the user assigned managed identity $managedIdentityName Storage Blob Data Contributor permissions on resource group: $ResourceGroup."
+#$msiPrincipalId = az identity show -n $managedIdentityName -g $ResourceGroup --query principalId --output tsv
+#$msiResourceId = "/subscriptions/$SubscriptionId/resourceGroups/$ResourceGroup/providers/Microsoft.ManagedIdentity/userAssignedIdentities/$managedIdentityName"
+#az role assignment create --assignee $msiPrincipalId --role 'Storage Blob Data Contributor' --scope $resourceGroupId --output none
 
 ##################################################################################################################################
 # Granting the IoT hub system identity storage blob contributor access on the resoruce group.
 ##################################################################################################################################
 
-Write-Host "`nGranting the system identity on the hub $iotHubName Storage Blob Data Contributor permissions on resource group: $ResourceGroup."
-$systemIdentityPrincipal = az resource list -n $iotHubName --query [0].identity.principalId --out tsv
-az role assignment create --assignee $systemIdentityPrincipal --role "Storage Blob Data Contributor" --scope $resourceGroupId --output none
+#Write-Host "`nGranting the system identity on the hub $iotHubName Storage Blob Data Contributor permissions on resource group: $ResourceGroup."
+#$systemIdentityPrincipal = az resource list -n $iotHubName --query [0].identity.principalId --out tsv
+#az role assignment create --assignee $systemIdentityPrincipal --role "Storage Blob Data Contributor" --scope $resourceGroupId --output none
 
 ##################################################################################################################################
 # Uploading root CA certificate to IoT hub and verifying.
@@ -630,60 +630,49 @@ if ($Region.EndsWith('euap', 'CurrentCultureIgnoreCase'))
 # This variable is set here to help run local E2E tests using docker-based proxy setup.
 #$proxyServerAddress = "127.0.0.1:8888"
 
-$secretKvps = @{
     # Environment variables for IoT Hub E2E tests
-    "IOTHUB-CONNECTION-STRING" = $iotHubConnectionString;
-    "IOTHUB-X509-DEVICE-PFX-CERTIFICATE" = $iothubX509DevicePfxBase64;
-    "IOTHUB-X509-CHAIN-DEVICE-NAME" = $iotHubX509CertChainDeviceCommonName;
-    "IOTHUB-X509-CHAIN-DEVICE-PFX-CERTIFICATE" = $iothubX509ChainDevicePfxBase64;
-    "IOTHUB-USER-ASSIGNED-MSI-RESOURCE-ID" = $msiResourceId;
+    Write-Host "##vso[task.setvariable variable=IOTHUB-CONNECTION-STRING]$iotHubConnectionString;"
+    Write-Host "##vso[task.setvariable variable=IOTHUB-X509-DEVICE-PFX-CERTIFICATE]$iothubX509DevicePfxBase64;"
+    Write-Host "##vso[task.setvariable variable=IOTHUB-X509-CHAIN-DEVICE-NAME]$iotHubX509CertChainDeviceCommonName";
+    Write-Host "##vso[task.setvariable variable=IOTHUB-X509-CHAIN-DEVICE-PFX-CERTIFICATE]$iothubX509ChainDevicePfxBase64;"
+    Write-Host "##vso[task.setvariable variable=IOTHUB-USER-ASSIGNED-MSI-RESOURCE-ID]$msiResourceId;""
 
     # Environment variables for DPS E2E tests
-    "DPS-IDSCOPE" = $dpsIdScope;
-    "PROVISIONING-CONNECTION-STRING" = $dpsConnectionString;
-    "DPS-GLOBALDEVICEENDPOINT" = $dpsEndpoint;
-    "DPS-X509-PFX-CERTIFICATE-PASSWORD" = $GroupCertificatePassword;
-    "DPS-X509-GROUP-ENROLLMENT-NAME" = $groupEnrollmentId;
+    Write-Host "##vso[task.setvariable variable=DPS-IDSCOPE]$dpsIdScope;"
+    Write-Host "##vso[task.setvariable variable=PROVISIONING-CONNECTION-STRING]$dpsConnectionString;"
+    Write-Host "##vso[task.setvariable variable=DPS-GLOBALDEVICEENDPOINT]$dpsEndpoint;"
+    Write-Host "##vso[task.setvariable variable=DPS-X509-PFX-CERTIFICATE-PASSWORD]$GroupCertificatePassword;"
+    Write-Host "##vso[task.setvariable variable=DPS-X509-GROUP-ENROLLMENT-NAME]$groupEnrollmentId;"
 
     # Environment variables for Azure resources used for E2E tests (common)
-    "X509-CHAIN-ROOT-CA-CERTIFICATE" = $x509ChainRootCACertBase64;
-    "X509-CHAIN-INTERMEDIATE1-CERTIFICATE" = $x509ChainIntermediate1CertBase64;
-    "X509-CHAIN-INTERMEDIATE2-CERTIFICATE" = $x509ChainIntermediate2CertBase64;
-    "X509-CHAIN-INTERMEDIATE2-PFX-CERTIFICATE" = $x509ChainIntermediate2PfxBase64;
-    "STORAGE-ACCOUNT-CONNECTION-STRING" = $storageAccountConnectionString;
-    "MSFT-TENANT-ID" = "72f988bf-86f1-41af-91ab-2d7cd011db47";
-    "E2E-TEST-AAD-APP-CLIENT-ID" = $e2eTestAadAppId;
-    "E2E-TEST-AAD-APP-CLIENT-SECRET" = $e2eTestAadAppPassword;
+    Write-Host "##vso[task.setvariable variable=X509-CHAIN-ROOT-CA-CERTIFICATE]$x509ChainRootCACertBase64;"
+    Write-Host "##vso[task.setvariable variable=X509-CHAIN-INTERMEDIATE1-CERTIFICATE]$x509ChainIntermediate1CertBase64;"
+    Write-Host "##vso[task.setvariable variable=X509-CHAIN-INTERMEDIATE2-CERTIFICATE]$x509ChainIntermediate2CertBase64;"
+    Write-Host "##vso[task.setvariable variable=X509-CHAIN-INTERMEDIATE2-PFX-CERTIFICATE]$x509ChainIntermediate2PfxBase64;"
+    Write-Host "##vso[task.setvariable variable=STORAGE-ACCOUNT-CONNECTION-STRING]$storageAccountConnectionString;"
+    Write-Host "##vso[task.setvariable variable=MSFT-TENANT-ID]72f988bf-86f1-41af-91ab-2d7cd011db47;"
+    Write-Host "##vso[task.setvariable variable=E2E-TEST-AAD-APP-CLIENT-ID]$e2eTestAadAppId;"
+    Write-Host "##vso[task.setvariable variable=E2E-TEST-AAD-APP-CLIENT-SECRET]$e2eTestAadAppPassword;"
 
     # Environment variables for the DevOps pipeline
-    "PIPELINE-ENVIRONMENT" = "prod";
-    "PROXY-SERVER-ADDRESS" = $proxyServerAddress;
+    Write-Host "##vso[task.setvariable variable=PIPELINE-ENVIRONMENT]prod";
+    Write-Host "##vso[task.setvariable variable=PROXY-SERVER-ADDRESS]$proxyServerAddress";
 
     # Environment variables for invalid certificate tests
     # The connection strings below point to servers with incorrect TLS server certificates. Tests will attempt to connect and expect that the TLS connection ends in a security exception.
     <#[SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="fake shared access token")]#>
-    "IOTHUB-DEVICE-CONN-STRING-INVALIDCERT" = "HostName=invalidcertiothub1.westus.cloudapp.azure.com;DeviceId=DoNotDelete1;SharedAccessKey=zWmeTGWmjcgDG1dpuSCVjc5ZY4TqVnKso5+g1wt/K3E=";
+    Write-Host "##vso[task.setvariable variable=IOTHUB-DEVICE-CONN-STRING-INVALIDCERT]HostName=invalidcertiothub1.westus.cloudapp.azure.com;DeviceId=DoNotDelete1;SharedAccessKey=zWmeTGWmjcgDG1dpuSCVjc5ZY4TqVnKso5+g1wt/K3E=;"
     <#[SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="fake shared access token")]#>
-    "IOTHUB-CONN-STRING-INVALIDCERT" = "HostName=invalidcertiothub1.westus.cloudapp.azure.com;SharedAccessKeyName=iothubowner;SharedAccessKey=Fk1H0asPeeAwlRkUMTybJasksTYTd13cgI7SsteB05U=";
-    "DPS-GLOBALDEVICEENDPOINT-INVALIDCERT" = "invalidcertgde1.westus.cloudapp.azure.com";
+    Write-Host "##vso[task.setvariable variable=IOTHUB-CONN-STRING-INVALIDCERT]HostName=invalidcertiothub1.westus.cloudapp.azure.com;SharedAccessKeyName=iothubowner;SharedAccessKey=Fk1H0asPeeAwlRkUMTybJasksTYTd13cgI7SsteB05U=;"
+    Write-Host "##vso[task.setvariable variable=DPS-GLOBALDEVICEENDPOINT-INVALIDCERT]invalidcertgde1.westus.cloudapp.azure.com;"
     <#[SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="fake shared access token")]#>
-    "PROVISIONING-CONNECTION-STRING-INVALIDCERT" = "HostName=invalidcertdps1.westus.cloudapp.azure.com;SharedAccessKeyName=provisioningserviceowner;SharedAccessKey=lGO7OlXNhXlFyYV1rh9F/lUCQC1Owuh5f/1P0I1AFSY=";
+    Write-Host "##vso[task.setvariable variable=PROVISIONING-CONNECTION-STRING-INVALIDCERT]HostName=invalidcertdps1.westus.cloudapp.azure.com;SharedAccessKeyName=provisioningserviceowner;SharedAccessKey=lGO7OlXNhXlFyYV1rh9F/lUCQC1Owuh5f/1P0I1AFSY=;"
 
     # These environment variables are only used in Java
-    "IOT-DPS-CONNECTION-STRING" = $dpsConnectionString; # DPS Connection string Environment variable
-    "IOT-DPS-ID-SCOPE" = $dpsIdScope; # DPS ID Scope Environment variable
-    "IS-BASIC-TIER-HUB" = "false";
-}
+    Write-Host "##vso[task.setvariable variable=IOT-DPS-CONNECTION-STRING]$dpsConnectionString;"
+    Write-Host "##vso[task.setvariable variable=IOT-DPS-ID-SCOPE]$dpsIdScope;"
+    Write-Host "##vso[task.setvariable variable=IS-BASIC-TIER-HUB]false;"
 
-Write-Host "`nSaving secrets for use in pipeline test run."
-foreach ($kvp in $secretKvps.GetEnumerator())
-{
-    if ($null -eq $kvp.Value)
-    {
-        Write-Warning "`t`tValue is unexpectedly null!";
-    }
-    Write-Host "##vso[task.setvariable variable=$kvp.Name;]$kvp.Value"
-}
 
 ###################################################################################################################################
 # Run docker containers for proxy.
