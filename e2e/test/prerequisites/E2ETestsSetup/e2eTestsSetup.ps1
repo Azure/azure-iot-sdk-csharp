@@ -32,7 +32,7 @@ param(
     # Set this if you are generating resources for the samples DevOps pipeline.
     # This will generate the resources required for running the DevOps pipline for the .NET samples.
     [Parameter()]
-    [switch] $GenerateResourcesForSamplesDevOpsPipeline,
+    [switch] $GenerateResourcesForSamplesDevOpsPipeline
 )
 
 $startTime = (Get-Date)
