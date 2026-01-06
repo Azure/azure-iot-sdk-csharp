@@ -13,6 +13,9 @@ param(
     [Parameter(Mandatory)]
     [string] $GroupCertificatePassword,
 
+    [Parameter(Mandatory)]
+    [string] $UserObjectId,
+
     # Specify this on the first execution to get everything installed in powershell. It does not need to be run every time.
     [Parameter()]
     [switch] $InstallDependencies,
@@ -349,9 +352,9 @@ if ($InstallDependencies)
 ######################################################################################################
 
 #$azureContext = Connect-AzureSubscription
-$userObjectId = az ad signed-in-user show --query id --output tsv
+#$userObjectId = az ad signed-in-user show --query id --output tsv
 
-Write-Host "objectId: " $userObjectId
+#Write-Host "objectId: " $userObjectId
 
 ######################################################################################################
 # Get-ResourceGroup - Finds or creates the resource group to be used by the
@@ -389,7 +392,7 @@ az deployment group create `
     --only-show-errors `
     --template-file "$PSScriptRoot\test-resources.json" `
     --parameters `
-    UserObjectId=$userObjectId `
+    UserObjectId=$UserObjectId `
     StorageAccountName=$storageAccountName `
     KeyVaultName=$keyVaultName `
     HubUnitsCount=$iothubUnitsToBeCreated `
@@ -738,7 +741,7 @@ if ($EnableIotHubSecuritySolution)
 }
 
 Write-Host "`nWriting secrets to KeyVault $keyVaultName."
-az keyvault set-policy -g $ResourceGroup --name $keyVaultName --object-id "$userObjectId" --output none --only-show-errors --secret-permissions delete get list set;
+az keyvault set-policy -g $ResourceGroup --name $keyVaultName --object-id "$UserObjectId" --output none --only-show-errors --secret-permissions delete get list set;
 foreach ($kvp in $keyvaultKvps.GetEnumerator())
 {
     Write-Host "`tWriting $($kvp.Name)."

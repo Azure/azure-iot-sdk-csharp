@@ -69,7 +69,8 @@ jobs:
         inlineScript: |
           $jsonContent = az account show | ConvertFrom-Json
           $subscriptionId = $jsonContent.Id
-          $(Build.SourcesDirectory)/e2e/test/prerequisites/E2ETestsSetup/e2eTestsSetup.ps1 -SubscriptionId $subscriptionId -Region westcentralus -ResourceGroup netsdkgate -GroupCertificatePassword someCertPass -GenerateResourcesForTestDevOpsPipeline
+          $userObjectId = az ad signed-in-user show --query id --output tsv
+          $(Build.SourcesDirectory)/e2e/test/prerequisites/E2ETestsSetup/e2eTestsSetup.ps1 -SubscriptionId $subscriptionId -Region westcentralus -ResourceGroup netsdkgate -GroupCertificatePassword someCertPass -GenerateResourcesForTestDevOpsPipeline -ObjectUserId $objectUserId
             
 
   ### Linux build ###
