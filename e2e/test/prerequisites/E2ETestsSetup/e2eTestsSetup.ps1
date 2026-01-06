@@ -13,9 +13,6 @@ param(
     [Parameter(Mandatory)]
     [string] $GroupCertificatePassword,
 
-    [Parameter(Mandatory)]
-    [string] $UserObjectId,
-
     # Specify this on the first execution to get everything installed in powershell. It does not need to be run every time.
     [Parameter()]
     [switch] $InstallDependencies,
@@ -36,11 +33,6 @@ param(
     # This will generate the resources required for running the DevOps pipline for the .NET samples.
     [Parameter()]
     [switch] $GenerateResourcesForSamplesDevOpsPipeline,
-
-    # Set this if you would like to enable security solutions for your IoT Hub.
-    # Security solution for IoT Hub enables you to route security messages to a specific Log Analytics Workspace.
-    [Parameter()]
-    [switch] $EnableIotHubSecuritySolution
 )
 
 $startTime = (Get-Date)
@@ -195,13 +187,6 @@ $storageAccountName = [regex]::Replace($storageAccountName, "[^a-z0-9]", "")
 if (-not ($storageAccountName -match "^[a-z0-9][a-z0-9]{1,22}[a-z0-9]$"))
 {
     throw "Storage account name derived from resource group has illegal characters: $storageAccountName"
-}
-
-$keyVaultName = "env-$ResourceGroup-kv";
-$keyVaultName = [regex]::Replace($keyVaultName, "[^a-zA-Z0-9-]", "")
-if (-not ($keyVaultName -match "^[a-zA-Z][a-zA-Z0-9-]{1,22}[a-zA-Z0-9]$"))
-{
-    throw "Key vault name derived from resource group has illegal characters: $keyVaultName";
 }
 
 ########################################################################################################
@@ -392,9 +377,7 @@ az deployment group create `
     --only-show-errors `
     --template-file "$PSScriptRoot\test-resources.json" `
     --parameters `
-    UserObjectId=$UserObjectId `
     StorageAccountName=$storageAccountName `
-    KeyVaultName=$keyVaultName `
     HubUnitsCount=$iothubUnitsToBeCreated `
     UserAssignedManagedIdentityName=$managedIdentityName `
     EnableIotHubSecuritySolution=$EnableIotHubSecuritySolution
@@ -416,7 +399,6 @@ $dpsName = az deployment group show -g $ResourceGroup -n $deploymentName --query
 $dpsConnectionString = az deployment group show -g $ResourceGroup -n $deploymentName  --query 'properties.outputs.dpsConnectionString.value' --output tsv
 $storageAccountConnectionString = az deployment group show -g $ResourceGroup -n $deploymentName  --query 'properties.outputs.storageAccountConnectionString.value' --output tsv
 $workspaceId = az deployment group show -g $ResourceGroup -n $deploymentName --query 'properties.outputs.workspaceId.value' --output tsv
-$keyVaultName = az deployment group show -g $ResourceGroup -n $deploymentName --query 'properties.outputs.keyVaultName.value' --output tsv
 $iotHubName = az deployment group show -g $ResourceGroup -n $deploymentName --query 'properties.outputs.hubName.value' --output tsv
 
 #################################################################################################################################################
@@ -569,31 +551,6 @@ Write-Host "`nAdding group enrollment $groupEnrollmentId."
 az iot dps enrollment-group create -g $ResourceGroup --dps-name $dpsName --enrollment-id $groupEnrollmentId --ca-name $dpsUploadCertificateName --output none
 
 ##################################################################################################################################
-#Enable Azure Security Solutions, if specified.
-##################################################################################################################################
-
-if ($EnableIotHubSecuritySolution)
-{
-    Write-Host "`nCreating a self-signed certificate for LA and placing it in $ResourceGroup."
-    az ad app credential reset --id $logAnalyticsAppId --create-cert --keyvault $keyVaultName --cert $ResourceGroup --output none
-    Write-Host "`nSuccessfully created a self signed certificate for your application $logAnalyticsAppRegnName in $keyVaultName key vault with cert name $ResourceGroup."
-
-    Write-Host "`nFetching the certificate binary for LA."
-    $selfSignedCerts = "$PSScriptRoot\selfSignedCerts"
-    if (Test-Path $selfSignedCerts -PathType Leaf)
-    {
-        Remove-Item -r $selfSignedCerts
-    }
-
-    az keyvault secret download --file $selfSignedCerts --vault-name $keyVaultName -n $ResourceGroup --encoding base64
-    $fileContent = Get-Content $selfSignedCerts -AsByteStream
-    $fileContentB64String = [System.Convert]::ToBase64String($fileContent);
-
-    Write-Host "`nSuccessfully fetched the certificate bytes for LA. Removing the cert file from the disk."
-    Remove-Item -r $selfSignedCerts
-}
-
-##################################################################################################################################
 # Create the IoT devices and modules that are used by the .NET samples.
 ##################################################################################################################################
 
@@ -660,7 +617,7 @@ if ($GenerateResourcesForSamplesDevOpsPipeline)
 }
 
 ###################################################################################################################################
-# Store all secrets in a KeyVault - Values will be pulled down from here to configure environment variables.
+# Configure environment variables with secret values.
 ###################################################################################################################################
 
 $dpsEndpoint = "global.azure-devices-provisioning.net"
@@ -671,9 +628,9 @@ if ($Region.EndsWith('euap', 'CurrentCultureIgnoreCase'))
 
 # This variable will be overwritten in the yaml file depending on the OS setup of the test environment.
 # This variable is set here to help run local E2E tests using docker-based proxy setup.
-$proxyServerAddress = "127.0.0.1:8888"
+#$proxyServerAddress = "127.0.0.1:8888"
 
-$keyvaultKvps = @{
+$secretKvps = @{
     # Environment variables for IoT Hub E2E tests
     "IOTHUB-CONNECTION-STRING" = $iotHubConnectionString;
     "IOTHUB-X509-DEVICE-PFX-CERTIFICATE" = $iothubX509DevicePfxBase64;
@@ -713,57 +670,33 @@ $keyvaultKvps = @{
     "PROVISIONING-CONNECTION-STRING-INVALIDCERT" = "HostName=invalidcertdps1.westus.cloudapp.azure.com;SharedAccessKeyName=provisioningserviceowner;SharedAccessKey=lGO7OlXNhXlFyYV1rh9F/lUCQC1Owuh5f/1P0I1AFSY=";
 
     # These environment variables are only used in Java
-    "IOT-DPS-CONNECTION-STRING" = $dpsConnectionString; # DPS Connection string Environment variable for Java
-    "IOT-DPS-ID-SCOPE" = $dpsIdScope; # DPS ID Scope Environment variable for Java
+    "IOT-DPS-CONNECTION-STRING" = $dpsConnectionString; # DPS Connection string Environment variable
+    "IOT-DPS-ID-SCOPE" = $dpsIdScope; # DPS ID Scope Environment variable
     "IS-BASIC-TIER-HUB" = "false";
 }
 
-# Environment variables used by .NET samples
-if ($GenerateResourcesForSamplesDevOpsPipeline)
+Write-Host "`nSaving secrets for use in pipeline test run."
+foreach ($kvp in $secretKvps.GetEnumerator())
 {
-    $keyvaultKvps.Add("IOTHUB-DEVICE-CONN-STRING", $iotHubSasBasedDeviceConnectionString)
-    $keyvaultKvps.Add("IOTHUB-MODULE-CONN-STRING", $iotHubSasBasedModuleConnectionString)
-    $keyvaultKvps.Add("PNP-TC-DEVICE-CONN-STRING", $temperatureControllerSampleDeviceConnectionString)
-    $keyvaultKvps.Add("PNP-THERMOSTAT-DEVICE-CONN-STRING", $thermostatSampleDeviceConnectionString)
-    $keyvaultKvps.Add("IOTHUB-X509-DEVICE-PFX-THUMBPRINT", $iothubX509DevicePfxThumbprint)
-    $keyvaultKvps.Add("IOTHUB-SAS-KEY", $iothubownerSasPrimaryKey)
-    $keyvaultKvps.Add("IOTHUB-SAS-KEY-NAME", $iothubownerSasPolicy)
-    $keyvaultKvps.Add("DPS-SYMMETRIC-KEY-INDIVIDUAL-ENROLLMENT-REGISTRATION-ID", $symmetricKeySampleEnrollmentRegistrationId)
-    $keyvaultKvps.Add("DPS-SYMMETRIC-KEY-INDIVIDUAL-ENROLLEMNT-PRIMARY-KEY", $symmetricKeySampleEnrollmentPrimaryKey)
-}
-
-# Environment variables used by Log Analytics Workspace for Azure Security Center
-if ($EnableIotHubSecuritySolution)
-{
-    $keyvaultKvps.Add("LA-WORKSPACE-ID", $workspaceId)
-    $keyvaultKvps.Add("LA-AAD-APP-CERT-BASE64", $fileContentB64String)
-    $keyvaultKvps.Add("LA-AAD-APP-ID", $logAnalyticsAppId)
-}
-
-Write-Host "`nWriting secrets to KeyVault $keyVaultName."
-az keyvault set-policy -g $ResourceGroup --name $keyVaultName --object-id "$UserObjectId" --output none --only-show-errors --secret-permissions delete get list set;
-foreach ($kvp in $keyvaultKvps.GetEnumerator())
-{
-    Write-Host "`tWriting $($kvp.Name)."
     if ($null -eq $kvp.Value)
     {
         Write-Warning "`t`tValue is unexpectedly null!";
     }
-    az keyvault secret set --vault-name $keyVaultName --name $kvp.Name --value "$($kvp.Value)" --output none --only-show-errors
+    Write-Host "##vso[task.setvariable variable=$kvp.Name;]$kvp.Value"
 }
 
 ###################################################################################################################################
 # Run docker containers for proxy.
 ###################################################################################################################################
 
-if ($InstallDependencies -And $InstallDockerDesktopOnWindows)
-{
-    if (-not (docker images -q aziotbld/testproxy))
-    {
-        Write-Host "Setting up docker container for proxy."
-        docker run -d --restart unless-stopped --name azure-iot-tinyproxy -p 127.0.0.1:8888:8888 aziotbld/testproxy
-    }
-}
+#if ($InstallDependencies -And $InstallDockerDesktopOnWindows)
+#{
+#    if (-not (docker images -q aziotbld/testproxy))
+#    {
+#        Write-Host "Setting up docker container for proxy."
+#        docker run -d --restart unless-stopped --name azure-iot-tinyproxy -p 127.0.0.1:8888:8888 aziotbld/testproxy
+#    }
+#}
 
 ############################################################################################################################
 # Notify user that openssl is required for running E2E tests.
@@ -785,13 +718,6 @@ catch
 ############################################################################################################################
 
 CleanUp-Certs
-
-# Creating a file to run to load environment variables
-$loadScriptDir = Join-Path $PSScriptRoot "..\..\..\..\.." -Resolve
-$loadScriptName = "Load-$keyVaultName.ps1";
-Write-Host "`nWriting environment loading file to $loadScriptDir\$loadScriptName.`n"
-$file = New-Item -Path $loadScriptDir -Name $loadScriptName -ItemType "file" -Force
-Add-Content -Path $file.PSPath -Value "$PSScriptRoot\LoadEnvironmentVariablesFromKeyVault.ps1 -SubscriptionId $SubscriptionId -KeyVaultName $keyVaultName"
 
 ############################################################################################################################
 # Configure environment variables

@@ -3,9 +3,6 @@
 @description('The name of the storage account used by the IoT hub.')
 param StorageAccountName string
 
-@description('Signed in user objectId')
-param UserObjectId string
-
 @description('The region for the website hosting the Azure function.')
 param WebRegion string = 'CentralUS'
 
@@ -20,11 +17,6 @@ param ConsumerGroupName string = 'e2e-tests'
 
 @description('The name of DPS used by tests.')
 param DpsName string ='${resourceGroup().name}-dps'
-
-@minLength(3)
-@maxLength(24)
-@description('The name of the key vault for storing secrets needed for running tests.')
-param KeyVaultName string = '${resourceGroup().name}-kv'
 
 @description('The name of the operational insights instance.')
 param OperationalInsightsName string = '${resourceGroup().name}-oi'
@@ -50,46 +42,6 @@ param EnableIotHubSecuritySolution bool = false
 var hubKeysId = resourceId('Microsoft.Devices/IotHubs/Iothubkeys', HubName, 'iothubowner')
 var dpsKeysId = resourceId('Microsoft.Devices/ProvisioningServices/keys', DpsName, 'provisioningserviceowner')
 
-resource keyVault 'Microsoft.KeyVault/vaults@2018-02-14' = {
-  name: KeyVaultName
-  location: resourceGroup().location
-  properties: {
-    enabledForDeployment: false
-    enabledForTemplateDeployment: false
-    enabledForDiskEncryption: false
-    accessPolicies: [
-      {
-        objectId: UserObjectId
-        tenantId: subscription().tenantId
-        permissions: {
-          secrets: [
-            'all'
-          ]
-          certificates: [
-            'all'
-          ]
-          keys: [
-            'all'
-          ]
-        }
-      }
-    ]
-    tenantId: subscription().tenantId
-    sku: {
-      name: 'standard'
-      family: 'A'
-    }
-    enableSoftDelete: true
-    networkAcls: {
-      defaultAction: 'Allow'
-      bypass: 'AzureServices'
-      ipRules: [
-      ]
-      virtualNetworkRules: [
-      ]
-    }
-  }
-}
 
 resource storageAccount 'Microsoft.Storage/storageAccounts@2021-02-01' = {
   name: StorageAccountName
@@ -244,4 +196,3 @@ output dpsName string = DpsName
 output dpsConnectionString string = 'HostName=${DpsName}.azure-devices-provisioning.net;SharedAccessKeyName=provisioningserviceowner;SharedAccessKey=${listkeys(dpsKeysId, '2017-11-15').primaryKey}'
 output storageAccountConnectionString string = 'DefaultEndpointsProtocol=https;AccountName=${StorageAccountName};AccountKey=${listkeys(storageAccount.id, '2019-06-01').keys[0].value};EndpointSuffix=core.windows.net'
 output workspaceId string = (EnableIotHubSecuritySolution) ? '${reference(operationalInsightsWorkspaces.id, '2017-03-15-preview').customerId}' : ''
-output keyVaultName string = KeyVaultName

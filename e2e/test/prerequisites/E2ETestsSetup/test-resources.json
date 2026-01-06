@@ -17,12 +17,6 @@
       "maxLength": 24,
       "minLength": 3
     },
-    "UserObjectId": {
-      "type": "string",
-      "metadata": {
-        "description": "Signed in user objectId"
-      }
-    },
     "WebRegion": {
       "type": "string",
       "defaultValue": "CentralUS",
@@ -57,15 +51,6 @@
       "metadata": {
         "description": "The name of DPS used by tests."
       }
-    },
-    "KeyVaultName": {
-      "type": "string",
-      "defaultValue": "[format('{0}-kv', resourceGroup().name)]",
-      "metadata": {
-        "description": "The name of the key vault for storing secrets needed for running tests."
-      },
-      "maxLength": 24,
-      "minLength": 3
     },
     "OperationalInsightsName": {
       "type": "string",
@@ -121,46 +106,6 @@
     "dpsKeysId": "[resourceId('Microsoft.Devices/ProvisioningServices/keys', parameters('DpsName'), 'provisioningserviceowner')]"
   },
   "resources": [
-    {
-      "type": "Microsoft.KeyVault/vaults",
-      "apiVersion": "2018-02-14",
-      "name": "[parameters('KeyVaultName')]",
-      "location": "[resourceGroup().location]",
-      "properties": {
-        "enabledForDeployment": false,
-        "enabledForTemplateDeployment": false,
-        "enabledForDiskEncryption": false,
-        "accessPolicies": [
-          {
-            "objectId": "[parameters('UserObjectId')]",
-            "tenantId": "[subscription().tenantId]",
-            "permissions": {
-              "secrets": [
-                "all"
-              ],
-              "certificates": [
-                "all"
-              ],
-              "keys": [
-                "all"
-              ]
-            }
-          }
-        ],
-        "tenantId": "[subscription().tenantId]",
-        "sku": {
-          "name": "standard",
-          "family": "A"
-        },
-        "enableSoftDelete": true,
-        "networkAcls": {
-          "defaultAction": "Allow",
-          "bypass": "AzureServices",
-          "ipRules": [],
-          "virtualNetworkRules": []
-        }
-      }
-    },
     {
       "type": "Microsoft.Storage/storageAccounts",
       "apiVersion": "2021-02-01",
@@ -359,10 +304,6 @@
     "workspaceId": {
       "type": "string",
       "value": "[if(parameters('EnableIotHubSecuritySolution'), format('{0}', reference(resourceId('Microsoft.OperationalInsights/workspaces', parameters('OperationalInsightsName')), '2017-03-15-preview').customerId), '')]"
-    },
-    "keyVaultName": {
-      "type": "string",
-      "value": "[parameters('KeyVaultName')]"
     }
   }
 }
