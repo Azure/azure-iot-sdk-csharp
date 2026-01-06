@@ -23,7 +23,24 @@ namespace Microsoft.Azure.Devices.E2ETests
     {
         public static partial class IotHub
         {
-            public static string ConnectionString => GetValue("IOTHUB_CONNECTION_STRING");
+            public static string ConnectionString
+            {
+                get 
+                {
+                    string value = GetValue("IOTHUB_CONNECTION_STRING");
+                    try
+                    {
+                        using var rm = RegistryManager.CreateFromConnectionString(TestConfiguration.IotHub.ConnectionString);
+                    }
+                    catch (Exception e)
+                    {
+                        throw new Exception(value, e);
+                    }
+
+                    return value;
+                }
+               }
+
             public static string X509ChainDeviceName => GetValue("IOTHUB_X509_CHAIN_DEVICE_NAME");
 
             public static string GetIotHubHostName()
