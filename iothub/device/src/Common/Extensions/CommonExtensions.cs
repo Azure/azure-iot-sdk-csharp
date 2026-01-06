@@ -75,7 +75,7 @@ namespace Microsoft.Azure.Devices.Client.Extensions
 
             if (!parts.Any() || parts.Any(p => p.Length != 2))
             {
-                throw new FormatException("Malformed Token");
+                throw new FormatException("Malformed Token: " + valuePairString);
             }
 
             IDictionary<string, string> map = parts.ToDictionary(kvp => kvp[0], (kvp) => kvp[1], StringComparer.OrdinalIgnoreCase);
