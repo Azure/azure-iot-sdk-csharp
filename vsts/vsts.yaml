@@ -61,6 +61,7 @@ jobs:
       vmImage: windows-2022
     steps:     
     - task: AzureCLI@2
+      name: deployCloudTestResources 
       inputs:
         azureSubscription: 'iot hub sdk service connection'
         scriptType: 'pscore'
@@ -70,7 +71,6 @@ jobs:
           $jsonContent = az account show | ConvertFrom-Json
           $subscriptionId = $jsonContent.Id
           $(Build.SourcesDirectory)/e2e/test/prerequisites/E2ETestsSetup/e2eTestsSetup.ps1 -SubscriptionId $subscriptionId -Region westcentralus -ResourceGroup netsdkgate -GroupCertificatePassword someCertPass -GenerateResourcesForTestDevOpsPipeline
-        name: deployCloudTestResources 
 
   ### Linux build ###
   - job: LINUX
