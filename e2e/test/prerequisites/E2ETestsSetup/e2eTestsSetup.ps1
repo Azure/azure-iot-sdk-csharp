@@ -23,16 +23,6 @@ param(
     # Specify this on the first execution to get everything installed in powershell. It does not need to be run every time.
     [Parameter()]
     [switch] $InstallDockerDesktopOnWindows,
-
-    # Set this if you are generating resources for the E2E test DevOps pipeline.
-    # This will create resources capable of handling the test pipeline traffic, which is greater than what you would generally require for local testing.
-    [Parameter()]
-    [switch] $GenerateResourcesForTestDevOpsPipeline,
-
-    # Set this if you are generating resources for the samples DevOps pipeline.
-    # This will generate the resources required for running the DevOps pipline for the .NET samples.
-    [Parameter()]
-    [switch] $GenerateResourcesForSamplesDevOpsPipeline
 )
 
 $startTime = (Get-Date)
@@ -60,7 +50,6 @@ if ($PSversiontable.PSVersion -lt "7.0.0")
 Write-Host "`nInstallDependencies $InstallDependencies"
 Write-Host "`InstallDockerDesktopOnWindows $InstallDockerDesktopOnWindows"
 Write-Host "`GenerateResourcesForTestDevOpsPipeline $GenerateResourcesForTestDevOpsPipeline"
-Write-Host "`GenerateResourcesForSamplesDevOpsPipeline $GenerateResourcesForSamplesDevOpsPipeline"
 Write-Host "`EnableIotHubSecuritySolution $EnableIotHubSecuritySolution"
 
 ###########################################################################
@@ -162,20 +151,11 @@ $logAnalyticsAppRegnName = "$ResourceGroup-LogAnalyticsAadApp"
 $e2eTestAadAppRegName = "$ResourceGroup-E2eTestAadApp"
 $dpsUploadCertificateName = "group1-certificate"
 $hubUploadCertificateName = "rootCA"
-$iothubUnitsToBeCreated = 1
+$iothubUnitsToBeCreated = 5;
 $managedIdentityName = "$ResourceGroup-user-msi"
 
 # OpenSSL has dropped support for SHA1 signed certificates in Ubuntu 20.04, so our test resources will use SHA256 signed certificates instead.
 $certificateHashAlgorithm = "SHA256"
-
-#################################################################################################
-# Make any special modifications required to generate resources for the DevOps test pipeline.
-#################################################################################################
-
-if ($GenerateResourcesForTestDevOpsPipeline)
-{
-    $iothubUnitsToBeCreated = 5;
-}
 
 #################################################################################################
 # Get Function App contents to pass to deployment
@@ -549,72 +529,6 @@ if ($groupEnrollmentExists)
 }
 Write-Host "`nAdding group enrollment $groupEnrollmentId."
 az iot dps enrollment-group create -g $ResourceGroup --dps-name $dpsName --enrollment-id $groupEnrollmentId --ca-name $dpsUploadCertificateName --output none
-
-##################################################################################################################################
-# Create the IoT devices and modules that are used by the .NET samples.
-##################################################################################################################################
-
-if ($GenerateResourcesForSamplesDevOpsPipeline)
-{
-    $iotHubSasBasedDeviceId = "Save_SasDevice1"
-    $iotHubSasBasedDevice = az iot hub device-identity list -g $ResourceGroup --hub-name $iotHubName --query "[?deviceId=='$iotHubSasBasedDeviceId'].deviceId" --output tsv
-
-    if (-not $iotHubSasBasedDevice)
-    {
-        Write-Host "`nCreating SAS-based device $iotHubSasBasedDeviceId on IoT hub."
-        az iot hub device-identity create -g $ResourceGroup --hub-name $iotHubName --device-id $iotHubSasBasedDeviceId --ee
-    }
-    $iotHubSasBasedDeviceConnectionString = az iot hub device-identity connection-string show --device-id $iotHubSasBasedDeviceId --hub-name $iotHubName --resource-group $ResourceGroup --output tsv
-
-    $iotHubSasBasedModuleId = "Save_SasModule1"
-    $iotHubSasBasedModule = az iot hub module-identity list -g $ResourceGroup --hub-name $iotHubName --device-id $iotHubSasBasedDeviceId --query "[?moduleId=='$iotHubSasBasedModuleId'].moduleId" --output tsv
-
-    if (-not $iotHubSasBasedModule)
-    {
-        Write-Host "`nCreating SAS based module $iotHubSasBasedModuleId under device $iotHubSasBasedDeviceId on IoT hub."
-        az iot hub module-identity create -g $ResourceGroup --hub-name $iotHubName --device-id $iotHubSasBasedDeviceId --module-id $iotHubSasBasedModuleId
-    }
-    $iotHubSasBasedModuleConnectionString = az iot hub module-identity connection-string show --device-id $iotHubSasBasedDeviceId --module-id $iotHubSasBasedModuleId --hub-name $iotHubName --resource-group $ResourceGroup --output tsv
-
-    $thermostatSampleDeviceId = "Save_ThermostatSample"
-    $thermostatSampleDevice = az iot hub device-identity list -g $ResourceGroup --hub-name $iotHubName --query "[?deviceId=='$thermostatSampleDeviceId'].deviceId" --output tsv
-
-    if (-not $thermostatSampleDevice)
-    {
-        Write-Host "`nCreating SAS-based device $thermostatSampleDeviceId on IoT hub."
-        az iot hub device-identity create -g $ResourceGroup --hub-name $iotHubName --device-id $thermostatSampleDeviceId --ee
-    }
-    $thermostatSampleDeviceConnectionString = az iot hub device-identity connection-string show --device-id $thermostatSampleDeviceId --hub-name $iotHubName --resource-group $ResourceGroup --output tsv
-
-    $temperatureControllerSampleDeviceId = "Save_TemperatureControllerSample"
-    $temperatureControllerSampleDevice = az iot hub device-identity list -g $ResourceGroup --hub-name $iotHubName --query "[?deviceId=='$temperatureControllerSampleDeviceId'].deviceId" --output tsv
-
-    if (-not $temperatureControllerSampleDevice)
-    {
-        Write-Host "`nCreating SAS-based device $temperatureControllerSampleDeviceId on IoT hub."
-        az iot hub device-identity create -g $ResourceGroup --hub-name $iotHubName --device-id $temperatureControllerSampleDeviceId --ee
-    }
-    $temperatureControllerSampleDeviceConnectionString = az iot hub device-identity connection-string show --device-id $temperatureControllerSampleDeviceId --hub-name $iotHubName --resource-group $ResourceGroup --output tsv
-}
-
-##################################################################################################################################
-# Create the DPS enrollments that are used by the .NET samples.
-##################################################################################################################################
-
-if ($GenerateResourcesForSamplesDevOpsPipeline)
-{
-    $symmetricKeySampleEnrollmentRegistrationId = "Save_SymmetricKeySampleIndividualEnrollment"
-    $symmetricKeyEnrollmentExists = az iot dps enrollment list -g $ResourceGroup  --dps-name $dpsName --query "[?deviceId=='$symmetricKeySampleEnrollmentRegistrationId'].deviceId" --output tsv
-    if ($symmetricKeyEnrollmentExists)
-    {
-        Write-Host "`nDeleting existing individual enrollment $symmetricKeySampleEnrollmentRegistrationId."
-        az iot dps enrollment delete -g $ResourceGroup --dps-name $dpsName --enrollment-id $symmetricKeySampleEnrollmentRegistrationId
-    }
-    Write-Host "`nAdding individual enrollment $symmetricKeySampleEnrollmentRegistrationId."
-    az iot dps enrollment create -g $ResourceGroup --dps-name $dpsName --enrollment-id $symmetricKeySampleEnrollmentRegistrationId --attestation-type symmetrickey --output none
-
-    $symmetricKeySampleEnrollmentPrimaryKey = az iot dps enrollment show -g $ResourceGroup --dps-name $dpsName --enrollment-id $symmetricKeySampleEnrollmentRegistrationId --show-keys --query 'attestation.symmetricKey.primaryKey' --output tsv
-}
 
 ###################################################################################################################################
 # Configure environment variables with secret values.
