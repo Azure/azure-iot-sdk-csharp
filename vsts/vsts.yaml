@@ -287,6 +287,10 @@ jobs:
           inputs:
             script: 'choco install -y netfx-4.7.2-devpack'
 
+      - powershell: ./vsts/start_tpm_windows.ps1
+        displayName: "Start TPM Simulator"
+        condition: eq(variables.SHOULD_RUN, 'True')
+
       - task: PowerShell@2
         displayName: 'build and run unit tests'
         condition: eq(variables.SHOULD_RUN, 'True')
@@ -294,6 +298,7 @@ jobs:
           targetType: inline
           script: |
             dotnet test --filter TestCategory=Unit
+            
       - task: PublishTestResults@2
         displayName: "Publish Test Results **/*.trx"
         inputs:
