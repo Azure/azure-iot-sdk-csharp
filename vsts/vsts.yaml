@@ -152,7 +152,6 @@ jobs:
         inputs:
           targetType: inline
           script: |
-            Write-Host "conn string?" $(IOTHUB_CONNECTION_STRING)
             dotnet test
         env:
           # Environment variables for IoT Hub E2E tests
