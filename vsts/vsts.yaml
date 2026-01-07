@@ -70,7 +70,7 @@ jobs:
           $jsonContent = az account show | ConvertFrom-Json
           $subscriptionId = $jsonContent.Id
           $(Build.SourcesDirectory)/e2e/test/prerequisites/E2ETestsSetup/e2eTestsSetup.ps1 -SubscriptionId $subscriptionId -Region westcentralus -ResourceGroup netsdkgate -GroupCertificatePassword someCertPass -GenerateResourcesForTestDevOpsPipeline
-            
+        name: deployCloudTestResources 
 
   ### Linux build ###
   - job: LINUX
@@ -79,38 +79,38 @@ jobs:
     condition: succeeded()
     timeoutInMinutes: ${{ parameters.jobTimeoutInMinutes }}
     variables:
-      IOTHUB_CONNECTION_STRING: $[ dependencies.DeployCloudTestResources.outputs['OutputVars.IOTHUB_CONNECTION_STRING'] ]
-      IOTHUB_DEVICE_CONN_STRING: $[ dependencies.DeployCloudTestResources.outputs['OutputVars.IOTHUB_DEVICE_CONN_STRING'] ]
-      IOTHUB_X509_DEVICE_PFX_CERTIFICATE: $[ dependencies.DeployCloudTestResources.outputs['OutputVars.IOTHUB_X509_DEVICE_PFX_CERTIFICATE'] ]
-      IOTHUB_X509_DEVICE_PFX_THUMBPRINT: $[ dependencies.DeployCloudTestResources.outputs['OutputVars.IOTHUB_X509_DEVICE_PFX_THUMBPRINT'] ]
-      IOTHUB_X509_CHAIN_DEVICE_NAME: $[ dependencies.DeployCloudTestResources.outputs['OutputVars.IOTHUB_X509_CHAIN_DEVICE_NAME'] ]
-      IOTHUB_X509_CHAIN_DEVICE_PFX_CERTIFICATE: $[ dependencies.DeployCloudTestResources.outputs['OutputVars.IOTHUB_X509_CHAIN_DEVICE_PFX_CERTIFICATE'] ]
-      IOTHUB_USER_ASSIGNED_MSI_RESOURCE_ID: $[ dependencies.DeployCloudTestResources.outputs['OutputVars.IOTHUB_USER_ASSIGNED_MSI_RESOURCE_ID'] ]
-      IOT_HUB_SAS_KEY: $[ dependencies.DeployCloudTestResources.outputs['OutputVars.IOTHUB_SAS_KEY'] ]
-      IOT_HUB_SAS_KEY_NAME: $[ dependencies.DeployCloudTestResources.outputs['OutputVars.IOTHUB_SAS_KEY_NAME'] ]
-      DPS_IDSCOPE: $[ dependencies.DeployCloudTestResources.outputs['OutputVars.DPS_IDSCOPE'] ]
-      PROVISIONING_CONNECTION_STRING: $[ dependencies.DeployCloudTestResources.outputs['OutputVars.PROVISIONING_CONNECTION_STRING'] ]
+      IOTHUB_CONNECTION_STRING: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.IOTHUB_CONNECTION_STRING'] ]
+      IOTHUB_DEVICE_CONN_STRING: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.IOTHUB_DEVICE_CONN_STRING'] ]
+      IOTHUB_X509_DEVICE_PFX_CERTIFICATE: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.IOTHUB_X509_DEVICE_PFX_CERTIFICATE'] ]
+      IOTHUB_X509_DEVICE_PFX_THUMBPRINT: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.IOTHUB_X509_DEVICE_PFX_THUMBPRINT'] ]
+      IOTHUB_X509_CHAIN_DEVICE_NAME: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.IOTHUB_X509_CHAIN_DEVICE_NAME'] ]
+      IOTHUB_X509_CHAIN_DEVICE_PFX_CERTIFICATE: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.IOTHUB_X509_CHAIN_DEVICE_PFX_CERTIFICATE'] ]
+      IOTHUB_USER_ASSIGNED_MSI_RESOURCE_ID: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.IOTHUB_USER_ASSIGNED_MSI_RESOURCE_ID'] ]
+      IOT_HUB_SAS_KEY: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.IOTHUB_SAS_KEY'] ]
+      IOT_HUB_SAS_KEY_NAME: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.IOTHUB_SAS_KEY_NAME'] ]
+      DPS_IDSCOPE: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.DPS_IDSCOPE'] ]
+      PROVISIONING_CONNECTION_STRING: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.PROVISIONING_CONNECTION_STRING'] ]
       DPS_GLOBALDEVICEENDPOINT: global.azure_devices_provisioning.net
-      DPS_X509_PFX_CERTIFICATE_PASSWORD: $[ dependencies.DeployCloudTestResources.outputs['OutputVars.DPS_X509_PFX_CERTIFICATE_PASSWORD'] ]
-      DPS_X509_GROUP_ENROLLMENT_NAME: $[ dependencies.DeployCloudTestResources.outputs['OutputVars.DPS_X509_GROUP_ENROLLMENT_NAME'] ]
-      X509_CHAIN_ROOT_CA_CERTIFICATE: $[ dependencies.DeployCloudTestResources.outputs['OutputVars.X509_CHAIN_ROOT_CA_CERTIFICATE'] ]
-      X509_CHAIN_INTERMEDIATE1_CERTIFICATE: $[ dependencies.DeployCloudTestResources.outputs['OutputVars.X509_CHAIN_INTERMEDIATE1_CERTIFICATE'] ]
-      X509_CHAIN_INTERMEDIATE2_CERTIFICATE: $[ dependencies.DeployCloudTestResources.outputs['OutputVars.X509_CHAIN_INTERMEDIATE2_CERTIFICATE'] ]
-      X509_CHAIN_INTERMEDIATE2_PFX_CERTIFICATE: $[ dependencies.DeployCloudTestResources.outputs['OutputVars.X509_CHAIN_INTERMEDIATE2_PFX_CERTIFICATE'] ]
-      STORAGE_ACCOUNT_CONNECTION_STRING: $[ dependencies.DeployCloudTestResources.outputs['OutputVars.STORAGE_ACCOUNT_CONNECTION_STRING'] ]
-      MSFT_TENANT_ID: $[ dependencies.DeployCloudTestResources.outputs['OutputVars.MSFT_TENANT_ID'] ]
-      E2E_TEST_AAD_APP_CLIENT_ID: $[ dependencies.DeployCloudTestResources.outputs['OutputVars.E2E_TEST_AAD_APP_CLIENT_ID'] ]
-      E2E_TEST_AAD_APP_CLIENT_SECRET: $[ dependencies.DeployCloudTestResources.outputs['OutputVars.E2E_TEST_AAD_APP_CLIENT_SECRET'] ]
-      E2E_IKEY: $[ dependencies.DeployCloudTestResources.outputs['OutputVars.E2E_IKEY'] ]
-      #IOTHUB_DEVICE_CONN_STRING_INVALIDCERT: $[ dependencies.DeployCloudTestResources.outputs['OutputVars.IOTHUB_DEVICE_CONN_STRING_INVALIDCERT'] ]
-      #IOTHUB_CONN_STRING_INVALIDCERT: $[ dependencies.DeployCloudTestResources.outputs['OutputVars.IOTHUB_CONN_STRING_INVALIDCERT'] ]
-      #DPS_GLOBALDEVICEENDPOINT_INVALIDCERT: $[ dependencies.DeployCloudTestResources.outputs['OutputVars.DPS_GLOBALDEVICEENDPOINT_INVALIDCERT'] ]
-      #PROVISIONING_CONNECTION_STRING_INVALIDCERT: $[ dependencies.DeployCloudTestResources.outputs['OutputVars.PROVISIONING_CONNECTION_STRING_INVALIDCERT'] ]
-      PATH_TO_DEVICE_PREFIX_FOR_DELETION_FILE: $[ dependencies.DeployCloudTestResources.outputs['OutputVars.PATH_TO_DEVICE_PREFIX_FOR_DELETION_FILE'] ]
-      PNP_TC_DEVICE_CONN_STRING: $[ dependencies.DeployCloudTestResources.outputs['OutputVars.PNP_TC_DEVICE_CONN_STRING'] ]
-      PNP_THERMOSTAT_DEVICE_CONN_STRING: $[ dependencies.DeployCloudTestResources.outputs['OutputVars.PNP_THERMOSTAT_DEVICE_CONN_STRING'] ]
-      DPS_SYMMETRIC_KEY_INDIVIDUAL_ENROLLMENT_REGISTRATION_ID: $[ dependencies.DeployCloudTestResources.outputs['OutputVars.DPS_SYMMETRIC_KEY_INDIVIDUAL_ENROLLMENT_REGISTRATION_ID'] ]
-      DPS_SYMMETRIC_KEY_INDIVIDUAL_ENROLLEMNT_PRIMARY_KEY: $[ dependencies.DeployCloudTestResources.outputs['OutputVars.DPS_SYMMETRIC_KEY_INDIVIDUAL_ENROLLEMNT_PRIMARY_KEY'] ]
+      DPS_X509_PFX_CERTIFICATE_PASSWORD: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.DPS_X509_PFX_CERTIFICATE_PASSWORD'] ]
+      DPS_X509_GROUP_ENROLLMENT_NAME: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.DPS_X509_GROUP_ENROLLMENT_NAME'] ]
+      X509_CHAIN_ROOT_CA_CERTIFICATE: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.X509_CHAIN_ROOT_CA_CERTIFICATE'] ]
+      X509_CHAIN_INTERMEDIATE1_CERTIFICATE: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.X509_CHAIN_INTERMEDIATE1_CERTIFICATE'] ]
+      X509_CHAIN_INTERMEDIATE2_CERTIFICATE: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.X509_CHAIN_INTERMEDIATE2_CERTIFICATE'] ]
+      X509_CHAIN_INTERMEDIATE2_PFX_CERTIFICATE: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.X509_CHAIN_INTERMEDIATE2_PFX_CERTIFICATE'] ]
+      STORAGE_ACCOUNT_CONNECTION_STRING: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.STORAGE_ACCOUNT_CONNECTION_STRING'] ]
+      MSFT_TENANT_ID: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.MSFT_TENANT_ID'] ]
+      E2E_TEST_AAD_APP_CLIENT_ID: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.E2E_TEST_AAD_APP_CLIENT_ID'] ]
+      E2E_TEST_AAD_APP_CLIENT_SECRET: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.E2E_TEST_AAD_APP_CLIENT_SECRET'] ]
+      E2E_IKEY: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.E2E_IKEY'] ]
+      #IOTHUB_DEVICE_CONN_STRING_INVALIDCERT: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.IOTHUB_DEVICE_CONN_STRING_INVALIDCERT'] ]
+      #IOTHUB_CONN_STRING_INVALIDCERT: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.IOTHUB_CONN_STRING_INVALIDCERT'] ]
+      #DPS_GLOBALDEVICEENDPOINT_INVALIDCERT: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.DPS_GLOBALDEVICEENDPOINT_INVALIDCERT'] ]
+      #PROVISIONING_CONNECTION_STRING_INVALIDCERT: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.PROVISIONING_CONNECTION_STRING_INVALIDCERT'] ]
+      PATH_TO_DEVICE_PREFIX_FOR_DELETION_FILE: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.PATH_TO_DEVICE_PREFIX_FOR_DELETION_FILE'] ]
+      PNP_TC_DEVICE_CONN_STRING: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.PNP_TC_DEVICE_CONN_STRING'] ]
+      PNP_THERMOSTAT_DEVICE_CONN_STRING: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.PNP_THERMOSTAT_DEVICE_CONN_STRING'] ]
+      DPS_SYMMETRIC_KEY_INDIVIDUAL_ENROLLMENT_REGISTRATION_ID: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.DPS_SYMMETRIC_KEY_INDIVIDUAL_ENROLLMENT_REGISTRATION_ID'] ]
+      DPS_SYMMETRIC_KEY_INDIVIDUAL_ENROLLEMNT_PRIMARY_KEY: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.DPS_SYMMETRIC_KEY_INDIVIDUAL_ENROLLEMNT_PRIMARY_KEY'] ]
     strategy:
       maxParallel: ${{ parameters.maxParallelJobs }}
       matrix:
