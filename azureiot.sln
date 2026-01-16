@@ -81,6 +81,30 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		test.runsettings = test.runsettings
 		vsts\TsaUploadConfigFile.json = vsts\TsaUploadConfigFile.json
 		vsts\vsts.yaml = vsts\vsts.yaml
+		..\..\Users\maximsemenov\Downloads\New-CMSTestEnv.ps1 = ..\..\Users\maximsemenov\Downloads\New-CMSTestEnv.ps1
+		tools\azure-iot-scale-main\.clinerules\01-coding.md = tools\azure-iot-scale-main\.clinerules\01-coding.md
+		tools\azure-iot-scale-main\.env-example = tools\azure-iot-scale-main\.env-example
+		tools\azure-iot-scale-main\.github\workflows\build-test.yml = tools\azure-iot-scale-main\.github\workflows\build-test.yml
+		tools\azure-iot-scale-main\.gitignore = tools\azure-iot-scale-main\.gitignore
+		tools\azure-iot-scale-main\.vscode\launch.json = tools\azure-iot-scale-main\.vscode\launch.json
+		tools\azure-iot-scale-main\.vscode\settings.json = tools\azure-iot-scale-main\.vscode\settings.json
+		tools\azure-iot-scale-main\AGENTS.md = tools\azure-iot-scale-main\AGENTS.md
+		tools\azure-iot-scale-main\deploy\hub-gen2.sh = tools\azure-iot-scale-main\deploy\hub-gen2.sh
+		tools\azure-iot-scale-main\LICENSE = tools\azure-iot-scale-main\LICENSE
+		tools\azure-iot-scale-main\Makefile = tools\azure-iot-scale-main\Makefile
+		tools\azure-iot-scale-main\pyproject.toml = tools\azure-iot-scale-main\pyproject.toml
+		tools\azure-iot-scale-main\README.md = tools\azure-iot-scale-main\README.md
+		tools\azure-iot-scale-main\src\locust_pkg\cert_test.py = tools\azure-iot-scale-main\src\locust_pkg\cert_test.py
+		tools\azure-iot-scale-main\src\locust_pkg\cert_user.py = tools\azure-iot-scale-main\src\locust_pkg\cert_user.py
+		tools\azure-iot-scale-main\src\locust_pkg\http_user.py = tools\azure-iot-scale-main\src\locust_pkg\http_user.py
+		tools\azure-iot-scale-main\src\locust_pkg\hub_cert_device.py = tools\azure-iot-scale-main\src\locust_pkg\hub_cert_device.py
+		tools\azure-iot-scale-main\src\locust_pkg\storage.py = tools\azure-iot-scale-main\src\locust_pkg\storage.py
+		tools\azure-iot-scale-main\src\locust_pkg\utils.py = tools\azure-iot-scale-main\src\locust_pkg\utils.py
+		tools\azure-iot-scale-main\src\locust_pkg\__init__.py = tools\azure-iot-scale-main\src\locust_pkg\__init__.py
+		tools\azure-iot-scale-main\tests\test_utils.py = tools\azure-iot-scale-main\tests\test_utils.py
+		tools\azure-iot-scale-main\uv.lock = tools\azure-iot-scale-main\uv.lock
+		tools\azure-iot-scale-main\wheels\azure_iot_device-2.14.0-py3-none-any.whl = tools\azure-iot-scale-main\wheels\azure_iot_device-2.14.0-py3-none-any.whl
+		tools\azure-iot-scale-main\wheels\azure_iot_device-2.14.0-test-py3-none-any.whl = tools\azure-iot-scale-main\wheels\azure_iot_device-2.14.0-test-py3-none-any.whl
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Azure.Devices.Shared.Tests", "shared\tests\Microsoft.Azure.Devices.Shared.Tests.csproj", "{CEEE435F-32FC-4DE5-8735-90F6AC950A01}"
@@ -208,6 +232,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "prerequisites", "prerequisi
 		e2e\test\prerequisites\E2ETestsSetup\test-resources.bicep = e2e\test\prerequisites\E2ETestsSetup\test-resources.bicep
 		e2e\test\prerequisites\E2ETestsSetup\test-resources.json = e2e\test\prerequisites\E2ETestsSetup\test-resources.json
 	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CertificateSigningRequestSample", "iothub\device\samples\how to guides\CertificateSigningRequestSample\CertificateSigningRequestSample.csproj", "{0F3E4882-0D5C-4CF3-9D97-2A9C0B598229}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -438,6 +464,10 @@ Global
 		{184F07FC-A5CA-43F5-8742-0B6DF6825A1F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{184F07FC-A5CA-43F5-8742-0B6DF6825A1F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{184F07FC-A5CA-43F5-8742-0B6DF6825A1F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0F3E4882-0D5C-4CF3-9D97-2A9C0B598229}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0F3E4882-0D5C-4CF3-9D97-2A9C0B598229}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0F3E4882-0D5C-4CF3-9D97-2A9C0B598229}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0F3E4882-0D5C-4CF3-9D97-2A9C0B598229}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -529,6 +559,7 @@ Global
 		{89643F18-7B22-41BD-8342-49251943C984} = {4CF9A9B8-9D3F-44F6-B965-DF2B7EEA024E}
 		{184F07FC-A5CA-43F5-8742-0B6DF6825A1F} = {89643F18-7B22-41BD-8342-49251943C984}
 		{CA137E4E-4684-442D-92FC-20ADACCB5D62} = {9C260BF0-1CCA-45A2-AAB8-6419291B8B88}
+		{0F3E4882-0D5C-4CF3-9D97-2A9C0B598229} = {FA7C7E33-CC9C-4ACD-A761-C2B4C55E82F6}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {AF61665D-340A-494B-9705-571456BDC752}
