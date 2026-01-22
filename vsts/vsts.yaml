@@ -297,7 +297,7 @@ jobs:
         inputs:
           targetType: inline
           script: |
-            dotnet test --filter TestCategory=Unit
+            dotnet test
             
       - task: PublishTestResults@2
         displayName: "Publish Test Results **/*.trx"
