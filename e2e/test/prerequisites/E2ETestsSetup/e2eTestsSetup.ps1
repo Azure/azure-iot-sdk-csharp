@@ -83,39 +83,6 @@ Function Check-AzureCliVersion()
     }
 }
 
-Function CleanUp-Certs()
-{
-    Write-Host "`nCleaning up old certs and files that may cause conflicts."
-    $certsToDelete = Get-ChildItem "Cert:\LocalMachine\My" | Where-Object { $_.Issuer.Contains("CN=$subjectPrefix") }
-
-    #$title = "Cleaning up certs."
-    $certsToDeleteSubjectNames = $certsToDelete | foreach-object  {$_.Subject}
-    $certsToDeleteSubjectNames = $certsToDeleteSubjectNames -join "`n"
-    #$question = "Are you sure you want to delete the following certs?`n`n$certsToDeleteSubjectNames"
-    #$choices  = '&Yes', '&No'
-    #$decision = $Host.UI.PromptForChoice($title, $question, $choices, 1)
-
-    if ($certsToDelete.Count -ne 0)
-    {
-        if($decision -eq 0)
-        {
-            #Remove
-            Write-Host '`tConfirmed.'
-            $certsToDelete | Remove-Item
-        }
-        else
-        {
-            #Don't remove certs and exit
-            Write-Host '`tCancelled.'
-            exit
-        }
-    }
-
-    Get-ChildItem $PSScriptRoot | Where-Object { $_.Name.EndsWith(".pfx") } | Remove-Item
-    Get-ChildItem $PSScriptRoot | Where-Object { $_.Name.EndsWith(".cer") } | Remove-Item
-    Get-ChildItem $PSScriptRoot | Where-Object { $_.Name.EndsWith(".p7b") } | Remove-Item
-}
-
 $isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")
 if (-not $isAdmin)
 {
@@ -169,12 +136,6 @@ $iotHubX509DeviceCertCommonName = "Save_iothubx509device1";
 $iotHubX509DevicePfxPath = "$PSScriptRoot/IotHubX509Device.pfx";
 $iotHubX509CertChainDeviceCommonName = "Save_iothubx509chaindevice1";
 $iotHubX509ChainDevicPfxPath = "$PSScriptRoot/IotHubX509ChainDevice.pfx";
-
-############################################################################################################################
-# Cleanup old certs and files that can cause a conflict.
-############################################################################################################################
-
-CleanUp-Certs
 
 # Generate self signed Root and Intermediate CA cert, expiring in 2 years
 # These certs are used for signing so ensure to have the correct KeyUsage - CertSign and TestExtension - ca=TRUE&pathlength=12
@@ -326,18 +287,6 @@ $dpsConnectionString = az deployment group show -g $ResourceGroup -n $deployment
 $storageAccountConnectionString = az deployment group show -g $ResourceGroup -n $deploymentName  --query 'properties.outputs.storageAccountConnectionString.value' --output tsv
 $workspaceId = az deployment group show -g $ResourceGroup -n $deploymentName --query 'properties.outputs.workspaceId.value' --output tsv
 $iotHubName = az deployment group show -g $ResourceGroup -n $deploymentName --query 'properties.outputs.hubName.value' --output tsv
-
-#################################################################################################################################################
-# Configure an AAD app to authenticate Log Analytics Workspace, if specified.
-#################################################################################################################################################
-
-#if ($EnableIotHubSecuritySolution)
-#{
-#    Write-Host "`nCreating app registration $logAnalyticsAppRegnName"
-#    $logAnalyticsAppRegUrl = "http://$logAnalyticsAppRegnName"
-#    $logAnalyticsAppId = az ad sp create-for-rbac -n $logAnalyticsAppRegUrl --role "Reader" --scope $resourceGroupId --query "appId" --output tsv
-#    Write-Host "`nCreated application $logAnalyticsAppRegnName with Id $logAnalyticsAppId."
-#}
 
 #################################################################################################################################################
 # Configure an AAD app and assign it contributor role to perform IoT hub data actions.
@@ -552,7 +501,5 @@ catch
 ############################################################################################################################
 # Clean up certs and files created by the script
 ############################################################################################################################
-
-CleanUp-Certs
 
 Write-Host "Done!"
