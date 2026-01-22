@@ -335,7 +335,7 @@ jobs:
         condition: eq(variables.SHOULD_RUN, 'True')
 
       - task: PowerShell@2
-        displayName: 'build and run unit tests'
+        displayName: 'build and run tests'
         condition: eq(variables.SHOULD_RUN, 'True')
         inputs:
           targetType: inline
