@@ -70,7 +70,17 @@ jobs:
         inlineScript: |
           $jsonContent = az account show | ConvertFrom-Json
           $subscriptionId = $jsonContent.Id
-          $(Build.SourcesDirectory)/e2e/test/prerequisites/E2ETestsSetup/e2eTestsSetup.ps1 -SubscriptionId $subscriptionId -Region westcentralus -ResourceGroup netsdkgate -GroupCertificatePassword someCertPass
+
+          $uniqueSuffixLength = 5
+          $characters = 'abcdefghijklmnopqrstuvwxyz'.ToCharArray()
+          $CloudResourceUniqueSuffix = -join ($characters | Get-Random -Count $uniqueSuffixLength)
+
+          $resourceGroupName = 'javasdkgate'+$CloudResourceUniqueSuffix
+
+          Write-Host "##vso[task.setvariable variable=RESOURCE_GROUP_NAME;isOutput=true]$resourceGroupName"
+
+          #$(Build.SourcesDirectory)/e2e/test/prerequisites/E2ETestsSetup/e2eTestsSetup.ps1 -SubscriptionId $subscriptionId -Region westcentralus -ResourceGroup $resourceGroupName -GroupCertificatePassword someCertPass
+
 
   ### Linux build ###
   - job: LINUX
@@ -414,6 +424,8 @@ jobs:
       - WINDOWS
       - LINUX
       - DeployCloudTestResources
+    variables:
+      RESOURCE_GROUP_NAME: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.RESOURCE_GROUP_NAME'] ]
     pool:
       vmImage: windows-2022
     steps:
@@ -423,5 +435,7 @@ jobs:
         scriptType: 'ps'
         scriptLocation: 'inlineScript'
         inlineScript: |
-          az group delete --name netsdkgate --y
+          Write-Host "Deleting resource group with name "
+          Write-Host $(RESOURCE_GROUP_NAME)
+          az group delete --name $(RESOURCE_GROUP_NAME) --y
           # don't forget to delete RBAC resources as well
