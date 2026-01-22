@@ -477,11 +477,6 @@ Write-Host "##vso[task.setvariable variable=DPS_GLOBALDEVICEENDPOINT_INVALIDCERT
 <#[SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="fake shared access token")]#>
 Write-Host "##vso[task.setvariable variable=PROVISIONING_CONNECTION_STRING_INVALIDCERT;isOutput=true]HostName=invalidcertdps1.westus.cloudapp.azure.com;SharedAccessKeyName=provisioningserviceowner;SharedAccessKey=lGO7OlXNhXlFyYV1rh9F/lUCQC1Owuh5f/1P0I1AFSY="
 
-# These environment variables are only used in Java
-Write-Host "##vso[task.setvariable variable=IOT_DPS_CONNECTION_STRING;isOutput=true]$dpsConnectionString"
-Write-Host "##vso[task.setvariable variable=IOT_DPS_ID_SCOPE;isOutput=true]$dpsIdScope"
-Write-Host "##vso[task.setvariable variable=IS_BASIC_TIER_HUB;isOutput=true]false"
-
 
 ############################################################################################################################
 # Notify user that openssl is required for running E2E tests.
