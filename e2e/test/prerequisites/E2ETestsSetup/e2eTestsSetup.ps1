@@ -94,12 +94,9 @@ if (-not $isAdmin)
 #################################################################################################
 
 $Region = $Region.Replace(' ', '')
-$logAnalyticsAppRegnName = "$ResourceGroup-LogAnalyticsAadApp"
-$e2eTestAadAppRegName = "$ResourceGroup-E2eTestAadApp"
 $dpsUploadCertificateName = "group1-certificate"
 $hubUploadCertificateName = "rootCA"
 $iothubUnitsToBeCreated = 5;
-$managedIdentityName = "$ResourceGroup-user-msi"
 
 # OpenSSL has dropped support for SHA1 signed certificates in Ubuntu 20.04, so our test resources will use SHA256 signed certificates instead.
 $certificateHashAlgorithm = "SHA256"
@@ -218,15 +215,6 @@ $iotHubX509ChainDeviceCert = New-SelfSignedCertificate `
 
 Export-PFXCertificate -cert $iotHubX509ChainDeviceCert -filePath $iotHubX509ChainDevicPfxPath -password $iotHubCredentials.Password | Out-Null
 $iothubX509ChainDevicePfxBase64 = [Convert]::ToBase64String((Get-Content $iotHubX509ChainDevicPfxPath -AsByteStream));
-
-######################################################################################################
-# Setup azure context.
-######################################################################################################
-
-#$azureContext = Connect-AzureSubscription
-#$userObjectId = az ad signed-in-user show --query id --output tsv
-
-#Write-Host "objectId: " $userObjectId
 
 ######################################################################################################
 # Get-ResourceGroup - Finds or creates the resource group to be used by the
