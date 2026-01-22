@@ -4,6 +4,7 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Models
@@ -137,5 +138,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Models
         /// </summary>
         [JsonProperty(PropertyName = "payload")]
         public JRaw Payload { get; set; }
+
+        /// <summary>
+        /// The issued client certificate chain (Base64-encoded).
+        /// Only populated when a CSR was provided during registration.
+        /// </summary>
+        [JsonProperty(PropertyName = "issuedClientCertificate")]
+        public IList<string> IssuedClientCertificate { get; set; }
     }
 }

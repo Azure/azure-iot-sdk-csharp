@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client
 {
@@ -160,5 +161,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// The custom data returned from the webhook to the device.
         /// </summary>
         public string JsonPayload { get; private set; }
+
+        /// <summary>
+        /// The list of Base64-encoded certificates issued by DPS.
+        /// The first certificate is the device certificate, followed by intermediate certificates.
+        /// Only populated when a CSR was provided during registration.
+        /// </summary>
+        public IList<string> IssuedClientCertificate { get; protected set; }
     }
 }

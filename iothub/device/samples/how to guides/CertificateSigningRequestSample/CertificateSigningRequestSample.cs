@@ -69,19 +69,28 @@ public class CertificateSigningRequestSample : IDisposable
                 credentials.KeyPath);
             Console.WriteLine("Connected to IoT Hub successfully!");
 
-            // Step 3: Create new CSR using the same private key
-            PrintStep(3, "Creating new CSR for certificate renewal");
+            // Step 3: Send test message to verify connectivity before CSR request
+            PrintStep(3, "Sending test message to verify connectivity");
+            await SendTestMessageAsync();
+            Console.WriteLine("Test message sent successfully - connection verified!");
+
+            // Step 4: Create new CSR using the same private key
+            PrintStep(4, "Creating new CSR for certificate renewal");
             byte[] csrData = CreateCsr(_privateKey!, _parameters.DeviceName);
             Console.WriteLine($"CSR created (length: {csrData.Length} bytes)");
 
-            // Step 4: Request new certificate via MQTT
-            PrintStep(4, "Requesting new certificate from IoT Hub");
+            // Step 5: Request new certificate via MQTT
+            PrintStep(5, "Requesting new certificate from IoT Hub");
             var csrRequest = new CertificateSigningRequest
             {
                 Id = credentials.DeviceId,
                 Csr = Convert.ToBase64String(csrData),
+                Replace = "*", // Replace any active credential operation
             };
-            CertificateSigningResponse response = await _deviceClient.SendCertificateSigningRequestAsync(csrRequest, _cts.Token);
+
+            // Send CSR request with keepalive messages running in parallel
+            // This matches the Python reference implementation behavior
+            CertificateSigningResponse response = await SendCsrWithKeepaliveAsync(csrRequest);
             Console.WriteLine($"Received certificate response with {response.Certificates?.Count ?? 0} certificate(s)");
 
             if (response.Certificates == null || response.Certificates.Count == 0)
@@ -98,8 +107,8 @@ public class CertificateSigningRequestSample : IDisposable
 
             await Task.Delay(TimeSpan.FromSeconds(5), _cts.Token); // Pause to ensure final ack is sent
 
-            // Step 5: Disconnect and reconnect with renewed certificate
-            PrintStep(5, "Reconnecting with renewed certificate");
+            // Step 6: Disconnect and reconnect with renewed certificate
+            PrintStep(6, "Reconnecting with renewed certificate");
             Console.WriteLine("Disconnecting from IoT Hub...");
             await _deviceClient.CloseAsync(_cts.Token);
             _deviceClient.Dispose();
@@ -113,8 +122,8 @@ public class CertificateSigningRequestSample : IDisposable
                 credentials.KeyPath);
             Console.WriteLine("Reconnected with renewed certificate successfully!");
 
-            // Step 6: Send telemetry messages
-            PrintStep(6, "Sending telemetry messages");
+            // Step 7: Send telemetry messages
+            PrintStep(7, "Sending telemetry messages");
             await SendTelemetryAsync(_parameters.MessageCount);
 
             return 0;
@@ -317,6 +326,122 @@ public class CertificateSigningRequestSample : IDisposable
         await deviceClient.OpenAsync(_cts.Token);
 
         return deviceClient;
+    }
+
+    private async Task SendTestMessageAsync()
+    {
+        // Send a test message to verify connectivity before CSR request
+        // This matches the Python reference implementation behavior
+        var testPayload = JsonSerializer.Serialize(new
+        {
+            type = "pre-csr-test",
+            timestamp = DateTime.UtcNow.ToString("o"),
+            message = "Verifying connectivity before certificate renewal"
+        });
+
+        using var message = new Message(Encoding.UTF8.GetBytes(testPayload))
+        {
+            ContentEncoding = "utf-8",
+            ContentType = "application/json",
+        };
+
+        await _deviceClient!.SendEventAsync(message, _cts.Token);
+    }
+
+    /// <summary>
+    /// Sends a CSR request while running keepalive messages in parallel.
+    /// This matches the Python reference implementation behavior where keepalive
+    /// messages are sent every 5 seconds while waiting for the certificate response.
+    /// </summary>
+    private async Task<CertificateSigningResponse> SendCsrWithKeepaliveAsync(CertificateSigningRequest csrRequest)
+    {
+        const int KeepaliveIntervalSeconds = 5;
+
+        // Create a cancellation token source that will be cancelled when the CSR response arrives
+        using var keepaliveCts = CancellationTokenSource.CreateLinkedTokenSource(_cts.Token);
+
+        // Start the keepalive task
+        Task keepaliveTask = SendKeepaliveMessagesAsync(KeepaliveIntervalSeconds, keepaliveCts.Token);
+
+        try
+        {
+            // Send the CSR request and wait for the response
+            Console.WriteLine("Sending CSR request (keepalive messages will be sent every 5 seconds)...");
+            CertificateSigningResponse response = await _deviceClient!.SendCertificateSigningRequestAsync(csrRequest, _cts.Token);
+
+            // Cancel the keepalive task now that we have the response
+            keepaliveCts.Cancel();
+
+            // Wait for the keepalive task to complete gracefully
+            try
+            {
+                await keepaliveTask;
+            }
+            catch (OperationCanceledException)
+            {
+                // Expected when we cancel the keepalive
+            }
+
+            return response;
+        }
+        catch
+        {
+            // Cancel the keepalive task on error
+            keepaliveCts.Cancel();
+
+            try
+            {
+                await keepaliveTask;
+            }
+            catch (OperationCanceledException)
+            {
+                // Expected
+            }
+
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Sends keepalive messages at the specified interval until cancelled.
+    /// </summary>
+    private async Task SendKeepaliveMessagesAsync(int intervalSeconds, CancellationToken cancellationToken)
+    {
+        int keepaliveCount = 0;
+
+        try
+        {
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                await Task.Delay(TimeSpan.FromSeconds(intervalSeconds), cancellationToken);
+
+                keepaliveCount++;
+                var keepalivePayload = JsonSerializer.Serialize(new
+                {
+                    type = "keepalive",
+                    seq = keepaliveCount,
+                    timestamp = DateTime.UtcNow.ToString("o"),
+                    message = "Waiting for certificate response"
+                });
+
+                using var message = new Message(Encoding.UTF8.GetBytes(keepalivePayload))
+                {
+                    ContentEncoding = "utf-8",
+                    ContentType = "application/json",
+                };
+
+                await _deviceClient!.SendEventAsync(message, cancellationToken);
+                Console.WriteLine($"  [Keepalive #{keepaliveCount}] Sent at {DateTime.UtcNow:HH:mm:ss}");
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            Console.WriteLine($"  [Keepalive] Stopped after {keepaliveCount} message(s)");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"  [Keepalive] Error: {ex.Message}");
+        }
     }
 
     private async Task SendTelemetryAsync(int messageCount)
