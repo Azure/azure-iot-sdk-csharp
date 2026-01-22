@@ -92,7 +92,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         // Topic names for credential management (certificate signing requests).
         // Device subscribes to "$iothub/credentials/res/#" to receive responses.
-        // Device publishes CSR to "$iothub/credentials/POST/?$rid={request_id}&$op=issueCertificate"
+        // Device publishes CSR to "$iothub/credentials/POST/issueCertificate/?$rid={request_id}"
         // Gateway responds on "$iothub/credentials/res/{status}/?$rid={request_id}"
         private const string CredentialsResponseTopicFilter = "$iothub/credentials/res/#";
         private const string CredentialsResponseTopicPrefix = "$iothub/credentials/res/";
