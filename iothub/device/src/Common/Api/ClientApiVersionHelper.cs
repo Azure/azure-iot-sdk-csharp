@@ -6,13 +6,8 @@ namespace Microsoft.Azure.Devices.Client
     internal class ClientApiVersionHelper
     {
         internal const string ApiVersionQueryPrefix = "api-version=";
-        internal const string ApiVersionLatest = "2020-09-30";
-
-        // Preview API version required for credential management features (Certificate Signing Requests)
-        internal const string ApiVersionPreview = "2025-08-01-preview";
-
+        internal const string ApiVersionLatest = "2025-08-01-preview";
         public const string ApiVersionString = ApiVersionLatest;
         public const string ApiVersionQueryStringLatest = ApiVersionQueryPrefix + ApiVersionString;
-        public const string ApiVersionQueryStringPreview = ApiVersionQueryPrefix + ApiVersionPreview;
     }
 }

@@ -96,7 +96,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         // Gateway responds on "$iothub/credentials/res/{status}/?$rid={request_id}"
         private const string CredentialsResponseTopicFilter = "$iothub/credentials/res/#";
         private const string CredentialsResponseTopicPrefix = "$iothub/credentials/res/";
-        private const string CredentialsRequestTopic = "$iothub/credentials/POST/?$rid={0}&$op=issueCertificate";
+        private const string CredentialsRequestTopic = "$iothub/credentials/POST/issueCertificate/?$rid={0}";
         private const string CredentialsResponseTopicPattern = @"\$iothub/credentials/res/(\d+)/(\?.+)";
 
         // Timeout for credential operations (60 seconds + 30 second grace = 90 seconds)
