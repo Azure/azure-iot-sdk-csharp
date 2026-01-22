@@ -97,6 +97,7 @@ $Region = $Region.Replace(' ', '')
 $dpsUploadCertificateName = "group1-certificate"
 $hubUploadCertificateName = "rootCA"
 $iothubUnitsToBeCreated = 5;
+$managedIdentityName = "$ResourceGroup-user-msi"
 
 # OpenSSL has dropped support for SHA1 signed certificates in Ubuntu 20.04, so our test resources will use SHA256 signed certificates instead.
 $certificateHashAlgorithm = "SHA256"
