@@ -18,6 +18,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 {
     [TestClass]
     [TestCategory("InvalidServiceCertificate")]
+    [Ignore("Test infrastructure for invalid server certs testing is not supported currently")]
     public class ProvisioningCertificateValidationE2ETest : E2EMsTestBase
     {
         private static DirectoryInfo s_x509CertificatesFolder;
