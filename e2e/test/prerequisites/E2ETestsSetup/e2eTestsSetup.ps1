@@ -11,18 +11,7 @@ param(
     [string] $SubscriptionId,
 
     [Parameter(Mandatory)]
-    [string] $GroupCertificatePassword,
-
-    # Specify this on the first execution to get everything installed in powershell. It does not need to be run every time.
-    [Parameter()]
-    [switch] $InstallDependencies,
-
-    # Deprecated. Recommend docker on WSL2 instead - setup with <repo>/e2e/test/docker/docker-setup.sh on WSL.
-    # Installing Docker Desktop on Windows require using HyperV or WSL, with HyperV by default, which can interfere with certain proxy setup for testing.
-    # USE THIS OPTION IF YOU KNOW YOU NEED THIS.
-    # Specify this on the first execution to get everything installed in powershell. It does not need to be run every time.
-    [Parameter()]
-    [switch] $InstallDockerDesktopOnWindows,
+    [string] $GroupCertificatePassword
 )
 
 $startTime = (Get-Date)
@@ -42,15 +31,6 @@ if ($PSversiontable.PSVersion -lt "7.0.0")
     Write-Error "This script requires PowerShell v7. Please install it and rerun."
     exit
 }
-
-########################################################################################################
-# Log the values of optional parameters passed
-########################################################################################################
-
-Write-Host "`nInstallDependencies $InstallDependencies"
-Write-Host "`InstallDockerDesktopOnWindows $InstallDockerDesktopOnWindows"
-Write-Host "`GenerateResourcesForTestDevOpsPipeline $GenerateResourcesForTestDevOpsPipeline"
-Write-Host "`EnableIotHubSecuritySolution $EnableIotHubSecuritySolution"
 
 ###########################################################################
 # Connect-AzureSubscription - gets current Azure context or triggers a 
@@ -277,40 +257,6 @@ $iotHubX509ChainDeviceCert = New-SelfSignedCertificate `
 
 Export-PFXCertificate -cert $iotHubX509ChainDeviceCert -filePath $iotHubX509ChainDevicPfxPath -password $iotHubCredentials.Password | Out-Null
 $iothubX509ChainDevicePfxBase64 = [Convert]::ToBase64String((Get-Content $iotHubX509ChainDevicPfxPath -AsByteStream));
-
-########################################################################################################
-# Install latest version of az cli.
-########################################################################################################
-
-if ($InstallDependencies)
-{
-    Write-Host "`nInstalling and updating AZ CLI."
-    Install-Module -Name Az -AllowClobber -Force
-    Update-Module -Name Az
-}
-
-Check-AzureCliVersion
-
-########################################################################################################
-# Install chocolatey and docker.
-########################################################################################################
-
-if ($InstallDependencies -And $InstallDockerDesktopOnWindows)
-{
-    Write-Host "`nSetting up docker images on windows."
-    az acr login -n aziotacr -t --output tsv --query accessToken | docker login aziotacr.azurecr.io --username 00000000-0000-0000-0000-000000000000 --password-stdin
-    docker pull aziotacr.azurecr.io/aziotbld/testproxy
-}
-
-#######################################################################################################
-# Install azure iot extension.
-#######################################################################################################
-
-if ($InstallDependencies)
-{
-    Write-Host "`nInstalling azure iot cli extensions."
-    az extension add --name azure-iot
-}
 
 ######################################################################################################
 # Setup azure context.
@@ -587,19 +533,6 @@ Write-Host "##vso[task.setvariable variable=IOT_DPS_CONNECTION_STRING;isOutput=t
 Write-Host "##vso[task.setvariable variable=IOT_DPS_ID_SCOPE;isOutput=true]$dpsIdScope"
 Write-Host "##vso[task.setvariable variable=IS_BASIC_TIER_HUB;isOutput=true]false"
 
-
-###################################################################################################################################
-# Run docker containers for proxy.
-###################################################################################################################################
-
-#if ($InstallDependencies -And $InstallDockerDesktopOnWindows)
-#{
-#    if (-not (docker images -q aziotbld/testproxy))
-#    {
-#        Write-Host "Setting up docker container for proxy."
-#        docker run -d --restart unless-stopped --name azure-iot-tinyproxy -p 127.0.0.1:8888:8888 aziotbld/testproxy
-#    }
-#}
 
 ############################################################################################################################
 # Notify user that openssl is required for running E2E tests.
