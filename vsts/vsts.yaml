@@ -152,7 +152,7 @@ jobs:
         inputs:
           targetType: inline
           script: |
-            dotnet test
+            dotnet test --logger trx
         env:
           # Environment variables for IoT Hub E2E tests
           IOTHUB_CONNECTION_STRING: $(IOTHUB_CONNECTION_STRING)
@@ -297,7 +297,7 @@ jobs:
         inputs:
           targetType: inline
           script: |
-            dotnet test
+            dotnet test --logger trx
             
       - task: PublishTestResults@2
         displayName: "Publish Test Results **/*.trx"
