@@ -147,6 +147,21 @@ jobs:
 
       # https://docs.microsoft.com/azure/devops/pipelines/tasks/tool/dotnet-core-tool-installer?view=azure-devops
 
+      # The e2e tests use a test proxy written in Java
+      - task: JavaToolInstaller@0
+        inputs:
+          versionSpec: 11
+          jdkArchitectureOption: 'x64'
+          jdkSourceOption: 'PreInstalled'
+
+      - task: PowerShell@2
+        displayName: 'Run test proxy'
+        condition: eq(variables.SHOULD_RUN, 'True')
+        inputs:
+          targetType: inline
+          script: |
+            mvn exec:java `-Dexec.mainClass="com.microsoft.azure.sdk.iot.Main" -f .\testProxy\pom.xml &
+
       # Linux requires .NET 8.0 install for tests to run, no matter which framework target is being tested
       - task: UseDotNet@2
         displayName: 'Use .NET SDK 8.0'
@@ -333,6 +348,21 @@ jobs:
       - powershell: ./vsts/start_tpm_windows.ps1
         displayName: "Start TPM Simulator"
         condition: eq(variables.SHOULD_RUN, 'True')
+
+      # The e2e tests use a test proxy written in Java
+      - task: JavaToolInstaller@0
+        inputs:
+          versionSpec: 11
+          jdkArchitectureOption: 'x64'
+          jdkSourceOption: 'PreInstalled'
+
+      - task: PowerShell@2
+        displayName: 'Run test proxy'
+        condition: eq(variables.SHOULD_RUN, 'True')
+        inputs:
+          targetType: inline
+          script: |
+            mvn exec:java `-Dexec.mainClass="com.microsoft.azure.sdk.iot.Main" -f .\testProxy\pom.xml &
 
       - task: PowerShell@2
         displayName: 'build and run tests'
