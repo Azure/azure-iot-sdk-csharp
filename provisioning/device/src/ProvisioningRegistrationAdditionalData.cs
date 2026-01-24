@@ -4,7 +4,7 @@
 namespace Microsoft.Azure.Devices.Provisioning.Client
 {
     /// <summary>
-    /// Additional parameters to be passed over registration instance
+    /// Additional parameters to be passed over registartion instance
     /// </summary>
     /// <returns>The registration result.</returns>
     public class ProvisioningRegistrationAdditionalData
@@ -13,11 +13,5 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// Additional (optional) Json Data to be sent to the service 
         /// </summary>
         public string JsonData { get; set; }
-
-        /// <summary>
-        /// Base64-encoded DER format Certificate Signing Request.
-        /// When provided during registration, DPS will issue a client certificate.
-        /// </summary>
-        public string ClientCertificateSigningRequest { get; set; }
     }
 }

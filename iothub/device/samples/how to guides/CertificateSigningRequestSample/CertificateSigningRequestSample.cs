@@ -11,26 +11,32 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client;
-using Microsoft.Azure.Devices.Provisioning.Client;
-using Microsoft.Azure.Devices.Provisioning.Client.Transport;
-using Microsoft.Azure.Devices.Shared;
 
 namespace CertificateSigningRequestSample;
 
 /// <summary>
-/// Demonstrates certificate-based authentication and certificate renewal via the credential management API.
+/// Demonstrates certificate renewal via the IoT Hub credential management API.
+/// 
+/// Prerequisites:
+/// - Device must already be provisioned with IoT Hub
+/// - Existing certificate and private key files must be available
+/// - A metadata JSON file with assigned_hub and device_id
 /// 
 /// This sample:
-/// 1. Provisions a device with Azure DPS using symmetric key + CSR to get an issued certificate
-/// 2. Connects to IoT Hub using the issued certificate
-/// 3. Creates a new CSR and requests certificate renewal from IoT Hub
-/// 4. Reconnects with the renewed certificate
-/// 5. Sends telemetry messages
+/// 1. Loads existing credentials from disk (certificate, key, and metadata)
+/// 2. Connects to IoT Hub using the existing certificate
+/// 3. Sends a test message to verify connectivity
+/// 4. Creates a new CSR and requests certificate renewal from IoT Hub
+/// 5. Saves the renewed certificate
+/// 6. Reconnects with the renewed certificate
+/// 7. Sends telemetry messages to verify the new certificate works
+/// 
+/// Note: DPS provisioning with CSR is not yet supported in this SDK.
+/// Use the Python SDK or Azure CLI for initial device provisioning with CSR.
 /// </summary>
 public class CertificateSigningRequestSample : IDisposable
 {
     private const int MessageSize = 256;
-    private const string ApiVersion = "2025-08-01-preview";
 
     private readonly Parameters _parameters;
     private readonly CancellationTokenSource _cts;
@@ -56,12 +62,13 @@ public class CertificateSigningRequestSample : IDisposable
     {
         try
         {
-            // Step 1: Load existing credentials or provision device with DPS
+            // Step 1: Load existing credentials (certificate, key, metadata)
             PrintStep(1, "Loading credentials");
-            var credentials = await LoadOrProvisionCredentialsAsync();
+            var credentials = await LoadCredentialsAsync();
+            Console.WriteLine("Credentials loaded successfully.");
 
-            // Step 2: Connect to IoT Hub with DPS-issued certificate
-            PrintStep(2, "Connecting to IoT Hub with DPS certificate");
+            // Step 2: Connect to IoT Hub with existing certificate
+            PrintStep(2, "Connecting to IoT Hub with certificate");
             _deviceClient = await ConnectWithCertificateAsync(
                 credentials.AssignedHub,
                 credentials.DeviceId,
@@ -157,18 +164,33 @@ public class CertificateSigningRequestSample : IDisposable
         }
     }
 
-    private async Task<DeviceCredentials> LoadOrProvisionCredentialsAsync()
+    private Task<DeviceCredentials> LoadCredentialsAsync()
     {
         DeviceCredentials? credentials = TryLoadExistingCredentials();
 
         if (credentials != null)
         {
-            Console.WriteLine("Using existing credentials, skipping DPS provisioning");
-            return credentials;
+            return Task.FromResult(credentials);
         }
 
-        Console.WriteLine("No existing credentials found, provisioning with DPS...");
-        return await ProvisionDeviceAsync();
+        // Credentials not found - provide helpful error message
+        string certPath = Path.Combine(_parameters.OutputDir, $"{_parameters.DeviceName}.cert.pem");
+        string keyPath = Path.Combine(_parameters.OutputDir, $"{_parameters.DeviceName}.key.pem");
+        string metadataPath = Path.Combine(_parameters.OutputDir, $"{_parameters.DeviceName}.json");
+
+        throw new InvalidOperationException(
+            $"Required credential files not found. This sample requires pre-existing credentials.\n\n" +
+            $"Expected files:\n" +
+            $"  - Certificate: {certPath}\n" +
+            $"  - Private Key: {keyPath}\n" +
+            $"  - Metadata:    {metadataPath}\n\n" +
+            $"The metadata JSON file should contain:\n" +
+            $"  {{\n" +
+            $"    \"assigned_hub\": \"your-hub.azure-devices.net\",\n" +
+            $"    \"device_id\": \"{_parameters.DeviceName}\"\n" +
+            $"  }}\n\n" +
+            $"Note: DPS provisioning with CSR is not yet supported in this SDK.\n" +
+            $"Use the Python SDK (cert_test.py) or Azure CLI for initial device provisioning.");
     }
 
     private DeviceCredentials? TryLoadExistingCredentials()
@@ -202,92 +224,6 @@ public class CertificateSigningRequestSample : IDisposable
         {
             AssignedHub = assignedHub,
             DeviceId = deviceId,
-            CertificatePath = certPath,
-            KeyPath = keyPath,
-        };
-    }
-
-    private async Task<DeviceCredentials> ProvisionDeviceAsync()
-    {
-        Console.WriteLine($"Provisioning device '{_parameters.DeviceName}' with DPS...");
-
-        // Derive device key from SAS key
-        string deviceKey = ComputeDerivedSymmetricKey(_parameters.SasKey, _parameters.DeviceName);
-
-        // Create security provider
-        using var security = new SecurityProviderSymmetricKey(
-            _parameters.DeviceName,
-            deviceKey,
-            null);
-
-        // Generate EC private key (prime256v1 = SECP256R1)
-        Console.WriteLine("Generating EC private key...");
-        _privateKey = ECDsa.Create(ECCurve.NamedCurves.nistP256);
-
-        // Generate CSR
-        Console.WriteLine("Creating certificate signing request...");
-        byte[] csrData = CreateCsr(_privateKey, _parameters.DeviceName);
-
-        // Create provisioning client with CSR
-        using ProvisioningTransportHandler transportHandler = new ProvisioningTransportHandlerMqtt(TransportFallbackType.TcpOnly);
-        ProvisioningDeviceClient provClient = ProvisioningDeviceClient.Create(
-            _parameters.ProvisioningHost,
-            _parameters.IdScope,
-            security,
-            transportHandler);
-
-        // Set the CSR on the provisioning data
-        var additionalData = new ProvisioningRegistrationAdditionalData
-        {
-            ClientCertificateSigningRequest = Convert.ToBase64String(csrData),
-        };
-
-        Console.WriteLine("Registering with DPS...");
-        DeviceRegistrationResult result = await provClient.RegisterAsync(additionalData, _cts.Token);
-
-        if (result.Status != ProvisioningRegistrationStatusType.Assigned)
-        {
-            throw new InvalidOperationException($"Registration failed with status: {result.Status}");
-        }
-
-        Console.WriteLine($"Device assigned to hub: {result.AssignedHub}");
-        Console.WriteLine($"Device ID: {result.DeviceId}");
-
-        // Get issued certificate
-        if (result.IssuedClientCertificate == null || result.IssuedClientCertificate.Count == 0)
-        {
-            throw new InvalidOperationException("No certificate issued by DPS");
-        }
-
-        // Convert certificate list to PEM
-        string certPem = CertificateListToPem(result.IssuedClientCertificate);
-
-        // Serialize private key to PEM
-        string keyPem = ExportPrivateKeyToPem(_privateKey);
-
-        // Create output directory if it doesn't exist
-        Directory.CreateDirectory(_parameters.OutputDir);
-
-        // Save certificate and key to disk
-        string certPath = Path.Combine(_parameters.OutputDir, $"{_parameters.DeviceName}.cert.pem");
-        string keyPath = Path.Combine(_parameters.OutputDir, $"{_parameters.DeviceName}.key.pem");
-
-        Console.WriteLine($"Saving certificate to: {certPath}");
-        File.WriteAllText(certPath, certPem);
-
-        Console.WriteLine($"Saving private key to: {keyPath}");
-        File.WriteAllText(keyPath, keyPem);
-
-        // Save metadata
-        string metadataPath = Path.Combine(_parameters.OutputDir, $"{_parameters.DeviceName}.json");
-        var metadata = new { assigned_hub = result.AssignedHub, device_id = result.DeviceId };
-        Console.WriteLine($"Saving metadata to: {metadataPath}");
-        File.WriteAllText(metadataPath, JsonSerializer.Serialize(metadata, new JsonSerializerOptions { WriteIndented = true }));
-
-        return new DeviceCredentials
-        {
-            AssignedHub = result.AssignedHub,
-            DeviceId = result.DeviceId,
             CertificatePath = certPath,
             KeyPath = keyPath,
         };
@@ -493,13 +429,6 @@ public class CertificateSigningRequestSample : IDisposable
         return request.CreateSigningRequest();
     }
 
-    private static string ComputeDerivedSymmetricKey(string enrollmentGroupKey, string deviceId)
-    {
-        byte[] keyBytes = Convert.FromBase64String(enrollmentGroupKey);
-        using var hmac = new HMACSHA256(keyBytes);
-        byte[] hash = hmac.ComputeHash(Encoding.UTF8.GetBytes(deviceId));
-        return Convert.ToBase64String(hash);
-    }
 
     private static string CertificateListToPem(IList<string> certList)
     {
@@ -509,15 +438,6 @@ public class CertificateSigningRequestSample : IDisposable
         return beginHeader + string.Join(separator, certList) + endFooter;
     }
 
-    private static string ExportPrivateKeyToPem(ECDsa key)
-    {
-        byte[] privateKeyBytes = key.ExportPkcs8PrivateKey();
-        return new StringBuilder()
-            .AppendLine("-----BEGIN PRIVATE KEY-----")
-            .AppendLine(Convert.ToBase64String(privateKeyBytes, Base64FormattingOptions.InsertLineBreaks))
-            .AppendLine("-----END PRIVATE KEY-----")
-            .ToString();
-    }
 
     private static string SaveRenewedCertificate(IList<string> certificates, string outputDir, string deviceName)
     {

@@ -1510,12 +1510,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                         throw new TimeoutException(
                             $"Certificate signing request {rid} operation already expired");
                     }
-
-                    // Add small grace period, cap at reasonable max
-                    phase2Timeout = phase2Timeout.Add(TimeSpan.FromSeconds(30));
-                    if (phase2Timeout > TimeSpan.FromHours(13))
-                        phase2Timeout = TimeSpan.FromHours(13);
-
+                    
                     bool phase2Received = await phase2Complete.WaitAsync(phase2Timeout, cancellationToken)
                         .ConfigureAwait(false);
 
@@ -1580,10 +1575,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         {
             bool isTransient = error.ErrorCode switch
             {
-                429002 => true,  // Throttle - retry with 1s initial
-                429003 => true,  // Throttle - retry with 1s initial
-                503001 => true,             // ServiceUnavailable - retry with 5s initial
-                500001 => true,             // ServerError - retry with 5min initial
+                429002 => true,  // ThrottleBacklogLimitExceeded - retry with 1s initial
+                429003 => true,  // ThrottlingBacklogTimeout - retry with 1s initial
+                503001 => true,  // ServiceUnavailable - retry with 5s initial
+                500001 => true,  // ServerError - retry with 5min initial
                 _ => false
             };
 
