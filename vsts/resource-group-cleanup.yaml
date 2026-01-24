@@ -27,6 +27,7 @@ jobs:
               $rgName = $($resourceGroupJsonObject.name)
               if ($rgName.StartsWith("javasdkgate") -or $rgName.StartsWith("dotnetsdkgate")) 
               {
-                  Write-Host $($resourceGroupJsonObject.name)
+                  Write-Host "Deleting resource group with name:" $rgName
+                  az group delete --name $rgName
               }
           }
