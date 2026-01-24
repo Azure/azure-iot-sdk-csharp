@@ -160,8 +160,8 @@ jobs:
         inputs:
           targetType: inline
           script: |
-            mvn -f $(Build.SourcesDirectory)\testProxy\pom.xml clean install
-            mvn exec:java `-Dexec.mainClass="com.microsoft.azure.sdk.iot.Main" -f $(Build.SourcesDirectory)\testProxy\pom.xml &
+            mvn -f $(Build.SourcesDirectory)/testProxy/pom.xml clean install
+            mvn exec:java `-Dexec.mainClass="com.microsoft.azure.sdk.iot.Main" -f $(Build.SourcesDirectory)/testProxy/pom.xml &
 
       # Linux requires .NET 8.0 install for tests to run, no matter which framework target is being tested
       - task: UseDotNet@2
@@ -363,8 +363,8 @@ jobs:
         inputs:
           targetType: inline
           script: |
-            mvn -f $(Build.SourcesDirectory)\testProxy\pom.xml clean install
-            mvn exec:java `-Dexec.mainClass="com.microsoft.azure.sdk.iot.Main" -f $(Build.SourcesDirectory)\testProxy\pom.xml &
+            mvn -f $(Build.SourcesDirectory)/testProxy/pom.xml clean install
+            mvn exec:java `-Dexec.mainClass="com.microsoft.azure.sdk.iot.Main" -f $(Build.SourcesDirectory)/testProxy/pom.xml &
 
       - task: PowerShell@2
         displayName: 'build and run tests'
