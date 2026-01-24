@@ -70,7 +70,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
-        [Ignore("Azure DevOps Windows test environment doesn't support proxies currently")]
         public async Task DPS_Registration_Http_X509_IndividualEnrollment_RegisterOk()
         {
             await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Http1, AttestationMechanismType.X509, EnrollmentType.Individual, false).ConfigureAwait(false);
@@ -78,7 +77,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
-        [Ignore("Azure DevOps Windows test environment doesn't support proxies currently")]
         public async Task DPS_Registration_Http_X509_GroupEnrollment_RegisterOk()
         {
             await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Http1, AttestationMechanismType.X509, EnrollmentType.Group, false).ConfigureAwait(false);
@@ -104,7 +102,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         [TestCategory("Proxy")]
         [TestCategory("Flaky")] // Can't guarantee only a single test will make a call to tpm due to class-level parallelization
         [DoNotParallelize] //TPM tests need to execute in serial as tpm only accepts one connection at a time
-        [Ignore("Azure DevOps Windows test environment doesn't support proxies currently")]
         public async Task DPS_Registration_HttpWithProxy_Tpm_RegisterOk()
         {
             await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Http1, AttestationMechanismType.Tpm, EnrollmentType.Individual, true, s_proxyServerAddress).ConfigureAwait(false);
@@ -116,7 +113,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         [TestCategory("Flaky")] // Can't guarantee only a single test will make a call to tpm due to class-level parallelization
         [DoNotParallelize] //TPM tests need to execute in serial as tpm only accepts one connection at a time
         [TestCategory("LongRunning")]
-        [Ignore("Azure DevOps Windows test environment doesn't support proxies currently")]
         public async Task DPS_Registration_HttpWithNullProxy_Tpm_RegisterOk()
         {
             await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Http1, AttestationMechanismType.Tpm, EnrollmentType.Individual, true).ConfigureAwait(false);
@@ -125,7 +121,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         [TestCategory("Proxy")]
-        [Ignore("Azure DevOps Windows test environment doesn't support proxies currently")]
         public async Task DPS_Registration_HttpWithProxy_SymmetricKey_IndividualEnrollment_RegisterOk()
         {
             await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Http1, AttestationMechanismType.SymmetricKey, EnrollmentType.Individual, true, s_proxyServerAddress).ConfigureAwait(false);
@@ -134,7 +129,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         [TestCategory("Proxy")]
-        [Ignore("Azure DevOps Windows test environment doesn't support proxies currently")]
         public async Task DPS_Registration_HttpWithProxy_SymmetricKey_GroupEnrollment_RegisterOk()
         {
             await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Http1, AttestationMechanismType.SymmetricKey, EnrollmentType.Group, true, s_proxyServerAddress).ConfigureAwait(false);
@@ -221,7 +215,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         [TestCategory("Proxy")]
-        [Ignore("Azure DevOps Windows test environment doesn't support proxies currently")]
         public async Task DPS_Registration_AmqpWsWithProxy_X509_IndividualEnrollment_RegisterOk()
         {
             await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Amqp_WebSocket_Only, AttestationMechanismType.X509, EnrollmentType.Individual, true, s_proxyServerAddress).ConfigureAwait(false);
@@ -230,7 +223,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         [TestCategory("Proxy")]
-        [Ignore("Azure DevOps Windows test environment doesn't support proxies currently")]
         public async Task DPS_Registration_AmqpWsWithNullProxy_X509_IndividualEnrollment_RegisterOk()
         {
             await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Amqp_WebSocket_Only, AttestationMechanismType.X509, EnrollmentType.Individual, true).ConfigureAwait(false);
@@ -240,7 +232,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         [Timeout(TestTimeoutMilliseconds)]
         [TestCategory("Proxy")]
         [TestCategory("LongRunning")]
-        [Ignore("Azure DevOps Windows test environment doesn't support proxies currently")]
         public async Task DPS_Registration_AmqpWsWithProxy_SymmetricKey_IndividualEnrollment_RegisterOk()
         {
             await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Amqp_WebSocket_Only, AttestationMechanismType.SymmetricKey, EnrollmentType.Individual, true, s_proxyServerAddress).ConfigureAwait(false);
@@ -249,7 +240,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         [TestCategory("Proxy")]
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
-        [Ignore("Azure DevOps Windows test environment doesn't support proxies currently")]
         public async Task DPS_Registration_AmqpWsWithProxy_SymmetricKey_GroupEnrollment_RegisterOk()
         {
             await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Amqp_WebSocket_Only, AttestationMechanismType.SymmetricKey, EnrollmentType.Group, true, s_proxyServerAddress).ConfigureAwait(false);
@@ -318,7 +308,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         [TestCategory("Proxy")]
-        [Ignore("Azure DevOps Windows test environment doesn't support proxies currently")]
         public async Task DPS_Registration_MqttWsWithProxy_X509_IndividualEnrollment_RegisterOk()
         {
             await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Mqtt_WebSocket_Only, AttestationMechanismType.X509, EnrollmentType.Individual, true, s_proxyServerAddress).ConfigureAwait(false);
@@ -327,7 +316,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         [TestCategory("Proxy")]
-        [Ignore("Azure DevOps Windows test environment doesn't support proxies currently")]
         public async Task DPS_Registration_MqttWsWithNullProxy_X509_IndividualEnrollment_RegisterOk()
         {
             await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Mqtt_WebSocket_Only, AttestationMechanismType.X509, EnrollmentType.Individual, true).ConfigureAwait(false);
@@ -336,7 +324,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         [TestCategory("Proxy")]
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
-        [Ignore("Azure DevOps Windows test environment doesn't support proxies currently")]
         public async Task DPS_Registration_MqttWsWithProxy_SymmetricKey_IndividualEnrollment_RegisterOk()
         {
             await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Mqtt_WebSocket_Only, AttestationMechanismType.SymmetricKey, EnrollmentType.Individual, true, s_proxyServerAddress).ConfigureAwait(false);
@@ -345,7 +332,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         [TestCategory("Proxy")]
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
-        [Ignore("Azure DevOps Windows test environment doesn't support proxies currently")]
         public async Task DPS_Registration_MqttWsWithProxy_SymmetricKey_GroupEnrollment_RegisterOk()
         {
             await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Mqtt_WebSocket_Only, AttestationMechanismType.SymmetricKey, EnrollmentType.Group, true, s_proxyServerAddress).ConfigureAwait(false);
@@ -583,7 +569,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         [TestCategory("LongRunning")]
-        [Ignore("Azure DevOps Windows test environment doesn't support proxies currently")]
         public async Task DPS_Registration_Mqtt_X509_IndividualEnrollment_InvalidGlobalAddress_RegisterFail()
         {
             await ProvisioningDeviceClientInvalidGlobalAddressRegisterFailAsync(Client.TransportType.Mqtt_Tcp_Only, AttestationMechanismType.X509, EnrollmentType.Individual).ConfigureAwait(false);
