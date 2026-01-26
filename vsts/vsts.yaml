@@ -163,19 +163,20 @@ jobs:
          performMultiLevelLookup: true
          installationPath: $(Agent.ToolsDirectory)/dotnet
 
-      - task: PowerShell@2
-        displayName: 'build and run tests'
+      - task: Bash@3
+        displayName: 'Downloaded nuget package files checkpoint'
         condition: eq(variables.SHOULD_RUN, 'True')
         inputs:
-          targetType: inline
+          targetType: 'inline'
           script: |
             # Run Test Proxy
             $pomPath = (Get-Item $(Build.SourcesDirectory)/testProxy/pom.xml).FullName
             Write-Host "Using pom path of: " $pomPath
             mvn -f $pomPath clean install -q
-            mvn exec:java `-Dexec.mainClass="com.microsoft.azure.sdk.iot.Main" -f $pomPath
+            mvn exec:java `-Dexec.mainClass="com.microsoft.azure.sdk.iot.Main" -f $pomPath &
 
             dotnet test --logger trx
+
         env:
           # Environment variables for IoT Hub E2E tests
           IOTHUB_CONNECTION_STRING: $(IOTHUB_CONNECTION_STRING)
