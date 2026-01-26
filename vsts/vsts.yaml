@@ -390,8 +390,6 @@ jobs:
     displayName: .Net SDL Analyzers
     condition: false()
     timeoutInMinutes: 60
-
-    condition: succeeded()
     pool:
       vmImage: windows-2022
     steps:
