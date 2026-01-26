@@ -72,7 +72,6 @@ namespace Microsoft.Azure.Devices.Client
 
         Task DisableTwinPatchAsync(CancellationToken cancellationToken);
 
-        // Certificate Signing Request (Credential Management)
         Task<CertificateSigningResponse> SendCertificateSigningRequestAsync(
             CertificateSigningRequest request,
             CancellationToken cancellationToken);

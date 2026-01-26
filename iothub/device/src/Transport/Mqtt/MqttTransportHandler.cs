@@ -114,9 +114,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         private static readonly HashSet<int> s_transientErrorCodes = new HashSet<int>
         {
             429002, // ThrottleBacklogLimitExceeded - retry with 1s initial
-            429003, // ThrottlingBacklogTimeout - retry with 1s initial    
-            503001, // ServiceUnavailable - retry with 5s initial          
-            500001  // ServerError - retry with 5min initial               
+            429003, // ThrottlingBacklogTimeout - retry with 1s initial
+            503001, // ServiceUnavailable - retry with 5s initial
+            500001  // ServerError - retry with 5min initial
         };
 
         private readonly string _generationId = Guid.NewGuid().ToString();
@@ -1426,10 +1426,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 cancellationToken.ThrowIfCancellationRequested();
                 EnsureValidState();
 
-                // Subscribe to credentials response topic
                 await EnableCredentialsAsync(cancellationToken).ConfigureAwait(false);
 
-                // Generate request ID (compliant: 36 chars, alphanumeric + dash, no leading/trailing dash)
                 string rid = Guid.NewGuid().ToString();
 
                 using var phase1Complete = new SemaphoreSlim(0);  // 202 received
@@ -1455,19 +1453,16 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                             if (status == 202)
                             {
-                                // Phase 1 complete: Request accepted
                                 acceptedResponse = JsonConvert.DeserializeObject<CertificateAcceptedResponse>(body);
                                 phase1Complete.Release();
                             }
                             else if (status == 200)
                             {
-                                // Phase 2 complete: Success with certificate
                                 response = JsonConvert.DeserializeObject<CertificateSigningResponse>(body);
                                 phase2Complete.Release();
                             }
                             else
                             {
-                                // Error - parse and throw appropriate exception
                                 var error = JsonConvert.DeserializeObject<CredentialErrorResponse>(body);
                                 throw CreateCredentialException(error, rid, status);
                             }
@@ -1485,7 +1480,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 {
                     _credentialsResponseEvent += OnCredentialsResponse;
 
-                    // Serialize and send the request
                     string body = JsonConvert.SerializeObject(request);
                     using var bodyStream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(body));
                     using var requestMessage = new Message(bodyStream);
@@ -1497,7 +1491,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                     await SendEventAsync(requestMessage, cancellationToken).ConfigureAwait(false);
 
-                    // PHASE 1: Wait for 202 Accepted (90 second timeout)
                     bool phase1Received = await phase1Complete.WaitAsync(s_credentialsTimeout, cancellationToken)
                         .ConfigureAwait(false);
 
@@ -1510,7 +1503,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                             $"Certificate signing request {rid} timed out waiting for acceptance (90s)");
                     }
 
-                    // PHASE 2: Wait for 200 Success (until operationExpires)
                     TimeSpan phase2Timeout = acceptedResponse.OperationExpires - DateTimeOffset.UtcNow;
                     if (phase2Timeout <= TimeSpan.Zero)
                     {
