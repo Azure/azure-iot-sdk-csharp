@@ -173,7 +173,7 @@ jobs:
             $pomPath = (Get-Item $(Build.SourcesDirectory)/testProxy/pom.xml).FullName
             Write-Host "Using pom path of: " $pomPath
             mvn -f $pomPath clean install -q
-            Start-Job -ScriptBlock { mvn exec:java `-Dexec.mainClass="com.microsoft.azure.sdk.iot.Main" -f $pomPath }
+            mvn exec:java `-Dexec.mainClass="com.microsoft.azure.sdk.iot.Main" -f $pomPath
 
             dotnet test --logger trx
         env:
@@ -364,7 +364,7 @@ jobs:
             $pomPath = (Get-Item $(Build.SourcesDirectory)/testProxy/pom.xml).FullName
             Write-Host "Using pom path of: " $pomPath
             mvn -f $pomPath clean install -q
-            Start-Job -ScriptBlock { mvn exec:java `-Dexec.mainClass="com.microsoft.azure.sdk.iot.Main" -f $pomPath }
+            mvn exec:java `-Dexec.mainClass="com.microsoft.azure.sdk.iot.Main" -f $pomPath
 
             dotnet test --logger trx
             
