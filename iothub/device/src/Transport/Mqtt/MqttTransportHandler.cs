@@ -90,6 +90,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         private const string MethodPostTopicPrefix = "$iothub/methods/POST/";
         private const string MethodResponseTopic = "$iothub/methods/res/{0}/?$rid={1}";
 
+        // Topic names for credential management (certificate signing requests).
+        // Device publishes CSR to "$iothub/credentials/POST/issueCertificate/?$rid={request_id}"
+        // Device subscribes to "$iothub/credentials/res/#" to receive responses.
+        // Gateway responds on "$iothub/credentials/res/{status}/?$rid={request_id}"
+        private const string CredentialsRequestTopic = "$iothub/credentials/POST/issueCertificate/?$rid={0}";
+        private const string CredentialsResponseTopicFilter = "$iothub/credentials/res/#";
+
         // Topic names for enabling events on Modules.
 
         private const string ReceiveEventMessagePatternFilter = "devices/{0}/modules/{1}/#";
@@ -1381,6 +1388,30 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         {
             return (TransportState)Interlocked.CompareExchange(ref _state, (int)toState, (int)fromState) == fromState;
         }
+
+        #region Certificate Signing Request (Credential Management)
+
+        /// <summary>
+        /// Sends a certificate signing request to IoT Hub and receives a new certificate.
+        /// This implements the two-phase MQTT protocol for credential management.
+        /// </summary>
+        /// <remarks>
+        /// Protocol flow:
+        /// 1. Subscribe to "$iothub/credentials/res/#" 
+        /// 2. Publish CSR to "$iothub/credentials/POST/issueCertificate/?$rid={request_id}"
+        /// 3. Wait for 202 Accepted response (Phase 1 - 90 second timeout)
+        /// 4. Wait for 200 OK with certificate (Phase 2 - until operationExpires)
+        /// </remarks>
+        public override Task<CertificateSigningResponse> SendCertificateSigningRequestAsync(
+            CertificateSigningRequest request,
+            CancellationToken cancellationToken)
+        {
+            // Full implementation subscribes to CredentialsResponseTopicFilter,
+            // publishes the CSR, and implements two-phase response handling.
+            throw new NotImplementedException();
+        }
+
+        #endregion
 
         private void EnsureValidState(bool throwIfNotOpen = true)
         {

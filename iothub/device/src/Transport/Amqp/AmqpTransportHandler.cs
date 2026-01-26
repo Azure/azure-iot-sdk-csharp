@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
@@ -646,6 +646,18 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                     Logging.Exit(this, $"{nameof(DefaultDelegatingHandler)}.Disposed={_isDisposed}; disposing={disposing}", $"{nameof(AmqpTransportHandler)}.{nameof(Dispose)}");
                 }
             }
+        }
+
+        /// <summary>
+        /// Certificate signing requests are not supported over AMQP transport.
+        /// </summary>
+        public override Task<CertificateSigningResponse> SendCertificateSigningRequestAsync(
+            CertificateSigningRequest request,
+            CancellationToken cancellationToken)
+        {
+            throw new NotSupportedException(
+                "Certificate signing requests are only supported over MQTT transport. " +
+                "Please use TransportType.Mqtt_Tcp_Only or TransportType.Mqtt_WebSocket_Only.");
         }
     }
 }

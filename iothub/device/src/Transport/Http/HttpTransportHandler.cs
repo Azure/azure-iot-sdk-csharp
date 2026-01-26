@@ -597,5 +597,17 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             return sw.ToString();
         }
+
+        /// <summary>
+        /// Certificate signing requests are not supported over HTTP transport.
+        /// </summary>
+        public override Task<CertificateSigningResponse> SendCertificateSigningRequestAsync(
+            CertificateSigningRequest request,
+            CancellationToken cancellationToken)
+        {
+            throw new NotSupportedException(
+                "Certificate signing requests are only supported over MQTT transport. " +
+                "Please use TransportType.Mqtt_Tcp_Only or TransportType.Mqtt_WebSocket_Only.");
+        }
     }
 }
