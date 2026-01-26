@@ -42,6 +42,66 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
         [TestMethodWithRetry(Max = 3)]
         [Timeout(TestTimeoutMilliseconds)]
+        public async Task Message_DeviceSendSingleMessage_Amqp()
+        {
+            await SendSingleMessage(TestDeviceType.Sasl, Client.TransportType.Amqp_Tcp_Only).ConfigureAwait(false);
+        }
+
+        [TestMethodWithRetry(Max = 3)]
+        [Timeout(TestTimeoutMilliseconds)]
+        public async Task Message_DeviceSendSingleMessage_AmqpWs()
+        {
+            await SendSingleMessage(TestDeviceType.Sasl, Client.TransportType.Amqp_WebSocket_Only).ConfigureAwait(false);
+        }
+
+        [TestMethodWithRetry(Max = 3)]
+        [Timeout(TestTimeoutMilliseconds)]
+        public async Task Message_DeviceSendSingleMessage_Mqtt()
+        {
+            await SendSingleMessage(TestDeviceType.Sasl, Client.TransportType.Mqtt_Tcp_Only).ConfigureAwait(false);
+        }
+
+        [TestMethodWithRetry(Max = 3)]
+        [Timeout(TestTimeoutMilliseconds)]
+        public async Task Message_DeviceSendSingleMessage_MqttWs()
+        {
+            await SendSingleMessage(TestDeviceType.Sasl, Client.TransportType.Mqtt_WebSocket_Only).ConfigureAwait(false);
+        }
+
+        [TestMethodWithRetry(Max = 3)]
+        [Timeout(TestTimeoutMilliseconds)]
+        public async Task Message_DeviceSendSingleMessage_Http()
+        {
+            await SendSingleMessage(TestDeviceType.Sasl, Client.TransportType.Http1).ConfigureAwait(false);
+        }
+
+        [TestMethodWithRetry(Max = 3)]
+        [Timeout(TestTimeoutMilliseconds)]
+        public async Task Message_DeviceSendSingleMessage_Amqp_WithHeartbeats()
+        {
+            var amqpTransportSettings = new AmqpTransportSettings(Client.TransportType.Amqp_Tcp_Only)
+            {
+                IdleTimeout = TimeSpan.FromMinutes(2)
+            };
+            var transportSettings = new ITransportSettings[] { amqpTransportSettings };
+            await SendSingleMessage(TestDeviceType.Sasl, transportSettings).ConfigureAwait(false);
+        }
+
+        [TestMethodWithRetry(Max = 3)]
+        [Timeout(TestTimeoutMilliseconds)]
+        public async Task Message_DeviceSendSingleMessage_AmqpWs_WithHeartbeats()
+        {
+            var amqpTransportSettings = new AmqpTransportSettings(Client.TransportType.Amqp_WebSocket_Only)
+            {
+                IdleTimeout = TimeSpan.FromMinutes(2)
+            };
+            var transportSettings = new ITransportSettings[] { amqpTransportSettings };
+
+            await SendSingleMessage(TestDeviceType.Sasl, transportSettings).ConfigureAwait(false);
+        }
+
+        [TestMethodWithRetry(Max = 3)]
+        [Timeout(TestTimeoutMilliseconds)]
         [TestCategory("Proxy")]
         [TestCategory("LongRunning")]
         public async Task Message_DeviceSendSingleMessage_Http_WithProxy()
@@ -96,6 +156,291 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
             var transportSettings = new ITransportSettings[] { mqttTransportSettings };
 
             await SendSingleMessage(TestDeviceType.Sasl, transportSettings).ConfigureAwait(false);
+        }
+
+        [TestMethodWithRetry(Max = 3)]
+        [Timeout(TestTimeoutMilliseconds)]
+        [TestCategory("Proxy")]
+        public async Task Message_ModuleSendSingleMessage_AmqpWs_WithProxy()
+        {
+            var amqpTransportSettings = new AmqpTransportSettings(Client.TransportType.Amqp_WebSocket_Only)
+            {
+                Proxy = new WebProxy(s_proxyServerAddress)
+            };
+            var transportSettings = new ITransportSettings[] { amqpTransportSettings };
+
+            await SendSingleMessageModule(transportSettings).ConfigureAwait(false);
+        }
+
+        [TestMethodWithRetry(Max = 3)]
+        [Timeout(TestTimeoutMilliseconds)]
+        [TestCategory("Proxy")]
+        public async Task Message_ModuleSendSingleMessage_MqttWs_WithProxy()
+        {
+            var mqttTransportSettings = new MqttTransportSettings(Client.TransportType.Mqtt_WebSocket_Only)
+            {
+                Proxy = new WebProxy(s_proxyServerAddress)
+            };
+            var transportSettings = new ITransportSettings[] { mqttTransportSettings };
+
+            await SendSingleMessageModule(transportSettings).ConfigureAwait(false);
+        }
+
+        [TestMethodWithRetry(Max = 3)]
+        [Timeout(TestTimeoutMilliseconds)]
+        public async Task Message_ModuleSendsMessageToRouteTwice()
+        {
+            // arrange
+
+            TestModule testModule = await TestModule.GetTestModuleAsync(nameof(Message_ModuleSendsMessageToRouteTwice), "module").ConfigureAwait(false);
+
+            try
+            {
+                using var moduleClient = ModuleClient.CreateFromConnectionString(testModule.ConnectionString);
+                using var message = new Client.Message(new byte[10]);
+                await moduleClient.SendEventAsync("output1", message).ConfigureAwait(false);
+
+                // act
+                Func<Task> secondSend = async () => await moduleClient.SendEventAsync("output2", message).ConfigureAwait(false);
+
+                // assert
+                await secondSend.Should().NotThrowAsync();
+            }
+            finally
+            {
+                using RegistryManager rm = RegistryManager.CreateFromConnectionString(TestConfiguration.IotHub.ConnectionString);
+                await rm.RemoveDeviceAsync(testModule.DeviceId).ConfigureAwait(false);
+            }
+        }
+
+        [TestMethodWithRetry(Max = 3)]
+        [Timeout(TestTimeoutMilliseconds)]
+        public async Task X509_DeviceSendSingleMessage_Amqp()
+        {
+            await SendSingleMessage(TestDeviceType.X509, Client.TransportType.Amqp_Tcp_Only).ConfigureAwait(false);
+        }
+
+        [TestMethodWithRetry(Max = 3)]
+        [Timeout(TestTimeoutMilliseconds)]
+        public async Task X509_DeviceSendSingleMessage_AmqpWs()
+        {
+            await SendSingleMessage(TestDeviceType.X509, Client.TransportType.Amqp_WebSocket_Only).ConfigureAwait(false);
+        }
+
+        [TestMethodWithRetry(Max = 3)]
+        [Timeout(TestTimeoutMilliseconds)]
+        [TestCategory("LongRunning")]
+        public async Task X509_DeviceSendSingleMessage_Mqtt()
+        {
+            await SendSingleMessage(TestDeviceType.X509, Client.TransportType.Mqtt_Tcp_Only).ConfigureAwait(false);
+        }
+
+        [TestMethodWithRetry(Max = 3)]
+        [Timeout(TestTimeoutMilliseconds)]
+        public async Task X509_DeviceSendSingleMessage_MqttWs()
+        {
+            await SendSingleMessage(TestDeviceType.X509, Client.TransportType.Mqtt_WebSocket_Only).ConfigureAwait(false);
+        }
+
+        [TestMethodWithRetry(Max = 3)]
+        [Timeout(TestTimeoutMilliseconds)]
+        public async Task X509_DeviceSendSingleMessage_Http()
+        {
+            await SendSingleMessage(TestDeviceType.X509, Client.TransportType.Http1).ConfigureAwait(false);
+        }
+
+        [TestMethodWithRetry(Max = 3)]
+        [Timeout(TestTimeoutMilliseconds)]
+        public async Task X509_DeviceSendBatchMessages_Amqp()
+        {
+            await SendBatchMessages(TestDeviceType.X509, Client.TransportType.Amqp_Tcp_Only).ConfigureAwait(false);
+        }
+
+        [TestMethodWithRetry(Max = 3)]
+        [Timeout(TestTimeoutMilliseconds)]
+        public async Task X509_DeviceSendBatchMessages_AmqpWs()
+        {
+            await SendBatchMessages(TestDeviceType.X509, Client.TransportType.Amqp_WebSocket_Only).ConfigureAwait(false);
+        }
+
+        [TestMethodWithRetry(Max = 3)]
+        [Timeout(TestTimeoutMilliseconds)]
+        [TestCategory("LongRunning")]
+        public async Task X509_DeviceSendBatchMessages_Mqtt()
+        {
+            await SendBatchMessages(TestDeviceType.X509, Client.TransportType.Mqtt_Tcp_Only).ConfigureAwait(false);
+        }
+
+        [TestMethodWithRetry(Max = 3)]
+        [Timeout(TestTimeoutMilliseconds)]
+        public async Task X509_DeviceSendBatchMessages_MqttWs()
+        {
+            await SendBatchMessages(TestDeviceType.X509, Client.TransportType.Mqtt_WebSocket_Only).ConfigureAwait(false);
+        }
+
+        [TestMethodWithRetry(Max = 3)]
+        [Timeout(TestTimeoutMilliseconds)]
+        public async Task X509_DeviceSendBatchMessages_Http()
+        {
+            await SendBatchMessages(TestDeviceType.X509, Client.TransportType.Http1).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
+        [ExpectedException(typeof(MessageTooLargeException))]
+        public async Task Message_ClientThrowsForMqttTopicNameTooLong()
+        {
+            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix).ConfigureAwait(false);
+            using DeviceClient deviceClient = testDevice.CreateDeviceClient(Client.TransportType.Mqtt);
+
+            await deviceClient.OpenAsync().ConfigureAwait(false);
+
+            using var msg = new Client.Message(Encoding.UTF8.GetBytes("testMessage"));
+            //Mqtt topic name consists of, among other things, system properties and user properties
+            // setting lots of very long user properties should cause a MessageTooLargeException explaining
+            // that the topic name is too long to publish over mqtt
+            for (int i = 0; i < 100; i++)
+            {
+                msg.Properties.Add(Guid.NewGuid().ToString(), new string('1', 1024));
+            }
+
+            await deviceClient.SendEventAsync(msg).ConfigureAwait(false);
+        }
+
+        [DataTestMethod]
+        [DataRow(TestDeviceType.Sasl, Client.TransportType.Mqtt_Tcp_Only, LargeMessageSizeInBytes)]
+        [DataRow(TestDeviceType.Sasl, Client.TransportType.Mqtt_WebSocket_Only, LargeMessageSizeInBytes)]
+        [DataRow(TestDeviceType.Sasl, Client.TransportType.Amqp_Tcp_Only, LargeMessageSizeInBytes)]
+        [DataRow(TestDeviceType.Sasl, Client.TransportType.Amqp_WebSocket_Only, LargeMessageSizeInBytes)]
+        [DataRow(TestDeviceType.Sasl, Client.TransportType.Http1, LargeMessageSizeInBytes)]
+        [DataRow(TestDeviceType.X509, Client.TransportType.Mqtt_Tcp_Only, LargeMessageSizeInBytes)]
+        [DataRow(TestDeviceType.X509, Client.TransportType.Mqtt_WebSocket_Only, LargeMessageSizeInBytes)]
+        [DataRow(TestDeviceType.X509, Client.TransportType.Amqp_Tcp_Only, LargeMessageSizeInBytes)]
+        [DataRow(TestDeviceType.X509, Client.TransportType.Amqp_WebSocket_Only, LargeMessageSizeInBytes)]
+        public async Task Message_DeviceSendSingleLargeMessageAsync(TestDeviceType testDeviceType, Client.TransportType transportType, int messageSize)
+        {
+            await SendSingleMessage(testDeviceType, transportType, messageSize).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
+        [ExpectedException(typeof(MessageTooLargeException))]
+        public async Task Message_DeviceSendMessageOverAllowedSize_Amqp()
+        {
+            await SendSingleMessage(TestDeviceType.Sasl, Client.TransportType.Amqp_Tcp_Only, ExceedAllowedMessageSizeInBytes).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
+        [ExpectedException(typeof(MessageTooLargeException))]
+        public async Task Message_DeviceSendMessageOverAllowedSize_AmqpWs()
+        {
+            await SendSingleMessage(TestDeviceType.Sasl, Client.TransportType.Amqp_WebSocket_Only, ExceedAllowedMessageSizeInBytes).ConfigureAwait(false);
+        }
+
+        // MQTT protocol will throw an InvalidOperationException if the PUBLISH packet is greater than
+        // Hub limits: https://github.com/Azure/azure-iot-sdk-csharp/blob/d46e0f07fe8d80e21e07b41c2e75b0bd1fcb8f80/iothub/device/src/Transport/Mqtt/MqttIotHubAdapter.cs#L1175
+        // This flow is a bit different from other protocols where we do not inspect the packet being sent but rather rely on service validating it
+        // and throwing a MessageTooLargeException, if relevant.
+        [TestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
+        [ExpectedException(typeof(InvalidOperationException))]
+        public async Task Message_DeviceSendMessageOverAllowedSize_Mqtt()
+        {
+            await SendSingleMessage(TestDeviceType.Sasl, Client.TransportType.Mqtt_Tcp_Only, ExceedAllowedMessageSizeInBytes).ConfigureAwait(false);
+        }
+
+        // MQTT protocol will throw an InvalidOperationException if the PUBLISH packet is greater than
+        // Hub limits: https://github.com/Azure/azure-iot-sdk-csharp/blob/d46e0f07fe8d80e21e07b41c2e75b0bd1fcb8f80/iothub/device/src/Transport/Mqtt/MqttIotHubAdapter.cs#L1175
+        // This flow is a bit different from other protocols where we do not inspect the packet being sent but rather rely on service validating it
+        // and throwing a MessageTooLargeException, if relevant.
+        [TestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
+        [ExpectedException(typeof(InvalidOperationException))]
+        public async Task Message_DeviceSendMessageOverAllowedSize_MqttWs()
+        {
+            await SendSingleMessage(TestDeviceType.Sasl, Client.TransportType.Mqtt_WebSocket_Only, ExceedAllowedMessageSizeInBytes).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
+        [ExpectedException(typeof(MessageTooLargeException))]
+        public async Task Message_DeviceSendMessageOverAllowedSize_Http()
+        {
+            await SendSingleMessage(TestDeviceType.Sasl, Client.TransportType.Http1, ExceedAllowedMessageSizeInBytes).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
+        [ExpectedException(typeof(MessageTooLargeException))]
+        public async Task Message_DeviceSendMessageWayOverAllowedSize_Amqp()
+        {
+            await SendSingleMessage(TestDeviceType.Sasl, Client.TransportType.Amqp_Tcp_Only, OverlyExceedAllowedMessageSizeInBytes).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
+        [ExpectedException(typeof(MessageTooLargeException))]
+        public async Task Message_DeviceSendMessageWayOverAllowedSize_AmqpWs()
+        {
+            await SendSingleMessage(TestDeviceType.Sasl, Client.TransportType.Amqp_WebSocket_Only, OverlyExceedAllowedMessageSizeInBytes).ConfigureAwait(false);
+        }
+
+        // MQTT protocol will throw an InvalidOperationException if the PUBLISH packet is greater than
+        // Hub limits: https://github.com/Azure/azure-iot-sdk-csharp/blob/d46e0f07fe8d80e21e07b41c2e75b0bd1fcb8f80/iothub/device/src/Transport/Mqtt/MqttIotHubAdapter.cs#L1175
+        // This flow is a bit different from other protocols where we do not inspect the packet being sent but rather rely on service validating it
+        // and throwing a MessageTooLargeException, if relevant.
+        [TestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
+        [ExpectedException(typeof(InvalidOperationException))]
+        public async Task Message_DeviceSendMessageWayOverAllowedSize_Mqtt()
+        {
+            await SendSingleMessage(TestDeviceType.Sasl, Client.TransportType.Mqtt_Tcp_Only, OverlyExceedAllowedMessageSizeInBytes).ConfigureAwait(false);
+        }
+
+        // MQTT protocol will throw an InvalidOperationException if the PUBLISH packet is greater than
+        // Hub limits: https://github.com/Azure/azure-iot-sdk-csharp/blob/d46e0f07fe8d80e21e07b41c2e75b0bd1fcb8f80/iothub/device/src/Transport/Mqtt/MqttIotHubAdapter.cs#L1175
+        // This flow is a bit different from other protocols where we do not inspect the packet being sent but rather rely on service validating it
+        // and throwing a MessageTooLargeException, if relevant.
+        [TestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
+        [ExpectedException(typeof(InvalidOperationException))]
+        public async Task Message_DeviceSendMessageWayOverAllowedSize_MqttWs()
+        {
+            await SendSingleMessage(TestDeviceType.Sasl, Client.TransportType.Mqtt_WebSocket_Only, OverlyExceedAllowedMessageSizeInBytes).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        [Timeout(TestTimeoutMilliseconds)]
+        [ExpectedException(typeof(MessageTooLargeException))]
+        public async Task Message_DeviceSendMessageWayOverAllowedSize_Http()
+        {
+            await SendSingleMessage(TestDeviceType.Sasl, Client.TransportType.Http1, OverlyExceedAllowedMessageSizeInBytes).ConfigureAwait(false);
+        }
+
+        [TestMethodWithRetry(Max = 3)]
+        [Timeout(TestTimeoutMilliseconds)]
+        public async Task Message_DeviceSendSingleWithCustomHttpClient_Http()
+        {
+            using var httpMessageHandler = new CustomHttpMessageHandler();
+            var httpTransportSettings = new Http1TransportSettings()
+            {
+                HttpClient = new HttpClient(httpMessageHandler)
+            };
+            var transportSettings = new ITransportSettings[] { httpTransportSettings };
+
+            using TestDevice testDevice =
+                await TestDevice.GetTestDeviceAsync(_devicePrefix).ConfigureAwait(false);
+
+            using DeviceClient deviceClient = testDevice.CreateDeviceClient(transportSettings);
+
+            await deviceClient.OpenAsync().ConfigureAwait(false);
+            using var message = new Client.Message();
+            var ex = await Assert.ThrowsExceptionAsync<IotHubException>(
+                async () => await deviceClient.SendEventAsync(message).ConfigureAwait(false));
+
+            ex.InnerException.Should().BeOfType<NotImplementedException>(
+                "The provided custom HttpMessageHandler throws NotImplementedException when making any HTTP request");
         }
 
         private async Task SendSingleMessage(TestDeviceType type, Client.TransportType transport, int messageSize = 0)
