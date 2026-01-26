@@ -730,7 +730,8 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="request">The certificate signing request containing the CSR.</param>
         /// <param name="cancellationToken">Cancellation token.</param>
         /// <returns>The response containing the issued certificate chain.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when request is null.</exception>
+        /// <exception cref="ArgumentNullException">Thrown when request, request.Id, or request.Csr is null.</exception>
+        /// <exception cref="ArgumentException">Thrown when request.Id or request.Csr is empty, or Csr is not valid Base64.</exception>
         /// <exception cref="NotSupportedException">Thrown when using non-MQTT transport.</exception>
         /// <exception cref="IotHubException">Thrown when the request fails.</exception>
         /// <exception cref="TimeoutException">Thrown when the operation times out.</exception>
@@ -743,7 +744,38 @@ namespace Microsoft.Azure.Devices.Client
                 throw new ArgumentNullException(nameof(request));
             }
 
+            if (string.IsNullOrEmpty(request.Id))
+            {
+                throw new ArgumentException(@"Value cannot be null or empty.",
+                    $"{nameof(request)}.{nameof(request.Id)}");
+            }
+
+            if (string.IsNullOrEmpty(request.Csr))
+            {
+                throw new ArgumentException(@"Value cannot be null or empty.",
+                    $"{nameof(request)}.{nameof(request.Csr)}");
+            }
+
+            if (!IsValidBase64(request.Csr))
+            {
+                throw new ArgumentException(@"The CSR is not valid Base64.",
+                    $"{nameof(request)}.{nameof(request.Csr)}");
+            }
+
             return InnerHandler.SendCertificateSigningRequestAsync(request, cancellationToken);
+        }
+
+        private static bool IsValidBase64(string value)
+        {
+            try
+            {
+                _ = Convert.FromBase64String(value);
+                return true;
+            }
+            catch (FormatException)
+            {
+                return false;
+            }
         }
 
         /// <summary>

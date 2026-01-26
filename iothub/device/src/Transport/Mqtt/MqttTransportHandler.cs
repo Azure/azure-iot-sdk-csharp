@@ -111,6 +111,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         private static readonly Lazy<IEventLoopGroup> s_eventLoopGroup = new Lazy<IEventLoopGroup>(GetEventLoopGroup);
         private static readonly TimeSpan s_regexTimeoutMilliseconds = TimeSpan.FromMilliseconds(500);
         private static readonly TimeSpan s_defaultTwinTimeout = TimeSpan.FromSeconds(60);
+        private static readonly HashSet<int> s_transientErrorCodes = new HashSet<int>
+        {
+            429002, // ThrottleBacklogLimitExceeded - retry with 1s initial
+            429003, // ThrottlingBacklogTimeout - retry with 1s initial    
+            503001, // ServiceUnavailable - retry with 5s initial          
+            500001  // ServerError - retry with 5min initial               
+        };
 
         private readonly string _generationId = Guid.NewGuid().ToString();
         private readonly string _receiveEventMessageFilter;
@@ -1573,14 +1580,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             string requestId,
             int httpStatus)
         {
-            bool isTransient = error.ErrorCode switch
-            {
-                429002 => true,  // ThrottleBacklogLimitExceeded - retry with 1s initial
-                429003 => true,  // ThrottlingBacklogTimeout - retry with 1s initial
-                503001 => true,  // ServiceUnavailable - retry with 5s initial
-                500001 => true,  // ServerError - retry with 5min initial
-                _ => false
-            };
+            bool isTransient = s_transientErrorCodes.Contains(error.ErrorCode);
 
             return new CredentialOperationException(
                 message: error.Message,

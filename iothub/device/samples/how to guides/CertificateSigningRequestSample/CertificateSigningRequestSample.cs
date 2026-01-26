@@ -293,22 +293,20 @@ public class CertificateSigningRequestSample : IDisposable
     {
         const int KeepaliveIntervalSeconds = 5;
 
-        // Create a cancellation token source that will be cancelled when the CSR response arrives
         using var keepaliveCts = CancellationTokenSource.CreateLinkedTokenSource(_cts.Token);
 
-        // Start the keepalive task
         Task keepaliveTask = SendKeepaliveMessagesAsync(KeepaliveIntervalSeconds, keepaliveCts.Token);
 
         try
         {
-            // Send the CSR request and wait for the response
             Console.WriteLine("Sending CSR request (keepalive messages will be sent every 5 seconds)...");
-            CertificateSigningResponse response = await _deviceClient!.SendCertificateSigningRequestAsync(csrRequest, _cts.Token);
+            return await _deviceClient!.SendCertificateSigningRequestAsync(csrRequest, _cts.Token);
 
-            // Cancel the keepalive task now that we have the response
+        }
+        finally
+        {
             keepaliveCts.Cancel();
 
-            // Wait for the keepalive task to complete gracefully
             try
             {
                 await keepaliveTask;
@@ -317,24 +315,6 @@ public class CertificateSigningRequestSample : IDisposable
             {
                 // Expected when we cancel the keepalive
             }
-
-            return response;
-        }
-        catch
-        {
-            // Cancel the keepalive task on error
-            keepaliveCts.Cancel();
-
-            try
-            {
-                await keepaliveTask;
-            }
-            catch (OperationCanceledException)
-            {
-                // Expected
-            }
-
-            throw;
         }
     }
 
