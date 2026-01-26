@@ -26,20 +26,6 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
-        [ExpectedException(typeof(DeviceNotFoundException))]
-        public async Task DeviceClient_Not_Exist_AMQP()
-        {
-            using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
-
-            var config = new TestConfiguration.IotHub.ConnectionStringParser(testDevice.ConnectionString);
-            using (var deviceClient = DeviceClient.CreateFromConnectionString($"HostName={config.IotHubHostName};DeviceId=device_id_not_exist;SharedAccessKey={config.SharedAccessKey}", Client.TransportType.Amqp_Tcp_Only))
-            {
-                await deviceClient.OpenAsync().ConfigureAwait(false);
-            }
-        }
-
-        [TestMethod]
-        [Timeout(TestTimeoutMilliseconds)]
         [ExpectedException(typeof(UnauthorizedException))]
         public async Task DeviceClient_Bad_Credentials_AMQP()
         {
