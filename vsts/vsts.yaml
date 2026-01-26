@@ -164,7 +164,7 @@ jobs:
          installationPath: $(Agent.ToolsDirectory)/dotnet
 
       - task: Bash@3
-        displayName: 'Downloaded nuget package files checkpoint'
+        displayName: 'Start test proxy and run tests'
         condition: eq(variables.SHOULD_RUN, 'True')
         inputs:
           targetType: 'inline'
@@ -353,17 +353,15 @@ jobs:
           jdkArchitectureOption: 'x64'
           jdkSourceOption: 'PreInstalled'
 
-      - task: PowerShell@2
-        displayName: 'build and run tests'
+      - task: CmdLine@2
+        displayName: 'Start test proxy and run tests'
         condition: eq(variables.SHOULD_RUN, 'True')
         inputs:
           targetType: inline
           script: |
             # Run Test Proxy
-            $pomPath = (Get-Item $(Build.SourcesDirectory)/testProxy/pom.xml).FullName
-            Write-Host "Using pom path of: " $pomPath
-            mvn -f $pomPath clean install -q
-            mvn exec:java `-Dexec.mainClass="com.microsoft.azure.sdk.iot.Main" -f $pomPath
+            mvn -f $(Build.SourcesDirectory)/testProxy/pom.xml clean install -q
+            start /b mvn exec:java `-Dexec.mainClass="com.microsoft.azure.sdk.iot.Main" -f $(Build.SourcesDirectory)/testProxy/pom.xml
 
             dotnet test --logger trx
             
