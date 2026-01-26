@@ -388,7 +388,7 @@ jobs:
   ### .Net SDL Analyzers ###
   - job: DOTNet_SDL_Analyzers
     displayName: .Net SDL Analyzers
-    condition: false()
+    condition: false
     timeoutInMinutes: 60
     pool:
       vmImage: windows-2022
