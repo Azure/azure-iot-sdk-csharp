@@ -161,6 +161,7 @@ jobs:
           targetType: inline
           script: |
             $pomPath = (Get-Item $(Build.SourcesDirectory)/testProxy/pom.xml).FullName
+            Write-Host "Using pom path of: " $pomPath
             mvn -f $pomPath clean install -q
             Start-Job -ScriptBlock { mvn exec:java `-Dexec.mainClass="com.microsoft.azure.sdk.iot.Main" -f $pomPath }
 
@@ -365,6 +366,7 @@ jobs:
           targetType: inline
           script: |
             $pomPath = (Get-Item $(Build.SourcesDirectory)/testProxy/pom.xml).FullName
+            Write-Host "Using pom path of: " $pomPath
             mvn -f $pomPath clean install -q
             Start-Job -ScriptBlock { mvn exec:java `-Dexec.mainClass="com.microsoft.azure.sdk.iot.Main" -f $pomPath }
 
