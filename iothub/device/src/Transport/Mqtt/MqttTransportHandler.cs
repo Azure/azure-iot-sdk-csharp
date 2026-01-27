@@ -1456,11 +1456,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                     await WaitForAcceptancePhaseAsync(rid, phase1Complete, cancellationToken).ConfigureAwait(false);
                     ThrowIfResponseException(responseException);
-                    ValidateAcceptedResponse(acceptedResponse, rid);
+                    string correlationId = ValidateAcceptedResponse(acceptedResponse, rid);
 
                     await WaitForCertificatePhaseAsync(rid, acceptedResponse, phase2Complete, cancellationToken).ConfigureAwait(false);
                     ThrowIfResponseException(responseException);
-                    ValidateCertificateResponse(certificateResponse, rid);
+                    ValidateCertificateResponse(certificateResponse, rid, correlationId);
 
                     return certificateResponse;
                 }
@@ -1582,13 +1582,21 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
         }
 
-        private static void ValidateAcceptedResponse(CertificateAcceptedResponse acceptedResponse, string rid)
+        private static string ValidateAcceptedResponse(CertificateAcceptedResponse acceptedResponse, string rid)
         {
             if (acceptedResponse == null)
             {
-                throw new TimeoutException(
-                    $"Certificate signing request {rid} timed out waiting for acceptance (90s)");
+                throw new InvalidOperationException(
+                    $"Certificate signing request {rid} received an invalid or empty acceptance response from the server.");
             }
+
+            if (string.IsNullOrEmpty(acceptedResponse.CorrelationId))
+            {
+                throw new InvalidOperationException(
+                    $"Certificate signing request {rid} received an acceptance response without a correlation ID.");
+            }
+
+            return acceptedResponse.CorrelationId;
         }
 
         private static async Task WaitForCertificatePhaseAsync(
@@ -1614,12 +1622,31 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
         }
 
-        private static void ValidateCertificateResponse(CertificateSigningResponse response, string rid)
+        private static void ValidateCertificateResponse(CertificateSigningResponse response, string rid, string expectedCorrelationId)
         {
             if (response == null)
             {
-                throw new TimeoutException(
-                    $"Certificate signing request {rid} timed out waiting for certificate (operationExpires passed)");
+                throw new InvalidOperationException(
+                    $"Certificate signing request {rid} received an invalid or empty certificate response from the server.");
+            }
+
+            if (string.IsNullOrEmpty(response.CorrelationId))
+            {
+                throw new InvalidOperationException(
+                    $"Certificate signing request {rid} received a certificate response without a correlation ID.");
+            }
+
+            if (!string.Equals(response.CorrelationId, expectedCorrelationId, StringComparison.Ordinal))
+            {
+                throw new InvalidOperationException(
+                    $"Certificate signing request {rid} received a certificate response with mismatched correlation ID. " +
+                    $"Expected: {expectedCorrelationId}, Received: {response.CorrelationId}.");
+            }
+            
+            if(response.Certificates == null || response.Certificates.Count < 1)
+            {
+                throw new InvalidOperationException(
+                    $"Certificate signing request {rid} received a certificate response with no certificates.");
             }
         }
 
