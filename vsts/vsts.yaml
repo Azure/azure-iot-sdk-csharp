@@ -80,12 +80,37 @@ jobs:
           Write-Host "##vso[task.setvariable variable=RESOURCE_GROUP_NAME;isOutput=true]$resourceGroupName"
 
           $(Build.SourcesDirectory)/e2e/test/prerequisites/E2ETestsSetup/e2eTestsSetup.ps1 -SubscriptionId $subscriptionId -Region westcentralus -ResourceGroup $resourceGroupName -GroupCertificatePassword someCertPass
+  
+  - job: BuildTestProxyDockerImage
+    pool:
+      vmImage: ubuntu-latest
+    steps:     
 
+    # The e2e tests use a test proxy written in Java
+    - task: JavaToolInstaller@0
+      inputs:
+        versionSpec: 11
+        jdkArchitectureOption: 'x64'
+        jdkSourceOption: 'PreInstalled'
+        
+    - task: PowerShell@2
+      displayName: 'Build and locally save test proxy docker image'
+      condition: eq(variables.SHOULD_RUN, 'True')
+      inputs:
+        targetType: inline
+        script: |
+          docker build -t testproxy:latest $(Build.SourcesDirectory)/testProxy/.
+          docker image save testproxy:latest -o $(Build.ArtifactStagingDirectory)/testproxy.tar
+
+    - publish:  $(Build.ArtifactStagingDirectory)
+      artifact: docker-images
 
   ### Linux build ###
   - job: LINUX
     displayName: Linux
-    dependsOn: DeployCloudTestResources
+    dependsOn: 
+      - DeployCloudTestResources
+      - BuildTestProxyDockerImage
     condition: succeeded()
     timeoutInMinutes: ${{ parameters.jobTimeoutInMinutes }}
     variables:
@@ -147,13 +172,6 @@ jobs:
 
       # https://docs.microsoft.com/azure/devops/pipelines/tasks/tool/dotnet-core-tool-installer?view=azure-devops
 
-      # The e2e tests use a test proxy written in Java
-      - task: JavaToolInstaller@0
-        inputs:
-          versionSpec: 11
-          jdkArchitectureOption: 'x64'
-          jdkSourceOption: 'PreInstalled'
-
       # Linux requires .NET 8.0 install for tests to run, no matter which framework target is being tested
       - task: UseDotNet@2
         displayName: 'Use .NET SDK 8.0'
@@ -163,13 +181,16 @@ jobs:
          performMultiLevelLookup: true
          installationPath: $(Agent.ToolsDirectory)/dotnet
 
+      - download: current
+        artifact: docker-images
+
       - task: PowerShell@2
-        displayName: 'Build and run test proxy'
+        displayName: 'Download and run test proxy'
         condition: eq(variables.SHOULD_RUN, 'True')
         inputs:
           targetType: inline
           script: |
-            docker build -t testproxy:latest $(Build.SourcesDirectory)/testProxy/.
+            docker load --input $(Pipeline.Workspace)/docker-images/testproxy.tar
             docker run -d -p 9000:9000 testproxy:latest
 
       - task: Bash@3
@@ -267,7 +288,9 @@ jobs:
 
  ### Windows build ###
   - job: WINDOWS
-    dependsOn: DeployCloudTestResources
+    dependsOn: 
+      - DeployCloudTestResources
+      - BuildTestProxyDockerImage
     variables:
       IOTHUB_CONNECTION_STRING: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.IOTHUB_CONNECTION_STRING'] ]
       IOTHUB_DEVICE_CONN_STRING: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.IOTHUB_DEVICE_CONN_STRING'] ]
@@ -359,12 +382,12 @@ jobs:
           jdkSourceOption: 'PreInstalled'
 
       - task: PowerShell@2
-        displayName: 'Build and run test proxy'
+        displayName: 'Download and run test proxy'
         condition: eq(variables.SHOULD_RUN, 'True')
         inputs:
           targetType: inline
           script: |
-            docker build -t testproxy:latest $(Build.SourcesDirectory)/testProxy/.
+            docker load --input $(Pipeline.Workspace)/docker-images/testproxy.tar
             docker run -d -p 9000:9000 testproxy:latest
 
       - task: CmdLine@2
