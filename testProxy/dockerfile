@@ -15,4 +15,4 @@ RUN apt-get install maven -y
 RUN mvn install -f /javaapp/pom.xml
 
 # Set the default command to run the Java program
-CMD ["java", "-jar", "Main.jar"]
+CMD ["java", "-jar", "Main.jar", "-b", "0.0.0.0", "-p", "9000"]
