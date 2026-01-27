@@ -97,7 +97,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         private const string CredentialsResponseTopicFilter = "$iothub/credentials/res/#";
         private const string CredentialsResponseTopicPrefix = "$iothub/credentials/res/";
         private const string CredentialsRequestTopic = "$iothub/credentials/POST/issueCertificate/?$rid={0}";
-        private const string CredentialsResponseTopicPattern = @"\$iothub/credentials/res/(\d+)/(\?.+)";
+        private const string CredentialsResponseTopicPattern = @"\$iothub/credentials/res/(\d+)/\?\$rid=(.+)";
 
         // Timeout for credential operations (60 seconds + 30 second grace = 90 seconds)
         private static readonly TimeSpan s_credentialsTimeout = TimeSpan.FromSeconds(90);
@@ -1510,11 +1510,15 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         private bool TryParseAndValidateCredentialsResponse(Message possibleResponse, string expectedRid, out int status, out string body)
         {
             body = null;
-            if (!ParseCredentialsResponseTopic(possibleResponse.MqttTopicName, out string receivedRid, out status))
-                return false;
+            status = 0;
+
+            // Throws if the topic doesn't match the expected pattern.
+            ParseCredentialsResponseTopic(possibleResponse.MqttTopicName, out string receivedRid, out status);
 
             if (expectedRid != receivedRid)
+            {
                 return false;
+            }
 
             body = ReadMessageBody(possibleResponse);
             return true;
@@ -1665,19 +1669,17 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 .ConfigureAwait(true);
         }
 
-        private bool ParseCredentialsResponseTopic(string topicName, out string rid, out int status)
+        private void ParseCredentialsResponseTopic(string topicName, out string rid, out int status)
         {
             Match match = _credentialsResponseTopicRegex.Match(topicName);
-            if (match.Success)
+            if (!match.Success)
             {
-                status = Convert.ToInt32(match.Groups[1].Value, CultureInfo.InvariantCulture);
-                rid = HttpUtility.ParseQueryString(match.Groups[2].Value).Get("$rid");
-                return true;
+                throw new InvalidOperationException(
+                    $"Received message on credentials topic subscription that does not match expected pattern. Topic: {topicName}");
             }
 
-            rid = "";
-            status = 500;
-            return false;
+            status = Convert.ToInt32(match.Groups[1].Value, CultureInfo.InvariantCulture);
+            rid = match.Groups[2].Value;
         }
 
         /// <summary>
