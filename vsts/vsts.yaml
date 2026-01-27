@@ -366,6 +366,7 @@ jobs:
           script: |
             mvn -f $(Build.SourcesDirectory)\testProxy\pom.xml clean install -q
             start /b mvn exec:java -Dexec.mainClass="com.microsoft.azure.sdk.iot.Main" -f $(Build.SourcesDirectory)\testProxy\pom.xml
+            timeout /t 5
 
       - task: CmdLine@2
         displayName: 'Run tests'
