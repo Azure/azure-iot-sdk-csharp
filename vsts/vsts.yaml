@@ -169,7 +169,6 @@ jobs:
         inputs:
           targetType: 'inline'
           script: |
-            # Run Test Proxy
             mvn -f $(Build.SourcesDirectory)/testProxy/pom.xml clean install -q
             mvn exec:java -Dexec.mainClass="com.microsoft.azure.sdk.iot.Main" -f $(Build.SourcesDirectory)/testProxy/pom.xml &
 
@@ -359,7 +358,6 @@ jobs:
         inputs:
           targetType: inline
           script: |
-            # Run Test Proxy
             mvn -f $(Build.SourcesDirectory)/testProxy/pom.xml clean install -q
             start /b mvn exec:java `-Dexec.mainClass="com.microsoft.azure.sdk.iot.Main" -f $(Build.SourcesDirectory)/testProxy/pom.xml
 
