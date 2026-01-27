@@ -95,7 +95,6 @@ jobs:
         
     - task: PowerShell@2
       displayName: 'Build and locally save test proxy docker image'
-      condition: eq(variables.SHOULD_RUN, 'True')
       inputs:
         targetType: inline
         script: |
