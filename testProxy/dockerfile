@@ -1,4 +1,4 @@
-FROM maven:eclipse-temurin
+FROM mcr.microsoft.com/openjdk/jdk:25-ubuntu
 
 # Set the working directory inside the container
 WORKDIR /javaapp
@@ -6,7 +6,10 @@ WORKDIR /javaapp
 # Copy the Java source file into the container
 COPY . /javaapp
 
-EXPOSE 9123
+EXPOSE 9000
+
+RUN apt-get update
+RUN apt-get install maven -y
 
 # Compile the Java program
 RUN mvn install -f /javaapp/pom.xml

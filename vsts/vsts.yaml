@@ -169,7 +169,7 @@ jobs:
         inputs:
           targetType: inline
           script: |
-            docker build -t testproxy:latest $(Build.SourcesDirectory)/testproxy/dockerfile
+            docker build -t testproxy:latest $(Build.SourcesDirectory)/testproxy/.
             docker run -d -p 9000:9000 testproxy:latest
 
       - task: Bash@3
@@ -364,7 +364,7 @@ jobs:
         inputs:
           targetType: inline
           script: |
-            docker build -t testproxy:latest $(Build.SourcesDirectory)/testproxy/dockerfile
+            docker build -t testproxy:latest $(Build.SourcesDirectory)/testproxy/.
             docker run -d -p 9000:9000 testproxy:latest
 
       - task: CmdLine@2
