@@ -15,36 +15,16 @@ public class Parameters
         'o',
         "outputDir",
         Required = true,
-        HelpText = "Directory to save certificate and key files.")]
+        HelpText = "Directory containing certificate, key, and metadata files.")]
     public string OutputDir { get; set; } = null!;
-
-    [Option(
-        'i',
-        "idScope",
-        Required = true,
-        HelpText = "The ID Scope of the DPS instance.")]
-    public string IdScope { get; set; } = null!;
-
-    [Option(
-        'k',
-        "sasKey",
-        Required = true,
-        HelpText = "The DPS SAS key for symmetric key authentication (enrollment group primary key).")]
-    public string SasKey { get; set; } = null!;
 
     [Option(
         'd',
         "deviceName",
         Default = "test-device",
-        HelpText = "The device registration ID / device name.")]
+        HelpText = "The device name (used to locate credential files).")]
     public string DeviceName { get; set; } = "test-device";
 
-    [Option(
-        'p',
-        "provisioningHost",
-        Default = "global.azure-devices-provisioning.net",
-        HelpText = "The DPS global provisioning host.")]
-    public string ProvisioningHost { get; set; } = "global.azure-devices-provisioning.net";
 
     [Option(
         'm',

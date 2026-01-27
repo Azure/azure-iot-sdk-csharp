@@ -10,11 +10,10 @@ namespace CertificateSigningRequestSample;
 /// <summary>
 /// Simple IoT device sample using certificate authentication.
 /// 
-/// This sample provisions a device with Azure DPS, saves the issued certificate
-/// to local disk, connects to IoT Hub using MQTT, requests a new certificate
+/// This sample connects to IoT Hub using MQTT, requests a new certificate
 /// via the credential management API, and sends telemetry messages.
 /// </summary>
-public class Program
+public static class Program
 {
     /// <summary>
     /// Main entry point for the Certificate Signing Request sample.

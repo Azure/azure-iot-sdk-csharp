@@ -34,7 +34,7 @@ namespace CertificateSigningRequestSample;
 /// Note: DPS provisioning with CSR is not yet supported in this SDK.
 /// Use the Python SDK or Azure CLI for initial device provisioning with CSR.
 /// </summary>
-public class CertificateSigningRequestSample : IDisposable
+public sealed class CertificateSigningRequestSample : IDisposable
 {
     private const int MessageSize = 256;
 
@@ -50,7 +50,7 @@ public class CertificateSigningRequestSample : IDisposable
         _cts = new CancellationTokenSource();
 
         // Handle Ctrl+C for graceful shutdown
-        Console.CancelKeyPress += (sender, eventArgs) =>
+        Console.CancelKeyPress += (_, eventArgs) =>
         {
             Console.WriteLine("\nShutdown requested...");
             eventArgs.Cancel = true;
@@ -64,7 +64,7 @@ public class CertificateSigningRequestSample : IDisposable
         {
             // Step 1: Load existing credentials (certificate, key, metadata)
             PrintStep(1, "Loading credentials");
-            var credentials = await LoadCredentialsAsync();
+            DeviceCredentials credentials = await LoadCredentialsAsync();
             Console.WriteLine("Credentials loaded successfully.");
 
             // Step 2: Connect to IoT Hub with existing certificate
@@ -268,18 +268,16 @@ public class CertificateSigningRequestSample : IDisposable
     {
         // Send a test message to verify connectivity before CSR request
         // This matches the Python reference implementation behavior
-        var testPayload = JsonSerializer.Serialize(new
+        string testPayload = JsonSerializer.Serialize(new
         {
             type = "pre-csr-test",
             timestamp = DateTime.UtcNow.ToString("o"),
             message = "Verifying connectivity before certificate renewal"
         });
 
-        using var message = new Message(Encoding.UTF8.GetBytes(testPayload))
-        {
-            ContentEncoding = "utf-8",
-            ContentType = "application/json",
-        };
+        using var message = new Message(Encoding.UTF8.GetBytes(testPayload));
+        message.ContentEncoding = "utf-8";
+        message.ContentType = "application/json";
 
         await _deviceClient!.SendEventAsync(message, _cts.Token);
     }
@@ -291,11 +289,11 @@ public class CertificateSigningRequestSample : IDisposable
     /// </summary>
     private async Task<CertificateSigningResponse> SendCsrWithKeepaliveAsync(CertificateSigningRequest csrRequest)
     {
-        const int KeepaliveIntervalSeconds = 5;
+        const int keepaliveIntervalSeconds = 5;
 
         using var keepaliveCts = CancellationTokenSource.CreateLinkedTokenSource(_cts.Token);
 
-        Task keepaliveTask = SendKeepaliveMessagesAsync(KeepaliveIntervalSeconds, keepaliveCts.Token);
+        Task keepaliveTask = SendKeepaliveMessagesAsync(keepaliveIntervalSeconds, keepaliveCts.Token);
 
         try
         {
@@ -332,7 +330,7 @@ public class CertificateSigningRequestSample : IDisposable
                 await Task.Delay(TimeSpan.FromSeconds(intervalSeconds), cancellationToken);
 
                 keepaliveCount++;
-                var keepalivePayload = JsonSerializer.Serialize(new
+                string keepalivePayload = JsonSerializer.Serialize(new
                 {
                     type = "keepalive",
                     seq = keepaliveCount,
@@ -340,11 +338,9 @@ public class CertificateSigningRequestSample : IDisposable
                     message = "Waiting for certificate response"
                 });
 
-                using var message = new Message(Encoding.UTF8.GetBytes(keepalivePayload))
-                {
-                    ContentEncoding = "utf-8",
-                    ContentType = "application/json",
-                };
+                using var message = new Message(Encoding.UTF8.GetBytes(keepalivePayload));
+                message.ContentEncoding = "utf-8";
+                message.ContentType = "application/json";
 
                 await _deviceClient!.SendEventAsync(message, cancellationToken);
                 Console.WriteLine($"  [Keepalive #{keepaliveCount}] Sent at {DateTime.UtcNow:HH:mm:ss}");
@@ -370,11 +366,9 @@ public class CertificateSigningRequestSample : IDisposable
             try
             {
                 string messageData = CreateMessage(MessageSize);
-                using var message = new Message(Encoding.UTF8.GetBytes(messageData))
-                {
-                    ContentEncoding = "utf-8",
-                    ContentType = "application/json",
-                };
+                using var message = new Message(Encoding.UTF8.GetBytes(messageData));
+                message.ContentEncoding = "utf-8";
+                message.ContentType = "application/json";
 
                 await _deviceClient!.SendEventAsync(message, _cts.Token);
                 sentCount++;
@@ -409,7 +403,6 @@ public class CertificateSigningRequestSample : IDisposable
         return request.CreateSigningRequest();
     }
 
-
     private static string CertificateListToPem(IList<string> certList)
     {
         const string beginHeader = "-----BEGIN CERTIFICATE-----\r\n";
@@ -417,7 +410,6 @@ public class CertificateSigningRequestSample : IDisposable
         string separator = endFooter + "\r\n" + beginHeader;
         return beginHeader + string.Join(separator, certList) + endFooter;
     }
-
 
     private static string SaveRenewedCertificate(IList<string> certificates, string outputDir, string deviceName)
     {
@@ -439,7 +431,7 @@ public class CertificateSigningRequestSample : IDisposable
                 using var cert = new X509Certificate2(certDer);
 
                 Console.WriteLine($"\n  Certificate [{i + 1}]:");
-                Console.WriteLine($"    Subject CN: {cert.GetNameInfo(X509NameType.SimpleName, false) ?? "N/A"}");
+                Console.WriteLine($"    Subject CN: {cert.GetNameInfo(X509NameType.SimpleName, false)}");
                 Console.WriteLine($"    Not Before: {cert.NotBefore:yyyy-MM-dd HH:mm:ss} UTC");
                 Console.WriteLine($"    Not After:  {cert.NotAfter:yyyy-MM-dd HH:mm:ss} UTC");
             }
@@ -470,10 +462,9 @@ public class CertificateSigningRequestSample : IDisposable
     public void Dispose()
     {
         Dispose(true);
-        GC.SuppressFinalize(this);
     }
 
-    protected virtual void Dispose(bool disposing)
+    private void Dispose(bool disposing)
     {
         if (!_disposed)
         {

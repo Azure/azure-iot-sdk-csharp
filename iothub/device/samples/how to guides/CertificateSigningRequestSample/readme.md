@@ -6,73 +6,91 @@ This sample demonstrates how to use certificate-based authentication with IoT Hu
 
 The sample performs the following steps:
 
-1. **Load or Provision Credentials**: Attempts to load existing credentials from disk, or provisions a new device with Azure Device Provisioning Service (DPS) using symmetric key authentication combined with a Certificate Signing Request (CSR).
+1. **Load Existing Credentials**: Loads pre-existing credentials from disk (certificate, private key, and metadata file containing the IoT Hub hostname and device ID).
 
-2. **Connect to IoT Hub**: Connects to the assigned IoT Hub using the X.509 certificate issued by DPS.
+2. **Connect to IoT Hub**: Connects to IoT Hub using the existing X.509 certificate.
 
-3. **Create CSR for Renewal**: Generates a new Certificate Signing Request using the same private key.
+3. **Verify Connectivity**: Sends a test message to verify the connection works.
 
-4. **Request Certificate Renewal**: Sends the CSR to IoT Hub via the MQTT-based credential management API and receives a renewed certificate.
+4. **Create CSR for Renewal**: Generates a new Certificate Signing Request using the existing private key.
 
-5. **Reconnect with Renewed Certificate**: Disconnects and reconnects to IoT Hub using the newly issued certificate.
+5. **Request Certificate Renewal**: Sends the CSR to IoT Hub via the MQTT-based credential management API and receives a renewed certificate.
 
-6. **Send Telemetry**: Sends a configurable number of telemetry messages to verify the connection works with the renewed certificate.
+6. **Reconnect with Renewed Certificate**: Disconnects and reconnects to IoT Hub using the newly issued certificate.
+
+7. **Send Telemetry**: Sends a configurable number of telemetry messages to verify the connection works with the renewed certificate.
+
+> **Note**: This sample does not perform initial device provisioning. It requires that the device has already been provisioned and has valid credentials. For initial provisioning with CSR, use the Azure Python SDK or Azure CLI.
 
 ## Prerequisites
 
 - .NET 8.0 SDK or later
 - An Azure IoT Hub instance
-- An Azure Device Provisioning Service (DPS) instance linked to the IoT Hub
-- A DPS enrollment group configured for symmetric key attestation with certificate issuance enabled
+- A device already provisioned in IoT Hub with X.509 certificate authentication
+- Pre-existing credential files (see [Required Files](#required-files) below)
 
 ## Parameters
 
 | Parameter | Short | Required | Default | Description |
 |-----------|-------|----------|---------|-------------|
-| `--outputDir` | `-o` | Yes | - | Directory to save certificate and key files |
-| `--idScope` | `-i` | Yes | - | The ID Scope of the DPS instance |
-| `--sasKey` | `-k` | Yes | - | The DPS SAS key (enrollment group primary key) |
-| `--deviceName` | `-d` | No | `test-device` | The device registration ID / device name |
-| `--provisioningHost` | `-p` | No | `global.azure-devices-provisioning.net` | The DPS global provisioning host |
+| `--outputDir` | `-o` | Yes | - | Directory containing certificate, key, and metadata files |
+| `--deviceName` | `-d` | No | `test-device` | The device name (used to locate credential files) |
 | `--messageCount` | `-m` | No | `3` | Number of telemetry messages to send after renewal |
 | `--transportType` | `-t` | No | `Mqtt_Tcp_Only` | Transport type (Mqtt_Tcp_Only required for certificate renewal) |
+
+## Required Files
+
+The sample expects the following files in the output directory:
+
+| File | Description |
+|------|-------------|
+| `{deviceName}.cert.pem` | The X.509 certificate in PEM format |
+| `{deviceName}.key.pem` | The EC private key in PEM format (SECP256R1/prime256v1) |
+| `{deviceName}.json` | Metadata file (see format below) |
+
+The metadata JSON file must contain:
+
+```json
+{
+  "assigned_hub": "your-hub.azure-devices.net",
+  "device_id": "your-device-id"
+}
+```
 
 ## Example Usage
 
 ```powershell
-# Run the sample
-dotnet run -- --outputDir ./certs --idScope 0ne00ABCDEF --sasKey <your-enrollment-group-key>
+# Run the sample with existing credentials
+dotnet run -- --outputDir ./certs
 
-# Run with custom device name
-dotnet run -- --outputDir ./certs --idScope 0ne00ABCDEF --sasKey <key> --deviceName my-device
+# Run with a custom device name
+dotnet run -- --outputDir ./certs --deviceName my-device
 
-# Send more telemetry messages
-dotnet run -- --outputDir ./certs --idScope 0ne00ABCDEF --sasKey <key> --messageCount 10
+# Send more telemetry messages after renewal
+dotnet run -- --outputDir ./certs --messageCount 10
 ```
 
 ## Files Generated
 
-The sample saves the following files to the output directory:
+The sample generates the following file after successful certificate renewal:
 
-- `{deviceName}.cert.pem` - The certificate issued by DPS
-- `{deviceName}.key.pem` - The EC private key (SECP256R1/prime256v1)
-- `{deviceName}.json` - Metadata containing the assigned hub and device ID
 - `{deviceName}_renewed.cert.pem` - The renewed certificate from IoT Hub
 
 ## Certificate Renewal Flow
 
 The certificate renewal uses the IoT Hub credential management API, which is accessed via MQTT:
 
-1. The device generates a new CSR using the existing private key
-2. The CSR is sent to IoT Hub using `DeviceClient.SendCertificateSigningRequestAsync()`
-3. IoT Hub validates the request and issues a new certificate
-4. The device receives the certificate chain in the response
-5. The device can then reconnect using the new certificate
+1. The device connects to IoT Hub using its existing certificate
+2. The device generates a new CSR using the existing private key
+3. The CSR is sent to IoT Hub using `DeviceClient.SendCertificateSigningRequestAsync()`
+4. IoT Hub validates the request and issues a new certificate
+5. The device receives the certificate chain in the response
+6. The device disconnects and reconnects using the new certificate
 
-This allows devices to renew their certificates without re-provisioning through DPS.
+This allows devices to renew their certificates without re-provisioning.
 
 ## Security Considerations
 
-- Private keys are stored unencrypted on disk. In production, consider using secure key storage.
+- Private keys are stored unencrypted on disk. In production, consider using secure key storage (e.g., HSM, TPM, or secure enclave).
 - The sample uses SECP256R1 (prime256v1) elliptic curve keys, which are widely supported.
 - Certificate files should be protected with appropriate file system permissions.
