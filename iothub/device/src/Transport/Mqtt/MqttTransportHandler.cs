@@ -1421,12 +1421,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             if (Logging.IsEnabled)
                 Logging.Enter(this, request, nameof(SendCertificateSigningRequestAsync));
 
+            cancellationToken.ThrowIfCancellationRequested();
+            EnsureValidState();
+
             try
             {
-                cancellationToken.ThrowIfCancellationRequested();
-                EnsureValidState();
-
-                await SubscribeToCredentialsResponseTopicAsync(cancellationToken).ConfigureAwait(false);
+                await SubscribeToCredentialsResponseTopicAsync().ConfigureAwait(false);
 
                 string rid = Guid.NewGuid().ToString();
 
@@ -1659,11 +1659,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             responseException?.Throw();
         }
 
-        private async Task SubscribeToCredentialsResponseTopicAsync(CancellationToken cancellationToken)
+        private async Task SubscribeToCredentialsResponseTopicAsync()
         {
-            cancellationToken.ThrowIfCancellationRequested();
-            EnsureValidState();
-
             await _channel.WriteAsync(
                 new SubscribePacket(0, new SubscriptionRequest(CredentialsResponseTopicFilter, _qosReceivePacketFromService)))
                 .ConfigureAwait(true);
