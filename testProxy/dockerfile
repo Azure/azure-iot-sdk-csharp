@@ -1,0 +1,15 @@
+FROM maven:eclipse-temurin
+
+# Set the working directory inside the container
+WORKDIR /javaapp
+
+# Copy the Java source file into the container
+COPY . /javaapp
+
+EXPOSE 9123
+
+# Compile the Java program
+RUN mvn install -f /javaapp/pom.xml
+
+# Set the default command to run the Java program
+CMD ["java", "-jar", "Main.jar"]

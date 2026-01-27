@@ -12,7 +12,7 @@ public class Main
         HttpProxyServerConfig configWithoutAuth = new HttpProxyServerConfig();
         configWithoutAuth.setHandleSsl(false);
         HttpProxyServer proxyServer = new HttpProxyServer().serverConfig(configWithoutAuth);
-        System.out.println("Starting test HTTP proxy on port 9000...");
+        System.out.println("Starting test HTTP proxy on port " + PORT);
         proxyServer.start(PORT);
     }
 }

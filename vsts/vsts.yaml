@@ -163,14 +163,14 @@ jobs:
          performMultiLevelLookup: true
          installationPath: $(Agent.ToolsDirectory)/dotnet
 
-      - task: Bash@3
-        displayName: 'Start test proxy'
+      - task: PowerShell@2
+        displayName: 'Build and run test proxy'
         condition: eq(variables.SHOULD_RUN, 'True')
         inputs:
-          targetType: 'inline'
+          targetType: inline
           script: |
-            mvn -f $(Build.SourcesDirectory)/testProxy/pom.xml clean install -q
-            mvn exec:java -Dexec.mainClass="com.microsoft.azure.sdk.iot.Main" -f $(Build.SourcesDirectory)/testProxy/pom.xml &
+            docker build -t testproxy:latest $(Build.SourcesDirectory)/testproxy/dockerfile
+            docker run -d -p 9000:9000 testproxy:latest
 
       - task: Bash@3
         displayName: 'Run tests'
@@ -358,15 +358,14 @@ jobs:
           jdkArchitectureOption: 'x64'
           jdkSourceOption: 'PreInstalled'
 
-      - task: CmdLine@2
-        displayName: 'Start test proxy'
+      - task: PowerShell@2
+        displayName: 'Build and run test proxy'
         condition: eq(variables.SHOULD_RUN, 'True')
         inputs:
           targetType: inline
           script: |
-            mvn -f $(Build.SourcesDirectory)\testProxy\pom.xml clean install -q
-            start /b mvn exec:java -Dexec.mainClass="com.microsoft.azure.sdk.iot.Main" -f $(Build.SourcesDirectory)\testProxy\pom.xml
-            timeout /t 5
+            docker build -t testproxy:latest $(Build.SourcesDirectory)/testproxy/dockerfile
+            docker run -d -p 9000:9000 testproxy:latest
 
       - task: CmdLine@2
         displayName: 'Run tests'
