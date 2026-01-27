@@ -85,8 +85,7 @@ jobs:
     pool:
       vmImage: ubuntu-latest
     steps:     
-
-    # The e2e tests use a test proxy written in Java
+    # TODO Is this still necessary?
     - task: JavaToolInstaller@0
       inputs:
         versionSpec: 11
@@ -102,6 +101,7 @@ jobs:
           docker image save testproxy:latest -o $(Build.ArtifactStagingDirectory)/testproxy.tar
 
     - publish:  $(Build.ArtifactStagingDirectory)
+      displayName: 'downloadDockerImageArchives'
       artifact: docker-images
 
   ### Linux build ###
@@ -181,6 +181,7 @@ jobs:
          installationPath: $(Agent.ToolsDirectory)/dotnet
 
       - download: current
+        displayName: 'Download test proxy docker archive'
         artifact: docker-images
 
       - task: PowerShell@2
@@ -373,12 +374,9 @@ jobs:
         displayName: "Start TPM Simulator"
         condition: eq(variables.SHOULD_RUN, 'True')
 
-      # The e2e tests use a test proxy written in Java
-      - task: JavaToolInstaller@0
-        inputs:
-          versionSpec: 11
-          jdkArchitectureOption: 'x64'
-          jdkSourceOption: 'PreInstalled'
+      - download: current
+        displayName: 'Download test proxy docker archive'
+        artifact: docker-images
 
       - task: PowerShell@2
         displayName: 'Download and run test proxy'
