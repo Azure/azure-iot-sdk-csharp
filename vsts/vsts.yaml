@@ -353,7 +353,7 @@ jobs:
           jdkSourceOption: 'PreInstalled'
 
       - task: CmdLine@2
-        displayName: 'Start test proxy and run tests'
+        displayName: 'Start test proxy'
         condition: eq(variables.SHOULD_RUN, 'True')
         inputs:
           targetType: inline
@@ -361,6 +361,12 @@ jobs:
             mvn -f $(Build.SourcesDirectory)/testProxy/pom.xml clean install -q
             start /b mvn exec:java `-Dexec.mainClass="com.microsoft.azure.sdk.iot.Main" -f $(Build.SourcesDirectory)/testProxy/pom.xml
 
+      - task: CmdLine@2
+        displayName: 'Run tests'
+        condition: eq(variables.SHOULD_RUN, 'True')
+        inputs:
+          targetType: inline
+          script: |
             dotnet test --logger trx
             
       - task: PublishTestResults@2
