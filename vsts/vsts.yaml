@@ -364,8 +364,8 @@ jobs:
         inputs:
           targetType: inline
           script: |
-            mvn -f $(Build.SourcesDirectory)/testProxy/pom.xml clean install -q
-            start /b mvn exec:java -Dexec.mainClass="com.microsoft.azure.sdk.iot.Main" -f $(Build.SourcesDirectory)/testProxy/pom.xml
+            mvn -f $(Build.SourcesDirectory)\testProxy\pom.xml clean install -q
+            start /b mvn exec:java -Dexec.mainClass="com.microsoft.azure.sdk.iot.Main" -f $(Build.SourcesDirectory)\testProxy\pom.xml
 
       - task: CmdLine@2
         displayName: 'Run tests'
