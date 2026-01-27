@@ -1451,7 +1451,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 {
                     _credentialsResponseEvent += OnCredentialsResponse;
 
-                    using var requestMessage = CreateCredentialsRequestMessage(request, rid);
+                    using Message requestMessage = CreateCredentialsRequestMessage(request, rid);
                     await SendEventAsync(requestMessage, cancellationToken).ConfigureAwait(false);
 
                     await WaitForAcceptancePhaseAsync(rid, phase1Complete, cancellationToken).ConfigureAwait(false);
@@ -1552,7 +1552,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     phase2Complete.Release();
                     break;
                 default:
-                    var error = JsonConvert.DeserializeObject<CredentialErrorResponse>(body);
+                    CredentialErrorResponse error = JsonConvert.DeserializeObject<CredentialErrorResponse>(body);
                     throw CreateCredentialException(error, rid, status);
             }
         }
