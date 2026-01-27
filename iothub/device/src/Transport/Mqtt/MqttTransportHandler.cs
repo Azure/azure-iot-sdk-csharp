@@ -1426,106 +1426,43 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 cancellationToken.ThrowIfCancellationRequested();
                 EnsureValidState();
 
-                await EnableCredentialsAsync(cancellationToken).ConfigureAwait(false);
+                await SubscribeToCredentialsResponseTopicAsync(cancellationToken).ConfigureAwait(false);
 
                 string rid = Guid.NewGuid().ToString();
 
                 using var phase1Complete = new SemaphoreSlim(0);  // 202 received
                 using var phase2Complete = new SemaphoreSlim(0);  // 200 or error received
 
-                CertificateSigningResponse response = null;
+                CertificateSigningResponse certificateResponse = null;
                 CertificateAcceptedResponse acceptedResponse = null;
                 ExceptionDispatchInfo responseException = null;
 
                 void OnCredentialsResponse(Message possibleResponse)
-                {
-                    try
-                    {
-                        if (ParseCredentialsResponseTopic(possibleResponse.MqttTopicName, out string receivedRid, out int status))
-                        {
-                            if (rid != receivedRid)
-                                return;
-
-                            using var reader = new StreamReader(
-                                possibleResponse.GetBodyStream(),
-                                System.Text.Encoding.UTF8);
-                            string body = reader.ReadToEnd();
-
-                            if (status == 202)
-                            {
-                                acceptedResponse = JsonConvert.DeserializeObject<CertificateAcceptedResponse>(body);
-                                phase1Complete.Release();
-                            }
-                            else if (status == 200)
-                            {
-                                response = JsonConvert.DeserializeObject<CertificateSigningResponse>(body);
-                                phase2Complete.Release();
-                            }
-                            else
-                            {
-                                var error = JsonConvert.DeserializeObject<CredentialErrorResponse>(body);
-                                throw CreateCredentialException(error, rid, status);
-                            }
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        responseException = ExceptionDispatchInfo.Capture(e);
-                        phase1Complete.Release();
-                        phase2Complete.Release();
-                    }
-                }
+                    => HandleCredentialsResponseMessage(
+                        possibleResponse,
+                        rid,
+                        phase1Complete,
+                        phase2Complete,
+                        ref acceptedResponse,
+                        ref certificateResponse,
+                        ref responseException);
 
                 try
                 {
                     _credentialsResponseEvent += OnCredentialsResponse;
 
-                    string body = JsonConvert.SerializeObject(request);
-                    using var bodyStream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(body));
-                    using var requestMessage = new Message(bodyStream);
-
-                    requestMessage.MqttTopicName = string.Format(
-                        CultureInfo.InvariantCulture,
-                        CredentialsRequestTopic,
-                        rid);
-
+                    using var requestMessage = CreateCredentialsRequestMessage(request, rid);
                     await SendEventAsync(requestMessage, cancellationToken).ConfigureAwait(false);
 
-                    bool phase1Received = await phase1Complete.WaitAsync(s_credentialsTimeout, cancellationToken)
-                        .ConfigureAwait(false);
+                    await WaitForAcceptancePhaseAsync(rid, phase1Complete, cancellationToken).ConfigureAwait(false);
+                    ThrowIfResponseException(responseException);
+                    ValidateAcceptedResponse(acceptedResponse, rid);
 
-                    if (responseException != null)
-                        responseException.Throw();
+                    await WaitForCertificatePhaseAsync(rid, acceptedResponse, phase2Complete, cancellationToken).ConfigureAwait(false);
+                    ThrowIfResponseException(responseException);
+                    ValidateCertificateResponse(certificateResponse, rid);
 
-                    if (!phase1Received || acceptedResponse == null)
-                    {
-                        throw new TimeoutException(
-                            $"Certificate signing request {rid} timed out waiting for acceptance (90s)");
-                    }
-
-                    TimeSpan phase2Timeout = acceptedResponse.OperationExpires - DateTimeOffset.UtcNow;
-                    if (phase2Timeout <= TimeSpan.Zero)
-                    {
-                        throw new TimeoutException(
-                            $"Certificate signing request {rid} operation already expired");
-                    }
-                    
-                    bool phase2Received = await phase2Complete.WaitAsync(phase2Timeout, cancellationToken)
-                        .ConfigureAwait(false);
-
-                    if (responseException != null)
-                        responseException.Throw();
-
-                    if (!phase2Received || response == null)
-                    {
-                        throw new TimeoutException(
-                            $"Certificate signing request {rid} timed out waiting for certificate (operationExpires passed)");
-                    }
-
-                    // Preserve correlation ID in response
-                    response.CorrelationId ??= acceptedResponse.CorrelationId;
-
-                    return response;
+                    return certificateResponse;
                 }
                 finally
                 {
@@ -1539,7 +1476,159 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
         }
 
-        private async Task EnableCredentialsAsync(CancellationToken cancellationToken)
+        private void HandleCredentialsResponseMessage(
+            Message possibleResponse,
+            string rid,
+            SemaphoreSlim phase1Complete,
+            SemaphoreSlim phase2Complete,
+            ref CertificateAcceptedResponse acceptedResponse,
+            ref CertificateSigningResponse response,
+            ref ExceptionDispatchInfo responseException)
+        {
+            try
+            {
+                if (!TryParseAndValidateCredentialsResponse(possibleResponse, rid, out int status, out string body))
+                    return;
+
+                ProcessCredentialsResponseByStatus(
+                    status,
+                    body,
+                    rid,
+                    ref acceptedResponse,
+                    ref response,
+                    phase1Complete,
+                    phase2Complete);
+            }
+            catch (Exception e)
+            {
+                responseException = ExceptionDispatchInfo.Capture(e);
+                phase1Complete.Release();
+                phase2Complete.Release();
+            }
+        }
+
+        private bool TryParseAndValidateCredentialsResponse(Message possibleResponse, string expectedRid, out int status, out string body)
+        {
+            body = null;
+            if (!ParseCredentialsResponseTopic(possibleResponse.MqttTopicName, out string receivedRid, out status))
+                return false;
+
+            if (expectedRid != receivedRid)
+                return false;
+
+            body = ReadMessageBody(possibleResponse);
+            return true;
+        }
+
+        private static string ReadMessageBody(Message message)
+        {
+            using var reader = new StreamReader(
+                message.GetBodyStream(),
+                System.Text.Encoding.UTF8);
+            return reader.ReadToEnd();
+        }
+
+        private void ProcessCredentialsResponseByStatus(
+            int status,
+            string body,
+            string rid,
+            ref CertificateAcceptedResponse acceptedResponse,
+            ref CertificateSigningResponse response,
+            SemaphoreSlim phase1Complete,
+            SemaphoreSlim phase2Complete)
+        {
+            switch (status)
+            {
+                case 202:
+                    acceptedResponse = JsonConvert.DeserializeObject<CertificateAcceptedResponse>(body);
+                    phase1Complete.Release();
+                    break;
+                case 200:
+                    response = JsonConvert.DeserializeObject<CertificateSigningResponse>(body);
+                    phase2Complete.Release();
+                    break;
+                default:
+                    var error = JsonConvert.DeserializeObject<CredentialErrorResponse>(body);
+                    throw CreateCredentialException(error, rid, status);
+            }
+        }
+
+        private Message CreateCredentialsRequestMessage(CertificateSigningRequest request, string rid)
+        {
+            string body = JsonConvert.SerializeObject(request);
+            var bodyStream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(body));
+            var requestMessage = new Message(bodyStream);
+
+            requestMessage.MqttTopicName = string.Format(
+                CultureInfo.InvariantCulture,
+                CredentialsRequestTopic,
+                rid);
+
+            return requestMessage;
+        }
+
+        private static async Task WaitForAcceptancePhaseAsync(
+            string rid,
+            SemaphoreSlim phase1Complete,
+            CancellationToken cancellationToken)
+        {
+            bool received = await phase1Complete.WaitAsync(s_credentialsTimeout, cancellationToken)
+                .ConfigureAwait(false);
+
+            if (!received)
+            {
+                throw new TimeoutException(
+                    $"Certificate signing request {rid} timed out waiting for acceptance (90s)");
+            }
+        }
+
+        private static void ValidateAcceptedResponse(CertificateAcceptedResponse acceptedResponse, string rid)
+        {
+            if (acceptedResponse == null)
+            {
+                throw new TimeoutException(
+                    $"Certificate signing request {rid} timed out waiting for acceptance (90s)");
+            }
+        }
+
+        private static async Task WaitForCertificatePhaseAsync(
+            string rid,
+            CertificateAcceptedResponse acceptedResponse,
+            SemaphoreSlim phase2Complete,
+            CancellationToken cancellationToken)
+        {
+            TimeSpan phase2Timeout = acceptedResponse.OperationExpires - DateTimeOffset.UtcNow;
+            if (phase2Timeout <= TimeSpan.Zero)
+            {
+                throw new TimeoutException(
+                    $"Certificate signing request {rid} operation already expired");
+            }
+
+            bool received = await phase2Complete.WaitAsync(phase2Timeout, cancellationToken)
+                .ConfigureAwait(false);
+
+            if (!received)
+            {
+                throw new TimeoutException(
+                    $"Certificate signing request {rid} timed out waiting for certificate (operationExpires passed)");
+            }
+        }
+
+        private static void ValidateCertificateResponse(CertificateSigningResponse response, string rid)
+        {
+            if (response == null)
+            {
+                throw new TimeoutException(
+                    $"Certificate signing request {rid} timed out waiting for certificate (operationExpires passed)");
+            }
+        }
+
+        private static void ThrowIfResponseException(ExceptionDispatchInfo responseException)
+        {
+            responseException?.Throw();
+        }
+
+        private async Task SubscribeToCredentialsResponseTopicAsync(CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
             EnsureValidState();

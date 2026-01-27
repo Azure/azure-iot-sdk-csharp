@@ -19,7 +19,7 @@ namespace Microsoft.Azure.Devices.Client
         /// Correlation ID for diagnostic and support purposes.
         /// Matches the correlationId from the 202 Accepted response.
         /// </summary>
-        [JsonProperty("correlationId")]
+        [JsonProperty("correlation_id")]
         public string CorrelationId { get; set; }
     }
 }
