@@ -373,6 +373,12 @@ jobs:
         displayName: "Start TPM Simulator"
         condition: eq(variables.SHOULD_RUN, 'True')
 
+      - task: JavaToolInstaller@0
+        inputs:
+          versionSpec: 11
+          jdkArchitectureOption: 'x64'
+          jdkSourceOption: 'PreInstalled'
+
       - task: CmdLine@2
         displayName: 'Download and run test proxy'
         condition: eq(variables.SHOULD_RUN, 'True')
