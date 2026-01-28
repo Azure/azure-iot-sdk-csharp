@@ -391,6 +391,7 @@ jobs:
             Start-Job -ScriptBlock { java -jar $(Build.SourcesDirectory)\target\test-proxy-1.0-with-deps.jar }
             Start-Sleep -Seconds 5
             Get-Job Job1
+            Receive-Job Job1
 
       - task: CmdLine@2
         displayName: 'Run tests'
