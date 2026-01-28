@@ -293,6 +293,7 @@ public sealed class CertificateSigningRequestSample : IDisposable
 
         using var keepaliveCts = CancellationTokenSource.CreateLinkedTokenSource(_cts.Token);
 
+        // Start background keepalive task
         Task keepaliveTask = SendKeepaliveMessagesAsync(keepaliveIntervalSeconds, keepaliveCts.Token);
 
         try
