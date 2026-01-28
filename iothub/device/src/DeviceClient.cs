@@ -600,12 +600,12 @@ namespace Microsoft.Azure.Devices.Client
         /// <para>
         /// This method enables certificate renewal for devices using X.509 certificate authentication.
         /// The device must be connected with a valid certificate to request a new one.
-        /// Requires API version 2025-08-01-preview and a Gen2/P SKU hub.
+        /// Requires Gen2/P SKU hub.
         /// </para>
         /// 
         /// <para><b>Transport Support:</b></para>
         /// <para>
-        /// This operation is only supported over MQTT transport (Mqtt_Tcp_Only or Mqtt_WebSocket_Only).
+        /// This operation is only supported over MQTT and MQTT_WS transport.
         /// </para>
         /// 
         /// <para><b>Two-Phase Response Flow:</b></para>
@@ -613,27 +613,25 @@ namespace Microsoft.Azure.Devices.Client
         /// 1. Phase 1: SDK waits up to 90 seconds for a 202 Accepted response.
         /// 2. Phase 2: After acceptance, SDK waits until operationExpires (default ~12 hours) for the certificate.
         /// </para>
-        /// 
+        /// <para>
+        /// Consider sending keepalive messages (e.g., telemetry) while waiting for the result of <see cref="SendCertificateSigningRequestAsync"/>
+        /// to ensure the connection remains active, especially for long-running certificate issuance operations.
+        /// </para>
         /// <para><b>Reconnection Behavior:</b></para>
         /// <para>
-        /// If the device disconnects after receiving 202 Accepted but before receiving the certificate,
-        /// simply reconnect and resubscribe to the response topic. The hub will deliver the response
-        /// before operationExpires time without requiring resubmission.
-        /// </para>
-        /// <para>
-        /// If disconnected before 202 Accepted, resubmit the request. If error 409005 is received,
-        /// check if the returned requestId matches your last sent request - if so, the request was
-        /// already committed and the response will arrive before operationExpires.
+        /// If the device disconnects at any point during the CSR operation, reconnect and call <see cref="SendCertificateSigningRequestAsync"/> again.
+        /// If error 409005 (CredentialOperationActive) is received, set <see cref="CertificateSigningRequest.Replace"/> to "*"
+        /// to replace any active operation, or to the specific request ID of your previous request if you saved it.
         /// </para>
         /// 
         /// <para><b>Error Handling:</b></para>
-        /// <para>
-        /// - 409005: Active operation exists. Use <see cref="CertificateSigningRequest.Replace"/> = "*" to replace.
-        /// - 429002/429003: Throttled. Retry with 1 second initial delay, exponential backoff.
-        /// - 503001: Service unavailable. Retry with 5 second initial delay.
-        /// - 500001: Server error. Retry with 5 minute initial delay.
-        /// - 400040: CSR decode failure. Check CSR format (Base64, no PEM headers).
-        /// </para>
+        /// <list type="bullet">
+        /// <item><description>409005: Active operation exists. Use <see cref="CertificateSigningRequest.Replace"/> = "*" to replace.</description></item>
+        /// <item><description>429002/429003: Throttled. Retry with 1 second initial delay, exponential backoff.</description></item>
+        /// <item><description>503001: Service unavailable. Retry with 5 second initial delay.</description></item>
+        /// <item><description>500001: Server error. Retry with 5 minute initial delay.</description></item>
+        /// <item><description>400040: CSR decode failure. Check CSR format (Base64, no PEM headers).</description></item>
+        /// </list>
         /// </remarks>
         /// <param name="request">The certificate signing request containing the Base64-encoded CSR.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>

@@ -725,7 +725,7 @@ namespace Microsoft.Azure.Devices.Client
 
         /// <summary>
         /// Sends a certificate signing request to IoT Hub and receives a new certificate.
-        /// This operation is only supported over MQTT transport.
+        /// This operation is only supported over MQTT and MQTT_WS transport.
         /// </summary>
         /// <param name="request">The certificate signing request containing the CSR.</param>
         /// <param name="cancellationToken">Cancellation token.</param>
