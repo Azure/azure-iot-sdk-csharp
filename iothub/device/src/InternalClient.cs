@@ -757,12 +757,6 @@ namespace Microsoft.Azure.Devices.Client
                     $"{nameof(request)}.{nameof(request.CertificateSigningRequestData)}");
             }
 
-            if (!IsValidBase64(request.CertificateSigningRequestData))
-            {
-                throw new ArgumentException(@"The CSR is not valid Base64.",
-                    $"{nameof(request)}.{nameof(request.CertificateSigningRequestData)}");
-            }
-
             return InnerHandler.SendCertificateSigningRequestAsync(request, cancellationToken);
         }
 
