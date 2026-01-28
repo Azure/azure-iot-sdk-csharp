@@ -751,16 +751,16 @@ namespace Microsoft.Azure.Devices.Client
                     $"{nameof(request)}.{nameof(request.Id)}");
             }
 
-            if (string.IsNullOrEmpty(request.Csr))
+            if (string.IsNullOrEmpty(request.CertificateSigningRequestData))
             {
                 throw new ArgumentException(@"Value cannot be null or empty.",
-                    $"{nameof(request)}.{nameof(request.Csr)}");
+                    $"{nameof(request)}.{nameof(request.CertificateSigningRequestData)}");
             }
 
-            if (!IsValidBase64(request.Csr))
+            if (!IsValidBase64(request.CertificateSigningRequestData))
             {
                 throw new ArgumentException(@"The CSR is not valid Base64.",
-                    $"{nameof(request)}.{nameof(request.Csr)}");
+                    $"{nameof(request)}.{nameof(request.CertificateSigningRequestData)}");
             }
 
             return InnerHandler.SendCertificateSigningRequestAsync(request, cancellationToken);
