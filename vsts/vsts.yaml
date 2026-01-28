@@ -124,7 +124,7 @@ jobs:
       IOT_HUB_SAS_KEY_NAME: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.IOTHUB_SAS_KEY_NAME'] ]
       DPS_IDSCOPE: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.DPS_IDSCOPE'] ]
       PROVISIONING_CONNECTION_STRING: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.PROVISIONING_CONNECTION_STRING'] ]
-      DPS_GLOBALDEVICEENDPOINT: global.azure_devices_provisioning.net
+      DPS_GLOBALDEVICEENDPOINT: global.azure-devices-provisioning.net
       DPS_X509_PFX_CERTIFICATE_PASSWORD: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.DPS_X509_PFX_CERTIFICATE_PASSWORD'] ]
       DPS_X509_GROUP_ENROLLMENT_NAME: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.DPS_X509_GROUP_ENROLLMENT_NAME'] ]
       X509_CHAIN_ROOT_CA_CERTIFICATE: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.X509_CHAIN_ROOT_CA_CERTIFICATE'] ]
@@ -217,7 +217,7 @@ jobs:
           # Environment variables for DPS E2E tests
           DPS_IDSCOPE: $(DPS_IDSCOPE)
           PROVISIONING_CONNECTION_STRING: $(PROVISIONING_CONNECTION_STRING)
-          DPS_GLOBALDEVICEENDPOINT: global.azure_devices_provisioning.net)
+          DPS_GLOBALDEVICEENDPOINT: global.azure-devices-provisioning.net)
           DPS_X509_PFX_CERTIFICATE_PASSWORD: $(DPS_X509_PFX_CERTIFICATE_PASSWORD)
           DPS_X509_GROUP_ENROLLMENT_NAME: $(DPS_X509_GROUP_ENROLLMENT_NAME)
 
@@ -302,7 +302,7 @@ jobs:
       IOT_HUB_SAS_KEY_NAME: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.IOTHUB_SAS_KEY_NAME'] ]
       DPS_IDSCOPE: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.DPS_IDSCOPE'] ]
       PROVISIONING_CONNECTION_STRING: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.PROVISIONING_CONNECTION_STRING'] ]
-      DPS_GLOBALDEVICEENDPOINT: global.azure_devices_provisioning.net
+      DPS_GLOBALDEVICEENDPOINT: global.azure-devices-provisioning.net
       DPS_X509_PFX_CERTIFICATE_PASSWORD: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.DPS_X509_PFX_CERTIFICATE_PASSWORD'] ]
       DPS_X509_GROUP_ENROLLMENT_NAME: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.DPS_X509_GROUP_ENROLLMENT_NAME'] ]
       X509_CHAIN_ROOT_CA_CERTIFICATE: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.X509_CHAIN_ROOT_CA_CERTIFICATE'] ]
