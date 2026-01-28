@@ -88,12 +88,10 @@ public sealed class CertificateSigningRequestSample : IDisposable
 
             // Step 5: Request new certificate via MQTT
             PrintStep(5, "Requesting new certificate from IoT Hub");
-            var csrRequest = new CertificateSigningRequest
-            {
-                Id = credentials.DeviceId,
-                Csr = Convert.ToBase64String(csrData),
-                Replace = "*", // Replace any active credential operation
-            };
+            var csrRequest = new CertificateSigningRequest(
+                credentials.DeviceId,
+                Convert.ToBase64String(csrData)) 
+                { Replace = "*" }; // Replace any active credential operation
 
             // Send CSR request with keepalive messages running in parallel
             // This matches the Python reference implementation behavior
@@ -250,7 +248,7 @@ public sealed class CertificateSigningRequestSample : IDisposable
         using var exportedCert = new X509Certificate2(cert.Export(X509ContentType.Pfx));
 
         // Create authentication using the certificate
-        var auth = new DeviceAuthenticationWithX509Certificate(deviceId, exportedCert);
+        using var auth = new DeviceAuthenticationWithX509Certificate(deviceId, exportedCert);
 
         // Create device client
         var deviceClient = DeviceClient.Create(
