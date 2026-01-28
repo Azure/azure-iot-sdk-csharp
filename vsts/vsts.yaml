@@ -388,7 +388,7 @@ jobs:
           targetType: inline
           script: |
             mvn -f $(Build.SourcesDirectory)/testProxy/pom.xml clean install -q
-            Start-Job -ScriptBlock { java -jar $(Build.SourcesDirectory)\target\test-proxy-1.0-with-deps.jar }
+            Start-Job -ScriptBlock { java -jar $(Build.SourcesDirectory)\testProxy\target\test-proxy-1.0-with-deps.jar }
             Start-Sleep -Seconds 5
             Get-Job Job1
             Receive-Job Job1
