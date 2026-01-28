@@ -379,15 +379,14 @@ jobs:
           jdkArchitectureOption: 'x64'
           jdkSourceOption: 'PreInstalled'
 
-      - task: CmdLine@2
+      - task: PowerShell@2
         displayName: 'Download and run test proxy'
         condition: eq(variables.SHOULD_RUN, 'True')
         inputs:
           targetType: inline
           script: |
-            mvn -f $(Build.SourcesDirectory)\testProxy\pom.xml clean install -q
-            start /b mvn exec:java -Dexec.mainClass="com.microsoft.azure.sdk.iot.Main" -f $(Build.SourcesDirectory)\testProxy\pom.xml
-            timeout /t 5
+            mvn -f $pomPath clean install -q
+            Start-Job -ScriptBlock { mvn exec:java -f $pomPath }
 
       - task: CmdLine@2
         displayName: 'Run tests'
