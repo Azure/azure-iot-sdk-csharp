@@ -379,14 +379,18 @@ jobs:
           jdkArchitectureOption: 'x64'
           jdkSourceOption: 'PreInstalled'
 
+      # Windows agents cannot run the test proxy docker image (it uses a linux-only image), so just run the test proxy
+      # without docker 
       - task: PowerShell@2
-        displayName: 'Download and run test proxy'
+        displayName: 'Build and run test proxy'
         condition: eq(variables.SHOULD_RUN, 'True')
         inputs:
           targetType: inline
           script: |
             mvn -f $(Build.SourcesDirectory)/testProxy/pom.xml clean install -q
-            Start-Job -ScriptBlock { mvn exec:java -f $(Build.SourcesDirectory)/testProxy/pom.xml }
+            Start-Job -ScriptBlock { java -jar $(Build.SourcesDirectory)\target\test-proxy-1.0-with-deps.jar }
+            Start-Sleep -Seconds 5
+            Get-Job Job1
 
       - task: CmdLine@2
         displayName: 'Run tests'
