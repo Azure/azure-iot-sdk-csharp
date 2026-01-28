@@ -382,7 +382,7 @@ jobs:
       # Windows agents cannot run the test proxy docker image (it uses a linux-only image), so just run the test proxy
       # without docker 
       - task: PowerShell@2
-        displayName: 'Build and run test proxy'
+        displayName: 'Run test proxy and tests'
         condition: eq(variables.SHOULD_RUN, 'True')
         inputs:
           targetType: inline
@@ -390,16 +390,14 @@ jobs:
             mvn -f $(Build.SourcesDirectory)/testProxy/pom.xml clean install -q
             Start-Job -ScriptBlock { java -jar $(Build.SourcesDirectory)\testProxy\target\test-proxy-1.0-with-deps.jar }
             Start-Sleep -Seconds 5
-            Get-Job Job1
+
+            # This prints the logs from the background run of the proxy in case some issue happens
             Receive-Job Job1
 
-      - task: CmdLine@2
-        displayName: 'Run tests'
-        condition: eq(variables.SHOULD_RUN, 'True')
-        inputs:
-          targetType: inline
-          script: |
             dotnet test --logger trx
+            
+            # Tear down test proxy background process
+            Stop-Job Job1
             
       - task: PublishTestResults@2
         displayName: "Publish Test Results **/*.trx"
