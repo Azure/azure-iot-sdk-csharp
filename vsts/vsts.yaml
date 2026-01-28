@@ -290,7 +290,6 @@ jobs:
   - job: WINDOWS
     dependsOn: 
       - DeployCloudTestResources
-      - BuildTestProxyDockerImage
     variables:
       IOTHUB_CONNECTION_STRING: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.IOTHUB_CONNECTION_STRING'] ]
       IOTHUB_DEVICE_CONN_STRING: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.IOTHUB_DEVICE_CONN_STRING'] ]
@@ -374,18 +373,15 @@ jobs:
         displayName: "Start TPM Simulator"
         condition: eq(variables.SHOULD_RUN, 'True')
 
-      - download: current
-        displayName: 'Download test proxy docker archive'
-        artifact: docker-images
-
-      - task: PowerShell@2
+      - task: CmdLine@2
         displayName: 'Download and run test proxy'
         condition: eq(variables.SHOULD_RUN, 'True')
         inputs:
           targetType: inline
           script: |
-            docker load --input $(Pipeline.Workspace)/docker-images/testproxy.tar
-            docker run -d -p 9000:9000 testproxy:latest
+            mvn -f $(Build.SourcesDirectory)\testProxy\pom.xml clean install -q
+            start /b mvn exec:java -Dexec.mainClass="com.microsoft.azure.sdk.iot.Main" -f $(Build.SourcesDirectory)\testProxy\pom.xml
+            timeout /t 5
 
       - task: CmdLine@2
         displayName: 'Run tests'
