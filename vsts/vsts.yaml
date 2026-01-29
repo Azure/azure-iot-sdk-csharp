@@ -119,6 +119,7 @@ jobs:
           scriptType: 'pscore'
           scriptLocation: 'inlineScript'
           pwsh: true
+          condition: always()
           inlineScript: |
             $jsonContent = az account show | ConvertFrom-Json
             $subscriptionId = $jsonContent.Id
@@ -277,6 +278,7 @@ jobs:
           scriptType: 'pscore'
           scriptLocation: 'inlineScript'
           pwsh: true
+          condition: always()
           inlineScript: |
             $jsonContent = az account show | ConvertFrom-Json
             $subscriptionId = $jsonContent.Id
