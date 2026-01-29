@@ -83,6 +83,7 @@ Function Check-AzureCliVersion()
     }
 }
 
+
 #################################################################################################
 # Set required parameters.
 #################################################################################################
@@ -134,40 +135,37 @@ $iotHubX509ChainDevicPfxPath = "$PSScriptRoot/IotHubX509ChainDevice.pfx";
 
 Write-Host "`nGenerating self signed certs."
 
-# This module is required to use commands like New-SelfSignedCertificate and is not installed on ADO's linux powershell
-# by default
-Install-Module -Name PSPKI -RequiredVersion 3.7.2 -Scope CurrentUser -Force
-
 # Generate the certificates used by both IoT Hub and DPS tests.
 
 # Create certificate chain from Root to Intermediate2.
 # This chain will be combined with the certificates that are signed by Intermediate2 to test X509 CA-chained devices for IoT Hub and DPS (group enrollment) tests.
 # Chain: Root->Intermediate1->Intermediate2, device cert: Intermediate2->deviceCert
-$rootCACert = New-SelfSignedCertificate `
-    -DnsName "$rootCommonName" `
-    -KeyUsage CertSign `
-    -TextExtension @("2.5.29.19={text}ca=TRUE&pathlength=12") `
-    -HashAlgorithm "$certificateHashAlgorithm" `
-    -CertStoreLocation "Cert:\LocalMachine\My" `
+openssl
+$rootCACert = New-SelfSignedCertificateEx `
+    -Subject "$rootCommonName" `
+    -KeyUsage 4 ` # KeyCertSign
+    #-TextExtension @("2.5.29.19={text}ca=TRUE&pathlength=12") `
+    -SignatureAlgorithm "$certificateHashAlgorithm" `
+    -StoreLocation 2 ` # LocalMachine
     -NotAfter (Get-Date).AddYears(2)
 
-$intermediateCert1 = New-SelfSignedCertificate `
-    -DnsName "$intermediateCert1CommonName" `
-    -KeyUsage CertSign `
-    -TextExtension @("2.5.29.19={text}ca=TRUE&pathlength=12") `
-    -HashAlgorithm "$certificateHashAlgorithm" `
-    -CertStoreLocation "Cert:\LocalMachine\My" `
+$intermediateCert1 = New-SelfSignedCertificateEx `
+    -Subject "$intermediateCert1CommonName" `
+    -KeyUsage 4 ` # KeyCertSign
+    #-TextExtension @("2.5.29.19={text}ca=TRUE&pathlength=12") `
+    -SignatureAlgorithm "$certificateHashAlgorithm" `
+    -StoreLocation 2 ` # LocalMachine
     -NotAfter (Get-Date).AddYears(2) `
-    -Signer $rootCACert
+    -Issuer $rootCACert
 
-$intermediateCert2 = New-SelfSignedCertificate `
-    -DnsName "$intermediateCert2CommonName" `
-    -KeyUsage CertSign `
-    -TextExtension @("2.5.29.19={text}ca=TRUE&pathlength=12") `
-    -HashAlgorithm "$certificateHashAlgorithm" `
-    -CertStoreLocation "Cert:\LocalMachine\My" `
+$intermediateCert2 = New-SelfSignedCertificateEx `
+    -Subject "$intermediateCert2CommonName" `
+    -KeyUsage 4 ` # KeyCertSign
+    #-TextExtension @("2.5.29.19={text}ca=TRUE&pathlength=12") `
+    -SignatureAlgorithm "$certificateHashAlgorithm" `
+    -StoreLocation 2 ` # LocalMachine
     -NotAfter (Get-Date).AddYears(2) `
-    -Signer $intermediateCert1
+    -Issuer $intermediateCert1
 
 Export-Certificate -cert $rootCACert -FilePath $rootCertPath -Type CERT | Out-Null
 $x509ChainRootCACertBase64 = [Convert]::ToBase64String((Get-Content $rootCertPath -AsByteStream))
@@ -188,11 +186,11 @@ $x509ChainIntermediate2PfxBase64 = [Convert]::ToBase64String((Get-Content $inter
 
 # Generate an X509 self-signed certificate. This certificate will be used by test device identities that test X509 self-signed certificate device authentication.
 # Leaf certificates are not used for signing so don't specify KeyUsage and TestExtension - ca=TRUE&pathlength=12
-$iotHubX509SelfSignedDeviceCert = New-SelfSignedCertificate `
-    -DnsName "$iotHubX509DeviceCertCommonName" `
+$iotHubX509SelfSignedDeviceCert = New-SelfSignedCertificateEx `
+    -Subject "$iotHubX509DeviceCertCommonName" `
     -KeySpec Signature `
-    -TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.2") `
-    -HashAlgorithm "$certificateHashAlgorithm" `
+    #-TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.2") `
+    -SignatureAlgorithm "$certificateHashAlgorithm" `
     -CertStoreLocation "Cert:\LocalMachine\My" `
     -NotAfter (Get-Date).AddYears(2)
 
@@ -203,14 +201,14 @@ $iothubX509DevicePfxThumbprint = $iotHubX509SelfSignedDeviceCert.Thumbprint
 
 # Generate the leaf device certificate signed by Intermediate2. This certificate will be used by test device identities that test X509 CA-signed certificate device authentication.
 # Leaf certificates are not used for signing so don't specify KeyUsage and TestExtension - ca=TRUE&pathlength=12
-$iotHubX509ChainDeviceCert = New-SelfSignedCertificate `
-    -DnsName "$iotHubX509CertChainDeviceCommonName" `
+$iotHubX509ChainDeviceCert = New-SelfSignedCertificateEx `
+    -Subject "$iotHubX509CertChainDeviceCommonName" `
     -KeySpec Signature `
-    -TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.2") `
-    -HashAlgorithm "$certificateHashAlgorithm" `
+    #-TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.2") `
+    -SignatureAlgorithm "$certificateHashAlgorithm" `
     -CertStoreLocation "Cert:\LocalMachine\My" `
     -NotAfter (Get-Date).AddYears(2) `
-    -Signer $intermediateCert2
+    -Issuer $intermediateCert2
 
 Export-PFXCertificate -cert $iotHubX509ChainDeviceCert -filePath $iotHubX509ChainDevicPfxPath -password $iotHubCredentials.Password | Out-Null
 $iothubX509ChainDevicePfxBase64 = [Convert]::ToBase64String((Get-Content $iotHubX509ChainDevicPfxPath -AsByteStream));
@@ -335,14 +333,14 @@ if ($isVerified -eq 'false')
     $etag = az iot hub certificate show -g $ResourceGroup --hub-name $iotHubName --name $hubUploadCertificateName --query 'etag'
     $requestedCommonName = az iot hub certificate generate-verification-code -g $ResourceGroup --hub-name $iotHubName --name $hubUploadCertificateName -e $etag --query 'properties.verificationCode'
     $verificationCertArgs = @{
-        "-DnsName"                       = $requestedCommonName;
-        "-CertStoreLocation"             = "cert:\LocalMachine\My";
+        "-Subject"                  = $requestedCommonName;
+        "-StoreLocation"                 = 2;
         "-NotAfter"                      = (get-date).AddYears(2);
         "-TextExtension"                 = @("2.5.29.37={text}1.3.6.1.5.5.7.3.2,1.3.6.1.5.5.7.3.1", "2.5.29.19={text}ca=FALSE&pathlength=0");
-        "-HashAlgorithm"                 = $certificateHashAlgorithm;
-        "-Signer"                        = $rootCACert;
+        "-SignatureAlgorithm"            = $certificateHashAlgorithm;
+        "-Issuer"                        = $rootCACert;
     }
-    $verificationCert = New-SelfSignedCertificate @verificationCertArgs
+    $verificationCert = New-SelfSignedCertificateEx @verificationCertArgs
     Export-Certificate -cert $verificationCert -filePath $verificationCertPath -Type Cert | Out-Null
     $etag = az iot hub certificate show -g $ResourceGroup --hub-name $iotHubName --name $hubUploadCertificateName --query 'etag'
     az iot hub certificate verify -g $ResourceGroup --hub-name $iotHubName --name $hubUploadCertificateName -e $etag --path $verificationCertPath --output none
@@ -394,9 +392,9 @@ if ($isVerified -eq 'false')
         "-NotAfter"            = (get-date).AddYears(2);
         "-TextExtension"       = @("2.5.29.37={text}1.3.6.1.5.5.7.3.2,1.3.6.1.5.5.7.3.1", "2.5.29.19={text}ca=FALSE&pathlength=0");
         "-HashAlgorithm"       = $certificateHashAlgorithm;
-        "-Signer"              = $rootCACert;
+        "-Issuer"              = $rootCACert;
     }
-    $verificationCert = New-SelfSignedCertificate @verificationCertArgs
+    $verificationCert = New-SelfSignedCertificateEx @verificationCertArgs
     Export-Certificate -cert $verificationCert -filePath $verificationCertPath -Type Cert | Out-Null
     $etag = az iot dps certificate show -g $ResourceGroup --dps-name $dpsName --certificate-name $dpsUploadCertificateName --query 'etag'
     az iot dps certificate verify -g $ResourceGroup --dps-name $dpsName --certificate-name $dpsUploadCertificateName -e $etag --path $verificationCertPath --output none
