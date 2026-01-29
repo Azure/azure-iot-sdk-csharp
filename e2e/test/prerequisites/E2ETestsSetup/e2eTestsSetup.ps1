@@ -133,6 +133,10 @@ $iotHubX509ChainDevicPfxPath = "$PSScriptRoot/IotHubX509ChainDevice.pfx";
 # Generate self signed Root and Intermediate CA cert, expiring in 2 years
 # These certs are used for signing so ensure to have the correct KeyUsage - CertSign and TestExtension - ca=TRUE&pathlength=12
 
+# This module is required to use commands like New-SelfSignedCertificate and is not installed on ADO's linux powershell
+# by default
+Install-Module -Name PSPKI -RequiredVersion 3.7.2 -Scope CurrentUser -Force
+
 Write-Host "`nGenerating self signed certs."
 
 # Generate the certificates used by both IoT Hub and DPS tests.
