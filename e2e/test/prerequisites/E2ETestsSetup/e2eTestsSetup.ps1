@@ -134,6 +134,10 @@ $iotHubX509ChainDevicPfxPath = "$PSScriptRoot/IotHubX509ChainDevice.pfx";
 
 Write-Host "`nGenerating self signed certs."
 
+# This module is required to use commands like New-SelfSignedCertificate and is not installed on ADO's linux powershell
+# by default
+Install-Module -Name PKI -Scope CurrentUser
+
 # Generate the certificates used by both IoT Hub and DPS tests.
 
 # Create certificate chain from Root to Intermediate2.
