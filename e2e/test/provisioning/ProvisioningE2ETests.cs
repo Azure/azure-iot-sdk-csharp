@@ -12,6 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Azure.Devices.Client;
+using Microsoft.Azure.Devices.E2ETests.helpers;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.Azure.Devices.Provisioning.Client;
 using Microsoft.Azure.Devices.Provisioning.Client.Transport;
@@ -63,6 +64,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         [Timeout(TestTimeoutMilliseconds)]
         [TestCategory("Flaky")] // Can't guarantee only a single test will make a call to tpm due to class-level parallelization
         [DoNotParallelize] //TPM tests need to execute in serial as tpm only accepts one connection at a time
+        [WindowsOnly] // Test infrastructure does not currently support running the TPM simulator on Linux
         public async Task DPS_Registration_Http_Tpm_RegisterOk()
         {
             await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Http1, AttestationMechanismType.Tpm, EnrollmentType.Individual, false).ConfigureAwait(false);
@@ -102,6 +104,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         [TestCategory("Proxy")]
         [TestCategory("Flaky")] // Can't guarantee only a single test will make a call to tpm due to class-level parallelization
         [DoNotParallelize] //TPM tests need to execute in serial as tpm only accepts one connection at a time
+        [WindowsOnly] // Test infrastructure does not currently support running the TPM simulator on Linux
         public async Task DPS_Registration_HttpWithProxy_Tpm_RegisterOk()
         {
             await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Http1, AttestationMechanismType.Tpm, EnrollmentType.Individual, true, s_proxyServerAddress).ConfigureAwait(false);
@@ -138,6 +141,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         [Timeout(TestTimeoutMilliseconds)]
         [TestCategory("Flaky")] // Can't guarantee only a single test will make a call to tpm due to class-level parallelization
         [DoNotParallelize] //TPM tests need to execute in serial as tpm only accepts one connection at a time
+        [WindowsOnly] // Test infrastructure does not currently support running the TPM simulator on Linux
         public async Task DPS_Registration_Amqp_Tpm_RegisterOk()
         {
             await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Amqp_Tcp_Only, AttestationMechanismType.Tpm, EnrollmentType.Individual, false).ConfigureAwait(false);
@@ -147,6 +151,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         [Timeout(TestTimeoutMilliseconds)]
         [TestCategory("Flaky")] // Can't guarantee only a single test will make a call to tpm due to class-level parallelization
         [DoNotParallelize] //TPM tests need to execute in serial as tpm only accepts one connection at a time
+        [WindowsOnly] // Test infrastructure does not currently support running the TPM simulator on Linux
         public async Task DPS_Registration_AmqpWs_Tpm_RegisterOk()
         {
             await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Amqp_WebSocket_Only, AttestationMechanismType.Tpm, EnrollmentType.Individual, false).ConfigureAwait(false);
@@ -421,6 +426,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         [Timeout(TestTimeoutMilliseconds)]
         [TestCategory("Flaky")] // Can't guarantee only a single test will make a call to tpm due to class-level parallelization
         [DoNotParallelize] //TPM tests need to execute in serial as tpm only accepts one connection at a time
+        [WindowsOnly] // Test infrastructure does not currently support running the TPM simulator on Linux
         public async Task DPS_Registration_Http_Tpm_InvalidRegistrationId_RegisterFail()
         {
             try
@@ -489,6 +495,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         [Timeout(TestTimeoutMilliseconds)]
         [TestCategory("Flaky")] // Can't guarantee only a single test will make a call to tpm due to class-level parallelization
         [DoNotParallelize] //TPM tests need to execute in serial as tpm only accepts one connection at a time
+        [WindowsOnly] // Test infrastructure does not currently support running the TPM simulator on Linux
         public async Task DPS_Registration_Http_Tpm_InvalidIdScope_RegisterFail()
         {
             await ProvisioningDeviceClientInvalidIdScopeRegisterFailAsync(Client.TransportType.Http1, AttestationMechanismType.Tpm, EnrollmentType.Individual, "").ConfigureAwait(false);
@@ -516,6 +523,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         [TestCategory("Flaky")] // Can't guarantee only a single test will make a call to tpm due to class-level parallelization
         [DoNotParallelize] //TPM tests need to execute in serial as tpm only accepts one connection at a time
+        [WindowsOnly] // Test infrastructure does not currently support running the TPM simulator on Linux
         public async Task DPS_Registration_Amqp_Tpm_InvalidIdScope_RegisterFail()
         {
             await ProvisioningDeviceClientInvalidIdScopeRegisterFailAsync(Client.TransportType.Amqp_Tcp_Only, AttestationMechanismType.Tpm, EnrollmentType.Individual, "").ConfigureAwait(false);
@@ -527,6 +535,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         [TestCategory("Flaky")] // Can't guarantee only a single test will make a call to tpm due to class-level parallelization
         [DoNotParallelize] //TPM tests need to execute in serial as tpm only accepts one connection at a time as tpm only accepts one connection at a time
+        [WindowsOnly] // Test infrastructure does not currently support running the TPM simulator on Linux
         public async Task DPS_Registration_AmqpWs_Tpm_InvalidIdScope_Register_Fail()
         {
             await ProvisioningDeviceClientInvalidIdScopeRegisterFailAsync(Client.TransportType.Amqp_WebSocket_Only, AttestationMechanismType.Tpm, EnrollmentType.Individual, "").ConfigureAwait(false);
