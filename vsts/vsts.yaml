@@ -55,32 +55,7 @@ resources:
   - repo: self
     clean: true
 
-jobs:
-  - job: DeployCloudTestResources
-    pool:
-      vmImage: windows-2022
-    steps:     
-    - task: AzureCLI@2
-      name: deployCloudTestResources 
-      inputs:
-        azureSubscription: 'iot hub sdk service connection'
-        scriptType: 'pscore'
-        scriptLocation: 'inlineScript'
-        pwsh: true
-        inlineScript: |
-          $jsonContent = az account show | ConvertFrom-Json
-          $subscriptionId = $jsonContent.Id
-
-          $uniqueSuffixLength = 5
-          $characters = 'abcdefghijklmnopqrstuvwxyz'.ToCharArray()
-          $CloudResourceUniqueSuffix = -join ($characters | Get-Random -Count $uniqueSuffixLength)
-
-          $resourceGroupName = 'dotnetsdkgate'+$CloudResourceUniqueSuffix
-
-          Write-Host "##vso[task.setvariable variable=RESOURCE_GROUP_NAME;isOutput=true]$resourceGroupName"
-
-          $(Build.SourcesDirectory)/e2e/test/prerequisites/E2ETestsSetup/e2eTestsSetup.ps1 -SubscriptionId $subscriptionId -Region westcentralus -ResourceGroup $resourceGroupName -GroupCertificatePassword someCertPass
-  
+jobs: 
   - job: BuildTestProxyDockerImage
     pool:
       vmImage: ubuntu-latest
@@ -108,43 +83,9 @@ jobs:
   - job: LINUX
     displayName: Linux
     dependsOn: 
-      - DeployCloudTestResources
       - BuildTestProxyDockerImage
     condition: succeeded()
     timeoutInMinutes: ${{ parameters.jobTimeoutInMinutes }}
-    variables:
-      IOTHUB_CONNECTION_STRING: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.IOTHUB_CONNECTION_STRING'] ]
-      IOTHUB_DEVICE_CONN_STRING: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.IOTHUB_DEVICE_CONN_STRING'] ]
-      IOTHUB_X509_DEVICE_PFX_CERTIFICATE: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.IOTHUB_X509_DEVICE_PFX_CERTIFICATE'] ]
-      IOTHUB_X509_DEVICE_PFX_THUMBPRINT: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.IOTHUB_X509_DEVICE_PFX_THUMBPRINT'] ]
-      IOTHUB_X509_CHAIN_DEVICE_NAME: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.IOTHUB_X509_CHAIN_DEVICE_NAME'] ]
-      IOTHUB_X509_CHAIN_DEVICE_PFX_CERTIFICATE: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.IOTHUB_X509_CHAIN_DEVICE_PFX_CERTIFICATE'] ]
-      IOTHUB_USER_ASSIGNED_MSI_RESOURCE_ID: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.IOTHUB_USER_ASSIGNED_MSI_RESOURCE_ID'] ]
-      IOT_HUB_SAS_KEY: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.IOTHUB_SAS_KEY'] ]
-      IOT_HUB_SAS_KEY_NAME: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.IOTHUB_SAS_KEY_NAME'] ]
-      DPS_IDSCOPE: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.DPS_IDSCOPE'] ]
-      PROVISIONING_CONNECTION_STRING: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.PROVISIONING_CONNECTION_STRING'] ]
-      DPS_GLOBALDEVICEENDPOINT: global.azure-devices-provisioning.net
-      DPS_X509_PFX_CERTIFICATE_PASSWORD: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.DPS_X509_PFX_CERTIFICATE_PASSWORD'] ]
-      DPS_X509_GROUP_ENROLLMENT_NAME: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.DPS_X509_GROUP_ENROLLMENT_NAME'] ]
-      X509_CHAIN_ROOT_CA_CERTIFICATE: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.X509_CHAIN_ROOT_CA_CERTIFICATE'] ]
-      X509_CHAIN_INTERMEDIATE1_CERTIFICATE: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.X509_CHAIN_INTERMEDIATE1_CERTIFICATE'] ]
-      X509_CHAIN_INTERMEDIATE2_CERTIFICATE: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.X509_CHAIN_INTERMEDIATE2_CERTIFICATE'] ]
-      X509_CHAIN_INTERMEDIATE2_PFX_CERTIFICATE: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.X509_CHAIN_INTERMEDIATE2_PFX_CERTIFICATE'] ]
-      STORAGE_ACCOUNT_CONNECTION_STRING: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.STORAGE_ACCOUNT_CONNECTION_STRING'] ]
-      MSFT_TENANT_ID: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.MSFT_TENANT_ID'] ]
-      E2E_TEST_AAD_APP_CLIENT_ID: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.E2E_TEST_AAD_APP_CLIENT_ID'] ]
-      E2E_TEST_AAD_APP_CLIENT_SECRET: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.E2E_TEST_AAD_APP_CLIENT_SECRET'] ]
-      E2E_IKEY: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.E2E_IKEY'] ]
-      #IOTHUB_DEVICE_CONN_STRING_INVALIDCERT: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.IOTHUB_DEVICE_CONN_STRING_INVALIDCERT'] ]
-      #IOTHUB_CONN_STRING_INVALIDCERT: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.IOTHUB_CONN_STRING_INVALIDCERT'] ]
-      #DPS_GLOBALDEVICEENDPOINT_INVALIDCERT: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.DPS_GLOBALDEVICEENDPOINT_INVALIDCERT'] ]
-      #PROVISIONING_CONNECTION_STRING_INVALIDCERT: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.PROVISIONING_CONNECTION_STRING_INVALIDCERT'] ]
-      PATH_TO_DEVICE_PREFIX_FOR_DELETION_FILE: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.PATH_TO_DEVICE_PREFIX_FOR_DELETION_FILE'] ]
-      PNP_TC_DEVICE_CONN_STRING: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.PNP_TC_DEVICE_CONN_STRING'] ]
-      PNP_THERMOSTAT_DEVICE_CONN_STRING: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.PNP_THERMOSTAT_DEVICE_CONN_STRING'] ]
-      DPS_SYMMETRIC_KEY_INDIVIDUAL_ENROLLMENT_REGISTRATION_ID: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.DPS_SYMMETRIC_KEY_INDIVIDUAL_ENROLLMENT_REGISTRATION_ID'] ]
-      DPS_SYMMETRIC_KEY_INDIVIDUAL_ENROLLEMNT_PRIMARY_KEY: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.DPS_SYMMETRIC_KEY_INDIVIDUAL_ENROLLEMNT_PRIMARY_KEY'] ]
     strategy:
       maxParallel: ${{ parameters.maxParallelJobs }}
       matrix:
@@ -170,6 +111,27 @@ jobs:
             Write-Host "testNet472: ${{ variables.testNet472 }}"
 
       # https://docs.microsoft.com/azure/devops/pipelines/tasks/tool/dotnet-core-tool-installer?view=azure-devops
+
+      - task: AzureCLI@2
+        name: deployCloudTestResources 
+        inputs:
+          azureSubscription: 'iot hub sdk service connection'
+          scriptType: 'pscore'
+          scriptLocation: 'inlineScript'
+          pwsh: true
+          inlineScript: |
+            $jsonContent = az account show | ConvertFrom-Json
+            $subscriptionId = $jsonContent.Id
+
+            $uniqueSuffixLength = 5
+            $characters = 'abcdefghijklmnopqrstuvwxyz'.ToCharArray()
+            $CloudResourceUniqueSuffix = -join ($characters | Get-Random -Count $uniqueSuffixLength)
+
+            $resourceGroupName = 'dotnetsdkgate'+$CloudResourceUniqueSuffix
+
+            Write-Host "##vso[task.setvariable variable=RESOURCE_GROUP_NAME;isOutput=true]$resourceGroupName"
+
+            $(Build.SourcesDirectory)/e2e/test/prerequisites/E2ETestsSetup/e2eTestsSetup.ps1 -SubscriptionId $subscriptionId -Region westcentralus -ResourceGroup $resourceGroupName -GroupCertificatePassword someCertPass
 
       # Linux requires .NET 8.0 install for tests to run, no matter which framework target is being tested
       - task: UseDotNet@2
@@ -204,20 +166,17 @@ jobs:
         env:
           # Environment variables for IoT Hub E2E tests
           IOTHUB_CONNECTION_STRING: $(IOTHUB_CONNECTION_STRING)
-          IOTHUB_DEVICE_CONN_STRING: $(IOTHUB_DEVICE_CONN_STRING)
           IOTHUB_X509_DEVICE_PFX_CERTIFICATE: $(IOTHUB_X509_DEVICE_PFX_CERTIFICATE)
           IOTHUB_X509_DEVICE_PFX_THUMBPRINT: $(IOTHUB_X509_DEVICE_PFX_THUMBPRINT)
 
           IOTHUB_X509_CHAIN_DEVICE_NAME: $(IOTHUB_X509_CHAIN_DEVICE_NAME)
           IOTHUB_X509_CHAIN_DEVICE_PFX_CERTIFICATE: $(IOTHUB_X509_CHAIN_DEVICE_PFX_CERTIFICATE)
           IOTHUB_USER_ASSIGNED_MSI_RESOURCE_ID: $(IOTHUB_USER_ASSIGNED_MSI_RESOURCE_ID)
-          IOT_HUB_SAS_KEY: $(IOTHUB_SAS_KEY)
-          IOT_HUB_SAS_KEY_NAME: $(IOTHUB_SAS_KEY_NAME)
 
           # Environment variables for DPS E2E tests
           DPS_IDSCOPE: $(DPS_IDSCOPE)
           PROVISIONING_CONNECTION_STRING: $(PROVISIONING_CONNECTION_STRING)
-          DPS_GLOBALDEVICEENDPOINT: global.azure-devices-provisioning.net)
+          DPS_GLOBALDEVICEENDPOINT: global.azure-devices-provisioning.net
           DPS_X509_PFX_CERTIFICATE_PASSWORD: $(DPS_X509_PFX_CERTIFICATE_PASSWORD)
           DPS_X509_GROUP_ENROLLMENT_NAME: $(DPS_X509_GROUP_ENROLLMENT_NAME)
 
@@ -233,28 +192,9 @@ jobs:
           E2E_IKEY: $(E2E_IKEY)
 
           # Environment variables for the DevOps pipeline
-          #PROXY_SERVER_ADDRESS: 127.0.0.1:8888
           TARGET_BRANCH: $((System.PullRequest.TargetBranch)
           FRAMEWORK: $(FRAMEWORK)
 
-          # Environment variables for invalid certificate tests
-          #IOTHUB_DEVICE_CONN_STRING_INVALIDCERT: $(IOTHUB_DEVICE_CONN_STRING_INVALIDCERT)
-          #IOTHUB_CONN_STRING_INVALIDCERT: $(IOTHUB_CONN_STRING_INVALIDCERT)
-          #DPS_GLOBALDEVICEENDPOINT_INVALIDCERT: $(DPS_GLOBALDEVICEENDPOINT_INVALIDCERT)
-          #PROVISIONING_CONNECTION_STRING_INVALIDCERT: $(PROVISIONING_CONNECTION_STRING_INVALIDCERT)
-
-          # Environment variables used by Log Analytics Workspace for Azure Security Center
-          #LA_AAD_APP_ID: $(LA_AAD_APP_ID)
-          #LA_AAD_APP_CERT_BASE64: $(LA_AAD_APP_CERT_BASE64)
-          #LA_WORKSPACE_ID: $(LA_WORKSPACE_ID)
-
-          # Environment variable for running samples/cleanups
-          PATH_TO_DEVICE_PREFIX_FOR_DELETION_FILE: $(PATH_TO_DEVICE_PREFIX_FOR_DELETION_FILE)
-          PNP_TC_DEVICE_CONN_STRING: $(PNP_TC_DEVICE_CONN_STRING)
-          PNP_THERMOSTAT_DEVICE_CONN_STRING: $(PNP_THERMOSTAT_DEVICE_CONN_STRING)
-          DPS_SYMMETRIC_KEY_INDIVIDUAL_ENROLLMENT_REGISTRATION_ID: $(DPS_SYMMETRIC_KEY_INDIVIDUAL_ENROLLMENT_REGISTRATION_ID)
-          DPS_SYMMETRIC_KEY_INDIVIDUAL_ENROLLEMNT_PRIMARY_KEY: $(DPS_SYMMETRIC_KEY_INDIVIDUAL_ENROLLEMNT_PRIMARY_KEY)
-            
 
       - task: PublishTestResults@2
         displayName: "Publish Test Results **/*.trx"
@@ -271,6 +211,17 @@ jobs:
           SourceFolder: "$(Build.SourcesDirectory)"
           Contents: "**/*.trx"
           TargetFolder: "$(Build.ArtifactStagingDirectory)"
+
+      - task: AzureCLI@2
+        inputs:
+          azureSubscription: 'iot hub sdk service connection'
+          scriptType: 'ps'
+          scriptLocation: 'inlineScript'
+          inlineScript: |
+            Write-Host "Deleting resource group with name "
+            Write-Host $(RESOURCE_GROUP_NAME)
+            az group delete --name $(RESOURCE_GROUP_NAME) --y
+            # don't forget to delete RBAC resources as well
 
       - task: PublishBuildArtifacts@1
         displayName: "Publish Artifact: testresults_linux_$(FRAMEWORK)"
@@ -290,39 +241,6 @@ jobs:
   - job: WINDOWS
     dependsOn: 
       - DeployCloudTestResources
-    variables:
-      IOTHUB_CONNECTION_STRING: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.IOTHUB_CONNECTION_STRING'] ]
-      IOTHUB_DEVICE_CONN_STRING: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.IOTHUB_DEVICE_CONN_STRING'] ]
-      IOTHUB_X509_DEVICE_PFX_CERTIFICATE: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.IOTHUB_X509_DEVICE_PFX_CERTIFICATE'] ]
-      IOTHUB_X509_DEVICE_PFX_THUMBPRINT: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.IOTHUB_X509_DEVICE_PFX_THUMBPRINT'] ]
-      IOTHUB_X509_CHAIN_DEVICE_NAME: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.IOTHUB_X509_CHAIN_DEVICE_NAME'] ]
-      IOTHUB_X509_CHAIN_DEVICE_PFX_CERTIFICATE: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.IOTHUB_X509_CHAIN_DEVICE_PFX_CERTIFICATE'] ]
-      IOTHUB_USER_ASSIGNED_MSI_RESOURCE_ID: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.IOTHUB_USER_ASSIGNED_MSI_RESOURCE_ID'] ]
-      IOT_HUB_SAS_KEY: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.IOTHUB_SAS_KEY'] ]
-      IOT_HUB_SAS_KEY_NAME: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.IOTHUB_SAS_KEY_NAME'] ]
-      DPS_IDSCOPE: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.DPS_IDSCOPE'] ]
-      PROVISIONING_CONNECTION_STRING: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.PROVISIONING_CONNECTION_STRING'] ]
-      DPS_GLOBALDEVICEENDPOINT: global.azure-devices-provisioning.net
-      DPS_X509_PFX_CERTIFICATE_PASSWORD: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.DPS_X509_PFX_CERTIFICATE_PASSWORD'] ]
-      DPS_X509_GROUP_ENROLLMENT_NAME: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.DPS_X509_GROUP_ENROLLMENT_NAME'] ]
-      X509_CHAIN_ROOT_CA_CERTIFICATE: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.X509_CHAIN_ROOT_CA_CERTIFICATE'] ]
-      X509_CHAIN_INTERMEDIATE1_CERTIFICATE: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.X509_CHAIN_INTERMEDIATE1_CERTIFICATE'] ]
-      X509_CHAIN_INTERMEDIATE2_CERTIFICATE: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.X509_CHAIN_INTERMEDIATE2_CERTIFICATE'] ]
-      X509_CHAIN_INTERMEDIATE2_PFX_CERTIFICATE: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.X509_CHAIN_INTERMEDIATE2_PFX_CERTIFICATE'] ]
-      STORAGE_ACCOUNT_CONNECTION_STRING: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.STORAGE_ACCOUNT_CONNECTION_STRING'] ]
-      MSFT_TENANT_ID: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.MSFT_TENANT_ID'] ]
-      E2E_TEST_AAD_APP_CLIENT_ID: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.E2E_TEST_AAD_APP_CLIENT_ID'] ]
-      E2E_TEST_AAD_APP_CLIENT_SECRET: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.E2E_TEST_AAD_APP_CLIENT_SECRET'] ]
-      E2E_IKEY: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.E2E_IKEY'] ]
-      #IOTHUB_DEVICE_CONN_STRING_INVALIDCERT: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.IOTHUB_DEVICE_CONN_STRING_INVALIDCERT'] ]
-      #IOTHUB_CONN_STRING_INVALIDCERT: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.IOTHUB_CONN_STRING_INVALIDCERT'] ]
-      #DPS_GLOBALDEVICEENDPOINT_INVALIDCERT: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.DPS_GLOBALDEVICEENDPOINT_INVALIDCERT'] ]
-      #PROVISIONING_CONNECTION_STRING_INVALIDCERT: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.PROVISIONING_CONNECTION_STRING_INVALIDCERT'] ]
-      PATH_TO_DEVICE_PREFIX_FOR_DELETION_FILE: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.PATH_TO_DEVICE_PREFIX_FOR_DELETION_FILE'] ]
-      PNP_TC_DEVICE_CONN_STRING: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.PNP_TC_DEVICE_CONN_STRING'] ]
-      PNP_THERMOSTAT_DEVICE_CONN_STRING: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.PNP_THERMOSTAT_DEVICE_CONN_STRING'] ]
-      DPS_SYMMETRIC_KEY_INDIVIDUAL_ENROLLMENT_REGISTRATION_ID: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.DPS_SYMMETRIC_KEY_INDIVIDUAL_ENROLLMENT_REGISTRATION_ID'] ]
-      DPS_SYMMETRIC_KEY_INDIVIDUAL_ENROLLEMNT_PRIMARY_KEY: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.DPS_SYMMETRIC_KEY_INDIVIDUAL_ENROLLEMNT_PRIMARY_KEY'] ]
     displayName: Windows
     condition: succeeded()
     timeoutInMinutes: ${{ parameters.jobTimeoutInMinutes }}
@@ -353,6 +271,27 @@ jobs:
             Write-Host "testNetcore31: ${{ variables.testNetcore31 }}"
             Write-Host "testNetcore21: ${{ variables.testNetcore21 }}"
             Write-Host "testNet472: ${{ variables.testNet472 }}"
+
+      - task: AzureCLI@2
+        name: deployCloudTestResources 
+        inputs:
+          azureSubscription: 'iot hub sdk service connection'
+          scriptType: 'pscore'
+          scriptLocation: 'inlineScript'
+          pwsh: true
+          inlineScript: |
+            $jsonContent = az account show | ConvertFrom-Json
+            $subscriptionId = $jsonContent.Id
+
+            $uniqueSuffixLength = 5
+            $characters = 'abcdefghijklmnopqrstuvwxyz'.ToCharArray()
+            $CloudResourceUniqueSuffix = -join ($characters | Get-Random -Count $uniqueSuffixLength)
+
+            $resourceGroupName = 'dotnetsdkgate'+$CloudResourceUniqueSuffix
+
+            Write-Host "##vso[task.setvariable variable=RESOURCE_GROUP_NAME;isOutput=true]$resourceGroupName"
+
+            $(Build.SourcesDirectory)/e2e/test/prerequisites/E2ETestsSetup/e2eTestsSetup.ps1 -SubscriptionId $subscriptionId -Region westcentralus -ResourceGroup $resourceGroupName -GroupCertificatePassword someCertPass
 
       - ${{ if eq(variables['testNet80'], 'True') }}:
         - task: UseDotNet@2
@@ -398,7 +337,49 @@ jobs:
             
             # Tear down test proxy background process
             Stop-Job Job1
-            
+        env:
+          # Environment variables for IoT Hub E2E tests
+          IOTHUB_CONNECTION_STRING: $(IOTHUB_CONNECTION_STRING)
+          IOTHUB_X509_DEVICE_PFX_CERTIFICATE: $(IOTHUB_X509_DEVICE_PFX_CERTIFICATE)
+          IOTHUB_X509_DEVICE_PFX_THUMBPRINT: $(IOTHUB_X509_DEVICE_PFX_THUMBPRINT)
+
+          IOTHUB_X509_CHAIN_DEVICE_NAME: $(IOTHUB_X509_CHAIN_DEVICE_NAME)
+          IOTHUB_X509_CHAIN_DEVICE_PFX_CERTIFICATE: $(IOTHUB_X509_CHAIN_DEVICE_PFX_CERTIFICATE)
+          IOTHUB_USER_ASSIGNED_MSI_RESOURCE_ID: $(IOTHUB_USER_ASSIGNED_MSI_RESOURCE_ID)
+
+          # Environment variables for DPS E2E tests
+          DPS_IDSCOPE: $(DPS_IDSCOPE)
+          PROVISIONING_CONNECTION_STRING: $(PROVISIONING_CONNECTION_STRING)
+          DPS_GLOBALDEVICEENDPOINT: global.azure-devices-provisioning.net
+          DPS_X509_PFX_CERTIFICATE_PASSWORD: $(DPS_X509_PFX_CERTIFICATE_PASSWORD)
+          DPS_X509_GROUP_ENROLLMENT_NAME: $(DPS_X509_GROUP_ENROLLMENT_NAME)
+
+          # Environment variables for Azure resources used for E2E tests (common)
+          X509_CHAIN_ROOT_CA_CERTIFICATE: $(X509_CHAIN_ROOT_CA_CERTIFICATE)
+          X509_CHAIN_INTERMEDIATE1_CERTIFICATE: $(X509_CHAIN_INTERMEDIATE1_CERTIFICATE)
+          X509_CHAIN_INTERMEDIATE2_CERTIFICATE: $(X509_CHAIN_INTERMEDIATE2_CERTIFICATE)
+          X509_CHAIN_INTERMEDIATE2_PFX_CERTIFICATE: $(X509_CHAIN_INTERMEDIATE2_PFX_CERTIFICATE)
+          STORAGE_ACCOUNT_CONNECTION_STRING: $(STORAGE_ACCOUNT_CONNECTION_STRING)
+          MSFT_TENANT_ID: $(MSFT_TENANT_ID)
+          E2E_TEST_AAD_APP_CLIENT_ID: $(E2E_TEST_AAD_APP_CLIENT_ID)
+          E2E_TEST_AAD_APP_CLIENT_SECRET: $(E2E_TEST_AAD_APP_CLIENT_SECRET)
+          E2E_IKEY: $(E2E_IKEY)
+
+          # Environment variables for the DevOps pipeline
+          TARGET_BRANCH: $((System.PullRequest.TargetBranch)
+          FRAMEWORK: $(FRAMEWORK)
+
+      - task: AzureCLI@2
+        inputs:
+          azureSubscription: 'iot hub sdk service connection'
+          scriptType: 'ps'
+          scriptLocation: 'inlineScript'
+          inlineScript: |
+            Write-Host "Deleting resource group with name "
+            Write-Host $(RESOURCE_GROUP_NAME)
+            az group delete --name $(RESOURCE_GROUP_NAME) --y
+            # don't forget to delete RBAC resources as well
+
       - task: PublishTestResults@2
         displayName: "Publish Test Results **/*.trx"
         inputs:
@@ -505,26 +486,4 @@ jobs:
         # TODO #181 Enable post analysis to break builds after all above items are enabled.
         enabled: false
 
-# END: SDL and Compliance tasks #
 
-  - job: TearDownCloudTestResources
-    condition: always()
-    dependsOn:
-      - WINDOWS
-      - LINUX
-      - DeployCloudTestResources
-    variables:
-      RESOURCE_GROUP_NAME: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.RESOURCE_GROUP_NAME'] ]
-    pool:
-      vmImage: windows-2022
-    steps:
-    - task: AzureCLI@2
-      inputs:
-        azureSubscription: 'iot hub sdk service connection'
-        scriptType: 'ps'
-        scriptLocation: 'inlineScript'
-        inlineScript: |
-          Write-Host "Deleting resource group with name "
-          Write-Host $(RESOURCE_GROUP_NAME)
-          az group delete --name $(RESOURCE_GROUP_NAME) --y
-          # don't forget to delete RBAC resources as well

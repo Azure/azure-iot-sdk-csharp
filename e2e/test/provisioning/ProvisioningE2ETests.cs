@@ -45,19 +45,21 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
         private readonly string _idPrefix = $"e2e-{nameof(ProvisioningE2ETests).ToLower()}-";
 
+        private static DirectoryInfo s_x509CertificatesFolder;
+        private static string s_intermediateCertificateSubject;
+
         [ClassInitialize]
         public static void TestClassSetup(TestContext _)
         {
-            //TODO disabling these while x509 certificate generation isn't supported by our test pipelines
             // Create a folder to hold the DPS client certificates and X509 self-signed certificates. If a folder by the same name already exists, it will be used.
-            //s_x509CertificatesFolder = Directory.CreateDirectory($"x509Certificates-{nameof(ProvisioningE2ETests)}-{Guid.NewGuid()}");
+            s_x509CertificatesFolder = Directory.CreateDirectory($"x509Certificates-{nameof(ProvisioningE2ETests)}-{Guid.NewGuid()}");
 
             // Extract the public certificate and private key information from the intermediate certificate pfx file.
             // These keys will be used to sign the test leaf device certificates.
-            /*s_intermediateCertificateSubject = X509Certificate2Helper.ExtractPublicCertificateAndPrivateKeyFromPfxAndReturnSubject(
+            s_intermediateCertificateSubject = X509Certificate2Helper.ExtractPublicCertificateAndPrivateKeyFromPfxAndReturnSubject(
                 TestConfiguration.Provisioning.GetGroupEnrollmentIntermediatePfxCertificateBase64(),
                 s_certificatePassword,
-                s_x509CertificatesFolder);*/
+                s_x509CertificatesFolder);
         }
 
         [TestMethod]
@@ -155,7 +157,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
-        [Ignore("Azure DevOps Windows test environment doesn't support generating test certificates currently")]
         public async Task DPS_Registration_Amqp_X509_IndividualEnrollment_RegisterOk()
         {
             await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Amqp_Tcp_Only, AttestationMechanismType.X509, EnrollmentType.Individual, false).ConfigureAwait(false);
@@ -163,7 +164,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
-        [Ignore("Azure DevOps Windows test environment doesn't support generating test certificates currently")]
         public async Task DPS_Registration_AmqpWs_X509_IndividualEnrollment_RegisterOk()
         {
             await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Amqp_WebSocket_Only, AttestationMechanismType.X509, EnrollmentType.Individual, false).ConfigureAwait(false);
@@ -171,7 +171,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
-        [Ignore("Azure DevOps Windows test environment doesn't support generating test certificates currently")]
         public async Task DPS_Registration_Amqp_X509_GroupEnrollment_RegisterOk()
         {
             await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Amqp_Tcp_Only, AttestationMechanismType.X509, EnrollmentType.Group, false).ConfigureAwait(false);
@@ -179,7 +178,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
-        [Ignore("Azure DevOps Windows test environment doesn't support generating test certificates currently")]
         public async Task DPS_Registration_AmqpWs_X509_GroupEnrollment_RegisterOk()
         {
             await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Amqp_WebSocket_Only, AttestationMechanismType.X509, EnrollmentType.Group, false).ConfigureAwait(false);
@@ -248,7 +246,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
-        [Ignore("Azure DevOps Windows test environment doesn't support generating test certificates currently")]
         public async Task DPS_Registration_Mqtt_X509_IndividualEnrollment_RegisterOk()
         {
             await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Mqtt_Tcp_Only, AttestationMechanismType.X509, EnrollmentType.Individual, false).ConfigureAwait(false);
@@ -256,7 +253,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
-        [Ignore("Azure DevOps Windows test environment doesn't support generating test certificates currently")]
         public async Task DPS_Registration_MqttWs_X509_IndividualEnrollment_RegisterOk()
         {
             await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Mqtt_WebSocket_Only, AttestationMechanismType.X509, EnrollmentType.Individual, false).ConfigureAwait(false);
@@ -264,7 +260,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
-        [Ignore("Azure DevOps Windows test environment doesn't support generating test certificates currently")]
         public async Task DPS_Registration_Mqtt_X509_GroupEnrollment_RegisterOk()
         {
             await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Mqtt_Tcp_Only, AttestationMechanismType.X509, EnrollmentType.Group, false).ConfigureAwait(false);
@@ -272,7 +267,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
-        [Ignore("Azure DevOps Windows test environment doesn't support generating test certificates currently")]
         public async Task DPS_Registration_MqttWs_X509_GroupEnrollment_RegisterOk()
         {
             await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Mqtt_WebSocket_Only, AttestationMechanismType.X509, EnrollmentType.Group, false).ConfigureAwait(false);
@@ -456,7 +450,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
-        [Ignore("Azure DevOps Windows test environment doesn't support generating test certificates currently")]
         public async Task DPS_Registration_Mqtt_X509_IndividualEnrollment_InvalidIdScope_RegisterFail()
         {
             await ProvisioningDeviceClientInvalidIdScopeRegisterFailAsync(Client.TransportType.Mqtt_Tcp_Only, AttestationMechanismType.X509, EnrollmentType.Individual, "").ConfigureAwait(false);
@@ -464,7 +457,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
-        [Ignore("Azure DevOps Windows test environment doesn't support generating test certificates currently")]
         public async Task DPS_Registration_MqttWs_X509_IndividualEnrollment_InvalidIdScope_RegisterFail()
         {
             await ProvisioningDeviceClientInvalidIdScopeRegisterFailAsync(Client.TransportType.Mqtt_WebSocket_Only, AttestationMechanismType.X509, EnrollmentType.Individual, "").ConfigureAwait(false);
@@ -472,7 +464,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
-        [Ignore("Azure DevOps Windows test environment doesn't support generating test certificates currently")]
         public async Task DPS_Registration_Mqtt_X509_GrouplEnrollment_InvalidIdScope_RegisterFail()
         {
             await ProvisioningDeviceClientInvalidIdScopeRegisterFailAsync(Client.TransportType.Mqtt_Tcp_Only, AttestationMechanismType.X509, EnrollmentType.Group, "").ConfigureAwait(false);
@@ -480,7 +471,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
-        [Ignore("Azure DevOps Windows test environment doesn't support generating test certificates currently")]
         public async Task DPS_Registration_MqttWs_X509_GrouplEnrollment_InvalidIdScope_RegisterFail()
         {
             await ProvisioningDeviceClientInvalidIdScopeRegisterFailAsync(Client.TransportType.Mqtt_WebSocket_Only, AttestationMechanismType.X509, EnrollmentType.Group, "").ConfigureAwait(false);
@@ -497,7 +487,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
-        [Ignore("Azure DevOps Windows test environment doesn't support generating test certificates currently")]
         public async Task DPS_Registration_Http_X509_IndividualEnrollment_InvalidIdScope_RegisterFail()
         {
             await ProvisioningDeviceClientInvalidIdScopeRegisterFailAsync(Client.TransportType.Http1, AttestationMechanismType.X509, EnrollmentType.Individual, "").ConfigureAwait(false);
@@ -505,7 +494,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
-        [Ignore("Azure DevOps Windows test environment doesn't support generating test certificates currently")]
         public async Task DPS_Registration_Http_X509_GroupEnrollment_InvalidIdScope_RegisterFail()
         {
             await ProvisioningDeviceClientInvalidIdScopeRegisterFailAsync(Client.TransportType.Http1, AttestationMechanismType.X509, EnrollmentType.Group, "").ConfigureAwait(false);
@@ -535,7 +523,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
-        [Ignore("Azure DevOps Windows test environment doesn't support generating test certificates currently")]
         public async Task DPS_Registration_Amqp_X509_IndividualEnrollment_InvalidIdScope_RegisterFail()
         {
             await ProvisioningDeviceClientInvalidIdScopeRegisterFailAsync(Client.TransportType.Amqp_Tcp_Only, AttestationMechanismType.X509, EnrollmentType.Individual, "").ConfigureAwait(false);
@@ -543,7 +530,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
-        [Ignore("Azure DevOps Windows test environment doesn't support generating test certificates currently")]
         public async Task DPS_Registration_AmqpWs_X509_IndividualEnrollment_InvalidIdScope_RegisterFail()
         {
             await ProvisioningDeviceClientInvalidIdScopeRegisterFailAsync(Client.TransportType.Amqp_WebSocket_Only, AttestationMechanismType.X509, EnrollmentType.Individual, "").ConfigureAwait(false);
@@ -551,7 +537,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
-        [Ignore("Azure DevOps Windows test environment doesn't support generating test certificates currently")]
         public async Task DPS_Registration_Amqp_X509_GroupEnrollment_InvalidIdScope_RegisterFail()
         {
             await ProvisioningDeviceClientInvalidIdScopeRegisterFailAsync(Client.TransportType.Amqp_Tcp_Only, AttestationMechanismType.X509, EnrollmentType.Group, "").ConfigureAwait(false);
@@ -559,7 +544,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
-        [Ignore("Azure DevOps Windows test environment doesn't support generating test certificates currently")]
         public async Task DPS_Registration_AmqpWs_X509_GroupEnrollment_InvalidIdScope_RegisterFail()
         {
             await ProvisioningDeviceClientInvalidIdScopeRegisterFailAsync(Client.TransportType.Amqp_WebSocket_Only, AttestationMechanismType.X509, EnrollmentType.Group, "").ConfigureAwait(false);
@@ -577,7 +561,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
-        [Ignore("Azure DevOps Windows test environment doesn't support generating test certificates currently")]
         public async Task DPS_Registration_MqttWs_X509_IndividualEnrollment_InvalidGlobalAddress_RegisterFail()
         {
             await ProvisioningDeviceClientInvalidGlobalAddressRegisterFailAsync(Client.TransportType.Mqtt_WebSocket_Only, AttestationMechanismType.X509, EnrollmentType.Individual).ConfigureAwait(false);
@@ -585,7 +568,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
-        [Ignore("Azure DevOps Windows test environment doesn't support generating test certificates currently")]
         public async Task DPS_Registration_Http_X509_IndividualEnrollment_InvalidGlobalAddress_RegisterFail()
         {
             await ProvisioningDeviceClientInvalidGlobalAddressRegisterFailAsync(Client.TransportType.Http1, AttestationMechanismType.X509, EnrollmentType.Individual, null).ConfigureAwait(false);
@@ -595,7 +577,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         [TestCategory("LongRunning")]
-        [Ignore("Azure DevOps Windows test environment doesn't support generating test certificates currently")]
         public async Task DPS_Registration_Amqp_X509_IndividualEnrollment_InvalidGlobalAddress_RegisterFail()
         {
             await ProvisioningDeviceClientInvalidGlobalAddressRegisterFailAsync(Client.TransportType.Amqp_Tcp_Only, AttestationMechanismType.X509, EnrollmentType.Individual).ConfigureAwait(false);
@@ -603,7 +584,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
-        [Ignore("Azure DevOps Windows test environment doesn't support generating test certificates currently")]
         public async Task DPS_Registration_AmqpWs_X509_IndividualEnrollment_InvalidGlobalAddress_RegisterFail()
         {
             await ProvisioningDeviceClientInvalidGlobalAddressRegisterFailAsync(Client.TransportType.Amqp_WebSocket_Only, AttestationMechanismType.X509, EnrollmentType.Individual).ConfigureAwait(false);
@@ -986,14 +966,68 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     return new SecurityProviderTpmSimulator(tpmEnrollment.RegistrationId);
 
                 case AttestationMechanismType.X509:
+                    X509Certificate2 certificate = null;
+                    X509Certificate2Collection collection = null;
+
                     switch (enrollmentType)
                     {
                         case EnrollmentType.Individual:
+                            X509Certificate2Helper.GenerateSelfSignedCertificateFiles(registrationId, s_x509CertificatesFolder);
+
+#pragma warning disable CA2000 // Dispose objects before losing scope
+                            // This certificate is used for authentication with IoT hub and is returned to the caller of this method.
+                            // It is disposed when the caller to this method is disposed, at the end of the test method.
+                            certificate = X509Certificate2Helper.CreateX509Certificate2FromPfxFile(registrationId, s_x509CertificatesFolder);
+#pragma warning restore CA2000 // Dispose objects before losing scope
+
+                            using (X509Certificate2 publicCertificate = X509Certificate2Helper.CreateX509Certificate2FromCerFile(registrationId, s_x509CertificatesFolder))
+                            {
+                                IndividualEnrollment x509IndividualEnrollment = await CreateIndividualEnrollmentAsync(
+                                        provisioningServiceClient,
+                                        registrationId,
+                                        AttestationMechanismType.X509,
+                                        publicCertificate,
+                                        reprovisionPolicy,
+                                        allocationPolicy,
+                                        customAllocationDefinition,
+                                        iothubs,
+                                        capabilities)
+                                    .ConfigureAwait(false);
+
+                                x509IndividualEnrollment.Attestation.Should().BeAssignableTo<X509Attestation>();
+                            }
+
+                            break;
+
                         case EnrollmentType.Group:
-                            throw new NotSupportedException("ADO setup currently doesn't allow for generating certificates via openSSL");
+                            // The X509 enrollment group has been hardcoded for the purpose of E2E tests and the root certificate has been verified on DPS.
+                            // Each device identity provisioning through the above enrollment group is created on-demand.
+
+                            X509Certificate2Helper.GenerateIntermediateCertificateSignedCertificateFiles(
+                                registrationId,
+                                s_intermediateCertificateSubject,
+                                s_x509CertificatesFolder);
+
+#pragma warning disable CA2000 // Dispose objects before losing scope
+                            // This certificate is used for authentication with IoT hub and is returned to the caller of this method.
+                            // It is disposed when the caller to this method is disposed, at the end of the test method.
+                            certificate = X509Certificate2Helper.CreateX509Certificate2FromPfxFile(registrationId, s_x509CertificatesFolder);
+#pragma warning restore CA2000 // Dispose objects before losing scope
+
+                            collection = new X509Certificate2Collection
+                            {
+                                TestConfiguration.CommonCertificates.GetRootCaCertificate(),
+                                TestConfiguration.CommonCertificates.GetIntermediate1Certificate(),
+                                TestConfiguration.CommonCertificates.GetIntermediate2Certificate(),
+                                X509Certificate2Helper.CreateX509Certificate2FromCerFile(registrationId, s_x509CertificatesFolder),
+                            };
+                            break;
+
                         default:
                             throw new NotSupportedException($"Unknown X509 type: '{enrollmentType}'");
                     }
+
+                    return new SecurityProviderX509Certificate(certificate, collection);
 
                 case AttestationMechanismType.SymmetricKey:
                     switch (enrollmentType)
@@ -1222,7 +1256,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             // Delete all the test client certificates created
             try
             {
-                //s_x509CertificatesFolder.Delete(true);
+                s_x509CertificatesFolder.Delete(true);
             }
             catch (Exception)
             {
