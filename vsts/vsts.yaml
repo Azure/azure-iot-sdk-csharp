@@ -239,8 +239,6 @@ jobs:
 
  ### Windows build ###
   - job: WINDOWS
-    dependsOn: 
-      - DeployCloudTestResources
     displayName: Windows
     condition: succeeded()
     timeoutInMinutes: ${{ parameters.jobTimeoutInMinutes }}
