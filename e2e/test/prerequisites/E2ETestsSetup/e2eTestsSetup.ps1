@@ -429,42 +429,42 @@ if ($Region.EndsWith('euap', 'CurrentCultureIgnoreCase'))
 #$proxyServerAddress = "127.0.0.1:8888"
 
 # Environment variables for IoT Hub E2E tests
-Write-Host "##vso[task.setvariable variable=IOTHUB_CONNECTION_STRING;isOutput=true]$iotHubConnectionString"
-Write-Host "##vso[task.setvariable variable=IOTHUB_X509_DEVICE_PFX_CERTIFICATE;isOutput=true]$iothubX509DevicePfxBase64"
-Write-Host "##vso[task.setvariable variable=IOTHUB_X509_CHAIN_DEVICE_NAME;isOutput=true]$iotHubX509CertChainDeviceCommonName";
-Write-Host "##vso[task.setvariable variable=IOTHUB_X509_CHAIN_DEVICE_PFX_CERTIFICATE;isOutput=true]$iothubX509ChainDevicePfxBase64"
-Write-Host "##vso[task.setvariable variable=IOTHUB_USER_ASSIGNED_MSI_RESOURCE_ID;isOutput=true]$msiResourceId"
+Write-Host "##vso[task.setvariable variable=IOTHUB_CONNECTION_STRING;isOutput=false]$iotHubConnectionString"
+Write-Host "##vso[task.setvariable variable=IOTHUB_X509_DEVICE_PFX_CERTIFICATE;isOutput=false]$iothubX509DevicePfxBase64"
+Write-Host "##vso[task.setvariable variable=IOTHUB_X509_CHAIN_DEVICE_NAME;isOutput=false]$iotHubX509CertChainDeviceCommonName";
+Write-Host "##vso[task.setvariable variable=IOTHUB_X509_CHAIN_DEVICE_PFX_CERTIFICATE;isOutput=false]$iothubX509ChainDevicePfxBase64"
+Write-Host "##vso[task.setvariable variable=IOTHUB_USER_ASSIGNED_MSI_RESOURCE_ID;isOutput=false]$msiResourceId"
 
 # Environment variables for DPS E2E tests
-Write-Host "##vso[task.setvariable variable=DPS_IDSCOPE;isOutput=true]$dpsIdScope"
-Write-Host "##vso[task.setvariable variable=PROVISIONING_CONNECTION_STRING;isOutput=true]$dpsConnectionString"
-Write-Host "##vso[task.setvariable variable=DPS_GLOBALDEVICEENDPOINT;isOutput=true]$dpsEndpoint"
-Write-Host "##vso[task.setvariable variable=DPS_X509_PFX_CERTIFICATE_PASSWORD;isOutput=true]$GroupCertificatePassword"
-Write-Host "##vso[task.setvariable variable=DPS_X509_GROUP_ENROLLMENT_NAME;isOutput=true]$groupEnrollmentId"
+Write-Host "##vso[task.setvariable variable=DPS_IDSCOPE;isOutput=false]$dpsIdScope"
+Write-Host "##vso[task.setvariable variable=PROVISIONING_CONNECTION_STRING;isOutput=false]$dpsConnectionString"
+Write-Host "##vso[task.setvariable variable=DPS_GLOBALDEVICEENDPOINT;isOutput=false]$dpsEndpoint"
+Write-Host "##vso[task.setvariable variable=DPS_X509_PFX_CERTIFICATE_PASSWORD;isOutput=false]$GroupCertificatePassword"
+Write-Host "##vso[task.setvariable variable=DPS_X509_GROUP_ENROLLMENT_NAME;isOutput=false]$groupEnrollmentId"
 
 # Environment variables for Azure resources used for E2E tests (common)
-Write-Host "##vso[task.setvariable variable=X509_CHAIN_ROOT_CA_CERTIFICATE;isOutput=true]$x509ChainRootCACertBase64"
-Write-Host "##vso[task.setvariable variable=X509_CHAIN_INTERMEDIATE1_CERTIFICATE;isOutput=true]$x509ChainIntermediate1CertBase64"
-Write-Host "##vso[task.setvariable variable=X509_CHAIN_INTERMEDIATE2_CERTIFICATE;isOutput=true]$x509ChainIntermediate2CertBase64"
-Write-Host "##vso[task.setvariable variable=X509_CHAIN_INTERMEDIATE2_PFX_CERTIFICATE;isOutput=true]$x509ChainIntermediate2PfxBase64"
-Write-Host "##vso[task.setvariable variable=STORAGE_ACCOUNT_CONNECTION_STRING;isOutput=true]$storageAccountConnectionString"
-Write-Host "##vso[task.setvariable variable=MSFT_TENANT_ID;isOutput=true]72f988bf_86f1_41af_91ab_2d7cd011db47"
-Write-Host "##vso[task.setvariable variable=E2E_TEST_AAD_APP_CLIENT_ID;isOutput=true]$e2eTestAadAppId"
-Write-Host "##vso[task.setvariable variable=E2E_TEST_AAD_APP_CLIENT_SECRET;isOutput=true]$e2eTestAadAppPassword"
+Write-Host "##vso[task.setvariable variable=X509_CHAIN_ROOT_CA_CERTIFICATE;isOutput=false]$x509ChainRootCACertBase64"
+Write-Host "##vso[task.setvariable variable=X509_CHAIN_INTERMEDIATE1_CERTIFICATE;isOutput=false]$x509ChainIntermediate1CertBase64"
+Write-Host "##vso[task.setvariable variable=X509_CHAIN_INTERMEDIATE2_CERTIFICATE;isOutput=false]$x509ChainIntermediate2CertBase64"
+Write-Host "##vso[task.setvariable variable=X509_CHAIN_INTERMEDIATE2_PFX_CERTIFICATE;isOutput=false]$x509ChainIntermediate2PfxBase64"
+Write-Host "##vso[task.setvariable variable=STORAGE_ACCOUNT_CONNECTION_STRING;isOutput=false]$storageAccountConnectionString"
+Write-Host "##vso[task.setvariable variable=MSFT_TENANT_ID;isOutput=false]72f988bf_86f1_41af_91ab_2d7cd011db47"
+Write-Host "##vso[task.setvariable variable=E2E_TEST_AAD_APP_CLIENT_ID;isOutput=false]$e2eTestAadAppId"
+Write-Host "##vso[task.setvariable variable=E2E_TEST_AAD_APP_CLIENT_SECRET;isOutput=false]$e2eTestAadAppPassword"
 
 # Environment variables for the DevOps pipeline
-Write-Host "##vso[task.setvariable variable=PIPELINE_ENVIRONMENT;isOutput=true]prod";
-Write-Host "##vso[task.setvariable variable=PROXY_SERVER_ADDRESS;isOutput=true]$proxyServerAddress";
+Write-Host "##vso[task.setvariable variable=PIPELINE_ENVIRONMENT;isOutput=false]prod";
+Write-Host "##vso[task.setvariable variable=PROXY_SERVER_ADDRESS;isOutput=false]$proxyServerAddress";
 
 # Environment variables for invalid certificate tests
 # The connection strings below point to servers with incorrect TLS server certificates. Tests will attempt to connect and expect that the TLS connection ends in a security exception.
 <#[SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="fake shared access token")]#>
-Write-Host "##vso[task.setvariable variable=IOTHUB_DEVICE_CONN_STRING_INVALIDCERT;isOutput=true]HostName=invalidcertiothub1.westus.cloudapp.azure.com;DeviceId=DoNotDelete1;SharedAccessKey=zWmeTGWmjcgDG1dpuSCVjc5ZY4TqVnKso5+g1wt/K3E="
+Write-Host "##vso[task.setvariable variable=IOTHUB_DEVICE_CONN_STRING_INVALIDCERT;isOutput=false]HostName=invalidcertiothub1.westus.cloudapp.azure.com;DeviceId=DoNotDelete1;SharedAccessKey=zWmeTGWmjcgDG1dpuSCVjc5ZY4TqVnKso5+g1wt/K3E="
 <#[SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="fake shared access token")]#>
-Write-Host "##vso[task.setvariable variable=IOTHUB_CONN_STRING_INVALIDCERT;isOutput=true]HostName=invalidcertiothub1.westus.cloudapp.azure.com;SharedAccessKeyName=iothubowner;SharedAccessKey=Fk1H0asPeeAwlRkUMTybJasksTYTd13cgI7SsteB05U="
-Write-Host "##vso[task.setvariable variable=DPS_GLOBALDEVICEENDPOINT_INVALIDCERT;isOutput=true]invalidcertgde1.westus.cloudapp.azure.com"
+Write-Host "##vso[task.setvariable variable=IOTHUB_CONN_STRING_INVALIDCERT;isOutput=false]HostName=invalidcertiothub1.westus.cloudapp.azure.com;SharedAccessKeyName=iothubowner;SharedAccessKey=Fk1H0asPeeAwlRkUMTybJasksTYTd13cgI7SsteB05U="
+Write-Host "##vso[task.setvariable variable=DPS_GLOBALDEVICEENDPOINT_INVALIDCERT;isOutput=false]invalidcertgde1.westus.cloudapp.azure.com"
 <#[SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="fake shared access token")]#>
-Write-Host "##vso[task.setvariable variable=PROVISIONING_CONNECTION_STRING_INVALIDCERT;isOutput=true]HostName=invalidcertdps1.westus.cloudapp.azure.com;SharedAccessKeyName=provisioningserviceowner;SharedAccessKey=lGO7OlXNhXlFyYV1rh9F/lUCQC1Owuh5f/1P0I1AFSY="
+Write-Host "##vso[task.setvariable variable=PROVISIONING_CONNECTION_STRING_INVALIDCERT;isOutput=false]HostName=invalidcertdps1.westus.cloudapp.azure.com;SharedAccessKeyName=provisioningserviceowner;SharedAccessKey=lGO7OlXNhXlFyYV1rh9F/lUCQC1Owuh5f/1P0I1AFSY="
 
 
 ############################################################################################################################

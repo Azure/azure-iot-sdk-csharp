@@ -130,7 +130,7 @@ jobs:
 
             $resourceGroupName = 'dotnetsdkgate'+$CloudResourceUniqueSuffix
 
-            Write-Host "##vso[task.setvariable variable=RESOURCE_GROUP_NAME;isOutput=true]$resourceGroupName"
+            Write-Host "##vso[task.setvariable variable=RESOURCE_GROUP_NAME;isOutput=false]$resourceGroupName"
 
             $(Build.SourcesDirectory)/e2e/test/prerequisites/E2ETestsSetup/e2eTestsSetup.ps1 -SubscriptionId $subscriptionId -Region westcentralus -ResourceGroup $resourceGroupName -GroupCertificatePassword someCertPass
 
@@ -289,7 +289,7 @@ jobs:
 
             $resourceGroupName = 'dotnetsdkgate'+$CloudResourceUniqueSuffix
 
-            Write-Host "##vso[task.setvariable variable=RESOURCE_GROUP_NAME;isOutput=true]$resourceGroupName"
+            Write-Host "##vso[task.setvariable variable=RESOURCE_GROUP_NAME;isOutput=false]$resourceGroupName"
 
             $(Build.SourcesDirectory)/e2e/test/prerequisites/E2ETestsSetup/e2eTestsSetup.ps1 -SubscriptionId $subscriptionId -Region westcentralus -ResourceGroup $resourceGroupName -GroupCertificatePassword someCertPass
 
