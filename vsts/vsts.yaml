@@ -89,13 +89,6 @@ jobs:
     pool:
       vmImage: ubuntu-latest
     steps:     
-    # TODO Is this still necessary?
-    - task: JavaToolInstaller@0
-      inputs:
-        versionSpec: 11
-        jdkArchitectureOption: 'x64'
-        jdkSourceOption: 'PreInstalled'
-        
     - task: PowerShell@2
       displayName: 'Build and locally save test proxy docker image'
       inputs:
@@ -119,10 +112,8 @@ jobs:
       IOTHUB_CONNECTION_STRING: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.IOTHUB_CONNECTION_STRING'] ]
       IOTHUB_DEVICE_CONN_STRING: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.IOTHUB_DEVICE_CONN_STRING'] ]
       IOTHUB_X509_DEVICE_PFX_CERTIFICATE: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.IOTHUB_X509_DEVICE_PFX_CERTIFICATE'] ]
-      IOTHUB_X509_DEVICE_PFX_THUMBPRINT: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.IOTHUB_X509_DEVICE_PFX_THUMBPRINT'] ]
       IOTHUB_X509_CHAIN_DEVICE_NAME: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.IOTHUB_X509_CHAIN_DEVICE_NAME'] ]
       IOTHUB_X509_CHAIN_DEVICE_PFX_CERTIFICATE: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.IOTHUB_X509_CHAIN_DEVICE_PFX_CERTIFICATE'] ]
-      IOTHUB_USER_ASSIGNED_MSI_RESOURCE_ID: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.IOTHUB_USER_ASSIGNED_MSI_RESOURCE_ID'] ]
       DPS_IDSCOPE: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.DPS_IDSCOPE'] ]
       PROVISIONING_CONNECTION_STRING: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.PROVISIONING_CONNECTION_STRING'] ]
       DPS_GLOBALDEVICEENDPOINT: global.azure-devices-provisioning.net
@@ -133,10 +124,6 @@ jobs:
       X509_CHAIN_INTERMEDIATE2_CERTIFICATE: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.X509_CHAIN_INTERMEDIATE2_CERTIFICATE'] ]
       X509_CHAIN_INTERMEDIATE2_PFX_CERTIFICATE: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.X509_CHAIN_INTERMEDIATE2_PFX_CERTIFICATE'] ]
       STORAGE_ACCOUNT_CONNECTION_STRING: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.STORAGE_ACCOUNT_CONNECTION_STRING'] ]
-      MSFT_TENANT_ID: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.MSFT_TENANT_ID'] ]
-      E2E_TEST_AAD_APP_CLIENT_ID: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.E2E_TEST_AAD_APP_CLIENT_ID'] ]
-      E2E_TEST_AAD_APP_CLIENT_SECRET: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.E2E_TEST_AAD_APP_CLIENT_SECRET'] ]
-      E2E_IKEY: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.E2E_IKEY'] ]
     timeoutInMinutes: ${{ parameters.jobTimeoutInMinutes }}
     strategy:
       maxParallel: ${{ parameters.maxParallelJobs }}
@@ -202,11 +189,9 @@ jobs:
           # Environment variables for IoT Hub E2E tests
           IOTHUB_CONNECTION_STRING: $(IOTHUB_CONNECTION_STRING)
           IOTHUB_X509_DEVICE_PFX_CERTIFICATE: $(IOTHUB_X509_DEVICE_PFX_CERTIFICATE)
-          IOTHUB_X509_DEVICE_PFX_THUMBPRINT: $(IOTHUB_X509_DEVICE_PFX_THUMBPRINT)
 
           IOTHUB_X509_CHAIN_DEVICE_NAME: $(IOTHUB_X509_CHAIN_DEVICE_NAME)
           IOTHUB_X509_CHAIN_DEVICE_PFX_CERTIFICATE: $(IOTHUB_X509_CHAIN_DEVICE_PFX_CERTIFICATE)
-          IOTHUB_USER_ASSIGNED_MSI_RESOURCE_ID: $(IOTHUB_USER_ASSIGNED_MSI_RESOURCE_ID)
 
           # Environment variables for DPS E2E tests
           DPS_IDSCOPE: $(DPS_IDSCOPE)
@@ -221,13 +206,8 @@ jobs:
           X509_CHAIN_INTERMEDIATE2_CERTIFICATE: $(X509_CHAIN_INTERMEDIATE2_CERTIFICATE)
           X509_CHAIN_INTERMEDIATE2_PFX_CERTIFICATE: $(X509_CHAIN_INTERMEDIATE2_PFX_CERTIFICATE)
           STORAGE_ACCOUNT_CONNECTION_STRING: $(STORAGE_ACCOUNT_CONNECTION_STRING)
-          MSFT_TENANT_ID: $(MSFT_TENANT_ID)
-          E2E_TEST_AAD_APP_CLIENT_ID: $(E2E_TEST_AAD_APP_CLIENT_ID)
-          E2E_TEST_AAD_APP_CLIENT_SECRET: $(E2E_TEST_AAD_APP_CLIENT_SECRET)
-          E2E_IKEY: $(E2E_IKEY)
 
           # Environment variables for the DevOps pipeline
-          TARGET_BRANCH: $((System.PullRequest.TargetBranch)
           FRAMEWORK: $(FRAMEWORK)
 
 
@@ -283,10 +263,8 @@ jobs:
       IOTHUB_CONNECTION_STRING: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.IOTHUB_CONNECTION_STRING'] ]
       IOTHUB_DEVICE_CONN_STRING: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.IOTHUB_DEVICE_CONN_STRING'] ]
       IOTHUB_X509_DEVICE_PFX_CERTIFICATE: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.IOTHUB_X509_DEVICE_PFX_CERTIFICATE'] ]
-      IOTHUB_X509_DEVICE_PFX_THUMBPRINT: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.IOTHUB_X509_DEVICE_PFX_THUMBPRINT'] ]
       IOTHUB_X509_CHAIN_DEVICE_NAME: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.IOTHUB_X509_CHAIN_DEVICE_NAME'] ]
       IOTHUB_X509_CHAIN_DEVICE_PFX_CERTIFICATE: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.IOTHUB_X509_CHAIN_DEVICE_PFX_CERTIFICATE'] ]
-      IOTHUB_USER_ASSIGNED_MSI_RESOURCE_ID: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.IOTHUB_USER_ASSIGNED_MSI_RESOURCE_ID'] ]
       DPS_IDSCOPE: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.DPS_IDSCOPE'] ]
       PROVISIONING_CONNECTION_STRING: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.PROVISIONING_CONNECTION_STRING'] ]
       DPS_GLOBALDEVICEENDPOINT: global.azure-devices-provisioning.net
@@ -297,10 +275,6 @@ jobs:
       X509_CHAIN_INTERMEDIATE2_CERTIFICATE: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.X509_CHAIN_INTERMEDIATE2_CERTIFICATE'] ]
       X509_CHAIN_INTERMEDIATE2_PFX_CERTIFICATE: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.X509_CHAIN_INTERMEDIATE2_PFX_CERTIFICATE'] ]
       STORAGE_ACCOUNT_CONNECTION_STRING: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.STORAGE_ACCOUNT_CONNECTION_STRING'] ]
-      MSFT_TENANT_ID: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.MSFT_TENANT_ID'] ]
-      E2E_TEST_AAD_APP_CLIENT_ID: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.E2E_TEST_AAD_APP_CLIENT_ID'] ]
-      E2E_TEST_AAD_APP_CLIENT_SECRET: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.E2E_TEST_AAD_APP_CLIENT_SECRET'] ]
-      E2E_IKEY: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.E2E_IKEY'] ]
     timeoutInMinutes: ${{ parameters.jobTimeoutInMinutes }}
     strategy:
       maxParallel: ${{ parameters.maxParallelJobs }}
@@ -382,7 +356,6 @@ jobs:
           # Environment variables for IoT Hub E2E tests
           IOTHUB_CONNECTION_STRING: $(IOTHUB_CONNECTION_STRING)
           IOTHUB_X509_DEVICE_PFX_CERTIFICATE: $(IOTHUB_X509_DEVICE_PFX_CERTIFICATE)
-          IOTHUB_X509_DEVICE_PFX_THUMBPRINT: $(IOTHUB_X509_DEVICE_PFX_THUMBPRINT)
 
           IOTHUB_X509_CHAIN_DEVICE_NAME: $(IOTHUB_X509_CHAIN_DEVICE_NAME)
           IOTHUB_X509_CHAIN_DEVICE_PFX_CERTIFICATE: $(IOTHUB_X509_CHAIN_DEVICE_PFX_CERTIFICATE)
@@ -401,13 +374,8 @@ jobs:
           X509_CHAIN_INTERMEDIATE2_CERTIFICATE: $(X509_CHAIN_INTERMEDIATE2_CERTIFICATE)
           X509_CHAIN_INTERMEDIATE2_PFX_CERTIFICATE: $(X509_CHAIN_INTERMEDIATE2_PFX_CERTIFICATE)
           STORAGE_ACCOUNT_CONNECTION_STRING: $(STORAGE_ACCOUNT_CONNECTION_STRING)
-          MSFT_TENANT_ID: $(MSFT_TENANT_ID)
-          E2E_TEST_AAD_APP_CLIENT_ID: $(E2E_TEST_AAD_APP_CLIENT_ID)
-          E2E_TEST_AAD_APP_CLIENT_SECRET: $(E2E_TEST_AAD_APP_CLIENT_SECRET)
-          E2E_IKEY: $(E2E_IKEY)
 
           # Environment variables for the DevOps pipeline
-          TARGET_BRANCH: $((System.PullRequest.TargetBranch)
           FRAMEWORK: $(FRAMEWORK)
 
       - task: AzureCLI@2
