@@ -147,28 +147,25 @@ Write-Host "`nGenerating self signed certs."
 # Chain: Root->Intermediate1->Intermediate2, device cert: Intermediate2->deviceCert
 $rootCACert = New-SelfSignedCertificateEx `
     -Subject "CN=$rootCommonName" `
-    -KeyUsage 4 ` # KeyCertSign
-    #-TextExtension @("2.5.29.19={text}ca=TRUE&pathlength=12") `
+    -KeyUsage 4 `
     -SignatureAlgorithm "$certificateHashAlgorithm" `
-    -StoreLocation 2 ` # LocalMachine
+    -StoreLocation 2 `
     -NotAfter (Get-Date).AddYears(2)
 
 $intermediateCert1 = New-SelfSignedCertificateEx `
     -Subject  "CN=$intermediateCert1CommonName" `
-    -KeyUsage 4 ` # KeyCertSign
-    #-TextExtension @("2.5.29.19={text}ca=TRUE&pathlength=12") `
+    -KeyUsage 4 `
     -SignatureAlgorithm "$certificateHashAlgorithm" `
-    -StoreLocation 2 ` # LocalMachine
+    -StoreLocation 2 `
     -NotAfter (Get-Date).AddYears(2) `
     -Issuer $rootCACert
 
 
 $intermediateCert2 = New-SelfSignedCertificateEx `
     -Subject  "CN=$intermediateCert2CommonName" `
-    -KeyUsage 4 ` # KeyCertSign
-    #-TextExtension @("2.5.29.19={text}ca=TRUE&pathlength=12") `
+    -KeyUsage 4 `
     -SignatureAlgorithm "$certificateHashAlgorithm" `
-    -StoreLocation 2 ` # LocalMachine
+    -StoreLocation 2 `
     -NotAfter (Get-Date).AddYears(2) `
     -Issuer $intermediateCert1
 
@@ -194,7 +191,6 @@ $x509ChainIntermediate2PfxBase64 = [Convert]::ToBase64String((Get-Content $inter
 $iotHubX509SelfSignedDeviceCert = New-SelfSignedCertificateEx `
     -Subject "CN=$iotHubX509DeviceCertCommonName" `
     -KeySpec Signature `
-    #-TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.2") `
     -SignatureAlgorithm "$certificateHashAlgorithm" `
     -CertStoreLocation "Cert:\LocalMachine\My" `
     -NotAfter (Get-Date).AddYears(2)
@@ -209,7 +205,6 @@ $iothubX509DevicePfxThumbprint = $iotHubX509SelfSignedDeviceCert.Thumbprint
 $iotHubX509ChainDeviceCert = New-SelfSignedCertificateEx `
     -Subject "CN=$iotHubX509CertChainDeviceCommonName" `
     -KeySpec Signature `
-    #-TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.2") `
     -SignatureAlgorithm "$certificateHashAlgorithm" `
     -CertStoreLocation "Cert:\LocalMachine\My" `
     -NotAfter (Get-Date).AddYears(2) `
