@@ -300,6 +300,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             CustomAllocationDefinition customAllocationDefinition,
             ICollection<string> iotHubsToProvisionTo)
         {
+            if (attestationType == AttestationMechanismType.Tpm && !RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                Assert.Inconclusive("Test infrastructure does not support testing TPM outside of Windows environments");
+            }
+
             using (ProvisioningServiceClient provisioningServiceClient = CreateProvisioningService(proxyServerAddress))
             {
                 string registrationId = AttestationTypeToString(attestationType) + "-" + Guid.NewGuid();
