@@ -749,6 +749,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
         public static async Task ProvisioningDeviceClient_InvalidRegistrationId_TpmRegister_Fail(Client.TransportType transportProtocol)
         {
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                Assert.Inconclusive("Test infrastructure does not support testing TPM outside of Windows environments");
+            }
+
             using ProvisioningTransportHandler transport = CreateTransportHandlerFromName(transportProtocol);
             using SecurityProvider security = new SecurityProviderTpmSimulator("invalidregistrationid");
             var provClient = ProvisioningDeviceClient.Create(
@@ -778,6 +783,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
             EnrollmentType enrollmentType,
             string groupId)
         {
+            if (attestationType == AttestationMechanismType.Tpm && !RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                Assert.Inconclusive("Test infrastructure does not support testing TPM outside of Windows environments");
+            }
+
             using ProvisioningTransportHandler transport = CreateTransportHandlerFromName(transportProtocol);
             SecurityProvider security = null;
 
