@@ -145,16 +145,18 @@ Write-Host "`nGenerating self signed certs."
 # Create certificate chain from Root to Intermediate2.
 # This chain will be combined with the certificates that are signed by Intermediate2 to test X509 CA-chained devices for IoT Hub and DPS (group enrollment) tests.
 # Chain: Root->Intermediate1->Intermediate2, device cert: Intermediate2->deviceCert
+$rootCASubject = New-Object -TypeName System.Security.Cryptography.X509Certificates.X500DistinguishedName -ArgumentList "CN=$rootCommonName"
 $rootCACert = New-SelfSignedCertificateEx `
-    -Subject New-Object -TypeName System.Security.Cryptography.X509Certificates.X500DistinguishedName -ArgumentList "CN=$rootCommonName" `
+    -Subject $rootCASubject `
     -KeyUsage 4 ` # KeyCertSign
     #-TextExtension @("2.5.29.19={text}ca=TRUE&pathlength=12") `
     -SignatureAlgorithm "$certificateHashAlgorithm" `
     -StoreLocation 2 ` # LocalMachine
     -NotAfter (Get-Date).AddYears(2)
 
+$intermediateCert1Subject = New-Object -TypeName System.Security.Cryptography.X509Certificates.X500DistinguishedName -ArgumentList "CN=$intermediateCert1CommonName"
 $intermediateCert1 = New-SelfSignedCertificateEx `
-    -Subject New-Object -TypeName System.Security.Cryptography.X509Certificates.X500DistinguishedName -ArgumentList "CN=$intermediateCert1CommonName" `
+    -Subject  $intermediateCert1Subject `
     -KeyUsage 4 ` # KeyCertSign
     #-TextExtension @("2.5.29.19={text}ca=TRUE&pathlength=12") `
     -SignatureAlgorithm "$certificateHashAlgorithm" `
@@ -162,8 +164,9 @@ $intermediateCert1 = New-SelfSignedCertificateEx `
     -NotAfter (Get-Date).AddYears(2) `
     -Issuer $rootCACert
 
+$intermediateCert2Subject = New-Object -TypeName System.Security.Cryptography.X509Certificates.X500DistinguishedName -ArgumentList "CN=$intermediateCert2CommonName"
 $intermediateCert2 = New-SelfSignedCertificateEx `
-    -Subject New-Object -TypeName System.Security.Cryptography.X509Certificates.X500DistinguishedName -ArgumentList "CN=$intermediateCert2CommonName" `
+    -Subject  $intermediateCert2Subject `
     -KeyUsage 4 ` # KeyCertSign
     #-TextExtension @("2.5.29.19={text}ca=TRUE&pathlength=12") `
     -SignatureAlgorithm "$certificateHashAlgorithm" `
@@ -190,8 +193,9 @@ $x509ChainIntermediate2PfxBase64 = [Convert]::ToBase64String((Get-Content $inter
 
 # Generate an X509 self-signed certificate. This certificate will be used by test device identities that test X509 self-signed certificate device authentication.
 # Leaf certificates are not used for signing so don't specify KeyUsage and TestExtension - ca=TRUE&pathlength=12
+$iotHubX509SelfSignedDeviceCertSubject = New-Object -TypeName System.Security.Cryptography.X509Certificates.X500DistinguishedName -ArgumentList "CN=$iotHubX509DeviceCertCommonName"
 $iotHubX509SelfSignedDeviceCert = New-SelfSignedCertificateEx `
-    -Subject New-Object -TypeName System.Security.Cryptography.X509Certificates.X500DistinguishedName -ArgumentList "CN=$iotHubX509DeviceCertCommonName" `
+    -Subject $iotHubX509SelfSignedDeviceCertSubject `
     -KeySpec Signature `
     #-TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.2") `
     -SignatureAlgorithm "$certificateHashAlgorithm" `
@@ -205,8 +209,9 @@ $iothubX509DevicePfxThumbprint = $iotHubX509SelfSignedDeviceCert.Thumbprint
 
 # Generate the leaf device certificate signed by Intermediate2. This certificate will be used by test device identities that test X509 CA-signed certificate device authentication.
 # Leaf certificates are not used for signing so don't specify KeyUsage and TestExtension - ca=TRUE&pathlength=12
+$iotHubX509ChainDeviceCertSubject = New-Object -TypeName System.Security.Cryptography.X509Certificates.X500DistinguishedName -ArgumentList "CN=$iotHubX509CertChainDeviceCommonName"
 $iotHubX509ChainDeviceCert = New-SelfSignedCertificateEx `
-    -Subject New-Object -TypeName System.Security.Cryptography.X509Certificates.X500DistinguishedName -ArgumentList "CN=$iotHubX509CertChainDeviceCommonName" `
+    -Subject $iotHubX509ChainDeviceCertSubject `
     -KeySpec Signature `
     #-TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.2") `
     -SignatureAlgorithm "$certificateHashAlgorithm" `
