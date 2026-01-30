@@ -392,7 +392,7 @@ if ($isVerified -eq 'false')
         "-DnsName"             = $requestedCommonName;
         "-StoreLocation"       = "LocalMachine";
         "-NotAfter"            = (get-date).AddYears(2);
-        "-HashAlgorithm"       = $certificateHashAlgorithm;
+        "-SignatureAlgorithm"       = $certificateHashAlgorithm;
         "-Issuer"              = $rootCACert;
     }
     $verificationCert = New-SelfSignedCertificateEx @verificationCertArgs
