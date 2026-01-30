@@ -183,7 +183,7 @@ jobs:
         inputs:
           targetType: 'inline'
           script: |
-            dotnet test --logger trx
+            dotnet test --logger trx --framework $(FRAMEWORK)
 
         env:
           # Environment variables for IoT Hub E2E tests
@@ -348,7 +348,7 @@ jobs:
             # This prints the logs from the background run of the proxy in case some issue happens
             Receive-Job Job1
 
-            dotnet test --logger trx
+            dotnet test --logger trx --framework $(FRAMEWORK)
             
             # Tear down test proxy background process
             Stop-Job Job1
