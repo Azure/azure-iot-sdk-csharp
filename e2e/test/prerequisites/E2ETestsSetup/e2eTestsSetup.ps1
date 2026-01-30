@@ -342,13 +342,14 @@ if ($isVerified -eq 'false')
     $etag = az iot hub certificate show -g $ResourceGroup --hub-name $iotHubName --name $hubUploadCertificateName --query 'etag'
     $requestedCommonName = az iot hub certificate generate-verification-code -g $ResourceGroup --hub-name $iotHubName --name $hubUploadCertificateName -e $etag --query 'properties.verificationCode'
     $verificationCertArgs = @{
-        "-Subject"                       = "CN=$requestedCommonName";
-        "-StoreLocation"                 = 2;
+        "-DnsName"                       = $requestedCommonName;
+        "-CertStoreLocation"             = "cert:\LocalMachine\My";
         "-NotAfter"                      = (get-date).AddYears(2);
-        "-SignatureAlgorithm"            = $certificateHashAlgorithm;
-        "-Issuer"                        = $rootCACert;
+        "-TextExtension"                 = @("2.5.29.37={text}1.3.6.1.5.5.7.3.2,1.3.6.1.5.5.7.3.1", "2.5.29.19={text}ca=FALSE&pathlength=0");
+        "-HashAlgorithm"                 = $certificateHashAlgorithm;
+        "-Signer"                        = $rootCACert;
     }
-    $verificationCert = New-SelfSignedCertificateEx @verificationCertArgs
+    $verificationCert = New-SelfSignedCertificate @verificationCertArgs
     Export-Certificate -cert $verificationCert -filePath $verificationCertPath -Type Cert | Out-Null
     $etag = az iot hub certificate show -g $ResourceGroup --hub-name $iotHubName --name $hubUploadCertificateName --query 'etag'
     az iot hub certificate verify -g $ResourceGroup --hub-name $iotHubName --name $hubUploadCertificateName -e $etag --path $verificationCertPath --output none
@@ -370,6 +371,7 @@ if (-not $iotHubCertChainDevice)
 # Uploading certificate to DPS, verifying, and creating enrollment groups.
 ##################################################################################################################################
 
+
 $dpsIdScope = az iot dps show -g $ResourceGroup --name $dpsName --query 'properties.idScope' --output tsv
 $certExists = az iot dps certificate list -g $ResourceGroup --dps-name $dpsName --query "value[?name=='$dpsUploadCertificateName']" --output tsv
 if ($certExists)
@@ -388,13 +390,14 @@ if ($isVerified -eq 'false')
     $etag = az iot dps certificate show -g $ResourceGroup --dps-name $dpsName --certificate-name $dpsUploadCertificateName --query 'etag'
     $requestedCommonName = az iot dps certificate generate-verification-code -g $ResourceGroup --dps-name $dpsName --certificate-name $dpsUploadCertificateName -e $etag --query 'properties.verificationCode'
     $verificationCertArgs = @{
-        "-Subject"             = "CN=$requestedCommonName";
-        "-StoreLocation"       = "LocalMachine";
+        "-DnsName"             = $requestedCommonName;
+        "-CertStoreLocation"   = "cert:\LocalMachine\My";
         "-NotAfter"            = (get-date).AddYears(2);
-        "-SignatureAlgorithm"  = $certificateHashAlgorithm;
-        "-Issuer"              = $rootCACert;
+        "-TextExtension"       = @("2.5.29.37={text}1.3.6.1.5.5.7.3.2,1.3.6.1.5.5.7.3.1", "2.5.29.19={text}ca=FALSE&pathlength=0");
+        "-HashAlgorithm"       = $certificateHashAlgorithm;
+        "-Signer"              = $rootCACert;
     }
-    $verificationCert = New-SelfSignedCertificateEx @verificationCertArgs
+    $verificationCert = New-SelfSignedCertificate @verificationCertArgs
     Export-Certificate -cert $verificationCert -filePath $verificationCertPath -Type Cert | Out-Null
     $etag = az iot dps certificate show -g $ResourceGroup --dps-name $dpsName --certificate-name $dpsUploadCertificateName --query 'etag'
     az iot dps certificate verify -g $ResourceGroup --dps-name $dpsName --certificate-name $dpsUploadCertificateName -e $etag --path $verificationCertPath --output none
