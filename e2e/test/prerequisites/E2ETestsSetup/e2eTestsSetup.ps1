@@ -193,7 +193,7 @@ $iotHubX509SelfSignedDeviceCert = New-SelfSignedCertificateEx `
     -Subject "CN=$iotHubX509DeviceCertCommonName" `
     -KeySpec Signature `
     -SignatureAlgorithm "$certificateHashAlgorithm" `
-    -CertStoreLocation "Cert:\LocalMachine\My" `
+    -StoreLocation "Cert:\LocalMachine\My" `
     -Exportable `
     -NotAfter (Get-Date).AddYears(2)
 
@@ -208,7 +208,7 @@ $iotHubX509ChainDeviceCert = New-SelfSignedCertificateEx `
     -Subject "CN=$iotHubX509CertChainDeviceCommonName" `
     -KeySpec Signature `
     -SignatureAlgorithm "$certificateHashAlgorithm" `
-    -CertStoreLocation "Cert:\LocalMachine\My" `
+    -StoreLocation "Cert:\LocalMachine\My" `
     -NotAfter (Get-Date).AddYears(2) `
     -Exportable `
     -Issuer $intermediateCert2
@@ -391,7 +391,7 @@ if ($isVerified -eq 'false')
     $requestedCommonName = az iot dps certificate generate-verification-code -g $ResourceGroup --dps-name $dpsName --certificate-name $dpsUploadCertificateName -e $etag --query 'properties.verificationCode'
     $verificationCertArgs = @{
         "-DnsName"             = $requestedCommonName;
-        "-CertStoreLocation"   = "cert:\LocalMachine\My";
+        "-StoreLocation"   = "cert:\LocalMachine\My";
         "-NotAfter"            = (get-date).AddYears(2);
         "-TextExtension"       = @("2.5.29.37={text}1.3.6.1.5.5.7.3.2,1.3.6.1.5.5.7.3.1", "2.5.29.19={text}ca=FALSE&pathlength=0");
         "-HashAlgorithm"       = $certificateHashAlgorithm;
