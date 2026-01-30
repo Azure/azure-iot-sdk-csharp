@@ -28,6 +28,6 @@ jobs:
               if ($rgName.StartsWith("javasdkgate") -or $rgName.StartsWith("dotnetsdkgate")) 
               {
                   Write-Host "Deleting resource group with name:" $rgName
-                  az group delete --name $rgName
+                  az group delete --name $rgName --yes
               }
           }
