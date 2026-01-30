@@ -2,42 +2,10 @@ name: $(BuildID)_$(BuildDefinitionName)_$(SourceBranchName)_$(Date:yyyyMMdd)$(Re
 
 # https://docs.microsoft.com/azure/devops/pipelines/process/runtime-parameters
 parameters:
-- name: maxParallelJobs
-  displayName: Maximum jobs to run in parallel. Change maxParallel to 1 make OS builds run in serial rather than in parallel.
-  type: number
-  # Reasonable target to avoid throttling and contention with several PRs running.
-  default: 4
 - name: jobTimeoutInMinutes
   displayName: Timeout for each job
   type: number
   default: 150
-- name: testTargets
-  displayName: The .NET test targets to build and run. 'all' and 'min-matrix' (net8.0) are aggregates of the remaining values.
-  type: string
-  values:
-    - default
-    - all
-    - min-matrix
-    - net8.0
-    - net4.7.2
-  default: default
-
-variables:
-# Variables for the buid/test matrix based on the 'testTargets' that turn on/off various test targets specifically or based on the 2 aggregates.
-  ${{ if and(eq(parameters['testTargets'], 'default'), eq(variables['Build.Reason'], 'PullRequest')) }}:
-    allTestTargets: 'False'
-    minMatrix: 'True'
-  ${{ elseif eq(parameters['testTargets'], 'default') }}:
-    allTestTargets: 'True'
-    minMatrix: 'True'
-  ${{ else }}:
-    allTestTargets: ${{ contains(parameters['testTargets'], 'all') }}
-    # We wish to run the minimum test matrix targets if 1) directly specified, 2) if all targets was chosen.
-    minMatrix: ${{ or(eq(parameters['testTargets'], 'min-matrix'), eq(variables['allTestTargets'], 'True')) }}
-
-# The remaining build/test targets.
-  testNet80: ${{ or(eq(variables['allTestTargets'], 'True'), contains(parameters['testTargets'], 'net8.0')) }}
-  testNet472: ${{ or(eq(variables['allTestTargets'], 'True'), contains(parameters['testTargets'], 'net4.7.2')) }}
 
 trigger:
   batch: true
@@ -130,7 +98,6 @@ jobs:
       matrix:
         .NET 8.0:
           FRAMEWORK: net8.0
-          SHOULD_RUN: ${{ eq(variables['testNet80'], 'True') }}
     pool:
       vmImage: ubuntu-latest
     steps:
@@ -170,7 +137,7 @@ jobs:
 
       - task: PowerShell@2
         displayName: 'Download and run test proxy'
-        condition: eq(variables.SHOULD_RUN, 'True')
+        condition: succeeded()
         inputs:
           targetType: inline
           script: |
@@ -179,7 +146,7 @@ jobs:
 
       - task: Bash@3
         displayName: 'Run tests'
-        condition: eq(variables.SHOULD_RUN, 'True')
+        condition: succeeded()
         inputs:
           targetType: 'inline'
           script: |
@@ -213,7 +180,7 @@ jobs:
 
       - task: PublishTestResults@2
         displayName: "Publish Test Results **/*.trx"
-        condition: eq(variables.SHOULD_RUN, 'True')
+        condition: succeeded()
         inputs:
           testRunner: VSTest
           testRunTitle: "Linux Tests ($(FRAMEWORK)) (Attempt $(System.JobAttempt))"
@@ -221,7 +188,7 @@ jobs:
 
       - task: CopyFiles@2
         displayName: "Copy files to the artifacts folder"
-        condition: eq(variables.SHOULD_RUN, 'True')
+        condition: succeeded()
         inputs:
           SourceFolder: "$(Build.SourcesDirectory)"
           Contents: "**/*.trx"
@@ -240,13 +207,13 @@ jobs:
 
       - task: PublishBuildArtifacts@1
         displayName: "Publish Artifact: testresults_linux_$(FRAMEWORK)"
-        condition: eq(variables.SHOULD_RUN, 'True')
+        condition: succeeded()
         inputs:
           ArtifactName: testresults_linux_$(FRAMEWORK)
         
       - task: ComponentGovernanceComponentDetection@0
         displayName: Component Governance Detection
-        condition: eq(variables.SHOULD_RUN, 'True')
+        condition: succeeded()
         inputs:
           scanType: 'Register'
           verbosity: 'Verbose'
@@ -281,16 +248,14 @@ jobs:
       matrix:
         .NET 8.0:
           FRAMEWORK: net8.0
-          SHOULD_RUN: ${{ eq(variables['testNet80'], 'True') }}
         .NET 4.7.2:
           FRAMEWORK: net472
-          SHOULD_RUN: ${{ eq(variables['testNet472'], 'True') }}
     pool:
       vmImage: windows-2022
     steps:
       - task: PowerShell@2
         displayName: 'Print vars'
-        condition: eq(variables.SHOULD_RUN, 'True')
+        condition: succeeded()
         inputs:
           targetType: inline
           script: |
@@ -325,9 +290,10 @@ jobs:
 
       - powershell: ./vsts/start_tpm_windows.ps1
         displayName: "Start TPM Simulator"
-        condition: eq(variables.SHOULD_RUN, 'True')
+        condition: succeeded()
 
       - task: JavaToolInstaller@0
+        condition: succeeded()
         inputs:
           versionSpec: 11
           jdkArchitectureOption: 'x64'
@@ -337,7 +303,7 @@ jobs:
       # without docker 
       - task: PowerShell@2
         displayName: 'Run test proxy and tests'
-        condition: eq(variables.SHOULD_RUN, 'True')
+        condition: succeeded()
         inputs:
           targetType: inline
           script: |
@@ -397,11 +363,11 @@ jobs:
           testRunTitle: "Windows Tests ($(FRAMEWORK)) (Attempt $(System.JobAttempt))"
           platform: Windows
           configuration: "Debug UT + Release E2E ($(FRAMEWORK))"
-        condition: eq(variables.SHOULD_RUN, 'True')
+        condition: succeeded()
         
       - task: ComponentGovernanceComponentDetection@0
         displayName: Component Governance Detection
-        condition: eq(variables.SHOULD_RUN, 'True')
+        condition: succeeded()
         inputs:
           scanType: 'Register'
           verbosity: 'Verbose'
