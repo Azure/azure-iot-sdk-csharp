@@ -122,6 +122,13 @@ $rootCommonName = "$subjectPrefix Root CA";
 $intermediateCert1CommonName = "$subjectPrefix Intermediate 1 CA";
 $intermediateCert2CommonName = "$subjectPrefix Intermediate 2 CA";
 
+$folderPath = "C:\MyNewFolder"
+
+if (-not (Test-Path -Path $TestCertificateOutputLocation)) 
+{
+    New-Item -Path $TestCertificateOutputLocation -ItemType Directory
+}
+
 $rootCertPath = "$TestCertificateOutputLocation/Root.cer";
 $intermediateCert1CertPath = "$TestCertificateOutputLocation/intermediateCert1.cer";
 $intermediateCert2CertPath = "$TestCertificateOutputLocation/intermediateCert2.cer";
