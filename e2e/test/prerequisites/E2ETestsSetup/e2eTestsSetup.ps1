@@ -11,7 +11,10 @@ param(
     [string] $SubscriptionId,
 
     [Parameter(Mandatory)]
-    [string] $GroupCertificatePassword
+    [string] $GroupCertificatePassword,
+
+    [Parameter(Mandatory)]
+    [string] $TestCertificateOutputLocation
 )
 
 $startTime = (Get-Date)
@@ -119,24 +122,19 @@ $rootCommonName = "$subjectPrefix Root CA";
 $intermediateCert1CommonName = "$subjectPrefix Intermediate 1 CA";
 $intermediateCert2CommonName = "$subjectPrefix Intermediate 2 CA";
 
-$rootCertPath = "$PSScriptRoot/Root.cer";
-$intermediateCert1CertPath = "$PSScriptRoot/intermediateCert1.cer";
-$intermediateCert2CertPath = "$PSScriptRoot/intermediateCert2.cer";
-$intermediateCert2PfxPath = "$PSScriptRoot/intermediateCert2.pfx"
-$verificationCertPath = "$PSScriptRoot/verification.cer";
+$rootCertPath = "$TestCertificateOutputLocation/Root.cer";
+$intermediateCert1CertPath = "$TestCertificateOutputLocation/intermediateCert1.cer";
+$intermediateCert2CertPath = "$TestCertificateOutputLocation/intermediateCert2.cer";
+$intermediateCert2PfxPath = "$TestCertificateOutputLocation/intermediateCert2.pfx"
+$verificationCertPath = "$TestCertificateOutputLocation/verification.cer";
 
 $iotHubX509DeviceCertCommonName = "Save_iothubx509device1";
-$iotHubX509DevicePfxPath = "$PSScriptRoot/IotHubX509Device.pfx";
+$iotHubX509DevicePfxPath = "$TestCertificateOutputLocation/IotHubX509Device.pfx";
 $iotHubX509CertChainDeviceCommonName = "Save_iothubx509chaindevice1";
-$iotHubX509ChainDevicPfxPath = "$PSScriptRoot/IotHubX509ChainDevice.pfx";
+$iotHubX509ChainDevicPfxPath = "$TestCertificateOutputLocation/IotHubX509ChainDevice.pfx";
 
 # Generate self signed Root and Intermediate CA cert, expiring in 2 years
 # These certs are used for signing so ensure to have the correct KeyUsage - CertSign and TestExtension - ca=TRUE&pathlength=12
-
-# This module is required to use commands like New-SelfSignedCertificate and is not installed on ADO's linux powershell
-# by default
-Install-Module -Name PSPKI -RequiredVersion 3.7.2 -Scope CurrentUser -Force
-Import-Module -Name PSPKI
 
 Write-Host "`nGenerating self signed certs."
 
@@ -145,30 +143,31 @@ Write-Host "`nGenerating self signed certs."
 # Create certificate chain from Root to Intermediate2.
 # This chain will be combined with the certificates that are signed by Intermediate2 to test X509 CA-chained devices for IoT Hub and DPS (group enrollment) tests.
 # Chain: Root->Intermediate1->Intermediate2, device cert: Intermediate2->deviceCert
-$rootCACert = New-SelfSignedCertificateEx `
-    -Subject "CN=$rootCommonName" `
-    -KeyUsage 4 `
-    -SignatureAlgorithm "$certificateHashAlgorithm" `
-    -StoreLocation 2 `
+$rootCACert = New-SelfSignedCertificate `
+    -DnsName "$rootCommonName" `
+    -KeyUsage CertSign `
+    -TextExtension @("2.5.29.19={text}ca=TRUE&pathlength=12") `
+    -HashAlgorithm "$certificateHashAlgorithm" `
+    -CertStoreLocation "Cert:\LocalMachine\My" `
     -NotAfter (Get-Date).AddYears(2)
 
-$intermediateCert1 = New-SelfSignedCertificateEx `
-    -Subject  "CN=$intermediateCert1CommonName" `
-    -KeyUsage 4 `
-    -SignatureAlgorithm "$certificateHashAlgorithm" `
-    -StoreLocation 2 `
+$intermediateCert1 = New-SelfSignedCertificate `
+    -DnsName "$intermediateCert1CommonName" `
+    -KeyUsage CertSign `
+    -TextExtension @("2.5.29.19={text}ca=TRUE&pathlength=12") `
+    -HashAlgorithm "$certificateHashAlgorithm" `
+    -CertStoreLocation "Cert:\LocalMachine\My" `
     -NotAfter (Get-Date).AddYears(2) `
-    -Issuer $rootCACert
+    -Signer $rootCACert
 
-
-$intermediateCert2 = New-SelfSignedCertificateEx `
-    -Subject  "CN=$intermediateCert2CommonName" `
-    -KeyUsage 4 `
-    -SignatureAlgorithm "$certificateHashAlgorithm" `
-    -StoreLocation 2 `
+$intermediateCert2 = New-SelfSignedCertificate `
+    -DnsName "$intermediateCert2CommonName" `
+    -KeyUsage CertSign `
+    -TextExtension @("2.5.29.19={text}ca=TRUE&pathlength=12") `
+    -HashAlgorithm "$certificateHashAlgorithm" `
+    -CertStoreLocation "Cert:\LocalMachine\My" `
     -NotAfter (Get-Date).AddYears(2) `
-    -Exportable `
-    -Issuer $intermediateCert1
+    -Signer $intermediateCert1
 
 Export-Certificate -cert $rootCACert -FilePath $rootCertPath -Type CERT | Out-Null
 $x509ChainRootCACertBase64 = [Convert]::ToBase64String((Get-Content $rootCertPath -AsByteStream))
@@ -189,12 +188,12 @@ $x509ChainIntermediate2PfxBase64 = [Convert]::ToBase64String((Get-Content $inter
 
 # Generate an X509 self-signed certificate. This certificate will be used by test device identities that test X509 self-signed certificate device authentication.
 # Leaf certificates are not used for signing so don't specify KeyUsage and TestExtension - ca=TRUE&pathlength=12
-$iotHubX509SelfSignedDeviceCert = New-SelfSignedCertificateEx `
-    -Subject "CN=$iotHubX509DeviceCertCommonName" `
+$iotHubX509SelfSignedDeviceCert = New-SelfSignedCertificate `
+    -DnsName "$iotHubX509DeviceCertCommonName" `
     -KeySpec Signature `
-    -SignatureAlgorithm "$certificateHashAlgorithm" `
-    -StoreLocation "LocalMachine" `
-    -Exportable `
+    -TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.2") `
+    -HashAlgorithm "$certificateHashAlgorithm" `
+    -CertStoreLocation "Cert:\LocalMachine\My" `
     -NotAfter (Get-Date).AddYears(2)
 
 $iotHubCredentials = New-Object System.Management.Automation.PSCredential("Password", (New-Object System.Security.SecureString))
@@ -204,14 +203,14 @@ $iothubX509DevicePfxThumbprint = $iotHubX509SelfSignedDeviceCert.Thumbprint
 
 # Generate the leaf device certificate signed by Intermediate2. This certificate will be used by test device identities that test X509 CA-signed certificate device authentication.
 # Leaf certificates are not used for signing so don't specify KeyUsage and TestExtension - ca=TRUE&pathlength=12
-$iotHubX509ChainDeviceCert = New-SelfSignedCertificateEx `
-    -Subject "CN=$iotHubX509CertChainDeviceCommonName" `
+$iotHubX509ChainDeviceCert = New-SelfSignedCertificate `
+    -DnsName "$iotHubX509CertChainDeviceCommonName" `
     -KeySpec Signature `
-    -SignatureAlgorithm "$certificateHashAlgorithm" `
-    -StoreLocation "LocalMachine" `
+    -TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.2") `
+    -HashAlgorithm "$certificateHashAlgorithm" `
+    -CertStoreLocation "Cert:\LocalMachine\My" `
     -NotAfter (Get-Date).AddYears(2) `
-    -Exportable `
-    -Issuer $intermediateCert2
+    -Signer $intermediateCert2
 
 Export-PFXCertificate -cert $iotHubX509ChainDeviceCert -filePath $iotHubX509ChainDevicPfxPath -password $iotHubCredentials.Password | Out-Null
 $iothubX509ChainDevicePfxBase64 = [Convert]::ToBase64String((Get-Content $iotHubX509ChainDevicPfxPath -AsByteStream));
@@ -349,13 +348,6 @@ if ($isVerified -eq 'false')
 }
 
 ##################################################################################################################################
-# Fetch the iothubowner policy details.
-##################################################################################################################################
-
-$iothubownerSasPolicy = "iothubowner"
-$iothubownerSasPrimaryKey = az iot hub policy show --hub-name $iotHubName --name $iothubownerSasPolicy --query 'primaryKey'
-
-##################################################################################################################################
 # Create device in IoT hub that uses a certificate signed by intermediate certificate.
 ##################################################################################################################################
 
@@ -421,48 +413,32 @@ if ($Region.EndsWith('euap', 'CurrentCultureIgnoreCase'))
     $dpsEndpoint = "global-canary.azure-devices-provisioning.net"
 }
 
-# This variable will be overwritten in the yaml file depending on the OS setup of the test environment.
-# This variable is set here to help run local E2E tests using docker-based proxy setup.
-#$proxyServerAddress = "127.0.0.1:8888"
-
 # Environment variables for IoT Hub E2E tests
-Write-Host "##vso[task.setvariable variable=IOTHUB_CONNECTION_STRING;isOutput=false]$iotHubConnectionString"
-Write-Host "##vso[task.setvariable variable=IOTHUB_X509_DEVICE_PFX_CERTIFICATE;isOutput=false]$iothubX509DevicePfxBase64"
-Write-Host "##vso[task.setvariable variable=IOTHUB_X509_CHAIN_DEVICE_NAME;isOutput=false]$iotHubX509CertChainDeviceCommonName";
-Write-Host "##vso[task.setvariable variable=IOTHUB_X509_CHAIN_DEVICE_PFX_CERTIFICATE;isOutput=false]$iothubX509ChainDevicePfxBase64"
-Write-Host "##vso[task.setvariable variable=IOTHUB_USER_ASSIGNED_MSI_RESOURCE_ID;isOutput=false]$msiResourceId"
+Write-Host "##vso[task.setvariable variable=IOTHUB_CONNECTION_STRING;isOutput=true]$iotHubConnectionString"
+Write-Host "##vso[task.setvariable variable=IOTHUB_X509_DEVICE_PFX_CERTIFICATE;isOutput=true]$iothubX509DevicePfxBase64"
+Write-Host "##vso[task.setvariable variable=IOTHUB_X509_CHAIN_DEVICE_NAME;isOutput=true]$iotHubX509CertChainDeviceCommonName";
+Write-Host "##vso[task.setvariable variable=IOTHUB_X509_CHAIN_DEVICE_PFX_CERTIFICATE;isOutput=true]$iothubX509ChainDevicePfxBase64"
+Write-Host "##vso[task.setvariable variable=IOTHUB_USER_ASSIGNED_MSI_RESOURCE_ID;isOutput=true]$msiResourceId"
 
 # Environment variables for DPS E2E tests
-Write-Host "##vso[task.setvariable variable=DPS_IDSCOPE;isOutput=false]$dpsIdScope"
-Write-Host "##vso[task.setvariable variable=PROVISIONING_CONNECTION_STRING;isOutput=false]$dpsConnectionString"
-Write-Host "##vso[task.setvariable variable=DPS_GLOBALDEVICEENDPOINT;isOutput=false]$dpsEndpoint"
-Write-Host "##vso[task.setvariable variable=DPS_X509_PFX_CERTIFICATE_PASSWORD;isOutput=false]$GroupCertificatePassword"
-Write-Host "##vso[task.setvariable variable=DPS_X509_GROUP_ENROLLMENT_NAME;isOutput=false]$groupEnrollmentId"
+Write-Host "##vso[task.setvariable variable=DPS_IDSCOPE;isOutput=true]$dpsIdScope"
+Write-Host "##vso[task.setvariable variable=PROVISIONING_CONNECTION_STRING;isOutput=true]$dpsConnectionString"
+Write-Host "##vso[task.setvariable variable=DPS_GLOBALDEVICEENDPOINT;isOutput=true]$dpsEndpoint"
+Write-Host "##vso[task.setvariable variable=DPS_X509_PFX_CERTIFICATE_PASSWORD;isOutput=true]$GroupCertificatePassword"
+Write-Host "##vso[task.setvariable variable=DPS_X509_GROUP_ENROLLMENT_NAME;isOutput=true]$groupEnrollmentId"
 
 # Environment variables for Azure resources used for E2E tests (common)
-Write-Host "##vso[task.setvariable variable=X509_CHAIN_ROOT_CA_CERTIFICATE;isOutput=false]$x509ChainRootCACertBase64"
-Write-Host "##vso[task.setvariable variable=X509_CHAIN_INTERMEDIATE1_CERTIFICATE;isOutput=false]$x509ChainIntermediate1CertBase64"
-Write-Host "##vso[task.setvariable variable=X509_CHAIN_INTERMEDIATE2_CERTIFICATE;isOutput=false]$x509ChainIntermediate2CertBase64"
-Write-Host "##vso[task.setvariable variable=X509_CHAIN_INTERMEDIATE2_PFX_CERTIFICATE;isOutput=false]$x509ChainIntermediate2PfxBase64"
-Write-Host "##vso[task.setvariable variable=STORAGE_ACCOUNT_CONNECTION_STRING;isOutput=false]$storageAccountConnectionString"
-Write-Host "##vso[task.setvariable variable=MSFT_TENANT_ID;isOutput=false]72f988bf_86f1_41af_91ab_2d7cd011db47"
-Write-Host "##vso[task.setvariable variable=E2E_TEST_AAD_APP_CLIENT_ID;isOutput=false]$e2eTestAadAppId"
-Write-Host "##vso[task.setvariable variable=E2E_TEST_AAD_APP_CLIENT_SECRET;isOutput=false]$e2eTestAadAppPassword"
+Write-Host "##vso[task.setvariable variable=X509_CHAIN_ROOT_CA_CERTIFICATE;isOutput=true]$x509ChainRootCACertBase64"
+Write-Host "##vso[task.setvariable variable=X509_CHAIN_INTERMEDIATE1_CERTIFICATE;isOutput=true]$x509ChainIntermediate1CertBase64"
+Write-Host "##vso[task.setvariable variable=X509_CHAIN_INTERMEDIATE2_CERTIFICATE;isOutput=true]$x509ChainIntermediate2CertBase64"
+Write-Host "##vso[task.setvariable variable=X509_CHAIN_INTERMEDIATE2_PFX_CERTIFICATE;isOutput=true]$x509ChainIntermediate2PfxBase64"
+Write-Host "##vso[task.setvariable variable=STORAGE_ACCOUNT_CONNECTION_STRING;isOutput=true]$storageAccountConnectionString"
+Write-Host "##vso[task.setvariable variable=MSFT_TENANT_ID;isOutput=true]72f988bf_86f1_41af_91ab_2d7cd011db47"
+Write-Host "##vso[task.setvariable variable=E2E_TEST_AAD_APP_CLIENT_ID;isOutput=true]$e2eTestAadAppId"
+Write-Host "##vso[task.setvariable variable=E2E_TEST_AAD_APP_CLIENT_SECRET;isOutput=true]$e2eTestAadAppPassword"
 
 # Environment variables for the DevOps pipeline
-Write-Host "##vso[task.setvariable variable=PIPELINE_ENVIRONMENT;isOutput=false]prod";
-Write-Host "##vso[task.setvariable variable=PROXY_SERVER_ADDRESS;isOutput=false]$proxyServerAddress";
-
-# Environment variables for invalid certificate tests
-# The connection strings below point to servers with incorrect TLS server certificates. Tests will attempt to connect and expect that the TLS connection ends in a security exception.
-<#[SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="fake shared access token")]#>
-Write-Host "##vso[task.setvariable variable=IOTHUB_DEVICE_CONN_STRING_INVALIDCERT;isOutput=false]HostName=invalidcertiothub1.westus.cloudapp.azure.com;DeviceId=DoNotDelete1;SharedAccessKey=zWmeTGWmjcgDG1dpuSCVjc5ZY4TqVnKso5+g1wt/K3E="
-<#[SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="fake shared access token")]#>
-Write-Host "##vso[task.setvariable variable=IOTHUB_CONN_STRING_INVALIDCERT;isOutput=false]HostName=invalidcertiothub1.westus.cloudapp.azure.com;SharedAccessKeyName=iothubowner;SharedAccessKey=Fk1H0asPeeAwlRkUMTybJasksTYTd13cgI7SsteB05U="
-Write-Host "##vso[task.setvariable variable=DPS_GLOBALDEVICEENDPOINT_INVALIDCERT;isOutput=false]invalidcertgde1.westus.cloudapp.azure.com"
-<#[SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="fake shared access token")]#>
-Write-Host "##vso[task.setvariable variable=PROVISIONING_CONNECTION_STRING_INVALIDCERT;isOutput=false]HostName=invalidcertdps1.westus.cloudapp.azure.com;SharedAccessKeyName=provisioningserviceowner;SharedAccessKey=lGO7OlXNhXlFyYV1rh9F/lUCQC1Owuh5f/1P0I1AFSY="
-
+Write-Host "##vso[task.setvariable variable=PIPELINE_ENVIRONMENT;isOutput=true]prod";
 
 ############################################################################################################################
 # Notify user that openssl is required for running E2E tests.

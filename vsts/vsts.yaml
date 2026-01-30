@@ -55,7 +55,36 @@ resources:
   - repo: self
     clean: true
 
-jobs: 
+jobs:
+  - job: DeployCloudTestResources
+    pool:
+      vmImage: windows-2022
+    steps:     
+    - task: AzureCLI@2
+      name: deployCloudTestResources 
+      inputs:
+        azureSubscription: 'iot hub sdk service connection'
+        scriptType: 'pscore'
+        scriptLocation: 'inlineScript'
+        pwsh: true
+        inlineScript: |
+          $jsonContent = az account show | ConvertFrom-Json
+          $subscriptionId = $jsonContent.Id
+
+          $uniqueSuffixLength = 5
+          $characters = 'abcdefghijklmnopqrstuvwxyz'.ToCharArray()
+          $CloudResourceUniqueSuffix = -join ($characters | Get-Random -Count $uniqueSuffixLength)
+
+          $resourceGroupName = 'dotnetsdkgate'+$CloudResourceUniqueSuffix
+
+          Write-Host "##vso[task.setvariable variable=RESOURCE_GROUP_NAME;isOutput=true]$resourceGroupName"
+
+          $(Build.SourcesDirectory)/e2e/test/prerequisites/E2ETestsSetup/e2eTestsSetup.ps1 -SubscriptionId $subscriptionId -Region westcentralus -ResourceGroup $resourceGroupName -GroupCertificatePassword someCertPass -TestCertificateOutputLocation $(Pipeline.Workspace)/test-certificates
+
+    - publish:  $(Pipeline.Workspace)
+      displayName: 'save test certificates locally'
+      artifact: test-certificates
+
   - job: BuildTestProxyDockerImage
     pool:
       vmImage: ubuntu-latest
@@ -76,7 +105,7 @@ jobs:
           docker image save testproxy:latest -o $(Build.ArtifactStagingDirectory)/testproxy.tar
 
     - publish:  $(Build.ArtifactStagingDirectory)
-      displayName: 'downloadDockerImageArchives'
+      displayName: 'save docker images locally'
       artifact: docker-images
 
   ### Linux build ###
@@ -84,7 +113,30 @@ jobs:
     displayName: Linux
     dependsOn: 
       - BuildTestProxyDockerImage
+      - DeployCloudTestResources
     condition: succeeded()
+    variables:
+      IOTHUB_CONNECTION_STRING: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.IOTHUB_CONNECTION_STRING'] ]
+      IOTHUB_DEVICE_CONN_STRING: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.IOTHUB_DEVICE_CONN_STRING'] ]
+      IOTHUB_X509_DEVICE_PFX_CERTIFICATE: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.IOTHUB_X509_DEVICE_PFX_CERTIFICATE'] ]
+      IOTHUB_X509_DEVICE_PFX_THUMBPRINT: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.IOTHUB_X509_DEVICE_PFX_THUMBPRINT'] ]
+      IOTHUB_X509_CHAIN_DEVICE_NAME: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.IOTHUB_X509_CHAIN_DEVICE_NAME'] ]
+      IOTHUB_X509_CHAIN_DEVICE_PFX_CERTIFICATE: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.IOTHUB_X509_CHAIN_DEVICE_PFX_CERTIFICATE'] ]
+      IOTHUB_USER_ASSIGNED_MSI_RESOURCE_ID: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.IOTHUB_USER_ASSIGNED_MSI_RESOURCE_ID'] ]
+      DPS_IDSCOPE: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.DPS_IDSCOPE'] ]
+      PROVISIONING_CONNECTION_STRING: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.PROVISIONING_CONNECTION_STRING'] ]
+      DPS_GLOBALDEVICEENDPOINT: global.azure-devices-provisioning.net
+      DPS_X509_PFX_CERTIFICATE_PASSWORD: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.DPS_X509_PFX_CERTIFICATE_PASSWORD'] ]
+      DPS_X509_GROUP_ENROLLMENT_NAME: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.DPS_X509_GROUP_ENROLLMENT_NAME'] ]
+      X509_CHAIN_ROOT_CA_CERTIFICATE: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.X509_CHAIN_ROOT_CA_CERTIFICATE'] ]
+      X509_CHAIN_INTERMEDIATE1_CERTIFICATE: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.X509_CHAIN_INTERMEDIATE1_CERTIFICATE'] ]
+      X509_CHAIN_INTERMEDIATE2_CERTIFICATE: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.X509_CHAIN_INTERMEDIATE2_CERTIFICATE'] ]
+      X509_CHAIN_INTERMEDIATE2_PFX_CERTIFICATE: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.X509_CHAIN_INTERMEDIATE2_PFX_CERTIFICATE'] ]
+      STORAGE_ACCOUNT_CONNECTION_STRING: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.STORAGE_ACCOUNT_CONNECTION_STRING'] ]
+      MSFT_TENANT_ID: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.MSFT_TENANT_ID'] ]
+      E2E_TEST_AAD_APP_CLIENT_ID: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.E2E_TEST_AAD_APP_CLIENT_ID'] ]
+      E2E_TEST_AAD_APP_CLIENT_SECRET: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.E2E_TEST_AAD_APP_CLIENT_SECRET'] ]
+      E2E_IKEY: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.E2E_IKEY'] ]
     timeoutInMinutes: ${{ parameters.jobTimeoutInMinutes }}
     strategy:
       maxParallel: ${{ parameters.maxParallelJobs }}
@@ -112,28 +164,6 @@ jobs:
 
       # https://docs.microsoft.com/azure/devops/pipelines/tasks/tool/dotnet-core-tool-installer?view=azure-devops
 
-      - task: AzureCLI@2
-        name: deployCloudTestResources 
-        inputs:
-          azureSubscription: 'iot hub sdk service connection'
-          scriptType: 'pscore'
-          scriptLocation: 'inlineScript'
-          pwsh: true
-          condition: always()
-          inlineScript: |
-            $jsonContent = az account show | ConvertFrom-Json
-            $subscriptionId = $jsonContent.Id
-
-            $uniqueSuffixLength = 5
-            $characters = 'abcdefghijklmnopqrstuvwxyz'.ToCharArray()
-            $CloudResourceUniqueSuffix = -join ($characters | Get-Random -Count $uniqueSuffixLength)
-
-            $resourceGroupName = 'dotnetsdkgate'+$CloudResourceUniqueSuffix
-
-            Write-Host "##vso[task.setvariable variable=RESOURCE_GROUP_NAME;isOutput=false]$resourceGroupName"
-
-            $(Build.SourcesDirectory)/e2e/test/prerequisites/E2ETestsSetup/e2eTestsSetup.ps1 -SubscriptionId $subscriptionId -Region westcentralus -ResourceGroup $resourceGroupName -GroupCertificatePassword someCertPass
-
       # Linux requires .NET 8.0 install for tests to run, no matter which framework target is being tested
       - task: UseDotNet@2
         displayName: 'Use .NET SDK 8.0'
@@ -142,6 +172,10 @@ jobs:
          version: 8.x
          performMultiLevelLookup: true
          installationPath: $(Agent.ToolsDirectory)/dotnet
+
+      - download: current
+        displayName: 'Download test certificates'
+        artifact: docker-images
 
       - download: current
         displayName: 'Download test proxy docker archive'
@@ -241,7 +275,32 @@ jobs:
  ### Windows build ###
   - job: WINDOWS
     displayName: Windows
+    dependsOn: 
+      - BuildTestProxyDockerImage
+      - DeployCloudTestResources
     condition: succeeded()
+    variables:
+      IOTHUB_CONNECTION_STRING: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.IOTHUB_CONNECTION_STRING'] ]
+      IOTHUB_DEVICE_CONN_STRING: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.IOTHUB_DEVICE_CONN_STRING'] ]
+      IOTHUB_X509_DEVICE_PFX_CERTIFICATE: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.IOTHUB_X509_DEVICE_PFX_CERTIFICATE'] ]
+      IOTHUB_X509_DEVICE_PFX_THUMBPRINT: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.IOTHUB_X509_DEVICE_PFX_THUMBPRINT'] ]
+      IOTHUB_X509_CHAIN_DEVICE_NAME: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.IOTHUB_X509_CHAIN_DEVICE_NAME'] ]
+      IOTHUB_X509_CHAIN_DEVICE_PFX_CERTIFICATE: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.IOTHUB_X509_CHAIN_DEVICE_PFX_CERTIFICATE'] ]
+      IOTHUB_USER_ASSIGNED_MSI_RESOURCE_ID: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.IOTHUB_USER_ASSIGNED_MSI_RESOURCE_ID'] ]
+      DPS_IDSCOPE: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.DPS_IDSCOPE'] ]
+      PROVISIONING_CONNECTION_STRING: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.PROVISIONING_CONNECTION_STRING'] ]
+      DPS_GLOBALDEVICEENDPOINT: global.azure-devices-provisioning.net
+      DPS_X509_PFX_CERTIFICATE_PASSWORD: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.DPS_X509_PFX_CERTIFICATE_PASSWORD'] ]
+      DPS_X509_GROUP_ENROLLMENT_NAME: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.DPS_X509_GROUP_ENROLLMENT_NAME'] ]
+      X509_CHAIN_ROOT_CA_CERTIFICATE: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.X509_CHAIN_ROOT_CA_CERTIFICATE'] ]
+      X509_CHAIN_INTERMEDIATE1_CERTIFICATE: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.X509_CHAIN_INTERMEDIATE1_CERTIFICATE'] ]
+      X509_CHAIN_INTERMEDIATE2_CERTIFICATE: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.X509_CHAIN_INTERMEDIATE2_CERTIFICATE'] ]
+      X509_CHAIN_INTERMEDIATE2_PFX_CERTIFICATE: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.X509_CHAIN_INTERMEDIATE2_PFX_CERTIFICATE'] ]
+      STORAGE_ACCOUNT_CONNECTION_STRING: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.STORAGE_ACCOUNT_CONNECTION_STRING'] ]
+      MSFT_TENANT_ID: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.MSFT_TENANT_ID'] ]
+      E2E_TEST_AAD_APP_CLIENT_ID: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.E2E_TEST_AAD_APP_CLIENT_ID'] ]
+      E2E_TEST_AAD_APP_CLIENT_SECRET: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.E2E_TEST_AAD_APP_CLIENT_SECRET'] ]
+      E2E_IKEY: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.E2E_IKEY'] ]
     timeoutInMinutes: ${{ parameters.jobTimeoutInMinutes }}
     strategy:
       maxParallel: ${{ parameters.maxParallelJobs }}
@@ -271,28 +330,6 @@ jobs:
             Write-Host "testNetcore21: ${{ variables.testNetcore21 }}"
             Write-Host "testNet472: ${{ variables.testNet472 }}"
 
-      - task: AzureCLI@2
-        name: deployCloudTestResources 
-        inputs:
-          azureSubscription: 'iot hub sdk service connection'
-          scriptType: 'pscore'
-          scriptLocation: 'inlineScript'
-          pwsh: true
-          condition: always()
-          inlineScript: |
-            $jsonContent = az account show | ConvertFrom-Json
-            $subscriptionId = $jsonContent.Id
-
-            $uniqueSuffixLength = 5
-            $characters = 'abcdefghijklmnopqrstuvwxyz'.ToCharArray()
-            $CloudResourceUniqueSuffix = -join ($characters | Get-Random -Count $uniqueSuffixLength)
-
-            $resourceGroupName = 'dotnetsdkgate'+$CloudResourceUniqueSuffix
-
-            Write-Host "##vso[task.setvariable variable=RESOURCE_GROUP_NAME;isOutput=false]$resourceGroupName"
-
-            $(Build.SourcesDirectory)/e2e/test/prerequisites/E2ETestsSetup/e2eTestsSetup.ps1 -SubscriptionId $subscriptionId -Region westcentralus -ResourceGroup $resourceGroupName -GroupCertificatePassword someCertPass
-
       - ${{ if eq(variables['testNet80'], 'True') }}:
         - task: UseDotNet@2
           displayName: 'Use .NET SDK 8.0'
@@ -307,6 +344,10 @@ jobs:
           displayName: 'Install .NET 4.7.2'
           inputs:
             script: 'choco install -y netfx-4.7.2-devpack'
+
+      - download: current
+        displayName: 'Download test certificates'
+        artifact: docker-images
 
       - powershell: ./vsts/start_tpm_windows.ps1
         displayName: "Start TPM Simulator"
@@ -486,4 +527,24 @@ jobs:
         # TODO #181 Enable post analysis to break builds after all above items are enabled.
         enabled: false
 
-
+  - job: TearDownCloudTestResources
+    condition: always()
+    dependsOn:
+      - WINDOWS
+      - LINUX
+      - DeployCloudTestResources
+    variables:
+      RESOURCE_GROUP_NAME: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.RESOURCE_GROUP_NAME'] ]
+    pool:
+      vmImage: windows-2022
+    steps:
+    - task: AzureCLI@2
+      inputs:
+        azureSubscription: 'iot hub sdk service connection'
+        scriptType: 'ps'
+        scriptLocation: 'inlineScript'
+        inlineScript: |
+          Write-Host "Deleting resource group with name "
+          Write-Host $(RESOURCE_GROUP_NAME)
+          az group delete --name $(RESOURCE_GROUP_NAME) --y
+          # don't forget to delete RBAC resources as well
