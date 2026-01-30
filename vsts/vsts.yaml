@@ -94,7 +94,6 @@ jobs:
       STORAGE_ACCOUNT_CONNECTION_STRING: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.STORAGE_ACCOUNT_CONNECTION_STRING'] ]
     timeoutInMinutes: ${{ parameters.jobTimeoutInMinutes }}
     strategy:
-      maxParallel: ${{ parameters.maxParallelJobs }}
       matrix:
         .NET 8.0:
           FRAMEWORK: net8.0
@@ -108,13 +107,7 @@ jobs:
           script: |
             Write-Host "Build.Reason: ${{ variables['Build.Reason'] }}"
             Write-Host "jobTimeoutInMinutes: ${{ parameters.jobTimeoutInMinutes }}"
-            Write-Host "maxParallelJobs: ${{ parameters.maxParallelJobs }}"
-            Write-Host "minMatrix: ${{ variables.minMatrix }}"
-            Write-Host "testNet60: ${{ variables.testNet60 }}"
             Write-Host "testNet80: ${{ variables.testNet80 }}"
-            Write-Host "testNetcore31: ${{ variables.testNetcore31 }}"
-            Write-Host "testNetcore21: ${{ variables.testNetcore21 }}"
-            Write-Host "testNet472: ${{ variables.testNet472 }}"
 
       # https://docs.microsoft.com/azure/devops/pipelines/tasks/tool/dotnet-core-tool-installer?view=azure-devops
 
@@ -176,7 +169,6 @@ jobs:
 
           # Environment variables for the DevOps pipeline
           FRAMEWORK: $(FRAMEWORK)
-
 
       - task: PublishTestResults@2
         displayName: "Publish Test Results **/*.trx"
@@ -244,7 +236,6 @@ jobs:
       STORAGE_ACCOUNT_CONNECTION_STRING: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.STORAGE_ACCOUNT_CONNECTION_STRING'] ]
     timeoutInMinutes: ${{ parameters.jobTimeoutInMinutes }}
     strategy:
-      maxParallel: ${{ parameters.maxParallelJobs }}
       matrix:
         .NET 8.0:
           FRAMEWORK: net8.0
@@ -261,12 +252,7 @@ jobs:
           script: |
             Write-Host "Build.Reason: ${{ variables['Build.Reason'] }}"
             Write-Host "jobTimeoutInMinutes: ${{ parameters.jobTimeoutInMinutes }}"
-            Write-Host "maxParallelJobs: ${{ parameters.maxParallelJobs }}"
-            Write-Host "minMatrix: ${{ variables.minMatrix }}"
-            Write-Host "testNet60: ${{ variables.testNet60 }}"
             Write-Host "testNet80: ${{ variables.testNet80 }}"
-            Write-Host "testNetcore31: ${{ variables.testNetcore31 }}"
-            Write-Host "testNetcore21: ${{ variables.testNetcore21 }}"
             Write-Host "testNet472: ${{ variables.testNet472 }}"
 
       - ${{ if eq(variables['testNet80'], 'True') }}:
