@@ -167,6 +167,7 @@ $intermediateCert2 = New-SelfSignedCertificateEx `
     -SignatureAlgorithm "$certificateHashAlgorithm" `
     -StoreLocation 2 `
     -NotAfter (Get-Date).AddYears(2) `
+    -Exportable `
     -Issuer $intermediateCert1
 
 Export-Certificate -cert $rootCACert -FilePath $rootCertPath -Type CERT | Out-Null
@@ -193,6 +194,7 @@ $iotHubX509SelfSignedDeviceCert = New-SelfSignedCertificateEx `
     -KeySpec Signature `
     -SignatureAlgorithm "$certificateHashAlgorithm" `
     -CertStoreLocation "Cert:\LocalMachine\My" `
+    -Exportable `
     -NotAfter (Get-Date).AddYears(2)
 
 $iotHubCredentials = New-Object System.Management.Automation.PSCredential("Password", (New-Object System.Security.SecureString))
@@ -208,6 +210,7 @@ $iotHubX509ChainDeviceCert = New-SelfSignedCertificateEx `
     -SignatureAlgorithm "$certificateHashAlgorithm" `
     -CertStoreLocation "Cert:\LocalMachine\My" `
     -NotAfter (Get-Date).AddYears(2) `
+    -Exportable `
     -Issuer $intermediateCert2
 
 Export-PFXCertificate -cert $iotHubX509ChainDeviceCert -filePath $iotHubX509ChainDevicPfxPath -password $iotHubCredentials.Password | Out-Null
