@@ -339,7 +339,6 @@ if ($isVerified -eq 'false')
         "-Subject"                       = "CN=$requestedCommonName";
         "-StoreLocation"                 = 2;
         "-NotAfter"                      = (get-date).AddYears(2);
-        "-TextExtension"                 = @("2.5.29.37={text}1.3.6.1.5.5.7.3.2,1.3.6.1.5.5.7.3.1", "2.5.29.19={text}ca=FALSE&pathlength=0");
         "-SignatureAlgorithm"            = $certificateHashAlgorithm;
         "-Issuer"                        = $rootCACert;
     }
@@ -393,7 +392,6 @@ if ($isVerified -eq 'false')
         "-DnsName"             = $requestedCommonName;
         "-StoreLocation"       = "LocalMachine";
         "-NotAfter"            = (get-date).AddYears(2);
-        "-TextExtension"       = @("2.5.29.37={text}1.3.6.1.5.5.7.3.2,1.3.6.1.5.5.7.3.1", "2.5.29.19={text}ca=FALSE&pathlength=0");
         "-HashAlgorithm"       = $certificateHashAlgorithm;
         "-Issuer"              = $rootCACert;
     }
