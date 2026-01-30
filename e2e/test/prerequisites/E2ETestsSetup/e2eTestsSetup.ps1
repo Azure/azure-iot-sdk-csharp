@@ -260,8 +260,7 @@ az deployment group create `
     --parameters `
     StorageAccountName=$storageAccountName `
     HubUnitsCount=$iothubUnitsToBeCreated `
-    UserAssignedManagedIdentityName=$managedIdentityName `
-    EnableIotHubSecuritySolution=$EnableIotHubSecuritySolution
+    UserAssignedManagedIdentityName=$managedIdentityName 
 
 if ($LastExitCode -ne 0)
 {

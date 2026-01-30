@@ -66,13 +66,6 @@
         "description": "The location for Microsoft.OperationalInsights/workspaces."
       }
     },
-    "SecuritySolutionName": {
-      "type": "string",
-      "defaultValue": "[format('{0}-ss', resourceGroup().name)]",
-      "metadata": {
-        "description": "The name of the security solution instance."
-      }
-    },
     "BlobServiceName": {
       "type": "string",
       "defaultValue": "default",
@@ -91,13 +84,6 @@
       "type": "string",
       "metadata": {
         "description": "The name of the user assigned managed identity."
-      }
-    },
-    "EnableIotHubSecuritySolution": {
-      "type": "bool",
-      "defaultValue": false,
-      "metadata": {
-        "description": "Flag to indicate if IoT hub should have security solution enabled."
       }
     }
   },
@@ -245,39 +231,6 @@
       "dependsOn": [
         "[resourceId('Microsoft.Devices/IotHubs', parameters('HubName'))]"
       ]
-    },
-    {
-      "condition": "[parameters('EnableIotHubSecuritySolution')]",
-      "type": "Microsoft.OperationalInsights/workspaces",
-      "apiVersion": "2017-03-15-preview",
-      "name": "[parameters('OperationalInsightsName')]",
-      "location": "[parameters('OperationInsightsLocation')]",
-      "properties": {}
-    },
-    {
-      "condition": "[parameters('EnableIotHubSecuritySolution')]",
-      "type": "Microsoft.Security/iotSecuritySolutions",
-      "apiVersion": "2019-08-01",
-      "name": "[parameters('SecuritySolutionName')]",
-      "location": "[resourceGroup().location]",
-      "properties": {
-        "workspace": "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('OperationalInsightsName'))]",
-        "status": "Enabled",
-        "export": [
-          "RawEvents"
-        ],
-        "disabledDataSources": [],
-        "displayName": "[parameters('SecuritySolutionName')]",
-        "iotHubs": [
-          "[resourceId('Microsoft.Devices/IotHubs', parameters('HubName'))]"
-        ],
-        "recommendationsConfiguration": [],
-        "unmaskedIpLoggingStatus": "Enabled"
-      },
-      "dependsOn": [
-        "[resourceId('Microsoft.Devices/IotHubs', parameters('HubName'))]",
-        "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('OperationalInsightsName'))]"
-      ]
     }
   ],
   "outputs": {
@@ -300,10 +253,6 @@
     "storageAccountConnectionString": {
       "type": "string",
       "value": "[format('DefaultEndpointsProtocol=https;AccountName={0};AccountKey={1};EndpointSuffix=core.windows.net', parameters('StorageAccountName'), listkeys(resourceId('Microsoft.Storage/storageAccounts', parameters('StorageAccountName')), '2019-06-01').keys[0].value)]"
-    },
-    "workspaceId": {
-      "type": "string",
-      "value": "[if(parameters('EnableIotHubSecuritySolution'), format('{0}', reference(resourceId('Microsoft.OperationalInsights/workspaces', parameters('OperationalInsightsName')), '2017-03-15-preview').customerId), '')]"
     }
   }
 }
