@@ -79,12 +79,6 @@
       "metadata": {
         "description": "The name of the Container inside the BlobService."
       }
-    },
-    "UserAssignedManagedIdentityName": {
-      "type": "string",
-      "metadata": {
-        "description": "The name of the user assigned managed identity."
-      }
     }
   },
   "variables": {
@@ -144,21 +138,12 @@
       ]
     },
     {
-      "type": "Microsoft.ManagedIdentity/userAssignedIdentities",
-      "apiVersion": "2018-11-30",
-      "name": "[parameters('UserAssignedManagedIdentityName')]",
-      "location": "[resourceGroup().location]"
-    },
-    {
       "type": "Microsoft.Devices/IotHubs",
       "apiVersion": "2021-03-03-preview",
       "name": "[parameters('HubName')]",
       "location": "[resourceGroup().location]",
       "identity": {
-        "type": "SystemAssigned, UserAssigned",
-        "userAssignedIdentities": {
-          "[format('{0}', resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', parameters('UserAssignedManagedIdentityName')))]": {}
-        }
+        "type": "SystemAssigned"
       },
       "properties": {
         "eventHubEndpoints": {
@@ -199,8 +184,7 @@
       },
       "dependsOn": [
         "[resourceId('Microsoft.Storage/storageAccounts/blobServices/containers', split(format('{0}/{1}', format('{0}/{1}', parameters('StorageAccountName'), parameters('BlobServiceName')), parameters('ContainerName')), '/')[0], split(format('{0}/{1}', format('{0}/{1}', parameters('StorageAccountName'), parameters('BlobServiceName')), parameters('ContainerName')), '/')[1], split(format('{0}/{1}', format('{0}/{1}', parameters('StorageAccountName'), parameters('BlobServiceName')), parameters('ContainerName')), '/')[2])]",
-        "[resourceId('Microsoft.Storage/storageAccounts', parameters('StorageAccountName'))]",
-        "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', parameters('UserAssignedManagedIdentityName'))]"
+        "[resourceId('Microsoft.Storage/storageAccounts', parameters('StorageAccountName'))]"
       ]
     },
     {

@@ -515,4 +515,3 @@ jobs:
           Write-Host "Deleting resource group with name "
           Write-Host $(RESOURCE_GROUP_NAME)
           az group delete --name $(RESOURCE_GROUP_NAME) --y
-          # don't forget to delete RBAC resources as well

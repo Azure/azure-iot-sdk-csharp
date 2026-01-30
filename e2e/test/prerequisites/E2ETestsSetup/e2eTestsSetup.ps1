@@ -281,45 +281,6 @@ $storageAccountConnectionString = az deployment group show -g $ResourceGroup -n 
 $workspaceId = az deployment group show -g $ResourceGroup -n $deploymentName --query 'properties.outputs.workspaceId.value' --output tsv
 $iotHubName = az deployment group show -g $ResourceGroup -n $deploymentName --query 'properties.outputs.hubName.value' --output tsv
 
-#################################################################################################################################################
-# Configure an AAD app and assign it contributor role to perform IoT hub data actions.
-#################################################################################################################################################
-
-#Write-Host "`nCreating app registration $e2eTestAadAppRegName for IoT hub data actions"
-#$iotHubDataContributorRoleId = "4fc6c259987e4a07842ec321cc9d413f"
-#$iotHubScope = "/subscriptions/$SubscriptionId/resourceGroups/$ResourceGroup/providers/Microsoft.Devices/IotHubs/$iotHubName"
-#$e2eTestAadAppInfo = az ad sp create-for-rbac -n $e2eTestAadAppRegName --role $iotHubDataContributorRoleId --scope $iotHubScope --query '{appId:appId, password:password}' | ConvertFrom-Json
-
-#$e2eTestAadAppId = $e2eTestAadAppInfo.appId
-#$e2eTestAadAppPassword = $e2eTestAadAppInfo.password
-#Write-Host "`nCreated application $e2eTestAadAppRegName with Id $e2eTestAadAppId."
-
-#################################################################################################################################################
-# Configure the above created AAD app to perform DPS data actions.
-#################################################################################################################################################
-
-#Write-Host "`nGiving app registration $e2eTestAadAppRegName data contributor permission on DPS instance $dpsName"
-#$dpsContributorId = "dfce44e4-17b7-4bd1-a6d1-04996ec95633"
-#$dpsScope = "/subscriptions/$SubscriptionId/resourceGroups/$ResourceGroup/providers/Microsoft.Devices/ProvisioningServices/$dpsName"
-#az role assignment create --role $dpsContributorId --assignee $e2eTestAadAppId --scope $dpsScope
-
-#################################################################################################################################################
-# Add role assignement for User assinged managed identity to be able to perform import and export jobs on the IoT hub.
-#################################################################################################################################################
-
-#Write-Host "`nGranting the user assigned managed identity $managedIdentityName Storage Blob Data Contributor permissions on resource group: $ResourceGroup."
-#$msiPrincipalId = az identity show -n $managedIdentityName -g $ResourceGroup --query principalId --output tsv
-#$msiResourceId = "/subscriptions/$SubscriptionId/resourceGroups/$ResourceGroup/providers/Microsoft.ManagedIdentity/userAssignedIdentities/$managedIdentityName"
-#az role assignment create --assignee $msiPrincipalId --role 'Storage Blob Data Contributor' --scope $resourceGroupId --output none
-
-##################################################################################################################################
-# Granting the IoT hub system identity storage blob contributor access on the resoruce group.
-##################################################################################################################################
-
-#Write-Host "`nGranting the system identity on the hub $iotHubName Storage Blob Data Contributor permissions on resource group: $ResourceGroup."
-#$systemIdentityPrincipal = az resource list -n $iotHubName --query [0].identity.principalId --out tsv
-#az role assignment create --assignee $systemIdentityPrincipal --role "Storage Blob Data Contributor" --scope $resourceGroupId --output none
-
 ##################################################################################################################################
 # Uploading root CA certificate to IoT hub and verifying.
 ##################################################################################################################################
