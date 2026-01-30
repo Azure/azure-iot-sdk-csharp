@@ -145,9 +145,8 @@ Write-Host "`nGenerating self signed certs."
 # Create certificate chain from Root to Intermediate2.
 # This chain will be combined with the certificates that are signed by Intermediate2 to test X509 CA-chained devices for IoT Hub and DPS (group enrollment) tests.
 # Chain: Root->Intermediate1->Intermediate2, device cert: Intermediate2->deviceCert
-openssl
 $rootCACert = New-SelfSignedCertificateEx `
-    -Subject "$rootCommonName" `
+    -Subject "CN=$rootCommonName" `
     -KeyUsage 4 ` # KeyCertSign
     #-TextExtension @("2.5.29.19={text}ca=TRUE&pathlength=12") `
     -SignatureAlgorithm "$certificateHashAlgorithm" `
@@ -155,7 +154,7 @@ $rootCACert = New-SelfSignedCertificateEx `
     -NotAfter (Get-Date).AddYears(2)
 
 $intermediateCert1 = New-SelfSignedCertificateEx `
-    -Subject "$intermediateCert1CommonName" `
+    -Subject "CN=$intermediateCert1CommonName" `
     -KeyUsage 4 ` # KeyCertSign
     #-TextExtension @("2.5.29.19={text}ca=TRUE&pathlength=12") `
     -SignatureAlgorithm "$certificateHashAlgorithm" `
@@ -164,7 +163,7 @@ $intermediateCert1 = New-SelfSignedCertificateEx `
     -Issuer $rootCACert
 
 $intermediateCert2 = New-SelfSignedCertificateEx `
-    -Subject "$intermediateCert2CommonName" `
+    -Subject "CN=$intermediateCert2CommonName" `
     -KeyUsage 4 ` # KeyCertSign
     #-TextExtension @("2.5.29.19={text}ca=TRUE&pathlength=12") `
     -SignatureAlgorithm "$certificateHashAlgorithm" `
@@ -192,7 +191,7 @@ $x509ChainIntermediate2PfxBase64 = [Convert]::ToBase64String((Get-Content $inter
 # Generate an X509 self-signed certificate. This certificate will be used by test device identities that test X509 self-signed certificate device authentication.
 # Leaf certificates are not used for signing so don't specify KeyUsage and TestExtension - ca=TRUE&pathlength=12
 $iotHubX509SelfSignedDeviceCert = New-SelfSignedCertificateEx `
-    -Subject "$iotHubX509DeviceCertCommonName" `
+    -Subject "CN=$iotHubX509DeviceCertCommonName" `
     -KeySpec Signature `
     #-TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.2") `
     -SignatureAlgorithm "$certificateHashAlgorithm" `
@@ -207,7 +206,7 @@ $iothubX509DevicePfxThumbprint = $iotHubX509SelfSignedDeviceCert.Thumbprint
 # Generate the leaf device certificate signed by Intermediate2. This certificate will be used by test device identities that test X509 CA-signed certificate device authentication.
 # Leaf certificates are not used for signing so don't specify KeyUsage and TestExtension - ca=TRUE&pathlength=12
 $iotHubX509ChainDeviceCert = New-SelfSignedCertificateEx `
-    -Subject "$iotHubX509CertChainDeviceCommonName" `
+    -Subject "CN=$iotHubX509CertChainDeviceCommonName" `
     -KeySpec Signature `
     #-TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.2") `
     -SignatureAlgorithm "$certificateHashAlgorithm" `
@@ -338,7 +337,7 @@ if ($isVerified -eq 'false')
     $etag = az iot hub certificate show -g $ResourceGroup --hub-name $iotHubName --name $hubUploadCertificateName --query 'etag'
     $requestedCommonName = az iot hub certificate generate-verification-code -g $ResourceGroup --hub-name $iotHubName --name $hubUploadCertificateName -e $etag --query 'properties.verificationCode'
     $verificationCertArgs = @{
-        "-Subject"                  = $requestedCommonName;
+        "-Subject"                       = "CN=$requestedCommonName";
         "-StoreLocation"                 = 2;
         "-NotAfter"                      = (get-date).AddYears(2);
         "-TextExtension"                 = @("2.5.29.37={text}1.3.6.1.5.5.7.3.2,1.3.6.1.5.5.7.3.1", "2.5.29.19={text}ca=FALSE&pathlength=0");
