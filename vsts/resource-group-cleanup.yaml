@@ -1,0 +1,33 @@
+name: $(BuildID)_$(BuildDefinitionName)_$(SourceBranchName)_$(Date:yyyyMMdd)$(Rev:.r)
+
+resources:
+  - repo: self
+    clean: true
+
+jobs:
+  - job: Cleanup
+    displayName: Cleanup
+    timeoutInMinutes: 10
+    pool:
+      vmImage: ubuntu-latest
+    steps:
+    - task: AzureCLI@2
+      name: deleteLingeringCloudTestResources 
+      inputs:
+        azureSubscription: 'iot hub sdk service connection'
+        scriptType: 'pscore'
+        scriptLocation: 'inlineScript'
+        pwsh: true
+        inlineScript: |
+          $jsonContent = az group list
+          $jsonArray = $jsonContent | ConvertFrom-Json
+
+          # Loop through each item
+          foreach ($resourceGroupJsonObject in $jsonArray) {
+              $rgName = $($resourceGroupJsonObject.name)
+              if ($rgName.StartsWith("javasdkgate") -or $rgName.StartsWith("dotnetsdkgate")) 
+              {
+                  Write-Host "Deleting resource group with name:" $rgName
+                  az group delete --name $rgName
+              }
+          }
