@@ -389,10 +389,10 @@ if ($isVerified -eq 'false')
     $etag = az iot dps certificate show -g $ResourceGroup --dps-name $dpsName --certificate-name $dpsUploadCertificateName --query 'etag'
     $requestedCommonName = az iot dps certificate generate-verification-code -g $ResourceGroup --dps-name $dpsName --certificate-name $dpsUploadCertificateName -e $etag --query 'properties.verificationCode'
     $verificationCertArgs = @{
-        "-DnsName"             = $requestedCommonName;
+        "-Subject"             = "CN=$requestedCommonName";
         "-StoreLocation"       = "LocalMachine";
         "-NotAfter"            = (get-date).AddYears(2);
-        "-SignatureAlgorithm"       = $certificateHashAlgorithm;
+        "-SignatureAlgorithm"  = $certificateHashAlgorithm;
         "-Issuer"              = $rootCACert;
     }
     $verificationCert = New-SelfSignedCertificateEx @verificationCertArgs
