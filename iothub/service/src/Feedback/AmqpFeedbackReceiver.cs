@@ -33,13 +33,13 @@ namespace Microsoft.Azure.Devices
 
         public IotHubConnection Connection { get; private set; }
 
-        public Task OpenAsync()
+        public Task OpenAsync(TimeSpan? timeout = null)
         {
             Logging.Enter(this, nameof(OpenAsync));
 
             try
             {
-                return _faultTolerantReceivingLink.GetReceivingLinkAsync();
+                return _faultTolerantReceivingLink.GetReceivingLinkAsync(timeout);
             }
             finally
             {
