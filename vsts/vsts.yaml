@@ -186,17 +186,6 @@ jobs:
           Contents: "**/*.trx"
           TargetFolder: "$(Build.ArtifactStagingDirectory)"
 
-      - task: AzureCLI@2
-        inputs:
-          azureSubscription: 'iot hub sdk service connection'
-          scriptType: 'ps'
-          scriptLocation: 'inlineScript'
-          inlineScript: |
-            Write-Host "Deleting resource group with name "
-            Write-Host $(RESOURCE_GROUP_NAME)
-            az group delete --name $(RESOURCE_GROUP_NAME) --y
-            # don't forget to delete RBAC resources as well
-
       - task: PublishBuildArtifacts@1
         displayName: "Publish Artifact: testresults_linux_$(FRAMEWORK)"
         condition: succeeded()
@@ -329,17 +318,6 @@ jobs:
 
           # Environment variables for the DevOps pipeline
           FRAMEWORK: $(FRAMEWORK)
-
-      - task: AzureCLI@2
-        inputs:
-          azureSubscription: 'iot hub sdk service connection'
-          scriptType: 'ps'
-          scriptLocation: 'inlineScript'
-          inlineScript: |
-            Write-Host "Deleting resource group with name "
-            Write-Host $(RESOURCE_GROUP_NAME)
-            az group delete --name $(RESOURCE_GROUP_NAME) --y
-            # don't forget to delete RBAC resources as well
 
       - task: PublishTestResults@2
         displayName: "Publish Test Results **/*.trx"
