@@ -117,7 +117,8 @@ namespace Microsoft.Azure.Devices.E2ETests
             int operationTimeoutInMilliseconds = (int)sasTokenTimeToLive.TotalMilliseconds * 2;
 
             // Service allows a buffer time of upto 10mins before dropping connections that are authenticated with an expired sas tokens.
-            using var tokenRefreshCts = new CancellationTokenSource((int)(sasTokenTimeToLive.TotalMilliseconds * 2 + TimeSpan.FromMinutes(10).TotalMilliseconds));
+            // Wait for around 12 minutes in case that 10 minute buffer overflows a bit
+            using var tokenRefreshCts = new CancellationTokenSource((int)(sasTokenTimeToLive.TotalMilliseconds * 2 + TimeSpan.FromMinutes(12).TotalMilliseconds));
 
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
 
