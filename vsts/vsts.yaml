@@ -1,6 +1,5 @@
 name: $(BuildID)_$(BuildDefinitionName)_$(SourceBranchName)_$(Date:yyyyMMdd)$(Rev:.r)
 
-# https://docs.microsoft.com/azure/devops/pipelines/process/runtime-parameters
 parameters:
 - name: jobTimeoutInMinutes
   displayName: Timeout for each job
