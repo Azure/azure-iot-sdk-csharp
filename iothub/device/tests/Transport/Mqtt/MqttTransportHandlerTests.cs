@@ -609,7 +609,270 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
                 .Received()
                 .WriteAsync(Arg.Is<UnsubscribePacket>(msg => System.Linq.Enumerable.ElementAt(msg.TopicFilters, 0).Equals(expectedTopicFilter))).ConfigureAwait(false);
         }
+        
+        [TestMethod]
+        public async Task MqttTransportHandler_SendCertificateSigningRequestAsync_Succeeds()
+        {
+            // arrange
+            const string credentialsResponseTopicFilter = "$iothub/credentials/res/#";
+            const string credentialsRequestTopicPrefix = "$iothub/credentials/POST/issueCertificate/?$rid=";
+            const string expectedCorrelationId = "test-correlation-id";
+            const string expectedCertificate = "MIIB...fake-base64-cert";
+            
+            var transport = CreateTransportHandlerWithMockChannel(out IChannel channel);
+            var csr = new CertificateSigningRequest("FakeDevice", "fake-csr-data");
 
+            // Setup channel to capture the CSR request and simulate the two-phase response
+            channel
+                .WriteAndFlushAsync(Arg.Is<Message>(msg => msg.MqttTopicName.StartsWith(credentialsRequestTopicPrefix)))
+                .Returns(msg =>
+                {
+                    var request = msg.Arg<Message>();
+                    // Extract the request id from the topic
+                    var ridIndex = request.MqttTopicName.IndexOf("$rid=", StringComparison.Ordinal) + 5;
+                    var rid = request.MqttTopicName.Substring(ridIndex);
+
+                    // Phase 1: Send 202 Accepted response
+                    var acceptedBody = JsonConvert.SerializeObject(new
+                    {
+                        correlationId = expectedCorrelationId,
+                        operationExpires = DateTimeOffset.UtcNow.AddHours(12)
+                    });
+                    var acceptedResponse = new Message(Encoding.UTF8.GetBytes(acceptedBody));
+                    acceptedResponse.MqttTopicName = $"$iothub/credentials/res/202/?$rid={rid}";
+                    transport.OnMessageReceived(acceptedResponse);
+
+                    // Phase 2: Send 200 OK response with certificate
+                    var certBody = JsonConvert.SerializeObject(new
+                    {
+                        correlationId = expectedCorrelationId,
+                        certificates = new[] { expectedCertificate }
+                    });
+                    var certResponse = new Message(Encoding.UTF8.GetBytes(certBody));
+                    certResponse.MqttTopicName = $"$iothub/credentials/res/200/?$rid={rid}";
+                    transport.OnMessageReceived(certResponse);
+
+                    return TaskHelpers.CompletedTask;
+                });
+
+            // act
+            await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
+            CertificateSigningResponse result = await transport.SendCertificateSigningRequestAsync(csr, CancellationToken.None).ConfigureAwait(false);
+
+            // assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(expectedCorrelationId, result.CorrelationId);
+            Assert.AreEqual(1, result.Certificates.Count);
+            Assert.AreEqual(expectedCertificate, result.Certificates[0]);
+            
+            // Verify subscription to credentials topic
+            await channel
+                .Received()
+                .WriteAsync(Arg.Is<SubscribePacket>(msg => msg.Requests[0].TopicFilter.Equals(credentialsResponseTopicFilter)))
+                .ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        // Transient errors
+        [DataRow(429002, "ThrottleBacklogLimitExceeded", true)]
+        [DataRow(429003, "ThrottlingBacklogTimeout", true)]
+        [DataRow(503001, "ServiceUnavailable", true)]
+        [DataRow(500001, "ServerError", true)]
+        // Non-transient errors
+        [DataRow(400001, "InvalidProtocolVersion", false)]
+        [DataRow(403010, "OperationNotAvailableInCurrentTier", false)]
+        [DataRow(412001, "PreconditionFailed", false)]
+        [DataRow(412005, "CredentialManagementPreconditionFailed", false)]
+        [DataRow(409004, "CredentialOperationPending", false)]
+        [DataRow(404001, "DeviceNotFound", false)]
+        [DataRow(503102, "DeviceUnavailable", false)]
+        public async Task MqttTransportHandler_SendCertificateSigningRequestAsync_Exception(int errorCode, string errorMessage, bool isTransient)
+        {
+            // arrange
+            MqttTransportHandler transport = CreateTransportHandlerWithMockChannel(out IChannel channel);
+            var csr = new CertificateSigningRequest("FakeDevice", "fake-csr-data");
+
+            // Setup channel to simulate error response
+            channel
+                .WriteAndFlushAsync(Arg.Is<Message>(msg => msg.MqttTopicName.StartsWith("$iothub/credentials/POST/issueCertificate/")))
+                .Returns(msg =>
+                {
+                    Message request = msg.Arg<Message>();
+                    int ridIndex = request.MqttTopicName.IndexOf("$rid=", StringComparison.Ordinal) + 5;
+                    string rid = request.MqttTopicName.Substring(ridIndex);
+
+                    var errorResponse = new CredentialErrorResponse
+                    {
+                        ErrorCode = errorCode,
+                        Message = errorMessage
+                    };
+                    string errorBody = JsonConvert.SerializeObject(errorResponse);
+                    var responseMessage = new Message(Encoding.UTF8.GetBytes(errorBody));
+                    responseMessage.MqttTopicName = $"$iothub/credentials/res/{errorCode}/?$rid={rid}";
+                    transport.OnMessageReceived(responseMessage);
+                    return TaskHelpers.CompletedTask;
+                });
+
+            // act
+            await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
+            CredentialOperationException exception = await Assert.ThrowsExceptionAsync<CredentialOperationException>(async () =>
+            {
+                await transport.SendCertificateSigningRequestAsync(csr, CancellationToken.None).ConfigureAwait(false);
+            }).ConfigureAwait(false);
+
+            // assert
+            Assert.AreEqual(errorCode, exception.ErrorCode);
+            Assert.AreEqual(errorMessage, exception.Message);
+            Assert.AreEqual(isTransient, exception.IsTransient);
+        }
+
+        [TestMethod]
+        public async Task MqttTransportHandler_SendCertificateSigningRequestAsync_CredentialOperationActive_409005()
+        {
+            // arrange
+            const int errorCode = 409005;
+            const string activeRequestId = "previous-request-id";
+            var operationExpires = DateTimeOffset.UtcNow.AddHours(12);
+            
+            MqttTransportHandler transport = CreateTransportHandlerWithMockChannel(out IChannel channel);
+            var csr = new CertificateSigningRequest("FakeDevice", "fake-csr-data");
+
+            channel
+                .WriteAndFlushAsync(Arg.Is<Message>(msg => msg.MqttTopicName.StartsWith("$iothub/credentials/POST/issueCertificate/")))
+                .Returns(msg =>
+                {
+                    Message request = msg.Arg<Message>();
+                    int ridIndex = request.MqttTopicName.IndexOf("$rid=", StringComparison.Ordinal) + 5;
+                    string rid = request.MqttTopicName.Substring(ridIndex);
+
+                    var errorResponse = new
+                    {
+                        errorCode = errorCode,
+                        message = "CredentialOperationActive",
+                        info = new
+                        {
+                            requestId = activeRequestId,
+                            operationExpires = operationExpires
+                        }
+                    };
+                    string errorBody = JsonConvert.SerializeObject(errorResponse);
+                    var responseMessage = new Message(Encoding.UTF8.GetBytes(errorBody));
+                    responseMessage.MqttTopicName = $"$iothub/credentials/res/{errorCode}/?$rid={rid}";
+                    transport.OnMessageReceived(responseMessage);
+                    return TaskHelpers.CompletedTask;
+                });
+
+            // act
+            await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
+            CredentialOperationException exception = await Assert.ThrowsExceptionAsync<CredentialOperationException>(async () =>
+            {
+                await transport.SendCertificateSigningRequestAsync(csr, CancellationToken.None).ConfigureAwait(false);
+            }).ConfigureAwait(false);
+
+            // assert
+            Assert.AreEqual(errorCode, exception.ErrorCode);
+            Assert.AreEqual("CredentialOperationActive", exception.Message);
+            Assert.IsFalse(exception.IsTransient);
+            Assert.AreEqual(activeRequestId, exception.ActiveRequestId);
+            Assert.IsNotNull(exception.OperationExpires);
+        }
+
+        [TestMethod]
+        public async Task MqttTransportHandler_SendCertificateSigningRequestAsync_CredentialOperationFailed_400040()
+        {
+            // arrange
+            const int errorCode = 400040;
+            const string credentialError = "CertificateValidationFailed";
+            const string correlationId = "test-correlation-id";
+            
+            MqttTransportHandler transport = CreateTransportHandlerWithMockChannel(out IChannel channel);
+            var csr = new CertificateSigningRequest("FakeDevice", "fake-csr-data");
+
+            channel
+                .WriteAndFlushAsync(Arg.Is<Message>(msg => msg.MqttTopicName.StartsWith("$iothub/credentials/POST/issueCertificate/")))
+                .Returns(msg =>
+                {
+                    Message request = msg.Arg<Message>();
+                    int ridIndex = request.MqttTopicName.IndexOf("$rid=", StringComparison.Ordinal) + 5;
+                    string rid = request.MqttTopicName.Substring(ridIndex);
+
+                    var errorResponse = new
+                    {
+                        errorCode = errorCode,
+                        message = "CredentialOperationFailed",
+                        info = new
+                        {
+                            correlationId = correlationId,
+                            credentialError = credentialError,
+                            credentialMessage = "The certificate validation failed due to invalid key usage"
+                        }
+                    };
+                    string errorBody = JsonConvert.SerializeObject(errorResponse);
+                    var responseMessage = new Message(Encoding.UTF8.GetBytes(errorBody));
+                    responseMessage.MqttTopicName = $"$iothub/credentials/res/{errorCode}/?$rid={rid}";
+                    transport.OnMessageReceived(responseMessage);
+                    return TaskHelpers.CompletedTask;
+                });
+
+            // act
+            await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
+            CredentialOperationException exception = await Assert.ThrowsExceptionAsync<CredentialOperationException>(async () =>
+            {
+                await transport.SendCertificateSigningRequestAsync(csr, CancellationToken.None).ConfigureAwait(false);
+            }).ConfigureAwait(false);
+
+            // assert
+            Assert.AreEqual(errorCode, exception.ErrorCode);
+            Assert.AreEqual("CredentialOperationFailed", exception.Message);
+            Assert.IsFalse(exception.IsTransient);
+            Assert.AreEqual(credentialError, exception.CredentialError);
+            Assert.AreEqual(correlationId, exception.CorrelationId);
+        }
+
+        [TestMethod]
+        public async Task MqttTransportHandler_SendCertificateSigningRequestAsync_WithRetryAfter()
+        {
+            // arrange
+            const int errorCode = 429002;
+            const int retryAfterSeconds = 30;
+            
+            MqttTransportHandler transport = CreateTransportHandlerWithMockChannel(out IChannel channel);
+            var csr = new CertificateSigningRequest("FakeDevice", "fake-csr-data");
+
+            channel
+                .WriteAndFlushAsync(Arg.Is<Message>(msg => msg.MqttTopicName.StartsWith("$iothub/credentials/POST/issueCertificate/")))
+                .Returns(msg =>
+                {
+                    Message request = msg.Arg<Message>();
+                    int ridIndex = request.MqttTopicName.IndexOf("$rid=", StringComparison.Ordinal) + 5;
+                    string rid = request.MqttTopicName.Substring(ridIndex);
+
+                    var errorResponse = new
+                    {
+                        errorCode = errorCode,
+                        message = "ThrottleBacklogLimitExceeded",
+                        retryAfter = retryAfterSeconds
+                    };
+                    string errorBody = JsonConvert.SerializeObject(errorResponse);
+                    var responseMessage = new Message(Encoding.UTF8.GetBytes(errorBody));
+                    responseMessage.MqttTopicName = $"$iothub/credentials/res/{errorCode}/?$rid={rid}";
+                    transport.OnMessageReceived(responseMessage);
+                    return TaskHelpers.CompletedTask;
+                });
+
+            // act
+            await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
+            CredentialOperationException exception = await Assert.ThrowsExceptionAsync<CredentialOperationException>(async () =>
+            {
+                await transport.SendCertificateSigningRequestAsync(csr, CancellationToken.None).ConfigureAwait(false);
+            }).ConfigureAwait(false);
+
+            // assert
+            Assert.AreEqual(errorCode, exception.ErrorCode);
+            Assert.IsTrue(exception.IsTransient);
+            Assert.AreEqual(retryAfterSeconds, exception.RetryAfterSeconds);
+        }
+        
         private string GetResponseTopic(string requestTopic, int status)
         {
             var index = requestTopic.IndexOf("=");
