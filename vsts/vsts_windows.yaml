@@ -27,7 +27,7 @@ jobs:
     pool:
       vmImage: windows-2022
     steps:
-    - template: templates/DeployCloudTestResources.yaml
+    - template: templates/DeployCloudResources.yaml
 
  ### Windows build ###
   - job: WINDOWS
