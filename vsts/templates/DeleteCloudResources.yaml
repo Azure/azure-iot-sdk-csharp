@@ -1,0 +1,10 @@
+steps:
+- task: AzureCLI@2
+  inputs:
+    azureSubscription: 'iot hub sdk service connection'
+    scriptType: 'ps'
+    scriptLocation: 'inlineScript'
+    inlineScript: |
+      Write-Host "Deleting resource group with name "
+      Write-Host $(RESOURCE_GROUP_NAME)
+      az group delete --name $(RESOURCE_GROUP_NAME) --y

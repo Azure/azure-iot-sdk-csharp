@@ -1,43 +1,10 @@
 name: $(BuildID)_$(BuildDefinitionName)_$(SourceBranchName)_$(Date:yyyyMMdd)$(Rev:.r)
 
-# https://docs.microsoft.com/azure/devops/pipelines/process/runtime-parameters
 parameters:
-- name: maxParallelJobs
-  displayName: Maximum jobs to run in parallel. Change maxParallel to 1 make OS builds run in serial rather than in parallel.
-  type: number
-  # Reasonable target to avoid throttling and contention with several PRs running.
-  default: 4
 - name: jobTimeoutInMinutes
   displayName: Timeout for each job
   type: number
   default: 150
-- name: testTargets
-  displayName: The .NET test targets to build and run. 'all' and 'min-matrix' (net8.0) are aggregates of the remaining values.
-  type: string
-  values:
-    - default
-    - all
-    - min-matrix
-    - net8.0
-    - net4.7.2
-  default: default
-
-variables:
-# Variables for the buid/test matrix based on the 'testTargets' that turn on/off various test targets specifically or based on the 2 aggregates.
-  ${{ if and(eq(parameters['testTargets'], 'default'), eq(variables['Build.Reason'], 'PullRequest')) }}:
-    allTestTargets: 'False'
-    minMatrix: 'True'
-  ${{ elseif eq(parameters['testTargets'], 'default') }}:
-    allTestTargets: 'True'
-    minMatrix: 'True'
-  ${{ else }}:
-    allTestTargets: ${{ contains(parameters['testTargets'], 'all') }}
-    # We wish to run the minimum test matrix targets if 1) directly specified, 2) if all targets was chosen.
-    minMatrix: ${{ or(eq(parameters['testTargets'], 'min-matrix'), eq(variables['allTestTargets'], 'True')) }}
-
-# The remaining build/test targets.
-  testNet80: ${{ or(eq(variables['allTestTargets'], 'True'), contains(parameters['testTargets'], 'net8.0')) }}
-  testNet472: ${{ or(eq(variables['allTestTargets'], 'True'), contains(parameters['testTargets'], 'net4.7.2')) }}
 
 trigger:
   batch: true
@@ -56,17 +23,56 @@ resources:
     clean: true
 
 jobs:
+  - job: DeployCloudTestResources
+    pool:
+      vmImage: windows-2022
+    steps:     
+    - template: templates/DeployCloudResources.yaml
+    
+  - job: BuildTestProxyDockerImage
+    pool:
+      vmImage: ubuntu-latest
+    steps:     
+    - task: PowerShell@2
+      displayName: 'Build and locally save test proxy docker image'
+      inputs:
+        targetType: inline
+        script: |
+          docker build -t testproxy:latest $(Build.SourcesDirectory)/testProxy/.
+          docker image save testproxy:latest -o $(Build.ArtifactStagingDirectory)/testproxy.tar
+
+    - publish:  $(Build.ArtifactStagingDirectory)
+      displayName: 'save docker images locally'
+      artifact: docker-images
+
   ### Linux build ###
   - job: LINUX
     displayName: Linux
+    dependsOn: 
+      - BuildTestProxyDockerImage
+      - DeployCloudTestResources
     condition: succeeded()
+    variables:
+      IOTHUB_CONNECTION_STRING: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.IOTHUB_CONNECTION_STRING'] ]
+      IOTHUB_DEVICE_CONN_STRING: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.IOTHUB_DEVICE_CONN_STRING'] ]
+      IOTHUB_X509_DEVICE_PFX_CERTIFICATE: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.IOTHUB_X509_DEVICE_PFX_CERTIFICATE'] ]
+      IOTHUB_X509_CHAIN_DEVICE_NAME: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.IOTHUB_X509_CHAIN_DEVICE_NAME'] ]
+      IOTHUB_X509_CHAIN_DEVICE_PFX_CERTIFICATE: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.IOTHUB_X509_CHAIN_DEVICE_PFX_CERTIFICATE'] ]
+      DPS_IDSCOPE: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.DPS_IDSCOPE'] ]
+      PROVISIONING_CONNECTION_STRING: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.PROVISIONING_CONNECTION_STRING'] ]
+      DPS_GLOBALDEVICEENDPOINT: global.azure-devices-provisioning.net
+      DPS_X509_PFX_CERTIFICATE_PASSWORD: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.DPS_X509_PFX_CERTIFICATE_PASSWORD'] ]
+      DPS_X509_GROUP_ENROLLMENT_NAME: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.DPS_X509_GROUP_ENROLLMENT_NAME'] ]
+      X509_CHAIN_ROOT_CA_CERTIFICATE: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.X509_CHAIN_ROOT_CA_CERTIFICATE'] ]
+      X509_CHAIN_INTERMEDIATE1_CERTIFICATE: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.X509_CHAIN_INTERMEDIATE1_CERTIFICATE'] ]
+      X509_CHAIN_INTERMEDIATE2_CERTIFICATE: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.X509_CHAIN_INTERMEDIATE2_CERTIFICATE'] ]
+      X509_CHAIN_INTERMEDIATE2_PFX_CERTIFICATE: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.X509_CHAIN_INTERMEDIATE2_PFX_CERTIFICATE'] ]
+      STORAGE_ACCOUNT_CONNECTION_STRING: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.STORAGE_ACCOUNT_CONNECTION_STRING'] ]
     timeoutInMinutes: ${{ parameters.jobTimeoutInMinutes }}
     strategy:
-      maxParallel: ${{ parameters.maxParallelJobs }}
       matrix:
         .NET 8.0:
           FRAMEWORK: net8.0
-          SHOULD_RUN: ${{ eq(variables['testNet80'], 'True') }}
     pool:
       vmImage: ubuntu-latest
     steps:
@@ -77,13 +83,7 @@ jobs:
           script: |
             Write-Host "Build.Reason: ${{ variables['Build.Reason'] }}"
             Write-Host "jobTimeoutInMinutes: ${{ parameters.jobTimeoutInMinutes }}"
-            Write-Host "maxParallelJobs: ${{ parameters.maxParallelJobs }}"
-            Write-Host "minMatrix: ${{ variables.minMatrix }}"
-            Write-Host "testNet60: ${{ variables.testNet60 }}"
             Write-Host "testNet80: ${{ variables.testNet80 }}"
-            Write-Host "testNetcore31: ${{ variables.testNetcore31 }}"
-            Write-Host "testNetcore21: ${{ variables.testNetcore21 }}"
-            Write-Host "testNet472: ${{ variables.testNet472 }}"
 
       # https://docs.microsoft.com/azure/devops/pipelines/tasks/tool/dotnet-core-tool-installer?view=azure-devops
 
@@ -96,17 +96,59 @@ jobs:
          performMultiLevelLookup: true
          installationPath: $(Agent.ToolsDirectory)/dotnet
 
+      - download: current
+        displayName: 'Download test certificates'
+        artifact: docker-images
+
+      - download: current
+        displayName: 'Download test proxy docker archive'
+        artifact: docker-images
+
       - task: PowerShell@2
-        displayName: 'build and run unit tests'
-        condition: eq(variables.SHOULD_RUN, 'True')
+        displayName: 'Download and run test proxy'
+        condition: succeeded()
         inputs:
           targetType: inline
           script: |
-            dotnet test --filter TestCategory=Unit
+            docker load --input $(Pipeline.Workspace)/docker-images/testproxy.tar
+            docker run -d -p 9000:9000 testproxy:latest
+
+      - task: Bash@3
+        displayName: 'Run tests'
+        condition: succeeded()
+        inputs:
+          targetType: 'inline'
+          script: |
+            dotnet test --logger trx --framework $(FRAMEWORK)
+
+        env:
+          # Environment variables for IoT Hub E2E tests
+          IOTHUB_CONNECTION_STRING: $(IOTHUB_CONNECTION_STRING)
+          IOTHUB_X509_DEVICE_PFX_CERTIFICATE: $(IOTHUB_X509_DEVICE_PFX_CERTIFICATE)
+
+          IOTHUB_X509_CHAIN_DEVICE_NAME: $(IOTHUB_X509_CHAIN_DEVICE_NAME)
+          IOTHUB_X509_CHAIN_DEVICE_PFX_CERTIFICATE: $(IOTHUB_X509_CHAIN_DEVICE_PFX_CERTIFICATE)
+
+          # Environment variables for DPS E2E tests
+          DPS_IDSCOPE: $(DPS_IDSCOPE)
+          PROVISIONING_CONNECTION_STRING: $(PROVISIONING_CONNECTION_STRING)
+          DPS_GLOBALDEVICEENDPOINT: global.azure-devices-provisioning.net
+          DPS_X509_PFX_CERTIFICATE_PASSWORD: $(DPS_X509_PFX_CERTIFICATE_PASSWORD)
+          DPS_X509_GROUP_ENROLLMENT_NAME: $(DPS_X509_GROUP_ENROLLMENT_NAME)
+
+          # Environment variables for Azure resources used for E2E tests (common)
+          X509_CHAIN_ROOT_CA_CERTIFICATE: $(X509_CHAIN_ROOT_CA_CERTIFICATE)
+          X509_CHAIN_INTERMEDIATE1_CERTIFICATE: $(X509_CHAIN_INTERMEDIATE1_CERTIFICATE)
+          X509_CHAIN_INTERMEDIATE2_CERTIFICATE: $(X509_CHAIN_INTERMEDIATE2_CERTIFICATE)
+          X509_CHAIN_INTERMEDIATE2_PFX_CERTIFICATE: $(X509_CHAIN_INTERMEDIATE2_PFX_CERTIFICATE)
+          STORAGE_ACCOUNT_CONNECTION_STRING: $(STORAGE_ACCOUNT_CONNECTION_STRING)
+
+          # Environment variables for the DevOps pipeline
+          FRAMEWORK: $(FRAMEWORK)
 
       - task: PublishTestResults@2
         displayName: "Publish Test Results **/*.trx"
-        condition: eq(variables.SHOULD_RUN, 'True')
+        condition: always()
         inputs:
           testRunner: VSTest
           testRunTitle: "Linux Tests ($(FRAMEWORK)) (Attempt $(System.JobAttempt))"
@@ -114,7 +156,7 @@ jobs:
 
       - task: CopyFiles@2
         displayName: "Copy files to the artifacts folder"
-        condition: eq(variables.SHOULD_RUN, 'True')
+        condition: always()
         inputs:
           SourceFolder: "$(Build.SourcesDirectory)"
           Contents: "**/*.trx"
@@ -122,13 +164,13 @@ jobs:
 
       - task: PublishBuildArtifacts@1
         displayName: "Publish Artifact: testresults_linux_$(FRAMEWORK)"
-        condition: eq(variables.SHOULD_RUN, 'True')
+        condition: always()
         inputs:
           ArtifactName: testresults_linux_$(FRAMEWORK)
         
       - task: ComponentGovernanceComponentDetection@0
         displayName: Component Governance Detection
-        condition: eq(variables.SHOULD_RUN, 'True')
+        condition: always()
         inputs:
           scanType: 'Register'
           verbosity: 'Verbose'
@@ -137,34 +179,45 @@ jobs:
  ### Windows build ###
   - job: WINDOWS
     displayName: Windows
+    dependsOn: 
+      - BuildTestProxyDockerImage
+      - DeployCloudTestResources
     condition: succeeded()
+    variables:
+      IOTHUB_CONNECTION_STRING: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.IOTHUB_CONNECTION_STRING'] ]
+      IOTHUB_DEVICE_CONN_STRING: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.IOTHUB_DEVICE_CONN_STRING'] ]
+      IOTHUB_X509_DEVICE_PFX_CERTIFICATE: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.IOTHUB_X509_DEVICE_PFX_CERTIFICATE'] ]
+      IOTHUB_X509_CHAIN_DEVICE_NAME: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.IOTHUB_X509_CHAIN_DEVICE_NAME'] ]
+      IOTHUB_X509_CHAIN_DEVICE_PFX_CERTIFICATE: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.IOTHUB_X509_CHAIN_DEVICE_PFX_CERTIFICATE'] ]
+      DPS_IDSCOPE: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.DPS_IDSCOPE'] ]
+      PROVISIONING_CONNECTION_STRING: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.PROVISIONING_CONNECTION_STRING'] ]
+      DPS_GLOBALDEVICEENDPOINT: global.azure-devices-provisioning.net
+      DPS_X509_PFX_CERTIFICATE_PASSWORD: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.DPS_X509_PFX_CERTIFICATE_PASSWORD'] ]
+      DPS_X509_GROUP_ENROLLMENT_NAME: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.DPS_X509_GROUP_ENROLLMENT_NAME'] ]
+      X509_CHAIN_ROOT_CA_CERTIFICATE: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.X509_CHAIN_ROOT_CA_CERTIFICATE'] ]
+      X509_CHAIN_INTERMEDIATE1_CERTIFICATE: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.X509_CHAIN_INTERMEDIATE1_CERTIFICATE'] ]
+      X509_CHAIN_INTERMEDIATE2_CERTIFICATE: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.X509_CHAIN_INTERMEDIATE2_CERTIFICATE'] ]
+      X509_CHAIN_INTERMEDIATE2_PFX_CERTIFICATE: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.X509_CHAIN_INTERMEDIATE2_PFX_CERTIFICATE'] ]
+      STORAGE_ACCOUNT_CONNECTION_STRING: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.STORAGE_ACCOUNT_CONNECTION_STRING'] ]
     timeoutInMinutes: ${{ parameters.jobTimeoutInMinutes }}
     strategy:
-      maxParallel: ${{ parameters.maxParallelJobs }}
       matrix:
         .NET 8.0:
           FRAMEWORK: net8.0
-          SHOULD_RUN: ${{ eq(variables['testNet80'], 'True') }}
         .NET 4.7.2:
           FRAMEWORK: net472
-          SHOULD_RUN: ${{ eq(variables['testNet472'], 'True') }}
     pool:
       vmImage: windows-2022
     steps:
       - task: PowerShell@2
         displayName: 'Print vars'
-        condition: eq(variables.SHOULD_RUN, 'True')
+        condition: succeeded()
         inputs:
           targetType: inline
           script: |
             Write-Host "Build.Reason: ${{ variables['Build.Reason'] }}"
             Write-Host "jobTimeoutInMinutes: ${{ parameters.jobTimeoutInMinutes }}"
-            Write-Host "maxParallelJobs: ${{ parameters.maxParallelJobs }}"
-            Write-Host "minMatrix: ${{ variables.minMatrix }}"
-            Write-Host "testNet60: ${{ variables.testNet60 }}"
             Write-Host "testNet80: ${{ variables.testNet80 }}"
-            Write-Host "testNetcore31: ${{ variables.testNetcore31 }}"
-            Write-Host "testNetcore21: ${{ variables.testNetcore21 }}"
             Write-Host "testNet472: ${{ variables.testNet472 }}"
 
       - ${{ if eq(variables['testNet80'], 'True') }}:
@@ -182,13 +235,66 @@ jobs:
           inputs:
             script: 'choco install -y netfx-4.7.2-devpack'
 
+      - download: current
+        displayName: 'Download test certificates'
+        artifact: docker-images
+
+      - powershell: ./vsts/start_tpm_windows.ps1
+        displayName: "Start TPM Simulator"
+        condition: succeeded()
+
+      - task: JavaToolInstaller@0
+        condition: succeeded()
+        inputs:
+          versionSpec: 11
+          jdkArchitectureOption: 'x64'
+          jdkSourceOption: 'PreInstalled'
+
+      # Windows agents cannot run the test proxy docker image (it uses a linux-only image), so just run the test proxy
+      # without docker 
       - task: PowerShell@2
-        displayName: 'build and run unit tests'
-        condition: eq(variables.SHOULD_RUN, 'True')
+        displayName: 'Run test proxy and tests'
+        condition: succeeded()
         inputs:
           targetType: inline
           script: |
-            dotnet test --filter TestCategory=Unit
+            mvn -f $(Build.SourcesDirectory)/testProxy/pom.xml clean install -q
+            Start-Job -ScriptBlock { java -jar $(Build.SourcesDirectory)\testProxy\target\test-proxy-1.0-with-deps.jar }
+            Start-Sleep -Seconds 5
+
+            # This prints the logs from the background run of the proxy in case some issue happens
+            Receive-Job Job1
+
+            dotnet test --logger trx --framework $(FRAMEWORK)
+            
+            # Tear down test proxy background process
+            Stop-Job Job1
+        env:
+          # Environment variables for IoT Hub E2E tests
+          IOTHUB_CONNECTION_STRING: $(IOTHUB_CONNECTION_STRING)
+          IOTHUB_X509_DEVICE_PFX_CERTIFICATE: $(IOTHUB_X509_DEVICE_PFX_CERTIFICATE)
+
+          IOTHUB_X509_CHAIN_DEVICE_NAME: $(IOTHUB_X509_CHAIN_DEVICE_NAME)
+          IOTHUB_X509_CHAIN_DEVICE_PFX_CERTIFICATE: $(IOTHUB_X509_CHAIN_DEVICE_PFX_CERTIFICATE)
+          IOTHUB_USER_ASSIGNED_MSI_RESOURCE_ID: $(IOTHUB_USER_ASSIGNED_MSI_RESOURCE_ID)
+
+          # Environment variables for DPS E2E tests
+          DPS_IDSCOPE: $(DPS_IDSCOPE)
+          PROVISIONING_CONNECTION_STRING: $(PROVISIONING_CONNECTION_STRING)
+          DPS_GLOBALDEVICEENDPOINT: global.azure-devices-provisioning.net
+          DPS_X509_PFX_CERTIFICATE_PASSWORD: $(DPS_X509_PFX_CERTIFICATE_PASSWORD)
+          DPS_X509_GROUP_ENROLLMENT_NAME: $(DPS_X509_GROUP_ENROLLMENT_NAME)
+
+          # Environment variables for Azure resources used for E2E tests (common)
+          X509_CHAIN_ROOT_CA_CERTIFICATE: $(X509_CHAIN_ROOT_CA_CERTIFICATE)
+          X509_CHAIN_INTERMEDIATE1_CERTIFICATE: $(X509_CHAIN_INTERMEDIATE1_CERTIFICATE)
+          X509_CHAIN_INTERMEDIATE2_CERTIFICATE: $(X509_CHAIN_INTERMEDIATE2_CERTIFICATE)
+          X509_CHAIN_INTERMEDIATE2_PFX_CERTIFICATE: $(X509_CHAIN_INTERMEDIATE2_PFX_CERTIFICATE)
+          STORAGE_ACCOUNT_CONNECTION_STRING: $(STORAGE_ACCOUNT_CONNECTION_STRING)
+
+          # Environment variables for the DevOps pipeline
+          FRAMEWORK: $(FRAMEWORK)
+
       - task: PublishTestResults@2
         displayName: "Publish Test Results **/*.trx"
         inputs:
@@ -197,11 +303,11 @@ jobs:
           testRunTitle: "Windows Tests ($(FRAMEWORK)) (Attempt $(System.JobAttempt))"
           platform: Windows
           configuration: "Debug UT + Release E2E ($(FRAMEWORK))"
-        condition: eq(variables.SHOULD_RUN, 'True')
+        condition: always()
         
       - task: ComponentGovernanceComponentDetection@0
         displayName: Component Governance Detection
-        condition: eq(variables.SHOULD_RUN, 'True')
+        condition: always()
         inputs:
           scanType: 'Register'
           verbosity: 'Verbose'
@@ -210,9 +316,8 @@ jobs:
   ### .Net SDL Analyzers ###
   - job: DOTNet_SDL_Analyzers
     displayName: .Net SDL Analyzers
-    timeoutInMinutes: 60
-
     condition: succeeded()
+    timeoutInMinutes: 60
     pool:
       vmImage: windows-2022
     steps:
@@ -296,5 +401,15 @@ jobs:
         # TODO #181 Enable post analysis to break builds after all above items are enabled.
         enabled: false
 
-# END: SDL and Compliance tasks #
-
+  - job: TearDownCloudTestResources
+    condition: always()
+    dependsOn:
+      - WINDOWS
+      - LINUX
+      - DeployCloudTestResources
+    variables:
+      RESOURCE_GROUP_NAME: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.RESOURCE_GROUP_NAME'] ]
+    pool:
+      vmImage: windows-2022
+    steps:
+    - template: templates/DeleteCloudResources.yaml

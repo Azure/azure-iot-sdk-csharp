@@ -1,0 +1,106 @@
+name: $(BuildID)_$(BuildDefinitionName)_$(SourceBranchName)_$(Date:yyyyMMdd)$(Rev:.r)
+
+trigger:
+  batch: true
+  branches:
+    include:
+    - main
+  paths:
+    exclude:
+    - docs/*
+    - tools/CaptureLogs/*
+    - iothub/device/devdoc/*
+    - iothub/service/devdoc/*
+
+resources:
+  - repo: self
+    clean: true
+
+jobs:
+  ### .Net SDL Analyzers ###
+  - job: DOTNet_SDL_Analyzers
+    displayName: .Net SDL Analyzers
+    condition: succeeded()
+    timeoutInMinutes: 60
+    pool:
+      vmImage: windows-2022
+    steps:
+      - powershell: .\build.ps1 -clean -build -configutaion Debug -package
+        displayName: Build Package
+
+      - task: ComponentGovernanceComponentDetection@0
+        displayName: "Component Detection"
+      
+      - task: securedevelopmentteam.vss-secure-development-tools.build-task-policheck.PoliCheck@2
+        displayName: "Run PoliCheck"
+        inputs:
+          targetType: F
+          optionsRulesDBPath: '$(Build.SourcesDirectory)\vsts\PolicheckExclusionsDB.mdb'
+          optionsSEV: '1|2|3|4'
+          optionsPE: 1
+      
+      - task: securedevelopmentteam.vss-secure-development-tools.build-task-antimalware.AntiMalware@4
+        displayName: "Run MpCmdRun.exe"
+        inputs:
+          EnableServices: true
+          SignatureFreshness: OneDay
+          # Signature refreshes on Hosted Agents can sometimes have a delay of a day or two.
+          # The support team already has a process to address this, so our pipeline can treat stale signatures as warnings (instead of treating it as an error).
+          TreatStaleSignatureAs: Warning
+
+      - task: securedevelopmentteam.vss-secure-development-tools.build-task-binskim.BinSkim@3
+        displayName: "Run BinSkim"
+        inputs:
+          arguments: 'analyze  $(Build.SourcesDirectory)\Microsoft.Azure.Devices.*.dll --recurse --verbose'
+
+        # TODO #181 Config issue: must run on Debug builds only with valid PDBs.
+        enabled: false
+
+      - task: securedevelopmentteam.vss-secure-development-tools.build-task-codemetrics.CodeMetrics@1
+        displayName: "Run CodeMetrics"
+        inputs:
+          Files: '$(Build.SourcesDirectory)\**\Microsoft.Azure.Devices.*.dll'
+
+        # TODO #181 Config issue: must run on Debug builds only with valid PDBs.
+        enabled: false
+
+      - task: securedevelopmentteam.vss-secure-development-tools.build-task-credscan.CredScan@3
+        displayName: "Run CredScan"
+        inputs:
+          toolMajorVersion: V2
+          suppressionsFile: vsts/CredScanSuppressions.json
+          regexMatchTimeoutInSeconds: 5
+
+          # TODO #181 Samples / tests fail the test due to fake connection strings.
+          debugMode: false
+
+      - task: securedevelopmentteam.vss-secure-development-tools.build-task-publishsecurityanalysislogs.PublishSecurityAnalysisLogs@3
+        displayName: "Publish Security Analysis Logs"
+
+      - task: securedevelopmentteam.vss-secure-development-tools.build-task-report.SdtReport@2
+        displayName: "Create Security Analysis Report"
+        inputs:
+          AllTools: true
+          
+      - task: ComponentGovernanceComponentDetection@0
+        displayName: Component Governance Detection
+        inputs:
+          scanType: 'Register'
+          verbosity: 'Verbose'
+          alertWarningLevel: 'Low' # The task will present a warning, but will not cause the build to fail
+        condition: always()
+
+      - task: securedevelopmentteam.vss-secure-development-tools.build-task-uploadtotsa.TSAUpload@2
+        displayName: 'TSA upload'
+        inputs:
+          GdnPublishTsaOnboard: false
+          GdnPublishTsaConfigFile: '$(Build.SourcesDirectory)/vsts/TsaUploadConfigFile.json'
+          GdnPublishTsaExportedResultsPublishable: true
+
+      - task: securedevelopmentteam.vss-secure-development-tools.build-task-postanalysis.PostAnalysis@1
+        displayName: "Post Analysis"
+        inputs:
+          AllTools: true
+
+        # TODO #181 Enable post analysis to break builds after all above items are enabled.
+        enabled: false

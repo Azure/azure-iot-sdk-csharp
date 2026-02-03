@@ -1,0 +1,179 @@
+name: $(BuildID)_$(BuildDefinitionName)_$(SourceBranchName)_$(Date:yyyyMMdd)$(Rev:.r)
+
+parameters:
+- name: jobTimeoutInMinutes
+  displayName: Timeout for each job
+  type: number
+  default: 150
+
+trigger:
+  batch: true
+  branches:
+    include:
+    - main
+  paths:
+    exclude:
+    - docs/*
+    - tools/CaptureLogs/*
+    - iothub/device/devdoc/*
+    - iothub/service/devdoc/*
+
+resources:
+  - repo: self
+    clean: true
+
+jobs:
+  - job: DeployCloudTestResources
+    pool:
+      vmImage: windows-2022
+    steps:
+    - template: templates/DeployCloudResources.yaml
+
+ ### Windows build ###
+  - job: WINDOWS
+    displayName: Windows
+    dependsOn: 
+      - BuildTestProxyDockerImage
+      - DeployCloudTestResources
+    condition: succeeded()
+    variables:
+      IOTHUB_CONNECTION_STRING: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.IOTHUB_CONNECTION_STRING'] ]
+      IOTHUB_DEVICE_CONN_STRING: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.IOTHUB_DEVICE_CONN_STRING'] ]
+      IOTHUB_X509_DEVICE_PFX_CERTIFICATE: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.IOTHUB_X509_DEVICE_PFX_CERTIFICATE'] ]
+      IOTHUB_X509_CHAIN_DEVICE_NAME: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.IOTHUB_X509_CHAIN_DEVICE_NAME'] ]
+      IOTHUB_X509_CHAIN_DEVICE_PFX_CERTIFICATE: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.IOTHUB_X509_CHAIN_DEVICE_PFX_CERTIFICATE'] ]
+      DPS_IDSCOPE: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.DPS_IDSCOPE'] ]
+      PROVISIONING_CONNECTION_STRING: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.PROVISIONING_CONNECTION_STRING'] ]
+      DPS_GLOBALDEVICEENDPOINT: global.azure-devices-provisioning.net
+      DPS_X509_PFX_CERTIFICATE_PASSWORD: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.DPS_X509_PFX_CERTIFICATE_PASSWORD'] ]
+      DPS_X509_GROUP_ENROLLMENT_NAME: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.DPS_X509_GROUP_ENROLLMENT_NAME'] ]
+      X509_CHAIN_ROOT_CA_CERTIFICATE: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.X509_CHAIN_ROOT_CA_CERTIFICATE'] ]
+      X509_CHAIN_INTERMEDIATE1_CERTIFICATE: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.X509_CHAIN_INTERMEDIATE1_CERTIFICATE'] ]
+      X509_CHAIN_INTERMEDIATE2_CERTIFICATE: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.X509_CHAIN_INTERMEDIATE2_CERTIFICATE'] ]
+      X509_CHAIN_INTERMEDIATE2_PFX_CERTIFICATE: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.X509_CHAIN_INTERMEDIATE2_PFX_CERTIFICATE'] ]
+      STORAGE_ACCOUNT_CONNECTION_STRING: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.STORAGE_ACCOUNT_CONNECTION_STRING'] ]
+    timeoutInMinutes: ${{ parameters.jobTimeoutInMinutes }}
+    strategy:
+      matrix:
+        .NET 8.0:
+          FRAMEWORK: net8.0
+        .NET 4.7.2:
+          FRAMEWORK: net472
+    pool:
+      vmImage: windows-2022
+    steps:
+      - task: PowerShell@2
+        displayName: 'Print vars'
+        condition: succeeded()
+        inputs:
+          targetType: inline
+          script: |
+            Write-Host "Build.Reason: ${{ variables['Build.Reason'] }}"
+            Write-Host "jobTimeoutInMinutes: ${{ parameters.jobTimeoutInMinutes }}"
+            Write-Host "testNet80: ${{ variables.testNet80 }}"
+            Write-Host "testNet472: ${{ variables.testNet472 }}"
+
+      - ${{ if eq(variables['testNet80'], 'True') }}:
+        - task: UseDotNet@2
+          displayName: 'Use .NET SDK 8.0'
+          inputs:
+            packageType: sdk
+            version: 8.x
+            performMultiLevelLookup: true
+            installationPath: $(Agent.ToolsDirectory)/dotnet
+
+      - ${{ if eq(variables['testNet472'], 'True') }}:
+        - task: CmdLine@2
+          displayName: 'Install .NET 4.7.2'
+          inputs:
+            script: 'choco install -y netfx-4.7.2-devpack'
+
+      - download: current
+        displayName: 'Download test certificates'
+        artifact: docker-images
+
+      - powershell: ./vsts/start_tpm_windows.ps1
+        displayName: "Start TPM Simulator"
+        condition: succeeded()
+
+      - task: JavaToolInstaller@0
+        condition: succeeded()
+        inputs:
+          versionSpec: 11
+          jdkArchitectureOption: 'x64'
+          jdkSourceOption: 'PreInstalled'
+
+      # Windows agents cannot run the test proxy docker image (it uses a linux-only image), so just run the test proxy
+      # without docker 
+      - task: PowerShell@2
+        displayName: 'Run test proxy and tests'
+        condition: succeeded()
+        inputs:
+          targetType: inline
+          script: |
+            mvn -f $(Build.SourcesDirectory)/testProxy/pom.xml clean install -q
+            Start-Job -ScriptBlock { java -jar $(Build.SourcesDirectory)\testProxy\target\test-proxy-1.0-with-deps.jar }
+            Start-Sleep -Seconds 5
+
+            # This prints the logs from the background run of the proxy in case some issue happens
+            Receive-Job Job1
+
+            dotnet test --logger trx --framework $(FRAMEWORK)
+            
+            # Tear down test proxy background process
+            Stop-Job Job1
+        env:
+          # Environment variables for IoT Hub E2E tests
+          IOTHUB_CONNECTION_STRING: $(IOTHUB_CONNECTION_STRING)
+          IOTHUB_X509_DEVICE_PFX_CERTIFICATE: $(IOTHUB_X509_DEVICE_PFX_CERTIFICATE)
+
+          IOTHUB_X509_CHAIN_DEVICE_NAME: $(IOTHUB_X509_CHAIN_DEVICE_NAME)
+          IOTHUB_X509_CHAIN_DEVICE_PFX_CERTIFICATE: $(IOTHUB_X509_CHAIN_DEVICE_PFX_CERTIFICATE)
+          IOTHUB_USER_ASSIGNED_MSI_RESOURCE_ID: $(IOTHUB_USER_ASSIGNED_MSI_RESOURCE_ID)
+
+          # Environment variables for DPS E2E tests
+          DPS_IDSCOPE: $(DPS_IDSCOPE)
+          PROVISIONING_CONNECTION_STRING: $(PROVISIONING_CONNECTION_STRING)
+          DPS_GLOBALDEVICEENDPOINT: global.azure-devices-provisioning.net
+          DPS_X509_PFX_CERTIFICATE_PASSWORD: $(DPS_X509_PFX_CERTIFICATE_PASSWORD)
+          DPS_X509_GROUP_ENROLLMENT_NAME: $(DPS_X509_GROUP_ENROLLMENT_NAME)
+
+          # Environment variables for Azure resources used for E2E tests (common)
+          X509_CHAIN_ROOT_CA_CERTIFICATE: $(X509_CHAIN_ROOT_CA_CERTIFICATE)
+          X509_CHAIN_INTERMEDIATE1_CERTIFICATE: $(X509_CHAIN_INTERMEDIATE1_CERTIFICATE)
+          X509_CHAIN_INTERMEDIATE2_CERTIFICATE: $(X509_CHAIN_INTERMEDIATE2_CERTIFICATE)
+          X509_CHAIN_INTERMEDIATE2_PFX_CERTIFICATE: $(X509_CHAIN_INTERMEDIATE2_PFX_CERTIFICATE)
+          STORAGE_ACCOUNT_CONNECTION_STRING: $(STORAGE_ACCOUNT_CONNECTION_STRING)
+
+          # Environment variables for the DevOps pipeline
+          FRAMEWORK: $(FRAMEWORK)
+
+      - task: PublishTestResults@2
+        displayName: "Publish Test Results **/*.trx"
+        inputs:
+          testRunner: VSTest
+          testResultsFiles: "**/*.trx"
+          testRunTitle: "Windows Tests ($(FRAMEWORK)) (Attempt $(System.JobAttempt))"
+          platform: Windows
+          configuration: "Debug UT + Release E2E ($(FRAMEWORK))"
+        condition: always()
+        
+      - task: ComponentGovernanceComponentDetection@0
+        displayName: Component Governance Detection
+        condition: always()
+        inputs:
+          scanType: 'Register'
+          verbosity: 'Verbose'
+          alertWarningLevel: 'Low' # The task will present a warning, but will not cause the build to fail
+
+  - job: TearDownCloudTestResources
+    condition: always()
+    dependsOn:
+      - WINDOWS
+      - DeployCloudTestResources
+    variables:
+      RESOURCE_GROUP_NAME: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.RESOURCE_GROUP_NAME'] ]
+    pool:
+      vmImage: windows-2022
+    steps:
+    - template: templates/DeleteCloudResources.yaml
