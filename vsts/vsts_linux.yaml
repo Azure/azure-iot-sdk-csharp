@@ -1,0 +1,189 @@
+name: $(BuildID)_$(BuildDefinitionName)_$(SourceBranchName)_$(Date:yyyyMMdd)$(Rev:.r)
+
+parameters:
+- name: jobTimeoutInMinutes
+  displayName: Timeout for each job
+  type: number
+  default: 150
+
+trigger:
+  batch: true
+  branches:
+    include:
+    - main
+  paths:
+    exclude:
+    - docs/*
+    - tools/CaptureLogs/*
+    - iothub/device/devdoc/*
+    - iothub/service/devdoc/*
+
+resources:
+  - repo: self
+    clean: true
+
+jobs:
+  - job: DeployCloudTestResources
+    pool:
+      vmImage: windows-2022
+    steps:
+    - template: templates/DeployCloudResources.yaml
+    
+  - job: BuildTestProxyDockerImage
+    pool:
+      vmImage: ubuntu-latest
+    steps:     
+    - task: PowerShell@2
+      displayName: 'Build and locally save test proxy docker image'
+      inputs:
+        targetType: inline
+        script: |
+          docker build -t testproxy:latest $(Build.SourcesDirectory)/testProxy/.
+          docker image save testproxy:latest -o $(Build.ArtifactStagingDirectory)/testproxy.tar
+
+    - publish:  $(Build.ArtifactStagingDirectory)
+      displayName: 'save docker images locally'
+      artifact: docker-images
+
+  ### Linux build ###
+  - job: LINUX
+    displayName: Linux
+    dependsOn: 
+      - BuildTestProxyDockerImage
+      - DeployCloudTestResources
+    condition: succeeded()
+    variables:
+      IOTHUB_CONNECTION_STRING: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.IOTHUB_CONNECTION_STRING'] ]
+      IOTHUB_DEVICE_CONN_STRING: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.IOTHUB_DEVICE_CONN_STRING'] ]
+      IOTHUB_X509_DEVICE_PFX_CERTIFICATE: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.IOTHUB_X509_DEVICE_PFX_CERTIFICATE'] ]
+      IOTHUB_X509_CHAIN_DEVICE_NAME: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.IOTHUB_X509_CHAIN_DEVICE_NAME'] ]
+      IOTHUB_X509_CHAIN_DEVICE_PFX_CERTIFICATE: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.IOTHUB_X509_CHAIN_DEVICE_PFX_CERTIFICATE'] ]
+      DPS_IDSCOPE: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.DPS_IDSCOPE'] ]
+      PROVISIONING_CONNECTION_STRING: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.PROVISIONING_CONNECTION_STRING'] ]
+      DPS_GLOBALDEVICEENDPOINT: global.azure-devices-provisioning.net
+      DPS_X509_PFX_CERTIFICATE_PASSWORD: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.DPS_X509_PFX_CERTIFICATE_PASSWORD'] ]
+      DPS_X509_GROUP_ENROLLMENT_NAME: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.DPS_X509_GROUP_ENROLLMENT_NAME'] ]
+      X509_CHAIN_ROOT_CA_CERTIFICATE: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.X509_CHAIN_ROOT_CA_CERTIFICATE'] ]
+      X509_CHAIN_INTERMEDIATE1_CERTIFICATE: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.X509_CHAIN_INTERMEDIATE1_CERTIFICATE'] ]
+      X509_CHAIN_INTERMEDIATE2_CERTIFICATE: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.X509_CHAIN_INTERMEDIATE2_CERTIFICATE'] ]
+      X509_CHAIN_INTERMEDIATE2_PFX_CERTIFICATE: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.X509_CHAIN_INTERMEDIATE2_PFX_CERTIFICATE'] ]
+      STORAGE_ACCOUNT_CONNECTION_STRING: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.STORAGE_ACCOUNT_CONNECTION_STRING'] ]
+    timeoutInMinutes: ${{ parameters.jobTimeoutInMinutes }}
+    strategy:
+      matrix:
+        .NET 8.0:
+          FRAMEWORK: net8.0
+    pool:
+      vmImage: ubuntu-latest
+    steps:
+      - task: PowerShell@2
+        displayName: 'Print vars'
+        inputs:
+          targetType: inline
+          script: |
+            Write-Host "Build.Reason: ${{ variables['Build.Reason'] }}"
+            Write-Host "jobTimeoutInMinutes: ${{ parameters.jobTimeoutInMinutes }}"
+            Write-Host "testNet80: ${{ variables.testNet80 }}"
+
+      # https://docs.microsoft.com/azure/devops/pipelines/tasks/tool/dotnet-core-tool-installer?view=azure-devops
+
+      # Linux requires .NET 8.0 install for tests to run, no matter which framework target is being tested
+      - task: UseDotNet@2
+        displayName: 'Use .NET SDK 8.0'
+        inputs:
+         packageType: sdk
+         version: 8.x
+         performMultiLevelLookup: true
+         installationPath: $(Agent.ToolsDirectory)/dotnet
+
+      - download: current
+        displayName: 'Download test certificates'
+        artifact: test-certificates
+
+      - download: current
+        displayName: 'Download test proxy docker archive'
+        artifact: docker-images
+
+      - task: PowerShell@2
+        displayName: 'Download and run test proxy'
+        condition: succeeded()
+        inputs:
+          targetType: inline
+          script: |
+            docker load --input $(Pipeline.Workspace)/docker-images/testproxy.tar
+            docker run -d -p 9000:9000 testproxy:latest
+
+      - task: Bash@3
+        displayName: 'Run tests'
+        condition: succeeded()
+        inputs:
+          targetType: 'inline'
+          script: |
+            dotnet test --logger trx --framework $(FRAMEWORK)
+
+        env:
+          # Environment variables for IoT Hub E2E tests
+          IOTHUB_CONNECTION_STRING: $(IOTHUB_CONNECTION_STRING)
+          IOTHUB_X509_DEVICE_PFX_CERTIFICATE: $(IOTHUB_X509_DEVICE_PFX_CERTIFICATE)
+
+          IOTHUB_X509_CHAIN_DEVICE_NAME: $(IOTHUB_X509_CHAIN_DEVICE_NAME)
+          IOTHUB_X509_CHAIN_DEVICE_PFX_CERTIFICATE: $(IOTHUB_X509_CHAIN_DEVICE_PFX_CERTIFICATE)
+
+          # Environment variables for DPS E2E tests
+          DPS_IDSCOPE: $(DPS_IDSCOPE)
+          PROVISIONING_CONNECTION_STRING: $(PROVISIONING_CONNECTION_STRING)
+          DPS_GLOBALDEVICEENDPOINT: global.azure-devices-provisioning.net
+          DPS_X509_PFX_CERTIFICATE_PASSWORD: $(DPS_X509_PFX_CERTIFICATE_PASSWORD)
+          DPS_X509_GROUP_ENROLLMENT_NAME: $(DPS_X509_GROUP_ENROLLMENT_NAME)
+
+          # Environment variables for Azure resources used for E2E tests (common)
+          X509_CHAIN_ROOT_CA_CERTIFICATE: $(X509_CHAIN_ROOT_CA_CERTIFICATE)
+          X509_CHAIN_INTERMEDIATE1_CERTIFICATE: $(X509_CHAIN_INTERMEDIATE1_CERTIFICATE)
+          X509_CHAIN_INTERMEDIATE2_CERTIFICATE: $(X509_CHAIN_INTERMEDIATE2_CERTIFICATE)
+          X509_CHAIN_INTERMEDIATE2_PFX_CERTIFICATE: $(X509_CHAIN_INTERMEDIATE2_PFX_CERTIFICATE)
+          STORAGE_ACCOUNT_CONNECTION_STRING: $(STORAGE_ACCOUNT_CONNECTION_STRING)
+
+          # Environment variables for the DevOps pipeline
+          FRAMEWORK: $(FRAMEWORK)
+
+      - task: PublishTestResults@2
+        displayName: "Publish Test Results **/*.trx"
+        condition: always()
+        inputs:
+          testRunner: VSTest
+          testRunTitle: "Linux Tests ($(FRAMEWORK)) (Attempt $(System.JobAttempt))"
+          testResultsFiles: "**/*.trx"
+
+      - task: CopyFiles@2
+        displayName: "Copy files to the artifacts folder"
+        condition: always()
+        inputs:
+          SourceFolder: "$(Build.SourcesDirectory)"
+          Contents: "**/*.trx"
+          TargetFolder: "$(Build.ArtifactStagingDirectory)"
+
+      - task: PublishBuildArtifacts@1
+        displayName: "Publish Artifact: testresults_linux_$(FRAMEWORK)"
+        condition: always()
+        inputs:
+          ArtifactName: testresults_linux_$(FRAMEWORK)
+        
+      - task: ComponentGovernanceComponentDetection@0
+        displayName: Component Governance Detection
+        condition: always()
+        inputs:
+          scanType: 'Register'
+          verbosity: 'Verbose'
+          alertWarningLevel: 'Low' # The task will present a warning, but will not cause the build to fail
+
+  - job: TearDownCloudTestResources
+    condition: always()
+    dependsOn:
+      - LINUX
+      - DeployCloudTestResources
+    variables:
+      RESOURCE_GROUP_NAME: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.RESOURCE_GROUP_NAME'] ]
+    pool:
+      vmImage: windows-2022
+    steps:
+    - template: templates/DeleteCloudResources.yaml

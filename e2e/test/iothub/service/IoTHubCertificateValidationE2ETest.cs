@@ -13,6 +13,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 {
     [TestClass]
     [TestCategory("InvalidServiceCertificate")]
+    [Ignore("Test infrastructure for invalid server certs testing is not supported currently")]
     public class IoTHubCertificateValidationE2ETest : E2EMsTestBase
     {
         [TestMethodWithRetry(Max=3)]

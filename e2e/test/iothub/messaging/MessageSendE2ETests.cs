@@ -104,7 +104,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         [Timeout(TestTimeoutMilliseconds)]
         [TestCategory("Proxy")]
         [TestCategory("LongRunning")]
-        [Ignore("Azure DevOps Windows test environment doesn't support proxies currently")]
         public async Task Message_DeviceSendSingleMessage_Http_WithProxy()
         {
             var httpTransportSettings = new Http1TransportSettings
@@ -119,7 +118,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         [TestMethodWithRetry(Max = 3)]
         [Timeout(TestTimeoutMilliseconds)]
         [TestCategory("Proxy")]
-        [Ignore("Azure DevOps Windows test environment doesn't support proxies currently")]
         public async Task Message_DeviceSendSingleMessage_Http_WithCustomProxy()
         {
             var httpTransportSettings = new Http1TransportSettings();
@@ -135,7 +133,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         [Timeout(TestTimeoutMilliseconds)]
         [TestCategory("Proxy")]
         [TestCategory("LongRunning")]
-        [Ignore("Azure DevOps Windows test environment doesn't support proxies currently")]
         public async Task Message_DeviceSendSingleMessage_AmqpWs_WithProxy()
         {
             var amqpTransportSettings = new AmqpTransportSettings(Client.TransportType.Amqp_WebSocket_Only)
@@ -150,7 +147,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         [TestMethodWithRetry(Max = 3)]
         [Timeout(TestTimeoutMilliseconds)]
         [TestCategory("Proxy")]
-        [Ignore("Azure DevOps Windows test environment doesn't support proxies currently")]
         public async Task Message_DeviceSendSingleMessage_MqttWs_WithProxy()
         {
             var mqttTransportSettings = new MqttTransportSettings(Client.TransportType.Mqtt_WebSocket_Only)
@@ -165,7 +161,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         [TestMethodWithRetry(Max = 3)]
         [Timeout(TestTimeoutMilliseconds)]
         [TestCategory("Proxy")]
-        [Ignore("Azure DevOps Windows test environment doesn't support proxies currently")]
         public async Task Message_ModuleSendSingleMessage_AmqpWs_WithProxy()
         {
             var amqpTransportSettings = new AmqpTransportSettings(Client.TransportType.Amqp_WebSocket_Only)
@@ -180,7 +175,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
         [TestMethodWithRetry(Max = 3)]
         [Timeout(TestTimeoutMilliseconds)]
         [TestCategory("Proxy")]
-        [Ignore("Azure DevOps Windows test environment doesn't support proxies currently")]
         public async Task Message_ModuleSendSingleMessage_MqttWs_WithProxy()
         {
             var mqttTransportSettings = new MqttTransportSettings(Client.TransportType.Mqtt_WebSocket_Only)
