@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+#nullable enable
 using System;
 using Microsoft.Azure.Devices.Client.Exceptions;
 namespace Microsoft.Azure.Devices.Client
@@ -25,11 +27,11 @@ namespace Microsoft.Azure.Devices.Client
         public CredentialOperationException(
             string message,
             int errorCode,
-            string trackingId = null,
-            string correlationId = null,
-            string credentialError = null,
+            string trackingId,
+            string? correlationId = null,
+            string? credentialError = null,
             int? retryAfterSeconds = null,
-            string activeRequestId = null,
+            string? activeRequestId = null,
             DateTimeOffset? operationExpires = null,
             bool isTransient = false)
             : base(message, isTransient, trackingId ?? string.Empty)
@@ -48,11 +50,11 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Correlation ID matching the operation.
         /// </summary>
-        public string CorrelationId { get; }
+        public string? CorrelationId { get; }
         /// <summary>
         /// CMS-specific error name (for 400040 errors).
         /// </summary>
-        public string CredentialError { get; }
+        public string? CredentialError { get; }
         /// <summary>
         /// Suggested retry delay in seconds, if applicable.
         /// </summary>
@@ -61,7 +63,7 @@ namespace Microsoft.Azure.Devices.Client
         /// For 409005 errors: the active request ID.
         /// Client can check if this matches the last sent request ID.
         /// </summary>
-        public string ActiveRequestId { get; }
+        public string? ActiveRequestId { get; }
         /// <summary>
         /// For 409005 errors: when the active operation expires.
         /// </summary>

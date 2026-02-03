@@ -99,9 +99,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         private const string CredentialsRequestTopic = "$iothub/credentials/POST/issueCertificate/?$rid={0}";
         private const string CredentialsResponseTopicPattern = @"\$iothub/credentials/res/(\d+)/\?\$rid=(.+)";
 
-        // Timeout for credential operations (60 seconds + 30 second grace = 90 seconds)
-        private static readonly TimeSpan s_credentialsTimeout = TimeSpan.FromSeconds(90);
-
         // Topic names for enabling events on Modules.
 
         private const string ReceiveEventMessagePatternFilter = "devices/{0}/modules/{1}/#";
@@ -1576,14 +1573,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             SemaphoreSlim phase1Complete,
             CancellationToken cancellationToken)
         {
-            bool received = await phase1Complete.WaitAsync(s_credentialsTimeout, cancellationToken)
-                .ConfigureAwait(false);
-
-            if (!received)
-            {
-                throw new TimeoutException(
-                    $"Certificate signing request {rid} timed out waiting for acceptance (90s)");
-            }
+            await phase1Complete.WaitAsync(cancellationToken).ConfigureAwait(false);
         }
 
         private static string ValidateAcceptedResponse(CertificateAcceptedResponse acceptedResponse, string rid)

@@ -91,11 +91,10 @@ public sealed class CertificateSigningRequestSample : IDisposable
             var csrRequest = new CertificateSigningRequest(
                 credentials.DeviceId,
                 Convert.ToBase64String(csrData)) 
-                { Replace = "*" }; // Replace any active credential operation
+                { Replace = "*" }; // Replace any active credential operation for this device
 
-            // Send CSR request with keepalive messages running in parallel
-            // This matches the Python reference implementation behavior
-            CertificateSigningResponse response = await SendCsrWithKeepaliveAsync(csrRequest);
+            Console.WriteLine("Sending CSR request...");
+            CertificateSigningResponse response = await _deviceClient!.SendCertificateSigningRequestAsync(csrRequest, _cts.Token);
             Console.WriteLine($"Received certificate response with {response.Certificates?.Count ?? 0} certificate(s)");
 
             if (response.Certificates == null || response.Certificates.Count == 0)
@@ -117,8 +116,6 @@ public sealed class CertificateSigningRequestSample : IDisposable
             Console.WriteLine("Disconnecting from IoT Hub...");
             await _deviceClient.CloseAsync(_cts.Token);
             _deviceClient.Dispose();
-
-            await Task.Delay(TimeSpan.FromSeconds(1), _cts.Token); // Brief pause before reconnecting
 
             _deviceClient = await ConnectWithCertificateAsync(
                 credentials.AssignedHub,
@@ -280,80 +277,6 @@ public sealed class CertificateSigningRequestSample : IDisposable
         await _deviceClient!.SendEventAsync(message, _cts.Token);
     }
 
-    /// <summary>
-    /// Sends a CSR request while running keepalive messages in parallel.
-    /// This matches the Python reference implementation behavior where keepalive
-    /// messages are sent every 5 seconds while waiting for the certificate response.
-    /// </summary>
-    private async Task<CertificateSigningResponse> SendCsrWithKeepaliveAsync(CertificateSigningRequest csrRequest)
-    {
-        const int keepaliveIntervalSeconds = 5;
-
-        using var keepaliveCts = CancellationTokenSource.CreateLinkedTokenSource(_cts.Token);
-
-        // Start background keepalive task
-        Task keepaliveTask = SendKeepaliveMessagesAsync(keepaliveIntervalSeconds, keepaliveCts.Token);
-
-        try
-        {
-            Console.WriteLine("Sending CSR request (keepalive messages will be sent every 5 seconds)...");
-            return await _deviceClient!.SendCertificateSigningRequestAsync(csrRequest, _cts.Token);
-
-        }
-        finally
-        {
-            keepaliveCts.Cancel();
-
-            try
-            {
-                await keepaliveTask;
-            }
-            catch (OperationCanceledException)
-            {
-                // Expected when we cancel the keepalive
-            }
-        }
-    }
-
-    /// <summary>
-    /// Sends keepalive messages at the specified interval until cancelled.
-    /// </summary>
-    private async Task SendKeepaliveMessagesAsync(int intervalSeconds, CancellationToken cancellationToken)
-    {
-        int keepaliveCount = 0;
-
-        try
-        {
-            while (!cancellationToken.IsCancellationRequested)
-            {
-                await Task.Delay(TimeSpan.FromSeconds(intervalSeconds), cancellationToken);
-
-                keepaliveCount++;
-                string keepalivePayload = JsonSerializer.Serialize(new
-                {
-                    type = "keepalive",
-                    seq = keepaliveCount,
-                    timestamp = DateTime.UtcNow.ToString("o"),
-                    message = "Waiting for certificate response"
-                });
-
-                using var message = new Message(Encoding.UTF8.GetBytes(keepalivePayload));
-                message.ContentEncoding = "utf-8";
-                message.ContentType = "application/json";
-
-                await _deviceClient!.SendEventAsync(message, cancellationToken);
-                Console.WriteLine($"  [Keepalive #{keepaliveCount}] Sent at {DateTime.UtcNow:HH:mm:ss}");
-            }
-        }
-        catch (OperationCanceledException)
-        {
-            Console.WriteLine($"  [Keepalive] Stopped after {keepaliveCount} message(s)");
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"  [Keepalive] Error: {ex.Message}");
-        }
-    }
 
     private async Task SendTelemetryAsync(int messageCount)
     {

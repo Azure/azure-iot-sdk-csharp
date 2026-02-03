@@ -759,19 +759,6 @@ namespace Microsoft.Azure.Devices.Client
             return InnerHandler.SendCertificateSigningRequestAsync(request, cancellationToken);
         }
 
-        private static bool IsValidBase64(string value)
-        {
-            try
-            {
-                _ = Convert.FromBase64String(value);
-                return true;
-            }
-            catch (FormatException)
-            {
-                return false;
-            }
-        }
-
         /// <summary>
         /// Sets a new delegate for the named method. If a delegate is already associated with
         /// the named method, it will be replaced with the new delegate.
