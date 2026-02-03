@@ -33,7 +33,6 @@ jobs:
   - job: WINDOWS
     displayName: Windows
     dependsOn: 
-      - BuildTestProxyDockerImage
       - DeployCloudTestResources
     condition: succeeded()
     variables:
