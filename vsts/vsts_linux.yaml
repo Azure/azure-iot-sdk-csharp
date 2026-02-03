@@ -98,7 +98,7 @@ jobs:
 
       - download: current
         displayName: 'Download test certificates'
-        artifact: docker-images
+        artifact: test-certificates
 
       - download: current
         displayName: 'Download test proxy docker archive'

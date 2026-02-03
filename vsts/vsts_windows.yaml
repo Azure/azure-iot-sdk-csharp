@@ -89,7 +89,7 @@ jobs:
 
       - download: current
         displayName: 'Download test certificates'
-        artifact: docker-images
+        artifact: test-certificates
 
       - powershell: ./vsts/start_tpm_windows.ps1
         displayName: "Start TPM Simulator"
