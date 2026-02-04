@@ -98,26 +98,48 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
 
             // Create X509Certificate2 with private key for IoT Hub authentication
             Console.WriteLine("\nStep 6: Creating certificate with private key for IoT Hub authentication...");
-            using X509Certificate2 deviceCert = CreateCertificateWithPrivateKey(result.IssuedClientCertificate, privateKey);
+            using X509Certificate2 deviceCertTemp = CreateCertificateWithPrivateKey(result.IssuedClientCertificate, privateKey);
+            
+            // Export and reimport with Exportable flag to ensure it works with SChannel
+            byte[] pfxBytes = deviceCertTemp.Export(X509ContentType.Pfx);
+            using X509Certificate2 deviceCert = new X509Certificate2(pfxBytes, (string?)null, X509KeyStorageFlags.Exportable);
+            
             Console.WriteLine($"  Certificate subject: {deviceCert.Subject}");
             Console.WriteLine($"  Certificate thumbprint: {deviceCert.Thumbprint}");
             Console.WriteLine($"  Valid from: {deviceCert.NotBefore}");
             Console.WriteLine($"  Valid until: {deviceCert.NotAfter}");
+            Console.WriteLine($"  Has private key: {deviceCert.HasPrivateKey}");
 
             // Step 7: Connect to IoT Hub using issued certificate
             if (_parameters.SendTelemetry)
             {
                 Console.WriteLine("\nStep 7: Connecting to IoT Hub using issued certificate...");
                 
+                // Build the certificate chain for authentication (leaf + intermediates)
+                var chainCerts = new X509Certificate2Collection();
+                for (int i = 1; i < result.IssuedClientCertificate.Count; i++)
+                {
+                    byte[] certBytes = Convert.FromBase64String(result.IssuedClientCertificate[i]);
+                    chainCerts.Add(new X509Certificate2(certBytes));
+                }
+
                 var auth = new DeviceAuthenticationWithX509Certificate(
                     result.DeviceId,
-                    deviceCert);
+                    deviceCert,
+                    chainCerts);
+
+                // Certificate chains are only supported on Amqp_Tcp_Only and Mqtt_Tcp_Only
+                // Convert the transport type to TCP-only variant for IoT Hub connection
+                TransportType iotHubTransportType = GetTcpOnlyTransportType(_parameters.TransportType);
+                Console.WriteLine($"  Using transport type: {iotHubTransportType} (TCP-only required for cert chains)");
 
                 using DeviceClient deviceClient = DeviceClient.Create(
                     result.AssignedHub,
                     auth,
-                    _parameters.TransportType);
+                    iotHubTransportType);
 
+                // Open connection explicitly to catch any TLS errors early
+                await deviceClient.OpenAsync();
                 Console.WriteLine("  Connected to IoT Hub successfully.");
 
                 // Send a test telemetry message
@@ -133,6 +155,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
                 Console.WriteLine("  Telemetry message sent successfully.");
 
                 await deviceClient.CloseAsync();
+                
+                // Dispose chain certificates
+                foreach (var cert in chainCerts)
+                {
+                    cert.Dispose();
+                }
             }
 
             Console.WriteLine("\n=== Sample completed successfully ===");
@@ -246,6 +274,25 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
                 TransportType.Amqp_WebSocket_Only => new ProvisioningTransportHandlerAmqp(TransportFallbackType.WebSocketOnly),
                 TransportType.Http1 => new ProvisioningTransportHandlerHttp(),
                 _ => throw new NotSupportedException($"Unsupported transport type: {_parameters.TransportType}"),
+            };
+        }
+
+        /// <summary>
+        /// Converts a transport type to its TCP-only variant.
+        /// Certificate chains are only supported on Amqp_Tcp_Only and Mqtt_Tcp_Only.
+        /// </summary>
+        private static TransportType GetTcpOnlyTransportType(TransportType transportType)
+        {
+            return transportType switch
+            {
+                TransportType.Mqtt => TransportType.Mqtt_Tcp_Only,
+                TransportType.Mqtt_Tcp_Only => TransportType.Mqtt_Tcp_Only,
+                TransportType.Mqtt_WebSocket_Only => TransportType.Mqtt_Tcp_Only, // Fallback to TCP
+                TransportType.Amqp => TransportType.Amqp_Tcp_Only,
+                TransportType.Amqp_Tcp_Only => TransportType.Amqp_Tcp_Only,
+                TransportType.Amqp_WebSocket_Only => TransportType.Amqp_Tcp_Only, // Fallback to TCP
+                TransportType.Http1 => TransportType.Mqtt_Tcp_Only, // HTTP doesn't support cert chains, use MQTT
+                _ => TransportType.Mqtt_Tcp_Only,
             };
         }
     }

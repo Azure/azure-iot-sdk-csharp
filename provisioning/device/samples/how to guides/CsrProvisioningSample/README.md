@@ -67,7 +67,6 @@ dotnet run -- \
 Step 1: Generating key pair and Certificate Signing Request (CSR)...
   CSR generated successfully.
   Key type: ECC
-
   Private key saved to: private_key.pem
 
 Step 2: Creating security provider (SymmetricKey)...
@@ -85,16 +84,18 @@ Step 4: Registering with DPS (including CSR)...
   Assigned hub: my-iothub.azure-devices.net
 
 Step 5: Processing issued certificate...
-  Received certificate chain with 2 certificate(s).
+  Received certificate chain with 3 certificate(s).
   Certificate chain saved to: issued_certificate.pem
 
 Step 6: Creating certificate with private key for IoT Hub authentication...
   Certificate subject: CN=my-device-001
   Certificate thumbprint: ABC123...
   Valid from: 2/4/2026 12:00:00 AM
-  Valid until: 2/4/2027 12:00:00 AM
+  Valid until: 3/6/2026 12:00:00 AM
+  Has private key: True
 
 Step 7: Connecting to IoT Hub using issued certificate...
+  Using transport type: Mqtt_Tcp_Only (TCP-only required for cert chains)
   Connected to IoT Hub successfully.
 
 Step 8: Sending test telemetry message...
@@ -106,6 +107,28 @@ You can now use the following files to authenticate with IoT Hub:
   Certificate: issued_certificate.pem
   Private key: private_key.pem
 ```
+
+## Using the run_sample.ps1 Script
+
+For convenience, a PowerShell script `run_sample.ps1` is provided that automatically derives the symmetric key from an enrollment group and runs the sample:
+
+```powershell
+# Run with default settings (generates a unique registration ID)
+.\run_sample.ps1
+
+# Run with a specific registration ID
+.\run_sample.ps1 -RegistrationId "my-device-001"
+
+# Run with a specific transport type
+.\run_sample.ps1 -RegistrationId "my-device-001" -TransportType "Amqp"
+```
+
+The script will:
+1. Derive the symmetric key from the enrollment group primary key
+2. Run the C# sample with the correct parameters
+3. Display the generated certificate and private key file paths
+
+> **Note:** You may need to update the `$idScope` and `$enrollmentPrimaryKey` variables in the script to match your DPS configuration.
 
 ## Security Considerations
 

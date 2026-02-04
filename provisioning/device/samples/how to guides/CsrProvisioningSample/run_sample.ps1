@@ -2,16 +2,16 @@
 # This script sets up all required environment variables and runs the sample
 
 param(
-    [string]$RegistrationId = "test-device-02",
+    [string]$RegistrationId = "test-device-01",
     [string]$TransportType = "Mqtt"
 )
 
 # DPS Configuration from your provisioned resources
-$provisioningHost = "global-canary.azure-devices-provisioning.net"
-$idScope = "0ne01129016"
+$provisioningHost = "global.azure-devices-provisioning.net"
+$idScope = "0ne0112785F"
 
 # Enrollment group primary key (from your enrollment: 3-enrollment)
-$enrollmentPrimaryKey = "1DY7x5m9hgMEpCuYBQKbDM0uRHSOcnlz1yWrYSUPUopLP3PZuCfoj0iqb5LGHqHDWBf+ZMVBML34AIoTjxsTBA=="
+$enrollmentPrimaryKey = "Rx9Zt5b6zJwa1cnXizLbYVUSbVBzK5Sg6qXvoGU1G/ZHD/I7kdGcTWoV3jXOEaUYMw5u0bBYopXiAIoTkJfkGg=="
 
 # File paths for CSR key and issued certificate
 $csrKeyFile = "$PSScriptRoot\$RegistrationId-csr-key.pem"
