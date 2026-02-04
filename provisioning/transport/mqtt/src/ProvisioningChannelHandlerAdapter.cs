@@ -326,9 +326,17 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         private async Task PublishRegisterAsync(IChannelHandlerContext context)
         {
             IByteBuffer packagePayload = Unpooled.Empty;
-            if (_message.Payload != null && _message.Payload.Length > 0)
+            if ((_message.Payload != null && _message.Payload.Length > 0) || !string.IsNullOrEmpty(_message.Csr))
             {
-                var deviceRegistration = new DeviceRegistration { Payload = new JRaw(_message.Payload) };
+                var deviceRegistration = new DeviceRegistration();
+                if (_message.Payload != null && _message.Payload.Length > 0)
+                {
+                    deviceRegistration.Payload = new JRaw(_message.Payload);
+                }
+                if (!string.IsNullOrEmpty(_message.Csr))
+                {
+                    deviceRegistration.Csr = _message.Csr;
+                }
                 using var customContentStream = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(deviceRegistration, JsonSerializerSettingsInitializer.GetJsonSerializerSettings())));
                 long streamLength = customContentStream.Length;
                 int length = (int)streamLength;

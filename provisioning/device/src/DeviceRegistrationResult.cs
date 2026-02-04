@@ -1,7 +1,8 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client
 {
@@ -86,6 +87,40 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         string errorMessage,
         string etag,
         string returnData)
+            : this(
+                registrationId,
+                createdDateTimeUtc,
+                assignedHub,
+                deviceId,
+                status,
+                substatus,
+                generationId,
+                lastUpdatedDateTimeUtc,
+                errorCode,
+                errorMessage,
+                etag,
+                returnData,
+                null)
+        {
+        }
+
+        /// <summary>
+        /// Constructor to allow return data and issued client certificate.
+        /// </summary>
+        public DeviceRegistrationResult(
+        string registrationId,
+        DateTime? createdDateTimeUtc,
+        string assignedHub,
+        string deviceId,
+        ProvisioningRegistrationStatusType status,
+        ProvisioningRegistrationSubstatusType substatus,
+        string generationId,
+        DateTime? lastUpdatedDateTimeUtc,
+        int errorCode,
+        string errorMessage,
+        string etag,
+        string returnData,
+        IReadOnlyList<string> issuedClientCertificate)
         {
             RegistrationId = registrationId;
             CreatedDateTimeUtc = createdDateTimeUtc;
@@ -99,6 +134,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             ErrorMessage = errorMessage;
             Etag = etag;
             JsonPayload = returnData;
+            IssuedClientCertificate = issuedClientCertificate;
         }
 
         /// <summary>
@@ -160,5 +196,15 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// The custom data returned from the webhook to the device.
         /// </summary>
         public string JsonPayload { get; private set; }
+
+        /// <summary>
+        /// Gets the issued client certificate chain in response to a CSR.
+        /// Returns null if no CSR was provided during registration.
+        /// </summary>
+        /// <remarks>
+        /// The certificate chain is returned as an array of base64-encoded certificates.
+        /// The first element is the device/leaf certificate, followed by intermediate CA certificates.
+        /// </remarks>
+        public IReadOnlyList<string> IssuedClientCertificate { get; private set; }
     }
 }
