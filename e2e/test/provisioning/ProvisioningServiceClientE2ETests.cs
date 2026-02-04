@@ -8,7 +8,6 @@ using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using FluentAssertions;
-using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.Azure.Devices.Provisioning.Security.Samples;
 using Microsoft.Azure.Devices.Provisioning.Service;
@@ -27,7 +26,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         private static readonly string s_devicePrefix = $"{nameof(ProvisioningServiceClientE2ETests)}_";
 
         private static readonly HashSet<Type> s_retryableExceptions = new HashSet<Type> { typeof(ProvisioningServiceClientHttpException) };
-        private static readonly IRetryPolicy s_provisioningServiceRetryPolicy = new ProvisioningServiceRetryPolicy();
+        private static readonly Microsoft.Azure.Devices.Client.IRetryPolicy s_provisioningServiceRetryPolicy = new ProvisioningServiceRetryPolicy();
 
         public enum EnrollmentType
         {
@@ -279,7 +278,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         {
             using ProvisioningServiceClient provisioningServiceClient = CreateProvisioningService(proxyServerAddress);
             var querySpecification = new QuerySpecification("SELECT * FROM enrollments");
-            using Query query = provisioningServiceClient.CreateIndividualEnrollmentQuery(querySpecification);
+            using Microsoft.Azure.Devices.Provisioning.Service.IQuery query = provisioningServiceClient.CreateIndividualEnrollmentQuery(querySpecification);
             while (query.HasNext())
             {
                 QueryResult queryResult = await query.NextAsync().ConfigureAwait(false);
