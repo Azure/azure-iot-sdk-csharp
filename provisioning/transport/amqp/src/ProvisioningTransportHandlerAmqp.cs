@@ -158,7 +158,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                     }
                     if (!string.IsNullOrEmpty(message.Csr))
                     {
-                        deviceRegistration.Csr = message.Csr;
+                        throw new NotSupportedException("Certificate signing request (CSR) is not supported over AMQP transport.");
                     }
                 }
 

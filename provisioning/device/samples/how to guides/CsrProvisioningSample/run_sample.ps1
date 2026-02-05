@@ -44,18 +44,23 @@ Write-Host "=========================================="
 Write-Host "`nRunning C# CSR Provisioning Sample...`n"
 
 $samplePath = $PSScriptRoot
-
-dotnet run --project "$samplePath\CsrProvisioningSample.csproj" -- `
-    --IdScope "$idScope" `
-    --RegistrationId "$RegistrationId" `
-    --GlobalDeviceEndpoint "$provisioningHost" `
-    --SymmetricKey "$derivedKey" `
-    --AuthType SymmetricKey `
-    --TransportType "$TransportType" `
-    --CsrKeyType ECC `
-    --OutputCertPath "$issuedCertFile" `
-    --OutputKeyPath "$csrKeyFile" `
-    --SendTelemetry true
+$dotnetArgs = @(
+        "run",
+        "--project", "$samplePath\CsrProvisioningSample.csproj",
+        "--",
+        "--IdScope", "$idScope",
+        "--RegistrationId", "$RegistrationId",
+        "--GlobalDeviceEndpoint", "$provisioningHost",
+        "--SymmetricKey", "$derivedKey",
+        "--AuthType", "SymmetricKey",
+        "--TransportType", "$TransportType",
+        "--CsrKeyType", "ECC",
+        "--OutputCertPath", "$issuedCertFile",
+        "--OutputKeyPath", "$csrKeyFile",
+        "--SendTelemetry", "true"
+    )
+    Write-Host "Executing: dotnet $($dotnetArgs -join ' ')"
+    & dotnet @dotnetArgs
 
 if ($LASTEXITCODE -eq 0) {
     Write-Host "`n=========================================="
