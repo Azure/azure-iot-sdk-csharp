@@ -49,8 +49,14 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
         [Option(
             'k',
             "SymmetricKey",
-            HelpText = "The symmetric key for DPS authentication (required when AuthType is SymmetricKey). For group enrollments, use the derived key.")]
+            HelpText = "The symmetric key for DPS authentication (required when AuthType is SymmetricKey). Use this for individual enrollments or provide the derived device key directly.")]
         public string? SymmetricKey { get; set; }
+
+        [Option(
+            'e',
+            "EnrollmentGroupKey",
+            HelpText = "The enrollment group primary/secondary key. When provided, a device-specific symmetric key will be derived using HMAC-SHA256.")]
+        public string? EnrollmentGroupKey { get; set; }
 
         [Option(
             'c',

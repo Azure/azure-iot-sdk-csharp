@@ -229,15 +229,53 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
         {
             return _parameters.AuthType switch
             {
-                AuthenticationType.SymmetricKey => new SecurityProviderSymmetricKey(
-                    _parameters.RegistrationId,
-                    _parameters.SymmetricKey!,
-                    null),
+                AuthenticationType.SymmetricKey => CreateSymmetricKeySecurityProvider(),
 
                 AuthenticationType.X509 => CreateX509SecurityProvider(),
 
                 _ => throw new NotSupportedException($"Unsupported authentication type: {_parameters.AuthType}")
             };
+        }
+
+        private SecurityProviderSymmetricKey CreateSymmetricKeySecurityProvider()
+        {
+            string symmetricKey;
+            
+            if (!string.IsNullOrEmpty(_parameters.EnrollmentGroupKey))
+            {
+                // Derive device-specific key from enrollment group key using HMAC-SHA256
+                Console.WriteLine("  Deriving device symmetric key from enrollment group key...");
+                symmetricKey = DeriveSymmetricKey(_parameters.EnrollmentGroupKey, _parameters.RegistrationId);
+                Console.WriteLine($"  Derived key: {symmetricKey.Substring(0, Math.Min(20, symmetricKey.Length))}...");
+            }
+            else if (!string.IsNullOrEmpty(_parameters.SymmetricKey))
+            {
+                symmetricKey = _parameters.SymmetricKey;
+            }
+            else
+            {
+                throw new InvalidOperationException(
+                    "Either --SymmetricKey or --EnrollmentGroupKey must be provided for symmetric key authentication.");
+            }
+            
+            return new SecurityProviderSymmetricKey(
+                _parameters.RegistrationId,
+                symmetricKey,
+                null);
+        }
+
+        /// <summary>
+        /// Derives a device-specific symmetric key from an enrollment group key using HMAC-SHA256.
+        /// This is required for group enrollments where each device needs its own derived key.
+        /// </summary>
+        /// <param name="enrollmentGroupKey">The primary or secondary key from the enrollment group.</param>
+        /// <param name="registrationId">The device registration ID.</param>
+        /// <returns>A base64-encoded derived symmetric key for the device.</returns>
+        private static string DeriveSymmetricKey(string enrollmentGroupKey, string registrationId)
+        {
+            using var hmac = new HMACSHA256(Convert.FromBase64String(enrollmentGroupKey));
+            byte[] derivedKeyBytes = hmac.ComputeHash(Encoding.UTF8.GetBytes(registrationId));
+            return Convert.ToBase64String(derivedKeyBytes);
         }
 
         private SecurityProviderX509Certificate CreateX509SecurityProvider()

@@ -20,13 +20,25 @@ The CSR provisioning flow works as follows:
 
 ## Configuration
 
-### Using Symmetric Key Authentication
+### Using Symmetric Key Authentication (Individual Enrollment)
 
 ```bash
 dotnet run -- \
     --IdScope "<your-dps-id-scope>" \
     --RegistrationId "<your-registration-id>" \
     --SymmetricKey "<your-symmetric-key>" \
+    --AuthType SymmetricKey
+```
+
+### Using Symmetric Key Authentication (Group Enrollment)
+
+For group enrollments, use `--EnrollmentGroupKey` and the sample will automatically derive the device-specific key:
+
+```bash
+dotnet run -- \
+    --IdScope "<your-dps-id-scope>" \
+    --RegistrationId "<your-registration-id>" \
+    --EnrollmentGroupKey "<your-enrollment-group-primary-key>" \
     --AuthType SymmetricKey
 ```
 
@@ -50,7 +62,8 @@ dotnet run -- \
 | `--GlobalDeviceEndpoint` | `-g` | DPS global endpoint | `global.azure-devices-provisioning.net` |
 | `--TransportType` | `-t` | Transport protocol | `Mqtt` |
 | `--AuthType` | `-a` | Authentication type (`SymmetricKey` or `X509`) | `SymmetricKey` |
-| `--SymmetricKey` | `-k` | Symmetric key for DPS auth | Required for SymmetricKey |
+| `--SymmetricKey` | `-k` | Symmetric key for individual enrollment | Required for SymmetricKey (individual) |
+| `--EnrollmentGroupKey` | `-e` | Enrollment group key (device key will be derived) | Required for SymmetricKey (group) |
 | `--X509CertPath` | `-c` | Path to X.509 certificate (PFX) | Required for X509 |
 | `--X509CertPassword` | `-w` | X.509 certificate password | Optional |
 | `--CsrKeyType` | | Key type for CSR (`ECC` or `RSA`) | `ECC` |
@@ -58,115 +71,6 @@ dotnet run -- \
 | `--OutputCertPath` | `-o` | Output path for issued certificate | `issued_certificate.pem` |
 | `--OutputKeyPath` | | Output path for private key | `private_key.pem` |
 | `--SendTelemetry` | `-s` | Send test telemetry after registration | `true` |
-
-## Example Output
-
-```
-=== DPS CSR Provisioning Sample ===
-
-Step 1: Generating key pair and Certificate Signing Request (CSR)...
-  CSR generated successfully.
-  Key type: ECC
-  Private key saved to: private_key.pem
-
-Step 2: Creating security provider (SymmetricKey)...
-  Registration ID: my-device-001
-
-Step 3: Creating provisioning client...
-  Using transport type: Mqtt
-  Global endpoint: global.azure-devices-provisioning.net
-  ID Scope: 0ne00XXXXXX
-  Transport: Mqtt
-
-Step 4: Registering with DPS (including CSR)...
-  Registration status: Assigned
-  Device ID: my-device-001
-  Assigned hub: my-iothub.azure-devices.net
-
-Step 5: Processing issued certificate...
-  Received certificate chain with 3 certificate(s).
-  Certificate chain saved to: issued_certificate.pem
-
-Step 6: Creating certificate with private key for IoT Hub authentication...
-  Certificate subject: CN=my-device-001
-  Certificate thumbprint: ABC123...
-  Valid from: 2/4/2026 12:00:00 AM
-  Valid until: 3/6/2026 12:00:00 AM
-  Has private key: True
-
-Step 7: Connecting to IoT Hub using issued certificate...
-  Using transport type: Mqtt_Tcp_Only (TCP-only required for cert chains)
-  Connected to IoT Hub successfully.
-
-Step 8: Sending test telemetry message...
-  Telemetry message sent successfully.
-
-=== Sample completed successfully ===
-
-You can now use the following files to authenticate with IoT Hub:
-  Certificate: issued_certificate.pem
-  Private key: private_key.pem
-```
-
-## Using the run_sample.ps1 Script
-
-For convenience, a PowerShell script `run_sample.ps1` is provided that automatically derives the symmetric key from an enrollment group and runs the sample:
-
-```powershell
-# Run with default settings (generates a unique registration ID)
-.\run_sample.ps1
-
-# Run with a specific registration ID
-.\run_sample.ps1 -RegistrationId "my-device-001"
-
-# Run with a specific transport type
-.\run_sample.ps1 -RegistrationId "my-device-001" -TransportType "Amqp"
-```
-
-The script will:
-1. Derive the symmetric key from the enrollment group primary key
-2. Run the C# sample with the correct parameters
-3. Display the generated certificate and private key file paths
-
-> **Note:** You may need to update the `$idScope` and `$enrollmentPrimaryKey` variables in the script to match your DPS configuration.
-
-## Security Considerations
-
-1. **Private Key Protection**: The private key generated for the CSR is sensitive and should be securely stored. In production, consider using hardware security modules (HSM) or secure enclaves.
-
-2. **Certificate CN Validation**: The Common Name (CN) in the CSR should match the registration ID.
-
-3. **Key Algorithm**: This sample supports both ECC (P-256) and RSA keys. ECC is recommended for better performance and smaller key sizes.
-
-4. **Transport Security**: All communication with DPS and IoT Hub is encrypted using TLS.
-
-## Environment Variables (Alternative Configuration)
-
-You can also use environment variables instead of command-line arguments:
-
-| Variable | Description |
-|----------|-------------|
-| `PROVISIONING_HOST` | DPS global endpoint |
-| `PROVISIONING_IDSCOPE` | DPS ID Scope |
-| `PROVISIONING_REGISTRATION_ID` | Device registration ID |
-| `PROVISIONING_SAS_KEY` | Symmetric key |
-| `PROVISIONING_X509_CERT_FILE` | X.509 certificate path |
-
-## Troubleshooting
-
-### "No certificate was issued by DPS"
-- Ensure your DPS enrollment is configured for certificate issuance
-- Verify that Azure Device Registry integration is properly set up
-
-### "Registration failed"
-- Check the error code and message in the output
-- Verify your DPS ID Scope and registration credentials
-- Ensure the registration ID matches your enrollment configuration
-
-### "Failed to connect to IoT Hub"
-- Verify the issued certificate is valid and not expired
-- Check that the certificate chain is complete
-- Ensure the IoT Hub allows X.509 authentication
 
 ## Additional Resources
 
