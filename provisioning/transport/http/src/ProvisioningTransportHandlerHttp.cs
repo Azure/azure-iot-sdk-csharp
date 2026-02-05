@@ -1,7 +1,8 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Net;
 using System.Net.Http;
@@ -133,6 +134,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                     && message.Payload.Length > 0)
                 {
                     deviceRegistration.Payload = new JRaw(message.Payload);
+                }
+                if (!string.IsNullOrEmpty(message.Csr))
+                {
+                    throw new NotSupportedException("Certificate signing request (CSR) is not supported over HTTP transport.");
                 }
                 string registrationId = message.Security.GetRegistrationID();
 
@@ -291,6 +296,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             Enum.TryParse(result.Status, true, out ProvisioningRegistrationStatusType status);
             Enum.TryParse(result.Substatus, true, out ProvisioningRegistrationSubstatusType substatus);
 
+            IReadOnlyList<string> issuedClientCertificate = result.IssuedCertificateChain != null
+                ? (IReadOnlyList<string>)new List<string>(result.IssuedCertificateChain).AsReadOnly()
+                : null;
+
             return new DeviceRegistrationResult(
                 result.RegistrationId,
                 result.CreatedDateTimeUtc,
@@ -303,7 +312,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 result.ErrorCode ?? 0,
                 result.ErrorMessage,
                 result.Etag,
-                result?.Payload?.ToString(CultureInfo.InvariantCulture));
+                result?.Payload?.ToString(CultureInfo.InvariantCulture),
+                issuedClientCertificate);
         }
     }
 }

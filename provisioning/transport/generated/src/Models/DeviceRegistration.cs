@@ -24,9 +24,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Models
         /// <summary>
         /// Initializes a new instance of the DeviceRegistration class.
         /// </summary>
-        public DeviceRegistration(JRaw payload = default)
+        public DeviceRegistration(JRaw payload = default, string csr = default)
         {
             Payload = payload;
+            Csr = csr;
             CustomInit();
         }
 
@@ -40,5 +41,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Models
         /// </summary>
         [JsonProperty(PropertyName = "payload")]
         public JRaw Payload { get; set; }
+
+        /// <summary>
+        /// Gets or sets the base64-encoded Certificate Signing Request (CSR).
+        /// </summary>
+        [JsonProperty(PropertyName = "csr")]
+        public string Csr { get; set; }
     }
 }

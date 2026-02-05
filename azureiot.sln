@@ -211,6 +211,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "prerequisites", "prerequisi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CertificateSigningRequestSample", "iothub\device\samples\how to guides\CertificateSigningRequestSample\CertificateSigningRequestSample.csproj", "{0F3E4882-0D5C-4CF3-9D97-2A9C0B598229}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CsrProvisioningSample", "provisioning\device\samples\how to guides\CsrProvisioningSample\CsrProvisioningSample.csproj", "{DC4463BF-23B0-47DE-BBF5-A9A01E1B7386}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -444,6 +446,10 @@ Global
 		{0F3E4882-0D5C-4CF3-9D97-2A9C0B598229}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0F3E4882-0D5C-4CF3-9D97-2A9C0B598229}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0F3E4882-0D5C-4CF3-9D97-2A9C0B598229}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DC4463BF-23B0-47DE-BBF5-A9A01E1B7386}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DC4463BF-23B0-47DE-BBF5-A9A01E1B7386}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DC4463BF-23B0-47DE-BBF5-A9A01E1B7386}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DC4463BF-23B0-47DE-BBF5-A9A01E1B7386}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -536,6 +542,7 @@ Global
 		{184F07FC-A5CA-43F5-8742-0B6DF6825A1F} = {89643F18-7B22-41BD-8342-49251943C984}
 		{CA137E4E-4684-442D-92FC-20ADACCB5D62} = {9C260BF0-1CCA-45A2-AAB8-6419291B8B88}
 		{0F3E4882-0D5C-4CF3-9D97-2A9C0B598229} = {FA7C7E33-CC9C-4ACD-A761-C2B4C55E82F6}
+		{DC4463BF-23B0-47DE-BBF5-A9A01E1B7386} = {464E5F28-748B-4A6C-94B8-A5725F57F62C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {AF61665D-340A-494B-9705-571456BDC752}

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Microsoft.Azure.Amqp;
@@ -8,6 +8,7 @@ using Microsoft.Azure.Devices.Shared;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Net;
@@ -147,9 +148,19 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 bundleCancellationToken.ThrowIfCancellationRequested();
 
                 string correlationId = Guid.NewGuid().ToString();
-                DeviceRegistration deviceRegistration = (message.Payload != null && message.Payload.Length > 0)
-                    ? new DeviceRegistration { Payload = new JRaw(message.Payload) }
-                    : null;
+                DeviceRegistration deviceRegistration = null;
+                if ((message.Payload != null && message.Payload.Length > 0) || !string.IsNullOrEmpty(message.Csr))
+                {
+                    deviceRegistration = new DeviceRegistration();
+                    if (message.Payload != null && message.Payload.Length > 0)
+                    {
+                        deviceRegistration.Payload = new JRaw(message.Payload);
+                    }
+                    if (!string.IsNullOrEmpty(message.Csr))
+                    {
+                        throw new NotSupportedException("Certificate signing request (CSR) is not supported over AMQP transport.");
+                    }
+                }
 
                 RegistrationOperationStatus operation = await RegisterDeviceAsync(connection, correlationId, deviceRegistration, bundleCancellationToken).ConfigureAwait(false);
 
@@ -319,6 +330,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             Enum.TryParse(result.Status, true, out ProvisioningRegistrationStatusType status);
             Enum.TryParse(result.Substatus, true, out ProvisioningRegistrationSubstatusType substatus);
 
+            IReadOnlyList<string> issuedClientCertificate = result.IssuedCertificateChain != null
+                ? (IReadOnlyList<string>)new List<string>(result.IssuedCertificateChain).AsReadOnly()
+                : null;
+
             return new DeviceRegistrationResult(
                 result.RegistrationId,
                 result.CreatedDateTimeUtc,
@@ -331,7 +346,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 result.ErrorCode ?? 0,
                 result.ErrorMessage,
                 result.Etag,
-                result?.Payload?.ToString(CultureInfo.InvariantCulture));
+                result?.Payload?.ToString(CultureInfo.InvariantCulture),
+                issuedClientCertificate);
         }
 
         private void ValidateOutcome(Outcome outcome)

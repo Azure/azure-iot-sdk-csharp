@@ -4,6 +4,7 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Models
@@ -34,7 +35,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Models
             int? errorCode = default,
             string errorMessage = default,
             string etag = default,
-            JRaw payload = default)
+            JRaw payload = default,
+            IList<string> issuedCertificateChain = default)
         {
             Tpm = tpm;
             X509 = x509;
@@ -51,6 +53,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Models
             ErrorMessage = errorMessage;
             Etag = etag;
             Payload = payload;
+            IssuedCertificateChain = issuedCertificateChain;
             CustomInit();
         }
 
@@ -137,5 +140,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Models
         /// </summary>
         [JsonProperty(PropertyName = "payload")]
         public JRaw Payload { get; set; }
+
+        /// <summary>
+        /// Gets or sets the issued certificate chain in response to a CSR.
+        /// The chain is returned as an array of base64-encoded certificates.
+        /// </summary>
+        [JsonProperty(PropertyName = "issuedCertificateChain")]
+        public IList<string> IssuedCertificateChain { get; set; }
     }
 }

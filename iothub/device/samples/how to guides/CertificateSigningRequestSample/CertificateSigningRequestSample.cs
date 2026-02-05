@@ -11,28 +11,35 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client;
+using Microsoft.Azure.Devices.Provisioning.Client;
+using Microsoft.Azure.Devices.Provisioning.Client.Transport;
+using Microsoft.Azure.Devices.Shared;
 
 namespace CertificateSigningRequestSample;
 
 /// <summary>
 /// Demonstrates certificate renewal via the IoT Hub credential management API.
 /// 
-/// Prerequisites:
+/// This sample supports two modes of operation:
+/// 
+/// Mode 1: Using existing credentials
 /// - Device must already be provisioned with IoT Hub
 /// - Existing certificate and private key files must be available
 /// - A metadata JSON file with assigned_hub and device_id
 /// 
-/// This sample:
-/// 1. Loads existing credentials from disk (certificate, key, and metadata)
-/// 2. Connects to IoT Hub using the existing certificate
-/// 3. Sends a test message to verify connectivity
-/// 4. Creates a new CSR and requests certificate renewal from IoT Hub
-/// 5. Saves the renewed certificate
-/// 6. Reconnects with the renewed certificate
-/// 7. Sends telemetry messages to verify the new certificate works
+/// Mode 2: Initial provisioning via DPS with CSR (when credentials don't exist)
+/// - Requires DPS IdScope and SymmetricKey parameters
+/// - Generates a new key pair and CSR
+/// - Registers with DPS to obtain an issued certificate
+/// - Saves credentials to disk for future use
 /// 
-/// Note: DPS provisioning with CSR is not yet supported in this SDK.
-/// Use the Python SDK or Azure CLI for initial device provisioning with CSR.
+/// After loading/obtaining credentials, the sample:
+/// 1. Connects to IoT Hub using the certificate
+/// 2. Sends a test message to verify connectivity
+/// 3. Creates a new CSR and requests certificate renewal from IoT Hub
+/// 4. Saves the renewed certificate
+/// 5. Reconnects with the renewed certificate
+/// 6. Sends telemetry messages to verify the new certificate works
 /// </summary>
 public sealed class CertificateSigningRequestSample : IDisposable
 {
@@ -41,7 +48,7 @@ public sealed class CertificateSigningRequestSample : IDisposable
     private readonly Parameters _parameters;
     private readonly CancellationTokenSource _cts;
     private DeviceClient? _deviceClient;
-    private ECDsa? _privateKey;
+    private AsymmetricAlgorithm? _privateKey;
     private bool _disposed;
 
     public CertificateSigningRequestSample(Parameters parameters)
@@ -159,22 +166,29 @@ public sealed class CertificateSigningRequestSample : IDisposable
         }
     }
 
-    private Task<DeviceCredentials> LoadCredentialsAsync()
+    private async Task<DeviceCredentials> LoadCredentialsAsync()
     {
         DeviceCredentials? credentials = TryLoadExistingCredentials();
 
         if (credentials != null)
         {
-            return Task.FromResult(credentials);
+            return credentials;
         }
 
-        // Credentials not found - provide helpful error message
+        // Credentials not found - check if DPS parameters are provided
+        if (_parameters.HasDpsParameters)
+        {
+            Console.WriteLine("Credentials not found. DPS parameters provided - provisioning via DPS with CSR...");
+            return await ProvisionWithDpsAsync();
+        }
+
+        // No credentials and no DPS parameters - provide helpful error message
         string certPath = Path.Combine(_parameters.OutputDir, $"{_parameters.DeviceName}.cert.pem");
         string keyPath = Path.Combine(_parameters.OutputDir, $"{_parameters.DeviceName}.key.pem");
         string metadataPath = Path.Combine(_parameters.OutputDir, $"{_parameters.DeviceName}.json");
 
         throw new InvalidOperationException(
-            $"Required credential files not found. This sample requires pre-existing credentials.\n\n" +
+            $"Required credential files not found.\n\n" +
             $"Expected files:\n" +
             $"  - Certificate: {certPath}\n" +
             $"  - Private Key: {keyPath}\n" +
@@ -184,8 +198,8 @@ public sealed class CertificateSigningRequestSample : IDisposable
             $"    \"assigned_hub\": \"your-hub.azure-devices.net\",\n" +
             $"    \"device_id\": \"{_parameters.DeviceName}\"\n" +
             $"  }}\n\n" +
-            $"Note: DPS provisioning with CSR is not yet supported in this SDK.\n" +
-            $"Use the Python SDK (cert_test.py) or Azure CLI for initial device provisioning.");
+            $"Alternatively, provide DPS parameters to provision the device:\n" +
+            $"  --idScope <DPS_ID_SCOPE> --symmetricKey <SYMMETRIC_KEY>");
     }
 
     private DeviceCredentials? TryLoadExistingCredentials()
@@ -209,8 +223,7 @@ public sealed class CertificateSigningRequestSample : IDisposable
 
         Console.WriteLine($"Loading private key from: {keyPath}");
         string keyPem = File.ReadAllText(keyPath);
-        _privateKey = ECDsa.Create();
-        _privateKey.ImportFromPem(keyPem);
+        _privateKey = LoadPrivateKeyFromPem(keyPem);
 
         Console.WriteLine($"Device ID: {deviceId}");
         Console.WriteLine($"Assigned hub: {assignedHub}");
@@ -222,6 +235,28 @@ public sealed class CertificateSigningRequestSample : IDisposable
             CertificatePath = certPath,
             KeyPath = keyPath,
         };
+    }
+
+    private static AsymmetricAlgorithm LoadPrivateKeyFromPem(string keyPem)
+    {
+        // Try ECC first, then RSA
+        if (keyPem.Contains("EC PRIVATE KEY") || keyPem.Contains("PRIVATE KEY"))
+        {
+            try
+            {
+                var ecdsa = ECDsa.Create();
+                ecdsa.ImportFromPem(keyPem);
+                return ecdsa;
+            }
+            catch (CryptographicException)
+            {
+                // Not an ECC key, try RSA
+            }
+        }
+
+        var rsa = RSA.Create();
+        rsa.ImportFromPem(keyPem);
+        return rsa;
     }
 
     private async Task<DeviceClient> ConnectWithCertificateAsync(
@@ -315,12 +350,14 @@ public sealed class CertificateSigningRequestSample : IDisposable
         Console.WriteLine($"\nTotal messages sent: {sentCount}");
     }
 
-    private static byte[] CreateCsr(ECDsa privateKey, string deviceName)
+    private static byte[] CreateCsr(AsymmetricAlgorithm privateKey, string deviceName)
     {
-        var request = new CertificateRequest(
-            $"CN={deviceName}",
-            privateKey,
-            HashAlgorithmName.SHA256);
+        CertificateRequest request = privateKey switch
+        {
+            ECDsa ecdsa => new CertificateRequest($"CN={deviceName}", ecdsa, HashAlgorithmName.SHA256),
+            RSA rsa => new CertificateRequest($"CN={deviceName}", rsa, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1),
+            _ => throw new NotSupportedException($"Unsupported key type: {privateKey.GetType()}")
+        };
 
         return request.CreateSigningRequest();
     }
@@ -407,4 +444,184 @@ public sealed class CertificateSigningRequestSample : IDisposable
         public string CertificatePath { get; init; } = null!;
         public string KeyPath { get; init; } = null!;
     }
+
+    #region DPS Provisioning
+
+    private async Task<DeviceCredentials> ProvisionWithDpsAsync()
+    {
+        Console.WriteLine("\n--- DPS CSR Provisioning ---");
+
+        // Step 1: Generate key pair and CSR
+        Console.WriteLine("Generating key pair and Certificate Signing Request (CSR)...");
+        var (csrBase64, privateKey) = GenerateKeyPairAndCsr(_parameters.DeviceName);
+        _privateKey = privateKey;
+        Console.WriteLine($"  CSR generated successfully. Key type: {_parameters.CsrKeyType}");
+
+        // Step 2: Determine symmetric key (derive if enrollment group key provided)
+        string symmetricKey;
+        if (!string.IsNullOrEmpty(_parameters.EnrollmentGroupKey))
+        {
+            Console.WriteLine("Deriving device symmetric key from enrollment group key...");
+            symmetricKey = DeriveSymmetricKey(_parameters.EnrollmentGroupKey, _parameters.DeviceName);
+            Console.WriteLine($"  Derived key: {symmetricKey.Substring(0, Math.Min(20, symmetricKey.Length))}...");
+        }
+        else if (!string.IsNullOrEmpty(_parameters.SymmetricKey))
+        {
+            symmetricKey = _parameters.SymmetricKey;
+        }
+        else
+        {
+            throw new InvalidOperationException("Either --symmetricKey or --enrollmentGroupKey must be provided for DPS provisioning.");
+        }
+
+        // Step 3: Create security provider
+        Console.WriteLine($"Creating security provider (SymmetricKey)...");
+        using var security = new SecurityProviderSymmetricKey(
+            _parameters.DeviceName,
+            symmetricKey,
+            null);
+        Console.WriteLine($"  Registration ID: {security.GetRegistrationID()}");
+
+        // Step 4: Create provisioning client (MQTT only for CSR)
+        Console.WriteLine("Creating provisioning client...");
+        using var transportHandler = new ProvisioningTransportHandlerMqtt(TransportFallbackType.TcpOnly);
+        ProvisioningDeviceClient provisioningClient = ProvisioningDeviceClient.Create(
+            _parameters.GlobalDeviceEndpoint,
+            _parameters.IdScope!,
+            security,
+            transportHandler);
+
+        Console.WriteLine($"  Global endpoint: {_parameters.GlobalDeviceEndpoint}");
+        Console.WriteLine($"  ID Scope: {_parameters.IdScope}");
+        Console.WriteLine($"  Transport: MQTT (TCP only)");
+
+        // Step 5: Register with CSR
+        Console.WriteLine("Registering with DPS (including CSR)...");
+        var additionalData = new ProvisioningRegistrationAdditionalData
+        {
+            ClientCertificateSigningRequest = csrBase64
+        };
+
+        DeviceRegistrationResult result = await provisioningClient.RegisterAsync(additionalData, _cts.Token);
+
+        Console.WriteLine($"  Registration status: {result.Status}");
+
+        if (result.Status != ProvisioningRegistrationStatusType.Assigned)
+        {
+            throw new InvalidOperationException(
+                $"DPS registration failed. Status: {result.Status}, " +
+                $"Error code: {result.ErrorCode}, Error message: {result.ErrorMessage}");
+        }
+
+        Console.WriteLine($"  Device ID: {result.DeviceId}");
+        Console.WriteLine($"  Assigned hub: {result.AssignedHub}");
+
+        // Step 6: Process issued certificate
+        Console.WriteLine("Processing issued certificate...");
+        if (result.IssuedClientCertificate == null || result.IssuedClientCertificate.Count == 0)
+        {
+            throw new InvalidOperationException(
+                "No certificate was issued by DPS. Ensure that your enrollment is configured for certificate issuance.");
+        }
+
+        Console.WriteLine($"  Received certificate chain with {result.IssuedClientCertificate.Count} certificate(s).");
+
+        // Save credentials to disk
+        string certPath = Path.Combine(_parameters.OutputDir, $"{_parameters.DeviceName}.cert.pem");
+        string keyPath = Path.Combine(_parameters.OutputDir, $"{_parameters.DeviceName}.key.pem");
+        string metadataPath = Path.Combine(_parameters.OutputDir, $"{_parameters.DeviceName}.json");
+
+        // Ensure output directory exists
+        Directory.CreateDirectory(_parameters.OutputDir);
+
+        // Save certificate chain
+        string pemChain = CertificateHelper.ConvertToPem(result.IssuedClientCertificate);
+        File.WriteAllText(certPath, pemChain);
+        Console.WriteLine($"  Certificate chain saved to: {certPath}");
+
+        // Save private key
+        SavePrivateKey(_privateKey, keyPath);
+        Console.WriteLine($"  Private key saved to: {keyPath}");
+
+        // Save metadata
+        SaveMetadataJson(result.AssignedHub!, result.DeviceId!, metadataPath);
+        Console.WriteLine($"  Metadata saved to: {metadataPath}");
+
+        Console.WriteLine("--- DPS Provisioning Complete ---\n");
+
+        return new DeviceCredentials
+        {
+            AssignedHub = result.AssignedHub!,
+            DeviceId = result.DeviceId!,
+            CertificatePath = certPath,
+            KeyPath = keyPath,
+        };
+    }
+
+    private (string csrBase64, AsymmetricAlgorithm privateKey) GenerateKeyPairAndCsr(string registrationId)
+    {
+        if (_parameters.CsrKeyType == CsrKeyType.ECC)
+        {
+            var ecdsa = ECDsa.Create(ECCurve.NamedCurves.nistP256);
+            var request = new CertificateRequest(
+                $"CN={registrationId}",
+                ecdsa,
+                HashAlgorithmName.SHA256);
+
+            byte[] csrDer = request.CreateSigningRequest();
+            return (Convert.ToBase64String(csrDer), ecdsa);
+        }
+        else
+        {
+            var rsa = RSA.Create(_parameters.RsaKeySize);
+            var request = new CertificateRequest(
+                $"CN={registrationId}",
+                rsa,
+                HashAlgorithmName.SHA256,
+                RSASignaturePadding.Pkcs1);
+
+            byte[] csrDer = request.CreateSigningRequest();
+            return (Convert.ToBase64String(csrDer), rsa);
+        }
+    }
+
+    private static void SavePrivateKey(AsymmetricAlgorithm privateKey, string path)
+    {
+        byte[] privateKeyBytes = privateKey switch
+        {
+            ECDsa ecdsa => ecdsa.ExportPkcs8PrivateKey(),
+            RSA rsa => rsa.ExportPkcs8PrivateKey(),
+            _ => throw new NotSupportedException($"Unsupported key type: {privateKey.GetType()}")
+        };
+
+        var sb = new StringBuilder();
+        sb.AppendLine("-----BEGIN PRIVATE KEY-----");
+        sb.AppendLine(Convert.ToBase64String(privateKeyBytes, Base64FormattingOptions.InsertLineBreaks));
+        sb.AppendLine("-----END PRIVATE KEY-----");
+
+        File.WriteAllText(path, sb.ToString());
+    }
+
+    private static void SaveMetadataJson(string assignedHub, string deviceId, string path)
+    {
+        var metadata = new { assigned_hub = assignedHub, device_id = deviceId };
+        string json = JsonSerializer.Serialize(metadata, new JsonSerializerOptions { WriteIndented = true });
+        File.WriteAllText(path, json);
+    }
+
+    /// <summary>
+    /// Derives a device-specific symmetric key from an enrollment group key using HMAC-SHA256.
+    /// This is required for group enrollments where each device needs its own derived key.
+    /// </summary>
+    /// <param name="enrollmentGroupKey">The primary or secondary key from the enrollment group.</param>
+    /// <param name="registrationId">The device registration ID (typically the device name).</param>
+    /// <returns>A base64-encoded derived symmetric key for the device.</returns>
+    private static string DeriveSymmetricKey(string enrollmentGroupKey, string registrationId)
+    {
+        using var hmac = new HMACSHA256(Convert.FromBase64String(enrollmentGroupKey));
+        byte[] derivedKeyBytes = hmac.ComputeHash(Encoding.UTF8.GetBytes(registrationId));
+        return Convert.ToBase64String(derivedKeyBytes);
+    }
+
+    #endregion
 }
