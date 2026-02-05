@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net8.0</TargetFramework>
+        <LangVersion>10.0</LangVersion>
+        <Nullable>enable</Nullable>
+        <RootNamespace>CertificateSigningRequestSample</RootNamespace>
+    </PropertyGroup>
+    <ItemGroup>
+        <PackageReference Include="CommandLineParser" Version="2.9.1" />
+    </ItemGroup>
+    <ItemGroup Condition="'$(Configuration)' == 'Release'">
+        <PackageReference Include="Microsoft.Azure.Devices.Client" Version="1.41.2" />
+        <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Client" Version="1.19.4" />
+        <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Transport.Mqtt" Version="1.17.4" />
+    </ItemGroup>
+    <ItemGroup Condition="'$(Configuration)' == 'Debug'">
+        <ProjectReference Include="..\..\..\src\Microsoft.Azure.Devices.Client.csproj" />
+        <ProjectReference Include="..\..\..\..\..\provisioning\device\src\Microsoft.Azure.Devices.Provisioning.Client.csproj" />
+        <ProjectReference Include="..\..\..\..\..\provisioning\transport\mqtt\src\Microsoft.Azure.Devices.Provisioning.Transport.Mqtt.csproj" />
+    </ItemGroup>
+</Project>

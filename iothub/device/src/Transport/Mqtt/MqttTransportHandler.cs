@@ -90,6 +90,15 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         private const string MethodPostTopicPrefix = "$iothub/methods/POST/";
         private const string MethodResponseTopic = "$iothub/methods/res/{0}/?$rid={1}";
 
+        // Topic names for credential management (certificate signing requests).
+        // Device subscribes to "$iothub/credentials/res/#" to receive responses.
+        // Device publishes CSR to "$iothub/credentials/POST/issueCertificate/?$rid={request_id}"
+        // Gateway responds on "$iothub/credentials/res/{status}/?$rid={request_id}"
+        private const string CredentialsResponseTopicFilter = "$iothub/credentials/res/#";
+        private const string CredentialsResponseTopicPrefix = "$iothub/credentials/res/";
+        private const string CredentialsRequestTopic = "$iothub/credentials/POST/issueCertificate/?$rid={0}";
+        private const string CredentialsResponseTopicPattern = @"\$iothub/credentials/res/(\d+)/\?\$rid=(.+)";
+
         // Topic names for enabling events on Modules.
 
         private const string ReceiveEventMessagePatternFilter = "devices/{0}/modules/{1}/#";
@@ -99,6 +108,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         private static readonly Lazy<IEventLoopGroup> s_eventLoopGroup = new Lazy<IEventLoopGroup>(GetEventLoopGroup);
         private static readonly TimeSpan s_regexTimeoutMilliseconds = TimeSpan.FromMilliseconds(500);
         private static readonly TimeSpan s_defaultTwinTimeout = TimeSpan.FromSeconds(60);
+        private static readonly HashSet<int> s_transientErrorCodes = new HashSet<int>
+        {
+            429002, // ThrottleBacklogLimitExceeded - retry with 1s initial
+            429003, // ThrottlingBacklogTimeout - retry with 1s initial
+            503001, // ServiceUnavailable - retry with 5s initial
+            500001  // ServerError - retry with 5min initial
+        };
 
         private readonly string _generationId = Guid.NewGuid().ToString();
         private readonly string _receiveEventMessageFilter;
@@ -122,6 +138,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         private SemaphoreSlim _receivingSemaphore = new SemaphoreSlim(0);
         private CancellationTokenSource _disconnectAwaitersCancellationSource = new CancellationTokenSource();
         private readonly Regex _twinResponseTopicRegex = new Regex(TwinResponseTopicPattern, RegexOptions.Compiled, s_regexTimeoutMilliseconds);
+        private readonly Regex _credentialsResponseTopicRegex = new Regex(CredentialsResponseTopicPattern, RegexOptions.Compiled, s_regexTimeoutMilliseconds);
         private readonly Func<MethodRequestInternal, Task> _methodListener;
         private readonly Action<TwinCollection> _onDesiredStatePatchListener;
         private readonly Func<string, Message, Task> _moduleMessageReceivedListener;
@@ -134,6 +151,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         private IPAddress[] _serverAddresses;
         private int _state = (int)TransportState.NotInitialized;
         private Action<Message> _twinResponseEvent;
+        private Action<Message> _credentialsResponseEvent;
 
         internal MqttTransportHandler(
             PipelineContext context,
@@ -633,6 +651,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                         {
                             _receivingSemaphore.Release();
                         }
+                    }
+                    else if (topic.StartsWith(CredentialsResponseTopicPrefix, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _credentialsResponseEvent?.Invoke(message);
+                        await CompleteIncomingMessageAsync(message).ConfigureAwait(false);
                     }
                     else
                     {
@@ -1381,6 +1404,294 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         {
             return (TransportState)Interlocked.CompareExchange(ref _state, (int)toState, (int)fromState) == fromState;
         }
+
+        #region Certificate Signing Request (Credential Management)
+
+        /// <summary>
+        /// Sends a certificate signing request to IoT Hub and receives a new certificate.
+        /// This implements the two-phase MQTT protocol for credential management.
+        /// </summary>
+        public override async Task<CertificateSigningResponse> SendCertificateSigningRequestAsync(
+            CertificateSigningRequest request,
+            CancellationToken cancellationToken)
+        {
+            if (Logging.IsEnabled)
+                Logging.Enter(this, request, nameof(SendCertificateSigningRequestAsync));
+
+            cancellationToken.ThrowIfCancellationRequested();
+            EnsureValidState();
+
+            try
+            {
+                await SubscribeToCredentialsResponseTopicAsync().ConfigureAwait(false);
+
+                string rid = Guid.NewGuid().ToString();
+
+                using var phase1Complete = new SemaphoreSlim(0);  // 202 received
+                using var phase2Complete = new SemaphoreSlim(0);  // 200 or error received
+
+                CertificateSigningResponse certificateResponse = null;
+                CertificateAcceptedResponse acceptedResponse = null;
+                ExceptionDispatchInfo responseException = null;
+
+                void OnCredentialsResponse(Message possibleResponse)
+                    => HandleCredentialsResponseMessage(
+                        possibleResponse,
+                        rid,
+                        phase1Complete,
+                        phase2Complete,
+                        ref acceptedResponse,
+                        ref certificateResponse,
+                        ref responseException);
+
+                try
+                {
+                    _credentialsResponseEvent += OnCredentialsResponse;
+
+                    using Message requestMessage = CreateCredentialsRequestMessage(request, rid);
+                    await SendEventAsync(requestMessage, cancellationToken).ConfigureAwait(false);
+
+                    await WaitForAcceptancePhaseAsync(rid, phase1Complete, cancellationToken).ConfigureAwait(false);
+                    ThrowIfResponseException(responseException);
+                    string correlationId = ValidateAcceptedResponse(acceptedResponse, rid);
+
+                    await WaitForCertificatePhaseAsync(rid, acceptedResponse, phase2Complete, cancellationToken).ConfigureAwait(false);
+                    ThrowIfResponseException(responseException);
+                    ValidateCertificateResponse(certificateResponse, rid, correlationId);
+
+                    return certificateResponse;
+                }
+                finally
+                {
+                    _credentialsResponseEvent -= OnCredentialsResponse;
+                }
+            }
+            finally
+            {
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, request, nameof(SendCertificateSigningRequestAsync));
+            }
+        }
+
+        private void HandleCredentialsResponseMessage(
+            Message possibleResponse,
+            string rid,
+            SemaphoreSlim phase1Complete,
+            SemaphoreSlim phase2Complete,
+            ref CertificateAcceptedResponse acceptedResponse,
+            ref CertificateSigningResponse response,
+            ref ExceptionDispatchInfo responseException)
+        {
+            try
+            {
+                if (!TryParseAndValidateCredentialsResponse(possibleResponse, rid, out int status, out string body))
+                    return;
+
+                ProcessCredentialsResponseByStatus(
+                    status,
+                    body,
+                    rid,
+                    ref acceptedResponse,
+                    ref response,
+                    phase1Complete,
+                    phase2Complete);
+            }
+            catch (Exception e)
+            {
+                responseException = ExceptionDispatchInfo.Capture(e);
+                phase1Complete.Release();
+                phase2Complete.Release();
+            }
+        }
+
+        private bool TryParseAndValidateCredentialsResponse(Message possibleResponse, string expectedRid, out int status, out string body)
+        {
+            body = null;
+            status = 0;
+
+            // Throws if the topic doesn't match the expected pattern.
+            ParseCredentialsResponseTopic(possibleResponse.MqttTopicName, out string receivedRid, out status);
+
+            if (expectedRid != receivedRid)
+            {
+                return false;
+            }
+
+            body = ReadMessageBody(possibleResponse);
+            return true;
+        }
+
+        private static string ReadMessageBody(Message message)
+        {
+            using var reader = new StreamReader(
+                message.GetBodyStream(),
+                System.Text.Encoding.UTF8);
+            return reader.ReadToEnd();
+        }
+
+        private void ProcessCredentialsResponseByStatus(
+            int status,
+            string body,
+            string rid,
+            ref CertificateAcceptedResponse acceptedResponse,
+            ref CertificateSigningResponse response,
+            SemaphoreSlim phase1Complete,
+            SemaphoreSlim phase2Complete)
+        {
+            switch (status)
+            {
+                case 202:
+                    acceptedResponse = JsonConvert.DeserializeObject<CertificateAcceptedResponse>(body);
+                    phase1Complete.Release();
+                    break;
+                case 200:
+                    response = JsonConvert.DeserializeObject<CertificateSigningResponse>(body);
+                    phase2Complete.Release();
+                    break;
+                default:
+                    CredentialErrorResponse error = JsonConvert.DeserializeObject<CredentialErrorResponse>(body);
+                    throw CreateCredentialException(error, rid, status);
+            }
+        }
+
+        private Message CreateCredentialsRequestMessage(CertificateSigningRequest request, string rid)
+        {
+            string body = JsonConvert.SerializeObject(request);
+            var bodyStream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(body));
+            var requestMessage = new Message(bodyStream);
+
+            requestMessage.MqttTopicName = string.Format(
+                CultureInfo.InvariantCulture,
+                CredentialsRequestTopic,
+                rid);
+
+            return requestMessage;
+        }
+
+        private static async Task WaitForAcceptancePhaseAsync(
+            string rid,
+            SemaphoreSlim phase1Complete,
+            CancellationToken cancellationToken)
+        {
+            await phase1Complete.WaitAsync(cancellationToken).ConfigureAwait(false);
+        }
+
+        private static string ValidateAcceptedResponse(CertificateAcceptedResponse acceptedResponse, string rid)
+        {
+            if (acceptedResponse == null)
+            {
+                throw new InvalidOperationException(
+                    $"Certificate signing request {rid} received an invalid or empty acceptance response from the server.");
+            }
+
+            if (string.IsNullOrEmpty(acceptedResponse.CorrelationId))
+            {
+                throw new InvalidOperationException(
+                    $"Certificate signing request {rid} received an acceptance response without a correlation ID.");
+            }
+
+            return acceptedResponse.CorrelationId;
+        }
+
+        private static async Task WaitForCertificatePhaseAsync(
+            string rid,
+            CertificateAcceptedResponse acceptedResponse,
+            SemaphoreSlim phase2Complete,
+            CancellationToken cancellationToken)
+        {
+            TimeSpan phase2Timeout = acceptedResponse.OperationExpires - DateTimeOffset.UtcNow;
+            if (phase2Timeout <= TimeSpan.Zero)
+            {
+                throw new TimeoutException(
+                    $"Certificate signing request {rid} operation already expired");
+            }
+
+            bool received = await phase2Complete.WaitAsync(phase2Timeout, cancellationToken)
+                .ConfigureAwait(false);
+
+            if (!received)
+            {
+                throw new TimeoutException(
+                    $"Certificate signing request {rid} timed out waiting for certificate (operationExpires passed)");
+            }
+        }
+
+        private static void ValidateCertificateResponse(CertificateSigningResponse response, string rid, string expectedCorrelationId)
+        {
+            if (response == null)
+            {
+                throw new InvalidOperationException(
+                    $"Certificate signing request {rid} received an invalid or empty certificate response from the server.");
+            }
+
+            if (string.IsNullOrEmpty(response.CorrelationId))
+            {
+                throw new InvalidOperationException(
+                    $"Certificate signing request {rid} received a certificate response without a correlation ID.");
+            }
+
+            if (!string.Equals(response.CorrelationId, expectedCorrelationId, StringComparison.Ordinal))
+            {
+                throw new InvalidOperationException(
+                    $"Certificate signing request {rid} received a certificate response with mismatched correlation ID. " +
+                    $"Expected: {expectedCorrelationId}, Received: {response.CorrelationId}.");
+            }
+            
+            if(response.Certificates == null || response.Certificates.Count < 1)
+            {
+                throw new InvalidOperationException(
+                    $"Certificate signing request {rid} received a certificate response with no certificates.");
+            }
+        }
+
+        private static void ThrowIfResponseException(ExceptionDispatchInfo responseException)
+        {
+            responseException?.Throw();
+        }
+
+        private async Task SubscribeToCredentialsResponseTopicAsync()
+        {
+            await _channel.WriteAsync(
+                new SubscribePacket(0, new SubscriptionRequest(CredentialsResponseTopicFilter, _qosReceivePacketFromService)))
+                .ConfigureAwait(true);
+        }
+
+        private void ParseCredentialsResponseTopic(string topicName, out string rid, out int status)
+        {
+            Match match = _credentialsResponseTopicRegex.Match(topicName);
+            if (!match.Success)
+            {
+                throw new InvalidOperationException(
+                    $"Received message on credentials topic subscription that does not match expected pattern. Topic: {topicName}");
+            }
+
+            status = Convert.ToInt32(match.Groups[1].Value, CultureInfo.InvariantCulture);
+            rid = match.Groups[2].Value;
+        }
+
+        /// <summary>
+        /// Creates the appropriate exception based on error code per spec.
+        /// </summary>
+        private static CredentialOperationException CreateCredentialException(
+            CredentialErrorResponse error,
+            string requestId,
+            int httpStatus)
+        {
+            bool isTransient = s_transientErrorCodes.Contains(error.ErrorCode);
+
+            return new CredentialOperationException(
+                message: error.Message,
+                errorCode: error.ErrorCode,
+                trackingId: error.TrackingId,
+                correlationId: error.Info?.CorrelationId,
+                credentialError: error.Info?.CredentialError,
+                retryAfterSeconds: error.RetryAfterSeconds,
+                activeRequestId: error.Info?.RequestId,
+                operationExpires: error.Info?.OperationExpires,
+                isTransient: isTransient);
+        }
+
+        #endregion
 
         private void EnsureValidState(bool throwIfNotOpen = true)
         {
