@@ -135,7 +135,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 {
                     deviceRegistration.Payload = new JRaw(message.Payload);
                 }
-                if (!string.IsNullOrEmpty(message.Csr))
+                if (!string.IsNullOrEmpty(message.CertificateSigningRequest))
                 {
                     throw new NotSupportedException("Certificate signing request (CSR) is not supported over HTTP transport.");
                 }

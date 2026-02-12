@@ -35,7 +35,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         /// <summary>
         /// The base64-encoded Certificate Signing Request (CSR) to be sent during registration.
         /// </summary>
-        public string Csr { get; private set; }
+        public string CertificateSigningRequest { get; private set; }
 
         /// <summary>
         /// The Product Information sent to the Provisioning Service. The application can specify extra information.
@@ -91,13 +91,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         /// <param name="idScope">The IDScope for this message.</param>
         /// <param name="security">The SecurityProvider used to authenticate the client.</param>
         /// <param name="payload">The custom Json content.</param>
-        /// <param name="csr">The base64-encoded Certificate Signing Request (CSR).</param>
+        /// <param name="certificateSigningRequest">The base64-encoded Certificate Signing Request (CSR).</param>
         public ProvisioningTransportRegisterMessage(
             string globalDeviceEndpoint,
             string idScope,
             SecurityProvider security,
             string payload,
-            string csr)
+            string certificateSigningRequest)
         {
             GlobalDeviceEndpoint = globalDeviceEndpoint;
             IdScope = idScope;
@@ -106,9 +106,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             {
                 Payload = payload;
             }
-            if (!string.IsNullOrEmpty(csr))
+            if (!string.IsNullOrEmpty(certificateSigningRequest))
             {
-                Csr = csr;
+                CertificateSigningRequest = certificateSigningRequest;
             }
         }
     }
