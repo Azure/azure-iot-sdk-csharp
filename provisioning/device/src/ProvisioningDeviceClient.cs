@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
@@ -95,7 +95,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         {
             Logging.RegisterAsync(this, _globalDeviceEndpoint, _idScope, _transport, _security);
 
-            var request = new ProvisioningTransportRegisterMessage(_globalDeviceEndpoint, _idScope, _security, data?.JsonData)
+            var request = new ProvisioningTransportRegisterMessage(_globalDeviceEndpoint, _idScope, _security, data?.JsonData, data?.ClientCertificateSigningRequest)
             {
                 ProductInfo = ProductInfo,
             };
@@ -141,7 +141,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         {
             Logging.RegisterAsync(this, _globalDeviceEndpoint, _idScope, _transport, _security);
 
-            var request = new ProvisioningTransportRegisterMessage(_globalDeviceEndpoint, _idScope, _security, data?.JsonData)
+            var request = new ProvisioningTransportRegisterMessage(_globalDeviceEndpoint, _idScope, _security, data?.JsonData, data?.ClientCertificateSigningRequest)
             {
                 ProductInfo = ProductInfo,
             };

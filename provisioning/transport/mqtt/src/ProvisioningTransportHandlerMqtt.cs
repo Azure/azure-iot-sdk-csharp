@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
@@ -181,6 +181,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             Enum.TryParse(result.Status, true, out ProvisioningRegistrationStatusType status);
             Enum.TryParse(result.Substatus, true, out ProvisioningRegistrationSubstatusType substatus);
 
+            IReadOnlyList<string> issuedClientCertificate = result.IssuedCertificateChain != null
+                ? (IReadOnlyList<string>)new List<string>(result.IssuedCertificateChain).AsReadOnly()
+                : null;
+
             return new DeviceRegistrationResult(
                 result.RegistrationId,
                 result.CreatedDateTimeUtc,
@@ -193,7 +197,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 result.ErrorCode == null ? 0 : (int)result.ErrorCode,
                 result.ErrorMessage,
                 result.Etag,
-                result?.Payload?.ToString(CultureInfo.InvariantCulture));
+                result?.Payload?.ToString(CultureInfo.InvariantCulture),
+                issuedClientCertificate);
         }
 
         private Task<RegistrationOperationStatus> ProvisionOverTcpUsingX509CertificateAsync(
