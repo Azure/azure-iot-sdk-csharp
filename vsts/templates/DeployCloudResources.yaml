@@ -16,9 +16,14 @@ steps:
 
       $resourceGroupName = 'dotnetsdkgate'+$CloudResourceUniqueSuffix
 
-      Write-Host "##vso[task.setvariable variable=RESOURCE_GROUP_NAME;isOutput=true]$resourceGroupName"
+      # Create a unique deployment name
+      $randomSuffix = -join ((65..90) + (97..122) | Get-Random -Count 5 | ForEach-Object { [char]$_ })
+      $deploymentName = "DotnetSDKE2eInfra-$randomSuffix"
 
-      $(Build.SourcesDirectory)/e2e/test/prerequisites/E2ETestsSetup/e2eTestsSetup.ps1 -SubscriptionId $subscriptionId -Region westcentralus -ResourceGroup $resourceGroupName -GroupCertificatePassword someCertPass -TestCertificateOutputLocation $(Pipeline.Workspace)/test-certificates
+      Write-Host "##vso[task.setvariable variable=RESOURCE_GROUP_NAME;isOutput=true]$resourceGroupName"
+      Write-Host "##vso[task.setvariable variable=DEPLOYMENT_NAME;isOutput=true]$deploymentName"
+
+      $(Build.SourcesDirectory)/e2e/test/prerequisites/E2ETestsSetup/e2eTestsSetup.ps1 -SubscriptionId $subscriptionId -Region westcentralus -ResourceGroup $resourceGroupName -GroupCertificatePassword someCertPass -TestCertificateOutputLocation $(Pipeline.Workspace)/test-certificates -DeploymentName $deploymentName
 
 - publish:  $(Pipeline.Workspace)
   displayName: 'save test certificates locally'

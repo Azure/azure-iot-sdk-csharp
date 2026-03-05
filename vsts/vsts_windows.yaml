@@ -172,6 +172,7 @@ jobs:
       - DeployCloudTestResources
     variables:
       RESOURCE_GROUP_NAME: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.RESOURCE_GROUP_NAME'] ]
+      DEPLOYMENT_NAME: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.DEPLOYMENT_NAME'] ]
     pool:
       vmImage: windows-2022
     steps:
