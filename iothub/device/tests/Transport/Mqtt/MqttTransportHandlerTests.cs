@@ -721,7 +721,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
                     int ridIndex = request.MqttTopicName.IndexOf("$rid=", StringComparison.Ordinal) + 5;
                     string rid = request.MqttTopicName.Substring(ridIndex);
 
-                    var errorResponse = new CredentialErrorResponse
+                    var errorResponse = new CertificateSigningRequestErrorResponse
                     {
                         ErrorCode = errorCode,
                         Message = errorMessage
@@ -736,7 +736,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             // act
             await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
             CertificateSigningOperation operation = await transport.SendCertificateSigningRequestAsync(csr, CancellationToken.None).ConfigureAwait(false);
-            CredentialOperationException exception = await Assert.ThrowsExceptionAsync<CredentialOperationException>(async () =>
+            CertificateSigningRequestException exception = await Assert.ThrowsExceptionAsync<CertificateSigningRequestException>(async () =>
             {
                 await operation.Accepted.ConfigureAwait(false);
             }).ConfigureAwait(false);
@@ -786,7 +786,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             // act
             await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
             CertificateSigningOperation operation = await transport.SendCertificateSigningRequestAsync(csr, CancellationToken.None).ConfigureAwait(false);
-            CredentialOperationException exception = await Assert.ThrowsExceptionAsync<CredentialOperationException>(async () =>
+            CertificateSigningRequestException exception = await Assert.ThrowsExceptionAsync<CertificateSigningRequestException>(async () =>
             {
                 await operation.Accepted.ConfigureAwait(false);
             }).ConfigureAwait(false);
@@ -804,7 +804,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
         {
             // arrange
             const int errorCode = 400040;
-            const string credentialError = "CertificateValidationFailed";
+            const string csrError = "CertificateValidationFailed";
             const string correlationId = "test-correlation-id";
             
             MqttTransportHandler transport = CreateTransportHandlerWithMockChannel(out IChannel channel);
@@ -825,7 +825,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
                         info = new
                         {
                             correlationId = correlationId,
-                            credentialError = credentialError,
+                            credentialError = csrError,
                             credentialMessage = "The certificate validation failed due to invalid key usage"
                         }
                     };
@@ -839,7 +839,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             // act
             await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
             CertificateSigningOperation operation = await transport.SendCertificateSigningRequestAsync(csr, CancellationToken.None).ConfigureAwait(false);
-            CredentialOperationException exception = await Assert.ThrowsExceptionAsync<CredentialOperationException>(async () =>
+            CertificateSigningRequestException exception = await Assert.ThrowsExceptionAsync<CertificateSigningRequestException>(async () =>
             {
                 await operation.Accepted.ConfigureAwait(false);
             }).ConfigureAwait(false);
@@ -848,7 +848,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             Assert.AreEqual(errorCode, exception.ErrorCode);
             Assert.AreEqual("CredentialOperationFailed", exception.Message);
             Assert.IsFalse(exception.IsTransient);
-            Assert.AreEqual(credentialError, exception.CredentialError);
+            Assert.AreEqual(csrError, exception.CertificateSigningRequestError);
             Assert.AreEqual(correlationId, exception.CorrelationId);
         }
 
@@ -886,7 +886,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             // act
             await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
             CertificateSigningOperation operation = await transport.SendCertificateSigningRequestAsync(csr, CancellationToken.None).ConfigureAwait(false);
-            CredentialOperationException exception = await Assert.ThrowsExceptionAsync<CredentialOperationException>(async () =>
+            CertificateSigningRequestException exception = await Assert.ThrowsExceptionAsync<CertificateSigningRequestException>(async () =>
             {
                 await operation.Accepted.ConfigureAwait(false);
             }).ConfigureAwait(false);

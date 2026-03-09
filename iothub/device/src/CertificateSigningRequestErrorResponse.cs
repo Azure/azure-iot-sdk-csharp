@@ -1,13 +1,13 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 using System;
 using Newtonsoft.Json;
 namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
-    /// Represents an error response from credential management operations.
+    /// Represents an error response from a certificate signing request operation.
     /// </summary>
-    internal class CredentialErrorResponse
+    internal class CertificateSigningRequestErrorResponse
     {
         [JsonProperty("errorCode")]
         public int ErrorCode { get; set; }
@@ -22,21 +22,21 @@ namespace Microsoft.Azure.Devices.Client
         public DateTimeOffset TimestampUtc { get; set; }
 
         [JsonProperty("info")]
-        public CredentialErrorInfo Info { get; set; }
+        public CertificateSigningRequestErrorInfo Info { get; set; }
 
         [JsonProperty("retryAfter")]
         public int? RetryAfterSeconds { get; set; }
 
-        internal class CredentialErrorInfo
+        internal class CertificateSigningRequestErrorInfo
         {
             [JsonProperty("correlationId")]
             public string CorrelationId { get; set; }
 
             [JsonProperty("credentialError")]
-            public string CredentialError { get; set; }
+            public string CertificateSigningRequestError { get; set; }
 
             [JsonProperty("credentialMessage")]
-            public string CredentialMessage { get; set; }
+            public string CertificateSigningRequestMessage { get; set; }
 
             [JsonProperty("requestId")]
             public string RequestId { get; set; }

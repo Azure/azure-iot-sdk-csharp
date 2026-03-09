@@ -647,7 +647,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns>A <see cref="CertificateSigningOperation"/> with <see cref="CertificateSigningOperation.Accepted"/> and <see cref="CertificateSigningOperation.Completed"/> tasks.</returns>
         /// <exception cref="ArgumentNullException">Thrown when request is null.</exception>
         /// <exception cref="NotSupportedException">Thrown when using non-MQTT transport.</exception>
-        /// <exception cref="CredentialOperationException">Thrown when the request fails with specific error details.</exception>
+        /// <exception cref="CertificateSigningRequestException">Thrown when the request fails with specific error details.</exception>
         /// <exception cref="ObjectDisposedException">Thrown when the client has been disposed.</exception>
         public Task<CertificateSigningOperation> SendCertificateSigningRequestAsync(
             CertificateSigningRequest request,

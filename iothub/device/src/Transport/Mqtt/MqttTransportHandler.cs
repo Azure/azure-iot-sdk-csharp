@@ -90,14 +90,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         private const string MethodPostTopicPrefix = "$iothub/methods/POST/";
         private const string MethodResponseTopic = "$iothub/methods/res/{0}/?$rid={1}";
 
-        // Topic names for credential management (certificate signing requests).
+        // Topic names for certificate signing requests.
         // Device subscribes to "$iothub/credentials/res/#" to receive responses.
         // Device publishes CSR to "$iothub/credentials/POST/issueCertificate/?$rid={request_id}"
         // Gateway responds on "$iothub/credentials/res/{status}/?$rid={request_id}"
-        private const string CredentialsResponseTopicFilter = "$iothub/credentials/res/#";
-        private const string CredentialsResponseTopicPrefix = "$iothub/credentials/res/";
-        private const string CredentialsRequestTopic = "$iothub/credentials/POST/issueCertificate/?$rid={0}";
-        private const string CredentialsResponseTopicPattern = @"\$iothub/credentials/res/(\d+)/\?\$rid=(.+)";
+        private const string CsrResponseTopicFilter = "$iothub/credentials/res/#";
+        private const string CsrResponseTopicPrefix = "$iothub/credentials/res/";
+        private const string CsrRequestTopic = "$iothub/credentials/POST/issueCertificate/?$rid={0}";
+        private const string CsrResponseTopicPattern = @"\$iothub/credentials/res/(\d+)/\?\$rid=(.+)";
 
         // Topic names for enabling events on Modules.
 
@@ -138,7 +138,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         private SemaphoreSlim _receivingSemaphore = new SemaphoreSlim(0);
         private CancellationTokenSource _disconnectAwaitersCancellationSource = new CancellationTokenSource();
         private readonly Regex _twinResponseTopicRegex = new Regex(TwinResponseTopicPattern, RegexOptions.Compiled, s_regexTimeoutMilliseconds);
-        private readonly Regex _credentialsResponseTopicRegex = new Regex(CredentialsResponseTopicPattern, RegexOptions.Compiled, s_regexTimeoutMilliseconds);
+        private readonly Regex _csrResponseTopicRegex = new Regex(CsrResponseTopicPattern, RegexOptions.Compiled, s_regexTimeoutMilliseconds);
         private readonly Func<MethodRequestInternal, Task> _methodListener;
         private readonly Action<TwinCollection> _onDesiredStatePatchListener;
         private readonly Func<string, Message, Task> _moduleMessageReceivedListener;
@@ -151,7 +151,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         private IPAddress[] _serverAddresses;
         private int _state = (int)TransportState.NotInitialized;
         private Action<Message> _twinResponseEvent;
-        private Action<Message> _credentialsResponseEvent;
+        private Action<Message> _csrResponseEvent;
 
         internal MqttTransportHandler(
             PipelineContext context,
@@ -652,9 +652,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                             _receivingSemaphore.Release();
                         }
                     }
-                    else if (topic.StartsWith(CredentialsResponseTopicPrefix, StringComparison.OrdinalIgnoreCase))
+                    else if (topic.StartsWith(CsrResponseTopicPrefix, StringComparison.OrdinalIgnoreCase))
                     {
-                        _credentialsResponseEvent?.Invoke(message);
+                        _csrResponseEvent?.Invoke(message);
                         await CompleteIncomingMessageAsync(message).ConfigureAwait(false);
                     }
                     else
@@ -1405,11 +1405,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             return (TransportState)Interlocked.CompareExchange(ref _state, (int)toState, (int)fromState) == fromState;
         }
 
-        #region Certificate Signing Request (Credential Management)
+        #region Certificate Signing Request
 
         /// <summary>
         /// Sends a certificate signing request to IoT Hub and receives a new certificate.
-        /// This implements the two-phase MQTT protocol for credential management.
+        /// This implements the two-phase MQTT protocol for certificate signing requests.
         /// </summary>
         public override async Task<CertificateSigningOperation> SendCertificateSigningRequestAsync(
             CertificateSigningRequest request,
@@ -1423,22 +1423,22 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             try
             {
-                await SubscribeToCredentialsResponseTopicAsync().ConfigureAwait(false);
+                await SubscribeToCsrResponseTopicAsync().ConfigureAwait(false);
 
                 string rid = Guid.NewGuid().ToString();
                 var operation = new CertificateSigningOperation();
 
-                void OnCredentialsResponse(Message possibleResponse)
-                    => HandleCredentialsResponseMessage(possibleResponse, rid, operation);
+                void OnCsrResponse(Message possibleResponse)
+                    => HandleCsrResponseMessage(possibleResponse, rid, operation);
 
-                _credentialsResponseEvent += OnCredentialsResponse;
+                _csrResponseEvent += OnCsrResponse;
 
                 // Unsubscribe the handler when the operation completes (success or failure).
                 _ = operation.Completed.ContinueWith(
-                    _ => _credentialsResponseEvent -= OnCredentialsResponse,
+                    _ => _csrResponseEvent -= OnCsrResponse,
                     TaskScheduler.Default);
 
-                using Message requestMessage = CreateCredentialsRequestMessage(request, rid);
+                using Message requestMessage = CreateCsrRequestMessage(request, rid);
                 await SendEventAsync(requestMessage, cancellationToken).ConfigureAwait(false);
 
                 return operation;
@@ -1450,14 +1450,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
         }
 
-        private void HandleCredentialsResponseMessage(
+        private void HandleCsrResponseMessage(
             Message possibleResponse,
             string rid,
             CertificateSigningOperation operation)
         {
             try
             {
-                if (!TryParseAndValidateCredentialsResponse(possibleResponse, rid, out int status, out string body))
+                if (!TryParseAndValidateCsrResponse(possibleResponse, rid, out int status, out string body))
                     return;
 
                 switch (status)
@@ -1471,8 +1471,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                         operation.SetCompleted(response);
                         break;
                     default:
-                        CredentialErrorResponse error = JsonConvert.DeserializeObject<CredentialErrorResponse>(body);
-                        operation.SetFailed(CreateCredentialException(error, rid, status));
+                        CertificateSigningRequestErrorResponse error = JsonConvert.DeserializeObject<CertificateSigningRequestErrorResponse>(body);
+                        operation.SetFailed(CreateCsrException(error, rid, status));
                         break;
                 }
             }
@@ -1482,13 +1482,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
         }
 
-        private bool TryParseAndValidateCredentialsResponse(Message possibleResponse, string expectedRid, out int status, out string body)
+        private bool TryParseAndValidateCsrResponse(Message possibleResponse, string expectedRid, out int status, out string body)
         {
             body = null;
             status = 0;
 
             // Throws if the topic doesn't match the expected pattern.
-            ParseCredentialsResponseTopic(possibleResponse.MqttTopicName, out string receivedRid, out status);
+            ParseCsrResponseTopic(possibleResponse.MqttTopicName, out string receivedRid, out status);
 
             if (expectedRid != receivedRid)
             {
@@ -1507,7 +1507,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             return reader.ReadToEnd();
         }
 
-        private Message CreateCredentialsRequestMessage(CertificateSigningRequest request, string rid)
+        private Message CreateCsrRequestMessage(CertificateSigningRequest request, string rid)
         {
             string body = JsonConvert.SerializeObject(request);
             var bodyStream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(body));
@@ -1515,26 +1515,26 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             requestMessage.MqttTopicName = string.Format(
                 CultureInfo.InvariantCulture,
-                CredentialsRequestTopic,
+                CsrRequestTopic,
                 rid);
 
             return requestMessage;
         }
 
-        private async Task SubscribeToCredentialsResponseTopicAsync()
+        private async Task SubscribeToCsrResponseTopicAsync()
         {
             await _channel.WriteAsync(
-                new SubscribePacket(0, new SubscriptionRequest(CredentialsResponseTopicFilter, _qosReceivePacketFromService)))
+                new SubscribePacket(0, new SubscriptionRequest(CsrResponseTopicFilter, _qosReceivePacketFromService)))
                 .ConfigureAwait(true);
         }
 
-        private void ParseCredentialsResponseTopic(string topicName, out string rid, out int status)
+        private void ParseCsrResponseTopic(string topicName, out string rid, out int status)
         {
-            Match match = _credentialsResponseTopicRegex.Match(topicName);
+            Match match = _csrResponseTopicRegex.Match(topicName);
             if (!match.Success)
             {
                 throw new InvalidOperationException(
-                    $"Received message on credentials topic subscription that does not match expected pattern. Topic: {topicName}");
+                    $"Received message on CSR response topic that does not match expected pattern. Topic: {topicName}");
             }
 
             status = Convert.ToInt32(match.Groups[1].Value, CultureInfo.InvariantCulture);
@@ -1542,21 +1542,21 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         }
 
         /// <summary>
-        /// Creates the appropriate exception based on error code per spec.
+        /// Creates the appropriate exception for a CSR error response.
         /// </summary>
-        private static CredentialOperationException CreateCredentialException(
-            CredentialErrorResponse error,
+        private static CertificateSigningRequestException CreateCsrException(
+            CertificateSigningRequestErrorResponse error,
             string requestId,
             int httpStatus)
         {
             bool isTransient = s_transientErrorCodes.Contains(error.ErrorCode);
 
-            return new CredentialOperationException(
+            return new CertificateSigningRequestException(
                 message: error.Message,
                 errorCode: error.ErrorCode,
                 trackingId: error.TrackingId,
                 correlationId: error.Info?.CorrelationId,
-                credentialError: error.Info?.CredentialError,
+                certificateSigningRequestError: error.Info?.CertificateSigningRequestError,
                 retryAfterSeconds: error.RetryAfterSeconds,
                 activeRequestId: error.Info?.RequestId,
                 operationExpires: error.Info?.OperationExpires,
