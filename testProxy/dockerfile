@@ -1,0 +1,18 @@
+FROM mcr.microsoft.com/openjdk/jdk:25-ubuntu
+
+# Set the working directory inside the container
+WORKDIR /javaapp
+
+# Copy the Java source file into the container
+COPY . /javaapp
+
+EXPOSE 9000/tcp
+
+RUN apt-get update
+RUN apt-get install maven -y
+
+# Compile the Java program
+RUN mvn install -f /javaapp/pom.xml
+
+# Set the default command to run the Java program
+CMD ["java", "-jar", "/javaapp/target/test-proxy-1.0-with-deps.jar", "-b", "0.0.0.0", "-p", "9000"]
