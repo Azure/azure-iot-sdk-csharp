@@ -735,7 +735,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <exception cref="NotSupportedException">Thrown when using non-MQTT transport.</exception>
         /// <exception cref="IotHubException">Thrown when the request fails.</exception>
         /// <exception cref="TimeoutException">Thrown when the operation times out.</exception>
-        public Task<CertificateSigningResponse> SendCertificateSigningRequestAsync(
+        public Task<CertificateSigningOperation> SendCertificateSigningRequestAsync(
             CertificateSigningRequest request,
             CancellationToken cancellationToken = default)
         {

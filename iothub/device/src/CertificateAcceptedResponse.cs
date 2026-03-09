@@ -6,9 +6,9 @@ namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
     /// Represents the 202 Accepted response from IoT Hub.
-    /// Internal use only - used to track operation expiration.
+    /// Contains the correlation ID and operation expiration time.
     /// </summary>
-    internal class CertificateAcceptedResponse
+    public class CertificateAcceptedResponse
     {
         /// <summary>
         /// Correlation ID for diagnostic and support purposes.

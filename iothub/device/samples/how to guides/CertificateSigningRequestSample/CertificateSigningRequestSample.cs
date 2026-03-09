@@ -101,7 +101,14 @@ public sealed class CertificateSigningRequestSample : IDisposable
                 { Replace = "*" }; // Replace any active credential operation for this device
 
             Console.WriteLine("Sending CSR request...");
-            CertificateSigningResponse response = await _deviceClient!.SendCertificateSigningRequestAsync(csrRequest, _cts.Token);
+            CertificateSigningOperation operation = await _deviceClient!.SendCertificateSigningRequestAsync(csrRequest, _cts.Token);
+
+            Console.WriteLine("Waiting for acceptance (Phase 1)...");
+            CertificateAcceptedResponse accepted = await operation.Accepted;
+            Console.WriteLine($"CSR accepted. CorrelationId: {accepted.CorrelationId}, Expires: {accepted.OperationExpires}");
+
+            Console.WriteLine("Waiting for certificate (Phase 2)...");
+            CertificateSigningResponse response = await operation.Completed;
             Console.WriteLine($"Received certificate response with {response.Certificates?.Count ?? 0} certificate(s)");
 
             if (response.Certificates == null || response.Certificates.Count == 0)

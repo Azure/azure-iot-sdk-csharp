@@ -648,7 +648,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
         }
 
-        public override Task<CertificateSigningResponse> SendCertificateSigningRequestAsync(
+        public override Task<CertificateSigningOperation> SendCertificateSigningRequestAsync(
             CertificateSigningRequest request,
             CancellationToken cancellationToken)
         {

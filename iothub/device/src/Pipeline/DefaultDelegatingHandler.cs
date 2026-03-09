@@ -198,13 +198,13 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return InnerHandler?.DisableEventReceiveAsync(isAnEdgeModule, cancellationToken) ?? TaskHelpers.CompletedTask;
         }
 
-        public virtual Task<CertificateSigningResponse> SendCertificateSigningRequestAsync(
+        public virtual Task<CertificateSigningOperation> SendCertificateSigningRequestAsync(
             CertificateSigningRequest request,
             CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
             return InnerHandler?.SendCertificateSigningRequestAsync(request, cancellationToken)
-                ?? Task.FromResult<CertificateSigningResponse>(null);
+                ?? Task.FromResult<CertificateSigningOperation>(null);
         }
 
         public virtual bool IsUsable => InnerHandler?.IsUsable ?? true;
