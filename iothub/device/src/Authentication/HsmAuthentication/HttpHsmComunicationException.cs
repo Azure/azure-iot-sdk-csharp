@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Runtime.Serialization;
 
 namespace Microsoft.Azure.Devices.Client.HsmAuthentication
 {
@@ -22,16 +21,6 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication
             : base($"{message}, StatusCode: {statusCode}", innerException)
         {
             StatusCode = statusCode;
-        }
-
-        /// <summary>
-        /// Creates an instance of this class with the specified serialization and context information.
-        /// </summary>
-        /// <param name="info">An object that holds the serialized object data about the exception being thrown.</param>
-        /// <param name="context">An object that contains contextual information about the source or destination.</param>
-        internal HttpHsmComunicationException(SerializationInfo info, StreamingContext context)
-            : base(info, context)
-        {
         }
 
         /// <summary>

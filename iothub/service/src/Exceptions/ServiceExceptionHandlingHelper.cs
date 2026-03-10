@@ -125,7 +125,7 @@ namespace Microsoft.Azure.Devices
                 {
                     foreach (string messageField in messageFields)
                     {
-                        if (messageField.IndexOf(MessageFieldErrorCode, StringComparison.OrdinalIgnoreCase) >= 0)
+                        if (messageField.Contains(MessageFieldErrorCode, StringComparison.OrdinalIgnoreCase))
                         {
                             const char errorCodeDelimiter = ':';
 
@@ -139,7 +139,7 @@ namespace Microsoft.Azure.Devices
                             string returnedErrorCode = errorCodeFields[1];
 
                             // When the returned error code is numeric, only take the first 6 characters as it contains 6 digits.
-                            if (int.TryParse(returnedErrorCode.Substring(0, 6), out int code))
+                            if (int.TryParse(returnedErrorCode.AsSpan(0, 6), out int code))
                             {
                                 return Tuple.Create(string.Empty, (IotHubServiceErrorCode)code);
                             }

@@ -244,7 +244,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                         // We will check with the error code in the error message first (if present) since that is the more specific error code returned.
                         if ((Enum.TryParse(errorResponse.ErrorCode.ToString(CultureInfo.InvariantCulture), out IotHubClientErrorCode errorCode)
                             || Enum.TryParse(status.ToString(CultureInfo.InvariantCulture), out errorCode))
-                            && Enum.IsDefined(typeof(IotHubClientErrorCode), errorCode))
+                            && Enum.IsDefined<IotHubClientErrorCode>(errorCode))
                         {
                             twinException = new IotHubClientException(errorResponse.Message, errorCode)
                             {

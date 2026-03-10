@@ -275,7 +275,7 @@ namespace Microsoft.Azure.Devices
             FileUploadNotifications = new FileUploadNotificationProcessorClient(_hostName, _credentialProvider, _clientOptions, _retryHandler);
 
             // Specify the JsonSerializerSettings for subclients
-            JsonConvert.DefaultSettings = JsonSerializerSettingsInitializer.GetJsonSerializerSettingsDelegate();
+            JsonConvert.DefaultSettings = JsonSerializerSettingsInitializer.GetJsonSerializerSettings;
 
             // Adds additional logging to the AMQP connections created by this client
             AmqpTrace.Provider = new AmqpTransportLog();

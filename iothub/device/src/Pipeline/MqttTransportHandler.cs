@@ -757,7 +757,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         // We will check with the error code in the error message first (if present) since that is the more specific error code returned.
                         if ((Enum.TryParse(getTwinResponse.ErrorResponseMessage.ErrorCode.ToString(CultureInfo.InvariantCulture), out IotHubClientErrorCode errorCode)
                             || Enum.TryParse(getTwinResponse.Status.ToString(CultureInfo.InvariantCulture), out errorCode))
-                            && Enum.IsDefined(typeof(IotHubClientErrorCode), errorCode))
+                            && Enum.IsDefined(errorCode))
                         {
                             throw new IotHubClientException(getTwinResponse.ErrorResponseMessage.Message, errorCode)
                             {
@@ -864,7 +864,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         // We will check with the error code in the error message first (if present) since that is the more specific error code returned.
                         if ((Enum.TryParse(patchTwinResponse.ErrorResponseMessage.ErrorCode.ToString(CultureInfo.InvariantCulture), out IotHubClientErrorCode errorCode)
                             || Enum.TryParse(patchTwinResponse.Status.ToString(CultureInfo.InvariantCulture), out errorCode))
-                            && Enum.IsDefined(typeof(IotHubClientErrorCode), errorCode))
+                            && Enum.IsDefined<IotHubClientErrorCode>(errorCode))
                         {
                             throw new IotHubClientException(patchTwinResponse.ErrorResponseMessage.Message, errorCode)
                             {

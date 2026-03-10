@@ -239,7 +239,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             token.ThrowIfCancellationRequested();
 
-            using Stream stream = await content.ReadAsStreamAsync().ConfigureAwait(false);
+            using Stream stream = await content.ReadAsStreamAsync(token).ConfigureAwait(false);
             using var reader = new StreamReader(stream);
             using var jsonReader = new JsonTextReader(reader);
             return new JsonSerializer().Deserialize<T>(jsonReader);

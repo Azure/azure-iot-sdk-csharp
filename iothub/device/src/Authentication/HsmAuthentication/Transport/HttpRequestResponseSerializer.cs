@@ -119,7 +119,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.Transport
 
                         try
                         {
-                            await httpResponse.Content.LoadIntoBufferAsync(contentLength).ConfigureAwait(false);
+                            await httpResponse.Content.LoadIntoBufferAsync(contentLength, cancellationToken).ConfigureAwait(false);
                         }
                         catch (HttpRequestException ex)
                         {
