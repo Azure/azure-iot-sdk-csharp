@@ -24,6 +24,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         private readonly string _devicePrefix = $"{nameof(TokenCredentialAuthenticationTests)}_";
 
         [TestMethodWithRetry(Max=3)]
+        [Ignore("Test infrastructure not currently available")]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task DevicesClient_Http_TokenCredentialAuth_Success()
         {
@@ -46,6 +47,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
         [TestMethodWithRetry(Max=3)]
         [Timeout(TestTimeoutMilliseconds)]
+        [Ignore("Test infrastructure not currently available")]
         public async Task JobClient_Http_TokenCredentialAuth_Success()
         {
             // arrange
@@ -82,6 +84,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
         [TestMethodWithRetry(Max=3)]
         [Timeout(TestTimeoutMilliseconds)]
+        [Ignore("Test infrastructure not currently available")]
         public async Task DigitalTwinClient_Http_TokenCredentialAuth_Success()
         {
             // arrange
@@ -118,6 +121,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
         [TestMethodWithRetry(Max=3)]
         [Timeout(TestTimeoutMilliseconds)]
+        [Ignore("Test infrastructure not currently available")]
         public async Task Service_Amqp_TokenCredentialAuth_Success()
         {
             // arrange

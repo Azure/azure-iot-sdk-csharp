@@ -104,7 +104,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                             break;
                         }
 
-                        await Task.Delay(TimeSpan.FromSeconds(1), ct).ConfigureAwait(false);
+                        await Task.Delay(TimeSpan.FromSeconds(2), ct).ConfigureAwait(false);
                     }
 
                     VerboseTestLogger.WriteLine($"Waited {connectionChangeWaitDuration.Elapsed} for fault injection to be activated.");
@@ -163,7 +163,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                     {
                         VerboseTestLogger.WriteLine($"{nameof(FaultInjectionPoolingOverAmqp)}: Performing test operation for device 0 - Run {counter++}.");
                         await testOperation(testDevices[0], testDeviceCallbackHandlers[0], ct).ConfigureAwait(false);
-                        await Task.Delay(TimeSpan.FromSeconds(1), ct).ConfigureAwait(false);
+                        await Task.Delay(TimeSpan.FromSeconds(2), ct).ConfigureAwait(false);
                     }
                 }
             }

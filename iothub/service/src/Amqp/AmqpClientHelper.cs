@@ -49,7 +49,7 @@ namespace Microsoft.Azure.Devices.Amqp
         {
             using var reader = new StreamReader(amqpMessage.BodyStream, Encoding.UTF8);
             string jsonString = await reader.ReadToEndAsync().ConfigureAwait(false);
-            return JsonConvert.DeserializeObject<T>(jsonString);
+            return JsonConvert.DeserializeObject<T>(jsonString, JsonSerializerSettingsInitializer.GetJsonSerializerSettings());
         }
 
         internal static Exception GetExceptionFromOutcome(Outcome outcome)

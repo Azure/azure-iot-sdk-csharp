@@ -28,9 +28,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <summary>
         /// Returns JsonSerializerSettings Func delegate
         /// </summary>
-        internal static Func<JsonSerializerSettings> GetJsonSerializerSettingsDelegate()
+        internal static JsonSerializerSettings GetJsonSerializerSettings()
         {
-            return () => s_settings;
+            return s_settings;
         }
     }
 }
