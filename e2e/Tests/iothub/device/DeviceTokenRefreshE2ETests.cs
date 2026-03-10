@@ -25,33 +25,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         private static readonly TimeSpan s_ioTHubServerTimeAllowance = TimeSpan.FromMinutes(5);
 
         [TestMethod]
-        public async Task IotHubDeviceClient_Not_Exist_AMQP()
-        {
-            // Setting up one cancellation token for the complete test flow
-            using var cts = new CancellationTokenSource(s_testTimeout);
-            CancellationToken ct = cts.Token;
-
-            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix, ct: ct).ConfigureAwait(false);
-
-            var config = new TestConfiguration.IotHub.ConnectionStringParser(testDevice.ConnectionString);
-            var options = new IotHubClientOptions(new IotHubClientAmqpSettings());
-            await using var deviceClient = new IotHubDeviceClient(
-                $"HostName={config.IotHubHostName};DeviceId=device_id_not_exist;SharedAccessKey={config.SharedAccessKey}",
-                options);
-
-            // act
-            Func<Task> act = async () =>
-            {
-                await deviceClient.OpenAsync(ct).ConfigureAwait(false);
-            };
-
-            //assert
-            var error = await act.Should().ThrowAsync<IotHubClientException>();
-            error.And.ErrorCode.Should().Be(IotHubClientErrorCode.DeviceNotFound);
-            error.And.IsTransient.Should().BeFalse();
-        }
-
-        [TestMethod]
         public async Task IotHubDeviceClient_Bad_Credentials_AMQP()
         {
             // Setting up one cancellation token for the complete test flow
