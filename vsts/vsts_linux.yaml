@@ -69,10 +69,6 @@ jobs:
       X509_CHAIN_INTERMEDIATE2_PFX_CERTIFICATE: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.X509_CHAIN_INTERMEDIATE2_PFX_CERTIFICATE'] ]
       STORAGE_ACCOUNT_CONNECTION_STRING: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.STORAGE_ACCOUNT_CONNECTION_STRING'] ]
     timeoutInMinutes: ${{ parameters.jobTimeoutInMinutes }}
-    strategy:
-      matrix:
-        .NET 8.0:
-          FRAMEWORK: net8.0
     pool:
       vmImage: ubuntu-latest
     steps:
@@ -83,16 +79,14 @@ jobs:
           script: |
             Write-Host "Build.Reason: ${{ variables['Build.Reason'] }}"
             Write-Host "jobTimeoutInMinutes: ${{ parameters.jobTimeoutInMinutes }}"
-            Write-Host "testNet80: ${{ variables.testNet80 }}"
 
       # https://docs.microsoft.com/azure/devops/pipelines/tasks/tool/dotnet-core-tool-installer?view=azure-devops
 
-      # Linux requires .NET 8.0 install for tests to run, no matter which framework target is being tested
       - task: UseDotNet@2
-        displayName: 'Use .NET SDK 8.0'
+        displayName: 'Use .NET SDK 10.0'
         inputs:
          packageType: sdk
-         version: 8.x
+         version: 10.x
          performMultiLevelLookup: true
          installationPath: $(Agent.ToolsDirectory)/dotnet
 
@@ -119,7 +113,7 @@ jobs:
         inputs:
           targetType: 'inline'
           script: |
-            dotnet test --logger trx --framework $(FRAMEWORK)
+            dotnet test --logger trx --framework net10.0
 
         env:
           # Environment variables for IoT Hub E2E tests
@@ -143,15 +137,12 @@ jobs:
           X509_CHAIN_INTERMEDIATE2_PFX_CERTIFICATE: $(X509_CHAIN_INTERMEDIATE2_PFX_CERTIFICATE)
           STORAGE_ACCOUNT_CONNECTION_STRING: $(STORAGE_ACCOUNT_CONNECTION_STRING)
 
-          # Environment variables for the DevOps pipeline
-          FRAMEWORK: $(FRAMEWORK)
-
       - task: PublishTestResults@2
         displayName: "Publish Test Results **/*.trx"
         condition: always()
         inputs:
           testRunner: VSTest
-          testRunTitle: "Linux Tests ($(FRAMEWORK)) (Attempt $(System.JobAttempt))"
+          testRunTitle: "Linux Tests (net10.0) (Attempt $(System.JobAttempt))"
           testResultsFiles: "**/*.trx"
 
       - task: CopyFiles@2
@@ -163,10 +154,10 @@ jobs:
           TargetFolder: "$(Build.ArtifactStagingDirectory)"
 
       - task: PublishBuildArtifacts@1
-        displayName: "Publish Artifact: testresults_linux_$(FRAMEWORK)"
+        displayName: "Publish Artifact: testresults_linux_net10.0"
         condition: always()
         inputs:
-          ArtifactName: testresults_linux_$(FRAMEWORK)
+          ArtifactName: testresults_linux_net10.0
         
       - task: ComponentGovernanceComponentDetection@0
         displayName: Component Governance Detection

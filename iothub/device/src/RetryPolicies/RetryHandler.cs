@@ -90,7 +90,7 @@ namespace Microsoft.Azure.Devices.Client
             Debug.Assert(transientErrorCheck != null);
 
             uint retryCount = 0;
-            TimeSpan retryDelay;
+            TimeSpan retryDelay = TimeSpan.Zero;
 
             while (true)
             {

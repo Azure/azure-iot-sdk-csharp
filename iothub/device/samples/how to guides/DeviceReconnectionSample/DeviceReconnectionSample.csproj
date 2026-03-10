@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <LangVersion>9.0</LangVersion>
     <RootNamespace>Microsoft.Azure.Devices.Client.Samples</RootNamespace>
     <IsPackable>false</IsPackable>
@@ -13,7 +13,7 @@
 
     CA2254: We prefer string interpolation for better readability, and don't have a need for logs aggregation.
     -->
-    <NoWarn>NU5104;CA2254</NoWarn>
+    <NoWarn>NU5104;CA2254;SYSLIB0057</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

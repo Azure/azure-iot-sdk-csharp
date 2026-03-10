@@ -178,7 +178,6 @@ namespace Microsoft.Azure.Devices.Tests.Messaging
                 .Returns(Task.CompletedTask);
 
             using var messagesClient = new MessagesClient(
-                HostName,
                 mockCredentialProvider.Object,
                 s_retryHandler,
                 mockAmqpConnectionHandler.Object);
@@ -254,7 +253,6 @@ namespace Microsoft.Azure.Devices.Tests.Messaging
                 .ReturnsAsync(mockHttpResponse);
 
             using var messageClient = new MessagesClient(
-                HostName,
                 mockCredentialProvider.Object,
                 mockHttpClient.Object,
                 mockHttpRequestFactory,
@@ -294,7 +292,6 @@ namespace Microsoft.Azure.Devices.Tests.Messaging
                 .Returns(Task.FromResult(outcomeToReturn));
 
             using var messagesClient = new MessagesClient(
-                HostName,
                 mockCredentialProvider.Object,
                 s_retryHandler,
                 mockAmqpConnectionHandler.Object);
@@ -337,7 +334,6 @@ namespace Microsoft.Azure.Devices.Tests.Messaging
                 .Returns(Task.FromResult(outcomeToReturn));
 
             using var messagesClient = new MessagesClient(
-                HostName,
                 mockCredentialProvider.Object,
                 s_retryHandler,
                 mockAmqpConnectionHandler.Object);

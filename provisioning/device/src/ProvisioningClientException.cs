@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Runtime.Serialization;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client
 {
@@ -12,12 +11,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
     [Serializable]
     public class ProvisioningClientException : Exception
     {
-        [NonSerialized]
-        private const string IsTransientValueSerializationStoreName = "ProvisioningClientExceptionn-IsTransient";
-
-        [NonSerialized]
-        private const string TrackingIdValueSerializationStoreName = "ProvisioningClientException-TrackingId";
-
         /// <summary>
         /// Creates a new instance of this class.
         /// </summary>
@@ -57,21 +50,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         }
 
         /// <summary>
-        /// Creates a new instance of this class.
-        /// </summary>
-        /// <param name="info">The SerializationInfo that holds the serialized object data about the exception being thrown.</param>
-        /// <param name="context">The StreamingContext that contains contextual information about the source or destination.</param>
-        protected ProvisioningClientException(SerializationInfo info, StreamingContext context)
-            : base(info, context)
-        {
-            if (info != null)
-            {
-                IsTransient = info.GetBoolean(IsTransientValueSerializationStoreName);
-                TrackingId = info.GetString(TrackingIdValueSerializationStoreName);
-            }
-        }
-
-        /// <summary>
         /// If true, the error is transient and the application should retry at a later time.
         /// </summary>
         public bool IsTransient { get; }
@@ -85,16 +63,5 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// The specific 6-digit error code in the DPS response, if available.
         /// </summary>
         public int ErrorCode { get; }
-
-        /// <summary>
-        /// Sets the <see cref="SerializationInfo"/> with information about the exception.
-        /// </summary>
-        /// <param name="info">The SerializationInfo that holds the serialized object data about the exception being thrown.</param>
-        /// <param name="context">The StreamingContext that contains contextual information about the source or destination.</param>
-        public override void GetObjectData(SerializationInfo info, StreamingContext context)
-        {
-            base.GetObjectData(info, context);
-            info.AddValue(IsTransientValueSerializationStoreName, IsTransient);
-        }
     }
 }

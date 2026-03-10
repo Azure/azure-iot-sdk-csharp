@@ -17,8 +17,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
         internal static TimeSpan GenerateDelayWithJitterForRetry(TimeSpan defaultDelay)
         {
-            Debug.Assert(defaultDelay!= null);
-
             double jitterSeconds = s_random.NextDouble() * MaxJitter;
             return defaultDelay.Add(TimeSpan.FromSeconds(jitterSeconds));
         }

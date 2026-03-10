@@ -20,10 +20,8 @@ namespace Microsoft.Azure.Devices
     /// <seealso href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-messages-c2d"/>.
     public class MessagesClient : IDisposable
     {
-        private const string SendingPath = "/messages/deviceBound";
         private const string PurgeMessageQueueFormat = "/devices/{0}/commands";
 
-        private readonly string _hostName;
         private readonly IotHubConnectionProperties _credentialProvider;
         private readonly AmqpConnectionHandler _amqpConnection;
         private readonly IotHubServiceClientOptions _clientOptions;
@@ -44,26 +42,22 @@ namespace Microsoft.Azure.Devices
         /// Creates an instance of this class. Provided for unit testing purposes only.
         /// </summary>
         internal MessagesClient(
-            string hostName,
             IotHubConnectionProperties credentialProvider,
             RetryHandler retryHandler,
             AmqpConnectionHandler amqpConnection)
         {
-            _hostName = hostName;
             _credentialProvider = credentialProvider;
             _internalRetryHandler = retryHandler;
             _amqpConnection = amqpConnection;
         }
 
         internal MessagesClient(
-            string hostName,
             IotHubConnectionProperties credentialProvider,
             HttpClient httpClient,
             HttpRequestMessageFactory httpRequestMessageFactory,
             IotHubServiceClientOptions options,
             RetryHandler retryHandler)
         {
-            _hostName = hostName;
             _credentialProvider = credentialProvider;
             _httpClient = httpClient;
             _httpRequestMessageFactory = httpRequestMessageFactory;
@@ -190,6 +184,8 @@ namespace Microsoft.Azure.Devices
         /// <seealso href="https://learn.microsoft.com/azure/iot-hub/iot-hub-devguide-messages-c2d"/>
         /// <param name="deviceId">The device identifier for the target device.</param>
         /// <param name="message">The cloud-to-device message.</param>
+        /// <param name="openTimeout">The maximum amount of time to allow for opening the AMQP connection (if it is not open already). If this equals <see cref="TimeSpan.MaxValue"/>, then this value is ignored. If <paramref name="cancellationToken"/> is provided, this task will cancel when either this timespan has passed or when the provided cancellation token is cancelled.</param>
+        /// <param name="sendTimeout">The maximum amount of time to allow for sending the message over the open AMQP connection. If this equals <see cref="TimeSpan.MaxValue"/>, then this value is ignored. If <paramref name="cancellationToken"/> is provided, this task will cancel when either this timespan has passed or when the provided cancellation token is cancelled.</param>
         /// <param name="cancellationToken">Task cancellation token.</param>
         /// <exception cref="ArgumentNullException">When the provided <paramref name="deviceId"/> or <paramref name="message"/> is null.</exception>
         /// <exception cref="ArgumentException">If the provided <paramref name="deviceId"/> is empty or whitespace.</exception>
@@ -198,7 +194,7 @@ namespace Microsoft.Azure.Devices
         /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubServiceErrorCode.ThrottlingException"/> is thrown.</exception>
         /// For a complete list of possible error cases, see <see cref="IotHubServiceErrorCode"/>.
         /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
-        public virtual async Task SendAsync(string deviceId, OutgoingMessage message, CancellationToken cancellationToken = default)
+        public virtual async Task SendAsync(string deviceId, OutgoingMessage message, TimeSpan openTimeout, TimeSpan sendTimeout, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Sending message with Id [{message?.MessageId}] for device {deviceId}", nameof(SendAsync));
@@ -206,7 +202,14 @@ namespace Microsoft.Azure.Devices
             Argument.AssertNotNullOrWhiteSpace(deviceId, nameof(deviceId));
             Argument.AssertNotNull(message, nameof(message));
 
-            await CheckConnectionIsOpenAsync(cancellationToken).ConfigureAwait(false);
+            using var openTimeoutCts = new CancellationTokenSource();
+            if (openTimeout != TimeSpan.MaxValue)
+            {
+                openTimeoutCts.CancelAfter(openTimeout);
+            }
+            using CancellationTokenSource openCancellationToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, openTimeoutCts.Token);
+
+            await CheckConnectionIsOpenAsync(openCancellationToken.Token).ConfigureAwait(false);
 
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -215,6 +218,13 @@ namespace Microsoft.Azure.Devices
             using AmqpMessage amqpMessage = MessageConverter.MessageToAmqpMessage(message);
             amqpMessage.Properties.To = $"/devices/{WebUtility.UrlEncode(deviceId)}/messages/deviceBound";
 
+            using var sendTimeoutCts = new CancellationTokenSource();
+            if (sendTimeout != TimeSpan.MaxValue)
+            {
+                sendTimeoutCts.CancelAfter(sendTimeout);
+            }
+            using CancellationTokenSource sendCancellationToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, sendTimeoutCts.Token);
+
             try
             {
                 Outcome outcome = null;
@@ -222,9 +232,9 @@ namespace Microsoft.Azure.Devices
                     .RunWithRetryAsync(
                         async () =>
                         {
-                            outcome = await _amqpConnection.SendAsync(amqpMessage, cancellationToken).ConfigureAwait(false);
+                            outcome = await _amqpConnection.SendAsync(amqpMessage, sendCancellationToken.Token).ConfigureAwait(false);
                         },
-                        cancellationToken)
+                        sendCancellationToken.Token)
                     .ConfigureAwait(false);
 
                 if (Logging.IsEnabled)
@@ -247,6 +257,29 @@ namespace Microsoft.Azure.Devices
                 if (Logging.IsEnabled)
                     Logging.Exit(this, $"Sending message [{message?.MessageId}] for device {deviceId}", nameof(SendAsync));
             }
+        }
+
+        /// <summary>
+        /// Send a cloud-to-device message to the specified device.
+        /// </summary>
+        /// <remarks>
+        /// In order to receive feedback messages on the service client, set the <see cref="OutgoingMessage.Ack"/> property to an appropriate value
+        /// and use <see cref="IotHubServiceClient.MessageFeedback"/>.
+        /// </remarks>
+        /// <seealso href="https://learn.microsoft.com/azure/iot-hub/iot-hub-devguide-messages-c2d"/>
+        /// <param name="deviceId">The device identifier for the target device.</param>
+        /// <param name="message">The cloud-to-device message.</param>
+        /// <param name="cancellationToken">Task cancellation token.</param>
+        /// <exception cref="ArgumentNullException">When the provided <paramref name="deviceId"/> or <paramref name="message"/> is null.</exception>
+        /// <exception cref="ArgumentException">If the provided <paramref name="deviceId"/> is empty or whitespace.</exception>
+        /// <exception cref="IotHubServiceException">
+        /// If IoT hub responded to the request with a non-successful status code. For example, if the provided
+        /// request was throttled, <see cref="IotHubServiceException"/> with <see cref="IotHubServiceErrorCode.ThrottlingException"/> is thrown.</exception>
+        /// For a complete list of possible error cases, see <see cref="IotHubServiceErrorCode"/>.
+        /// <exception cref="OperationCanceledException">If the provided <paramref name="cancellationToken"/> has requested cancellation.</exception>
+        public virtual async Task SendAsync(string deviceId, OutgoingMessage message, CancellationToken cancellationToken = default)
+        {
+            await SendAsync(deviceId, message, TimeSpan.MaxValue, TimeSpan.MaxValue, cancellationToken);
         }
 
         /// <summary>

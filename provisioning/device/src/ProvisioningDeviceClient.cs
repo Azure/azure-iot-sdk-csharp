@@ -39,7 +39,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             }
 
             // Specify the JsonSerializerSettings. Check JsonSerializerSettingsInitializer for more details.
-            JsonConvert.DefaultSettings = JsonSerializerSettingsInitializer.GetJsonSerializerSettingsDelegate();
+            JsonConvert.DefaultSettings = JsonSerializerSettingsInitializer.GetJsonSerializerSettings;
 
             _options = options != default
                 ? options.Clone()

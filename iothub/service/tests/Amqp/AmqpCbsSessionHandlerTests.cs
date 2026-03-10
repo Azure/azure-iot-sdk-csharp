@@ -16,6 +16,8 @@ namespace Microsoft.Azure.Devices.Tests.Amqp
     public class AmqpCbsSessionHandlerTests
     {
         private const string HostName = "contoso.azure-devices.net";
+        private static readonly string[] scopes = new string[] { "https://iothubs.azure.net/.default" };
+
         private static void ConnectionLossHandler(object sender, EventArgs e) { }
 
         [TestMethod]
@@ -23,7 +25,7 @@ namespace Microsoft.Azure.Devices.Tests.Amqp
         {
             // arrange
             var mockCredential = new Mock<TokenCredential>();
-            var tokenCredentialProperties = new IotHubTokenCredentialProperties(HostName, mockCredential.Object);
+            var tokenCredentialProperties = new IotHubTokenCredentialProperties(HostName, mockCredential.Object, scopes);
 
             using var cbsSessionHandler = new MockableAmqpCbsSessionHandler(tokenCredentialProperties);
             var mockAmqpCbsLink = new Mock<MockableAmqpCbsLink>();
@@ -45,7 +47,7 @@ namespace Microsoft.Azure.Devices.Tests.Amqp
         {
             // arrange
             var mockCredential = new Mock<TokenCredential>();
-            var tokenCredentialProperties = new IotHubTokenCredentialProperties(HostName, mockCredential.Object);
+            var tokenCredentialProperties = new IotHubTokenCredentialProperties(HostName, mockCredential.Object, scopes);
 
             using var cbsSessionHandler = new MockableAmqpCbsSessionHandler(tokenCredentialProperties);
             var mockAmqpCbsLink = new Mock<MockableAmqpCbsLink>();

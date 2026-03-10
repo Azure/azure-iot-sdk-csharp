@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <LangVersion>9.0</LangVersion>
     <IsPackable>false</IsPackable>
 
@@ -10,7 +10,7 @@
     Warning for using pre-release nugets can be ignored since this sample 
     can't target a main release yet.
     -->
-    <NoWarn>NU5104</NoWarn>
+    <NoWarn>NU5104,SYSLIB0057</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

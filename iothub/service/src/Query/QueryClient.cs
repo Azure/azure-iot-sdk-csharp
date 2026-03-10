@@ -298,9 +298,9 @@ namespace Microsoft.Azure.Devices
             }
 
             await HttpMessageHelper.ValidateHttpResponseStatusAsync(HttpStatusCode.OK, response).ConfigureAwait(false);
-            Stream bodyStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+            Stream bodyStream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
             using StreamReader bodyStreamReader = new StreamReader(bodyStream);
-            string responsePayload = await bodyStreamReader.ReadToEndAsync().ConfigureAwait(false);
+            string responsePayload = await bodyStreamReader.ReadToEndAsync(cancellationToken).ConfigureAwait(false);
             QueriedPage<T> page = new QueriedPage<T>(response, responsePayload);
 #pragma warning disable CA2000 // Dispose objects before losing scope
             // The disposable QueryResponse object is the user's responsibility, not the SDK's

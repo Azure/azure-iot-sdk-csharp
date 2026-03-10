@@ -34,6 +34,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         [TestMethod]
         [Timeout(LongRunningTestTimeoutMilliseconds)]
         [TestCategory("LongRunning")]
+        [Ignore("Test infrastructure is missing")]
         [DoNotParallelize] // the number of jobs that can be run at a time are limited anyway
         [DataRow(StorageAuthenticationType.KeyBased, false)]
         [DataRow(StorageAuthenticationType.IdentityBased, false)]

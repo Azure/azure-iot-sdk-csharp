@@ -22,10 +22,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
         internal AttestationMechanism(Attestation attestation)
         {
-            if (attestation == null)
-            {
-                throw new ArgumentNullException(nameof(attestation));
-            }
+            ArgumentNullException.ThrowIfNull(attestation);
 
             switch (attestation)
             {

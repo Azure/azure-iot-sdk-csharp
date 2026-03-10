@@ -101,7 +101,12 @@ namespace Microsoft.Azure.Devices
             Argument.AssertNotNullOrWhiteSpace(hostName, nameof(hostName));
             Argument.AssertNotNull(credential, nameof(credential));
 
-            _credentialProvider = new IotHubTokenCredentialProperties(hostName, credential);
+            if (options == default)
+            {
+                options = new IotHubServiceClientOptions();
+            }
+
+            _credentialProvider = new IotHubTokenCredentialProperties(hostName, credential, options.Scopes);
             _hostName = hostName;
             _httpClient = HttpClientFactory.Create(_hostName, _clientOptions);
             _httpRequestMessageFactory = new HttpRequestMessageFactory(
@@ -130,6 +135,11 @@ namespace Microsoft.Azure.Devices
         {
             Argument.AssertNotNullOrWhiteSpace(hostName, nameof(hostName));
             Argument.AssertNotNull(credential, nameof(credential));
+
+            if (options == default)
+            {
+                options = new IotHubServiceClientOptions();
+            }
 
             _credentialProvider = new IotHubSasCredentialProperties(hostName, credential);
             _hostName = hostName;
@@ -269,13 +279,13 @@ namespace Microsoft.Azure.Devices
             DirectMethods = new DirectMethodsClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory, _retryHandler);
             DigitalTwins = new DigitalTwinsClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory, _retryHandler);
             Twins = new TwinsClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory, _retryHandler);
-            Messages = new MessagesClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory, _clientOptions, _retryHandler);
+            Messages = new MessagesClient(_credentialProvider, _httpClient, _httpRequestMessageFactory, _clientOptions, _retryHandler);
 
             MessageFeedback = new MessageFeedbackProcessorClient(_hostName, _credentialProvider, _clientOptions, _retryHandler);
             FileUploadNotifications = new FileUploadNotificationProcessorClient(_hostName, _credentialProvider, _clientOptions, _retryHandler);
 
             // Specify the JsonSerializerSettings for subclients
-            JsonConvert.DefaultSettings = JsonSerializerSettingsInitializer.GetJsonSerializerSettingsDelegate();
+            JsonConvert.DefaultSettings = JsonSerializerSettingsInitializer.GetJsonSerializerSettings;
 
             // Adds additional logging to the AMQP connections created by this client
             AmqpTrace.Provider = new AmqpTransportLog();

@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>net10.0</TargetFrameworks>
     <LangVersion>9.0</LangVersion>
     <EnableNETAnalyzers>True</EnableNETAnalyzers>
     <AnalysisLevel>latest-recommended</AnalysisLevel>
@@ -16,7 +16,7 @@
     <CheckEolTargetFramework>false</CheckEolTargetFramework>
 
     <!-- We choose not to use braces in our many logging enabled checks -->
-    <NoWarn>0011</NoWarn>
+    <NoWarn>0011,CA1863,SYSLIB0057</NoWarn>
   </PropertyGroup>
 
   <!-- delay sign the assembly for Release build -->
@@ -57,11 +57,6 @@
   <!--Nuget package dependencies-->
   <ItemGroup>
     <PackageReference Include="Azure.Core" Version="1.31.0" />
-    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
-    <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="8.0.0">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
   </ItemGroup>
 

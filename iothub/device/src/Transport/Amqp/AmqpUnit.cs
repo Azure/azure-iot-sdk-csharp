@@ -20,7 +20,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         // AMQP supports a few different ways to acknowledge a message. Below is the mapping
         // from the IoT hub level concept of Complete/Abandon/Reject to the AMQP level concept
         // of Accepted/Released/Rejected.
-        private static readonly IReadOnlyDictionary<MessageAcknowledgement, Outcome> s_ackMap = new Dictionary<MessageAcknowledgement, Outcome>
+        private static readonly Dictionary<MessageAcknowledgement, Outcome> s_ackMap = new Dictionary<MessageAcknowledgement, Outcome>
         {
             { MessageAcknowledgement.Complete, new Accepted() },
             { MessageAcknowledgement.Abandon, new Released() },
