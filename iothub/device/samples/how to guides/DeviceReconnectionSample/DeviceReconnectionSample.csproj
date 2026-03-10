@@ -13,7 +13,7 @@
 
     CA2254: We prefer string interpolation for better readability, and don't have a need for logs aggregation.
     -->
-    <NoWarn>NU5104;CA2254</NoWarn>
+    <NoWarn>NU5104;CA2254;SYSLIB0057</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

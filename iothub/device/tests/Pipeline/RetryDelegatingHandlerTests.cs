@@ -525,7 +525,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
             public bool ShouldRetry(uint currentRetryCount, Exception lastException, out TimeSpan retryInterval)
             {
                 Counter++;
-                lastException.Should().BeOfType(typeof(IotHubClientException));
+                lastException.Should().BeOfType<IotHubClientException>();
                 ((IotHubClientException)lastException).ErrorCode.Should().Be(IotHubClientErrorCode.NetworkErrors);
 
                 retryInterval = TimeSpan.MinValue;

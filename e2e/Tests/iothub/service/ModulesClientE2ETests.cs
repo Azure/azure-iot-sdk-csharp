@@ -67,7 +67,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             // act
             IEnumerable<Module> modulesOnDevice = await serviceClient.Devices.GetModulesAsync(testDevice.Id).ConfigureAwait(false);
 
-            IList<string> moduleIdsOnDevice = modulesOnDevice
+            List<string> moduleIdsOnDevice = modulesOnDevice
                 .Select(module => module.Id)
                 .ToList();
 

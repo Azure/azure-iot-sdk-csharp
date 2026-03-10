@@ -21,11 +21,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
     [TestCategory("DPS")]
     public class ProvisioningServiceDeviceRegistrationTests : E2EMsTestBase
     {
-        private static readonly string s_proxyServerAddress = TestConfiguration.IotHub.ProxyServerAddress;
-        private static readonly string s_devicePrefix = $"{nameof(ProvisioningServiceIndividualEnrollmentTests)}_";
-
-        private static readonly ProvisioningServiceExponentialBackoffRetryPolicy s_provisioningServiceRetryPolicy = new(20, TimeSpan.FromSeconds(3), true);
-
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task ProvisioningServiceClient_DeviceRegistrationState_Query_Ok()

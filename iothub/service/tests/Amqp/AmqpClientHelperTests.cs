@@ -260,7 +260,7 @@ namespace Microsoft.Azure.Devices.Tests.Amqp
             Exception act = AmqpClientHelper.GetIotHubExceptionFromAmqpException(amqpException);
 
             // assert
-            act.Should().BeOfType(typeof(IotHubServiceException));
+            act.Should().BeOfType<IotHubServiceException>();
             ((IotHubServiceException)act).Message.Should().Be(error.ToString());
             ((IotHubServiceException)act).InnerException.Should().BeEquivalentTo(amqpException);
         }

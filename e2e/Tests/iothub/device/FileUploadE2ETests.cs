@@ -134,7 +134,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             var ex = await Assert.ThrowsExceptionAsync<IotHubClientException>(
                         async () => await deviceClient.GetFileUploadSasUriAsync(request).ConfigureAwait(false),
                         "The provided custom HttpMessageHandler throws NotImplementedException when making any HTTP request");
-            ex.InnerException.Should().BeOfType(typeof(NotImplementedException));
+            ex.InnerException.Should().BeOfType<NotImplementedException>();
         }
 
         private async Task UploadFileGranularAsync(
