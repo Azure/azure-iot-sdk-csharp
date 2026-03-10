@@ -52,12 +52,6 @@ jobs:
       X509_CHAIN_INTERMEDIATE2_PFX_CERTIFICATE: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.X509_CHAIN_INTERMEDIATE2_PFX_CERTIFICATE'] ]
       STORAGE_ACCOUNT_CONNECTION_STRING: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.STORAGE_ACCOUNT_CONNECTION_STRING'] ]
     timeoutInMinutes: ${{ parameters.jobTimeoutInMinutes }}
-    strategy:
-      matrix:
-        .NET 8.0:
-          FRAMEWORK: net8.0
-        .NET 4.7.2:
-          FRAMEWORK: net472
     pool:
       vmImage: windows-2022
     steps:
@@ -72,28 +66,17 @@ jobs:
             Write-Host "testNet80: ${{ variables.testNet80 }}"
             Write-Host "testNet472: ${{ variables.testNet472 }}"
 
-      - ${{ if eq(variables['testNet80'], 'True') }}:
-        - task: UseDotNet@2
-          displayName: 'Use .NET SDK 8.0'
-          inputs:
-            packageType: sdk
-            version: 8.x
-            performMultiLevelLookup: true
-            installationPath: $(Agent.ToolsDirectory)/dotnet
-
-      - ${{ if eq(variables['testNet472'], 'True') }}:
-        - task: CmdLine@2
-          displayName: 'Install .NET 4.7.2'
-          inputs:
-            script: 'choco install -y netfx-4.7.2-devpack'
+      - task: UseDotNet@2
+        displayName: 'Use .NET SDK 10.0'
+        inputs:
+          packageType: sdk
+          version: 10.x
+          performMultiLevelLookup: true
+          installationPath: $(Agent.ToolsDirectory)/dotnet
 
       - download: current
         displayName: 'Download test certificates'
         artifact: test-certificates
-
-      - powershell: ./vsts/start_tpm_windows.ps1
-        displayName: "Start TPM Simulator"
-        condition: succeeded()
 
       - task: JavaToolInstaller@0
         condition: succeeded()
