@@ -100,7 +100,7 @@ jobs:
             # This prints the logs from the background run of the proxy in case some issue happens
             Receive-Job Job1
 
-            dotnet test --logger trx --framework $(FRAMEWORK)
+            dotnet test --logger trx --framework net10.0
             
             # Tear down test proxy background process
             Stop-Job Job1
