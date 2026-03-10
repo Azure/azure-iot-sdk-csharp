@@ -57,21 +57,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         }
 
         /// <summary>
-        /// Creates a new instance of this class.
-        /// </summary>
-        /// <param name="info">The SerializationInfo that holds the serialized object data about the exception being thrown.</param>
-        /// <param name="context">The StreamingContext that contains contextual information about the source or destination.</param>
-        protected ProvisioningClientException(SerializationInfo info, StreamingContext context)
-            : base(info, context)
-        {
-            if (info != null)
-            {
-                IsTransient = info.GetBoolean(IsTransientValueSerializationStoreName);
-                TrackingId = info.GetString(TrackingIdValueSerializationStoreName);
-            }
-        }
-
-        /// <summary>
         /// If true, the error is transient and the application should retry at a later time.
         /// </summary>
         public bool IsTransient { get; }

@@ -1472,7 +1472,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             string properties = UrlEncodedDictionarySerializer.Serialize(mergedProperties);
 
             // end the topic string with a '/' if it doesn't already end with one.
-            string suffix = topicName.EndsWith("/", StringComparison.Ordinal)
+            string suffix = topicName.EndsWith('/')
                 ? string.Empty
                 : "/";
             return $"{topicName}{properties}{suffix}";

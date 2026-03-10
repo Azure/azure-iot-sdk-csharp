@@ -8,13 +8,11 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure.Storage.Blobs.Models;
 using Azure.Storage.Blobs.Specialized;
 using Mash.Logging;
-using Newtonsoft.Json;
 using Microsoft.Azure.Devices.Client;
 using static Microsoft.Azure.Devices.LongHaul.Device.LoggingConstants;
 

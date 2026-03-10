@@ -15,12 +15,6 @@ namespace Microsoft.Azure.Devices.Client
     [Serializable]
     public class IotHubClientException : Exception
     {
-        [NonSerialized]
-        private const string IsTransientValueSerializationStoreName = "IotHubClientException-IsTransient";
-
-        [NonSerialized]
-        private const string TrackingIdValueSerializationStoreName = "IotHubClientException-TrackingId";
-
         private static readonly HashSet<IotHubClientErrorCode> s_transientErrorCodes = new()
         {
             IotHubClientErrorCode.QuotaExceeded,
@@ -53,21 +47,6 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Creates an instance of this class.
-        /// </summary>
-        /// <param name="info">The <see cref="SerializationInfo"/> that holds the serialized object data about the exception being thrown.</param>
-        /// <param name="context">The <see cref="StreamingContext"/> that contains contextual information about the source or destination.</param>
-        protected IotHubClientException(SerializationInfo info, StreamingContext context)
-            : base(info, context)
-        {
-            if (info != null)
-            {
-                IsTransient = info.GetBoolean(IsTransientValueSerializationStoreName);
-                TrackingId = info.GetString(TrackingIdValueSerializationStoreName);
-            }
-        }
-
-        /// <summary>
         /// The service returned tracking Id associated with this particular error.
         /// </summary>
         public string TrackingId { get; set; } = string.Empty;
@@ -92,20 +71,6 @@ namespace Microsoft.Azure.Devices.Client
             }
             sb.Append($"\n{StackTrace}");
             return sb.ToString();
-        }
-
-        /// <summary>
-        /// Sets the <see cref="SerializationInfo"/> with information about the exception.
-        /// Use this to set <see cref="IsTransient"/> and <see cref="TrackingId"/> to the serialized object data.
-        /// </summary>
-        /// <param name="info">The <see cref="SerializationInfo"/> that holds the serialized object data about the exception being thrown.</param>
-        /// <param name="context">The <see cref="StreamingContext"/> that contains contextual information about the source or destination.</param>
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        public override void GetObjectData(SerializationInfo info, StreamingContext context)
-        {
-            base.GetObjectData(info, context);
-            info.AddValue(IsTransientValueSerializationStoreName, IsTransient);
-            info.AddValue(TrackingIdValueSerializationStoreName, TrackingId);
         }
 
         private static bool DetermineIfTransient(IotHubClientErrorCode errorCode)

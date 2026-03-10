@@ -61,8 +61,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                     cancellationToken)
                 .ConfigureAwait(false);
 
-            Stream responseStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
-            string responsePayload = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            Stream responseStream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+            string responsePayload = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
             QueriedPage<T> page = new QueriedPage<T>(response, responsePayload);
 #pragma warning disable CA2000 // Dispose objects before losing scope
             // The disposable QueryResponse object is the user's responsibility, not the SDK's

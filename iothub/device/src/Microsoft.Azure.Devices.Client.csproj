@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>net10.0</TargetFrameworks>
     <LangVersion>9.0</LangVersion>
     <EnableNETAnalyzers>True</EnableNETAnalyzers>
     <AnalysisLevel>latest-recommended</AnalysisLevel>
@@ -57,7 +57,7 @@
 
   <!--Nuget package dependencies-->
   <ItemGroup>
-    <PackageReference Include="Azure.Core" Version="1.31.0" />
+    <PackageReference Include="Azure.Core" Version="1.51.0" />
     <PackageReference Include="MQTTnet" Version="4.1.4.563" />
     <PackageReference Include="Microsoft.Azure.Amqp" Version="2.6.2" />
     <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="8.0.0">
@@ -69,8 +69,5 @@
     
     <!--Required for dynamic-->
     <PackageReference Include="Microsoft.CSharp" Version="4.7" />
-    
-    <!-- Add support for IAsyncDisposable, match version used in track2 https://github.com/Azure/azure-sdk-for-net/blob/main/eng/Packages.Data.props#L80 -->
-    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="1.1.1" />
   </ItemGroup>
 </Project>

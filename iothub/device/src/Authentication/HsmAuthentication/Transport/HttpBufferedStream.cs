@@ -8,7 +8,9 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.Client.HsmAuthentication.Transport
 {
+#pragma warning disable CA1844 // Provide memory-based overrides of async methods when subclassing 'Stream'
     internal sealed class HttpBufferedStream : Stream
+#pragma warning restore CA1844 // Provide memory-based overrides of async methods when subclassing 'Stream'
     {
         private const char CR = '\r';
         private const char LF = '\n';
@@ -47,9 +49,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.Transport
             var builder = new StringBuilder();
             while (true)
             {
-                int length = await _innerStream
-                    .ReadAsync(buffer, 0, buffer.Length, cancellationToken)
-                    .ConfigureAwait(false);
+                int length = await _innerStream.ReadAsync(buffer, cancellationToken).ConfigureAwait(false);
 
                 if (length == 0)
                 {

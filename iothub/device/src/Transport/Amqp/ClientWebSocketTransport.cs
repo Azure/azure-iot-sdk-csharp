@@ -335,10 +335,7 @@ namespace Microsoft.Azure.Devices.Client
                 return;
             }
 
-            if (s_closedWebsocketStates.Contains(webSocketState))
-            {
-                throw new ObjectDisposedException(GetType().Name);
-            }
+            ObjectDisposedException.ThrowIf(s_closedWebsocketStates.Contains(webSocketState), GetType().Name);
 
             throw new AmqpException(AmqpErrorCode.IllegalState, null);
         }

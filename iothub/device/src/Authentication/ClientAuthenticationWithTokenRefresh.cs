@@ -52,10 +52,7 @@ namespace Microsoft.Azure.Devices.Client
 
             ModuleId = moduleId;
 
-            if (suggestedTimeToLive < TimeSpan.Zero)
-            {
-                throw new ArgumentOutOfRangeException(nameof(suggestedTimeToLive));
-            }
+            ArgumentOutOfRangeException.ThrowIfLessThan(suggestedTimeToLive, TimeSpan.Zero);
 
             if (timeBufferPercentage < 0 || timeBufferPercentage > 100)
             {
