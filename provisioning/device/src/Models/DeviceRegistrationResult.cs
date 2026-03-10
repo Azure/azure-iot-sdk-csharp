@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using Azure;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -77,9 +76,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// The entity tag associated with the resource.
         /// </summary>
         [JsonProperty("etag")]
-        // NewtonsoftJsonETagConverter is used here because otherwise the ETag isn't serialized properly.
-        [JsonConverter(typeof(NewtonsoftJsonETagConverter))]
-        public ETag ETag { get; protected internal set; }
+        public string ETag { get; protected internal set; }
 
         /// <summary>
         /// The custom data returned from the webhook to the device.
