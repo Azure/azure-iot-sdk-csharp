@@ -17,11 +17,11 @@ namespace Microsoft.Azure.Devices
 #pragma warning restore CA1852
     {
         private const string TokenType = "Bearer";
-        private static readonly string[] s_iotHubAadTokenScopes = new string[] { "https://iothubs.azure.net/.default" };
 
         private readonly TokenCredential _credential;
         private readonly object _tokenLock = new();
         private AccessToken? _cachedAccessToken;
+        private string[] _scopes;
 
         // Creates an instance of this class. Provided for unit testing purposes only.
         protected internal IotHubTokenCredentialProperties(string hostName, TokenCredential credential, AccessToken? accessToken) : base(hostName)
@@ -30,9 +30,16 @@ namespace Microsoft.Azure.Devices
             _cachedAccessToken = accessToken;
         }
 
-        public IotHubTokenCredentialProperties(string hostName, TokenCredential credential) : base(hostName)
+        public IotHubTokenCredentialProperties(string hostName, TokenCredential credential, string[] scopes) : base(hostName)
         {
             _credential = credential;
+
+            if (scopes.Length == 0)
+            {
+                throw new ArgumentException("You must provide at least one authentication scope. See the IotHubServiceClientOptions.Scopes field");
+            }
+
+            _scopes = scopes;
         }
 
         // The HTTP protocol uses this method to get the bearer token for authentication.
@@ -45,7 +52,7 @@ namespace Microsoft.Azure.Devices
                     || TokenHelper.IsCloseToExpiry(_cachedAccessToken.Value.ExpiresOn))
                 {
                     _cachedAccessToken = _credential.GetToken(
-                        new TokenRequestContext(s_iotHubAadTokenScopes),
+                        new TokenRequestContext(_scopes),
                         new CancellationToken());
                 }
             }
@@ -57,7 +64,7 @@ namespace Microsoft.Azure.Devices
         public async override Task<CbsToken> GetTokenAsync(Uri namespaceAddress, string appliesTo, string[] requiredClaims)
         {
             AccessToken token = await _credential
-                .GetTokenAsync(new TokenRequestContext(s_iotHubAadTokenScopes), CancellationToken.None)
+                .GetTokenAsync(new TokenRequestContext(_scopes), CancellationToken.None)
                 .ConfigureAwait(false);
 
             return new CbsToken(
