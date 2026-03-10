@@ -23,7 +23,6 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         // so for now, we need to use the older storage nuget.
         // https://github.com/Azure/azure-sdk-for-net/issues/10476
 
-        private const string ImportFileNameDefault = "devices.txt";
         private const int MaxIterationWait = 30;
         private static readonly TimeSpan s_waitDuration = TimeSpan.FromSeconds(5);
 
@@ -31,6 +30,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         [TestCategory("LongRunning")]
         [Timeout(LongRunningTestTimeoutMilliseconds)] // the number of jobs that can be run at a time are limited anyway
         [DoNotParallelize]
+        [Ignore("Test infrastructure is missing")]
         [DataRow(StorageAuthenticationType.KeyBased, false)]
         [DataRow(StorageAuthenticationType.IdentityBased, false)]
         [DataRow(StorageAuthenticationType.IdentityBased, true)]

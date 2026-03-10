@@ -14,6 +14,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 {
     [TestClass]
     [TestCategory("InvalidServiceCertificate")]
+    [Ignore("Missing test infrastructure")]
     public class IotHubCertificateValidationE2ETest : E2EMsTestBase
     {
         [TestMethod]
