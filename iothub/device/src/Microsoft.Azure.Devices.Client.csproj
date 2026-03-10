@@ -13,11 +13,8 @@
     <DocumentationFile>$(OutputPath)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
 
     <RootDir>$(MSBuildProjectDirectory)\..\..\..</RootDir>
-    <!-- Suppress framework end of life warnings as we have to keep supporting these frameworks for our customers -->
-    <CheckEolTargetFramework>false</CheckEolTargetFramework>
     
-    <!-- We choose not to use braces in our many logging enabled checks -->
-    <NoWarn>0011</NoWarn>
+    <NoWarn>0011,CA1863,SYSLIB0057</NoWarn>
   </PropertyGroup>
 
   <!-- delay sign the assembly for Release build -->
@@ -60,14 +57,6 @@
     <PackageReference Include="Azure.Core" Version="1.51.0" />
     <PackageReference Include="MQTTnet" Version="4.1.4.563" />
     <PackageReference Include="Microsoft.Azure.Amqp" Version="2.6.2" />
-    <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="8.0.0">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-    <PackageReference Include="Microsoft.Win32.Registry" Version="5.0.0" />
-    
-    <!--Required for dynamic-->
-    <PackageReference Include="Microsoft.CSharp" Version="4.7" />
   </ItemGroup>
 </Project>
