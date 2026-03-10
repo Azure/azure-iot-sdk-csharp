@@ -30,6 +30,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
         private static readonly TimeSpan s_defaultOperationTimeout = TimeSpan.FromSeconds(100);
 
+        private const int RuntimeDefaultConnectionLimit = 2;
+        private const int IncreasedConnectionLimit = 50;
+
         // These default values are consistent with Azure.Core default values:
         // https://github.com/Azure/azure-sdk-for-net/blob/7e3cf643977591e9041f4c628fd4d28237398e0b/sdk/core/Azure.Core/src/Pipeline/ServicePointHelpers.cs#L28
         private const int DefaultMaxConnectionsPerServer = 50;
@@ -76,9 +79,24 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 _httpClientHandler.Proxy = options.ProvisioningServiceHttpSettings.Proxy;
             }
 
-            _httpClientHandler.MaxConnectionsPerServer = DefaultMaxConnectionsPerServer;
-            ServicePoint servicePoint = ServicePointManager.FindServicePoint(_baseAddress);
-            servicePoint.ConnectionLeaseTimeout = s_defaultConnectionLeaseTimeout.Milliseconds;
+            try
+            {
+                // Only change when the default runtime limit is used
+                if (_httpClientHandler.MaxConnectionsPerServer == RuntimeDefaultConnectionLimit)
+                {
+                    _httpClientHandler.MaxConnectionsPerServer = IncreasedConnectionLimit;
+                }
+            }
+            catch (NotSupportedException)
+            {
+                // Some platforms might throw NotSupportedException
+                // when accessing handler options
+            }
+            catch (NotImplementedException)
+            {
+                // Some platforms (like Unity) might throw NotImplementedException
+                // when accessing handler options
+            }
 
             _httpClientObj = new HttpClient(_httpClientHandler, false)
             {
