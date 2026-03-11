@@ -9,7 +9,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using System.Text.Json.Serialization;
-using System.Text.Json;
 
 namespace Microsoft.Azure.Devices.Client.Samples
 {
@@ -246,7 +245,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 _logger.LogDebug($"Command: No relevant readings found, cannot generate any report.");
                 return Task.FromResult(new DirectMethodResponse((int)StatusCode.NotFound));
             }
-            catch (JsonException ex)
+            catch (JsonReaderException ex)
             {
                 _logger.LogDebug($"Command input is invalid: {ex.Message}.");
                 return Task.FromResult(new DirectMethodResponse((int)StatusCode.BadRequest));

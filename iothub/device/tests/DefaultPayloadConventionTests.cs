@@ -33,13 +33,6 @@ namespace Microsoft.Azure.Devices.Client.Tests
             result.Should().Be(s_serializedPayloadString);
         }
 
-        private class TestObject
-        {
-
-            [JsonPropertyName("time")]
-            public string Time { get; set; }
-        }
-
         [TestMethod]
         public void DefaultPayloadConvention_DateTime_DeserializesProperly()
         {
@@ -47,10 +40,10 @@ namespace Microsoft.Azure.Devices.Client.Tests
             string jsonStr = $@"{{""time"":""{s_dateTimeString}""}}";
 
             // act
-            TestObject payload = s_cut.GetObject<TestObject>(jsonStr);
+            JObject payload = s_cut.GetObject<JObject>(jsonStr);
 
             //assert
-            payload.Time.Should().Be(s_dateTimeString);
+            payload.ToString().Should().Be(s_serializedPayloadString);
         }
 
         [TestMethod]
