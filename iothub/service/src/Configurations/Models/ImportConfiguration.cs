@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System.Text.Json.Serialization;
 using System.Threading;
-using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices
 {
@@ -21,7 +21,7 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// The type of registry operation and ETag preferences.
         /// </summary>
-        [JsonProperty("importMode")]
+        [JsonPropertyName("importMode")]
         public ConfigurationImportMode ImportMode { get; set; }
     }
 }

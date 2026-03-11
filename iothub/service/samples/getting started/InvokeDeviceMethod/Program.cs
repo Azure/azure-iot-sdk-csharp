@@ -9,7 +9,7 @@ using System.Diagnostics;
 using System.Text;
 using System.Threading.Tasks;
 using CommandLine;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices.Samples.InvokeDeviceMethod
 {
@@ -56,7 +56,7 @@ namespace Microsoft.Azure.Devices.Samples.InvokeDeviceMethod
             // Invoke the direct method asynchronously and get the response from the simulated device.
             DirectMethodClientResponse response = await serviceClient.DirectMethods.InvokeAsync(deviceId, methodInvocation);
 
-            Console.WriteLine($"Response status: {response.Status}, payload:\n\t{JsonConvert.SerializeObject(response.PayloadAsString)}");
+            Console.WriteLine($"Response status: {response.Status}, payload:\n\t{JsonSerializer.Serialize(response.PayloadAsString)}");
         }
     }
 }

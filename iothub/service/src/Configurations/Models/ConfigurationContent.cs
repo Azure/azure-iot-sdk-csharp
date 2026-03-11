@@ -2,7 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Collections.Generic;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices
 {
@@ -21,19 +21,19 @@ namespace Microsoft.Azure.Devices
         /// For Edge deployments, this should have a key of <c>"$edgeAgent"</c>.
         /// </para>
         /// </remarks>
-        [JsonProperty("modulesContent")]
+        [JsonPropertyName("modulesContent")]
         public IDictionary<string, IDictionary<string, object>> ModulesContent { get; set; } = new Dictionary<string, IDictionary<string, object>>();
 
         /// <summary>
         /// The device module configuration content.
         /// </summary>
-        [JsonProperty("moduleContent")]
+        [JsonPropertyName("moduleContent")]
         public IDictionary<string, object> ModuleContent { get; set; } = new Dictionary<string, object>();
 
         /// <summary>
         /// The device configuration content.
         /// </summary>
-        [JsonProperty("deviceContent")]
+        [JsonPropertyName("deviceContent")]
         public IDictionary<string, object> DeviceContent { get; set; } = new Dictionary<string, object>();
     }
 }

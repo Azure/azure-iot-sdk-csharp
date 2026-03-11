@@ -7,7 +7,7 @@ using System.Text;
 using Azure;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices.Tests
 {
@@ -29,9 +29,9 @@ namespace Microsoft.Azure.Devices.Tests
                 LastActiveOnUtc = new DateTimeOffset(2023, 1, 19, 8, 6, 32, new TimeSpan(1, 0, 0)),
             };
 
-            string clientTwinSerialized = JsonConvert.SerializeObject(clientTwin);
+            string clientTwinSerialized = JsonSerializer.Serialize(clientTwin);
 
-            ClientTwin ct = JsonConvert.DeserializeObject<ClientTwin>(clientTwinSerialized);
+            ClientTwin ct = JsonSerializer.Deserialize<ClientTwin>(clientTwinSerialized);
             
             // assert
             ct.Should().BeEquivalentTo(clientTwin);
@@ -54,8 +54,8 @@ namespace Microsoft.Azure.Devices.Tests
                     }
                 }
             };
-            string configurationSerialized = JsonConvert.SerializeObject(configuration);
-            Configuration c = JsonConvert.DeserializeObject<Configuration>(configurationSerialized);
+            string configurationSerialized = JsonSerializer.Serialize(configuration);
+            Configuration c = JsonSerializer.Deserialize<Configuration>(configurationSerialized);
 
             // assert
             c.SchemaVersion.Should().Be(ExpectedSchemaVersion);
@@ -71,9 +71,9 @@ namespace Microsoft.Azure.Devices.Tests
                 Id = "aa",
                 ImportMode = ConfigurationImportMode.CreateOrUpdateIfMatchETag
             };
-            string importConfigurationSerialized = JsonConvert.SerializeObject(importConfiguration);
+            string importConfigurationSerialized = JsonSerializer.Serialize(importConfiguration);
 
-            ImportConfiguration ic = JsonConvert.DeserializeObject<ImportConfiguration>(importConfigurationSerialized);
+            ImportConfiguration ic = JsonSerializer.Deserialize<ImportConfiguration>(importConfigurationSerialized);
 
             // assert
             ic.Should().BeEquivalentTo(importConfiguration);
@@ -92,10 +92,10 @@ namespace Microsoft.Azure.Devices.Tests
                 StatusCode = FeedbackStatusCode.Success,
                 Description = "Success"
             };
-            string feedbackRecordSerialized = JsonConvert.SerializeObject(feedbackRecord);
+            string feedbackRecordSerialized = JsonSerializer.Serialize(feedbackRecord);
 
             // assert
-            FeedbackRecord fr = JsonConvert.DeserializeObject<FeedbackRecord>(feedbackRecordSerialized);
+            FeedbackRecord fr = JsonSerializer.Deserialize<FeedbackRecord>(feedbackRecordSerialized);
             fr.Should().BeEquivalentTo(feedbackRecord);
         }
 
@@ -113,9 +113,9 @@ namespace Microsoft.Azure.Devices.Tests
                 EnqueuedOnUtc = new DateTimeOffset(2023, 1, 20, 8, 6, 32, new TimeSpan(1, 0, 0))
             };
 
-            string fileUploadNotificationSerialized = JsonConvert.SerializeObject(fileUploadNotification);
+            string fileUploadNotificationSerialized = JsonSerializer.Serialize(fileUploadNotification);
 
-            FileUploadNotification fun = JsonConvert.DeserializeObject<FileUploadNotification>(fileUploadNotificationSerialized);
+            FileUploadNotification fun = JsonSerializer.Deserialize<FileUploadNotification>(fileUploadNotificationSerialized);
 
             // assert
             fun.Should().BeEquivalentTo(fileUploadNotification);
@@ -134,8 +134,8 @@ namespace Microsoft.Azure.Devices.Tests
                 }
             };
 
-            string basicDigitalTwinSerialized = JsonConvert.SerializeObject(basicDigitalTwin);
-            BasicDigitalTwin bdt = JsonConvert.DeserializeObject<BasicDigitalTwin>(basicDigitalTwinSerialized);
+            string basicDigitalTwinSerialized = JsonSerializer.Serialize(basicDigitalTwin);
+            BasicDigitalTwin bdt = JsonSerializer.Deserialize<BasicDigitalTwin>(basicDigitalTwinSerialized);
 
             // assert
             basicDigitalTwin.Should().BeEquivalentTo(bdt);
@@ -166,8 +166,8 @@ namespace Microsoft.Azure.Devices.Tests
                 }
             };
 
-            string basicDigitalTwinSerialized = JsonConvert.SerializeObject(basicDigitalTwin);
-            BasicDigitalTwin bdt = JsonConvert.DeserializeObject<BasicDigitalTwin>(basicDigitalTwinSerialized);
+            string basicDigitalTwinSerialized = JsonSerializer.Serialize(basicDigitalTwin);
+            BasicDigitalTwin bdt = JsonSerializer.Deserialize<BasicDigitalTwin>(basicDigitalTwinSerialized);
 
             // assert
             basicDigitalTwin.Should().BeEquivalentTo(bdt);
@@ -187,8 +187,8 @@ namespace Microsoft.Azure.Devices.Tests
                 LastUpdatedOnUtc = new DateTimeOffset(2023, 1, 20, 8, 6, 32, new TimeSpan(1, 0, 0))
             };
 
-            string writablePropertySerialized = JsonConvert.SerializeObject(writableProperty);
-            WritableProperty wp = JsonConvert.DeserializeObject<WritableProperty>(writablePropertySerialized);
+            string writablePropertySerialized = JsonSerializer.Serialize(writableProperty);
+            WritableProperty wp = JsonSerializer.Deserialize<WritableProperty>(writablePropertySerialized);
 
             // assert
             writableProperty.Should().BeEquivalentTo(wp);
@@ -206,8 +206,8 @@ namespace Microsoft.Azure.Devices.Tests
                     { "key2", 1 },
                 }
             };
-            string componentMetadataSerialized = JsonConvert.SerializeObject(componentMetadata);
-            ComponentMetadata metaData = JsonConvert.DeserializeObject<ComponentMetadata>(componentMetadataSerialized);
+            string componentMetadataSerialized = JsonSerializer.Serialize(componentMetadata);
+            ComponentMetadata metaData = JsonSerializer.Deserialize<ComponentMetadata>(componentMetadataSerialized);
 
             // assert
             metaData.Should().BeEquivalentTo(componentMetadata);
@@ -220,12 +220,12 @@ namespace Microsoft.Azure.Devices.Tests
             var cloudToDeviceMethodScheduledJob = new CloudToDeviceMethodScheduledJob(
                 new DirectMethodServiceRequest("testMethod")
                 {
-                    Payload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject("testPayload"))
+                    Payload = Encoding.UTF8.GetBytes(JsonSerializer.Serialize("testPayload"))
                 }
             );
 
-            string cloudToDeviceMethodScheduledJobSerialized = JsonConvert.SerializeObject(cloudToDeviceMethodScheduledJob);
-            CloudToDeviceMethodScheduledJob job = JsonConvert.DeserializeObject<CloudToDeviceMethodScheduledJob>(cloudToDeviceMethodScheduledJobSerialized);
+            string cloudToDeviceMethodScheduledJobSerialized = JsonSerializer.Serialize(cloudToDeviceMethodScheduledJob);
+            CloudToDeviceMethodScheduledJob job = JsonSerializer.Deserialize<CloudToDeviceMethodScheduledJob>(cloudToDeviceMethodScheduledJobSerialized);
 
             // assert
             job.Should().BeEquivalentTo(cloudToDeviceMethodScheduledJob);
@@ -244,9 +244,9 @@ namespace Microsoft.Azure.Devices.Tests
                 PendingCount = 30
             };
 
-            string deviceJobStatisticsSerialized = JsonConvert.SerializeObject(deviceJobStatistics);
+            string deviceJobStatisticsSerialized = JsonSerializer.Serialize(deviceJobStatistics);
 
-            DeviceJobStatistics statistics = JsonConvert.DeserializeObject<DeviceJobStatistics>(deviceJobStatisticsSerialized);
+            DeviceJobStatistics statistics = JsonSerializer.Deserialize<DeviceJobStatistics>(deviceJobStatisticsSerialized);
 
             // assert
             statistics.Should().BeEquivalentTo(deviceJobStatistics);

@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices
 {
@@ -23,13 +23,13 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// The Id of the device whose messages are being purged.
         /// </summary>
-        [JsonProperty("deviceId")]
+        [JsonPropertyName("deviceId")]
         public string DeviceId { get; protected internal set; }
 
         /// <summary>
         /// The total number of messages that were purged from the device's queue.
         /// </summary>
-        [JsonProperty("totalMessagesPurged")]
+        [JsonPropertyName("totalMessagesPurged")]
         public int TotalMessagesPurged { get; protected internal set; }
     }
 }

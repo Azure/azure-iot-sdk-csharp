@@ -3,7 +3,8 @@
 
 using System;
 using System.Text;
-using Newtonsoft.Json;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices
 {
@@ -29,13 +30,13 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// The method name to run.
         /// </summary>
-        [JsonProperty("methodName")]
+        [JsonPropertyName("methodName")]
         public string MethodName { get; }
 
         /// <summary>
         /// The serialized and encoded payload bytes.
         /// </summary>
-        [JsonProperty("payload")]
+        [JsonPropertyName("payload")]
         public byte[] Payload { get; set; }
 
         /// <summary>
@@ -44,8 +45,8 @@ namespace Microsoft.Azure.Devices
         [JsonIgnore]
         public object PayloadAsObject
         {
-            get => JsonConvert.DeserializeObject(Encoding.UTF8.GetString(Payload));
-            set => Payload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(value));
+            get => JsonSerializer.Deserialize<object>(Encoding.UTF8.GetString(Payload)); // TODO hmmm
+            set => Payload = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(value));
         }
 
         /// <summary>
@@ -79,10 +80,10 @@ namespace Microsoft.Azure.Devices
         [JsonIgnore]
         public TimeSpan? ResponseTimeout { get; set; }
 
-        [JsonProperty("responseTimeoutInSeconds", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("responseTimeoutInSeconds")]
         internal int? ResponseTimeoutInSeconds => (int?)ResponseTimeout?.TotalSeconds ?? null;
 
-        [JsonProperty("connectTimeoutInSeconds", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("connectTimeoutInSeconds")]
         internal int? ConnectionTimeoutInSeconds => (int?)ConnectionTimeout?.TotalSeconds ?? null;
     }
 }

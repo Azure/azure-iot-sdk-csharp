@@ -5,7 +5,7 @@ using System;
 using System.Text;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices.Tests.DirectMethod
 {
@@ -81,18 +81,18 @@ namespace Microsoft.Azure.Devices.Tests.DirectMethod
         public void DirectMethodServiceRequest_SerializesCorrectly()
         {
             // arrange
-            var directMethodServiceRequest = new DirectMethodServiceRequest(JsonConvert.SerializeObject("testMethod"))
+            var directMethodServiceRequest = new DirectMethodServiceRequest(JsonSerializer.Serialize("testMethod"))
             {
-                Payload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject("testPayload"))
+                Payload = Encoding.UTF8.GetBytes(JsonSerializer.Serialize("testPayload"))
             };
 
             // act
-            string serializedDirectMethodServiceRequest = JsonConvert.SerializeObject(directMethodServiceRequest);
-            DirectMethodServiceRequest deserializedRequest = JsonConvert.DeserializeObject<DirectMethodServiceRequest>(serializedDirectMethodServiceRequest);
+            string serializedDirectMethodServiceRequest = JsonSerializer.Serialize(directMethodServiceRequest);
+            DirectMethodServiceRequest deserializedRequest = JsonSerializer.Deserialize<DirectMethodServiceRequest>(serializedDirectMethodServiceRequest);
 
             // assert
             deserializedRequest.Should().BeEquivalentTo(directMethodServiceRequest);
-            deserializedRequest.Payload.Should().BeEquivalentTo(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject("testPayload")));
+            deserializedRequest.Payload.Should().BeEquivalentTo(Encoding.UTF8.GetBytes(JsonSerializer.Serialize("testPayload")));
         }
     }
 }

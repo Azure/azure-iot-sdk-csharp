@@ -1,34 +1,34 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices.Samples
 {
     internal class TemperatureControllerTwin : BasicDigitalTwin
     {
-        [JsonProperty("$metadata")]
+        [JsonPropertyName("$metadata")]
         public new TemperatureControllerMetadata Metadata { get; set; }
 
-        [JsonProperty("serialNumber")]
+        [JsonPropertyName("serialNumber")]
         public string SerialNumber { get; set; }
 
-        [JsonProperty("thermostat1")]
+        [JsonPropertyName("thermostat1")]
         public ThermostatTwin Thermostat1 { get; set; }
 
-        [JsonProperty("thermostat2")]
+        [JsonPropertyName("thermostat2")]
         public ThermostatTwin Thermostat2 { get; set; }
     }
 
     internal class TemperatureControllerMetadata : DigitalTwinMetadata
     {
-        [JsonProperty("serialNumber")]
+        [JsonPropertyName("serialNumber")]
         public ReportedPropertyMetadata SerialNumber { get; set; }
 
-        [JsonProperty("thermostat1")]
+        [JsonPropertyName("thermostat1")]
         public WritableProperty Thermostat1 { get; set; }
 
-        [JsonProperty("thermostat2")]
+        [JsonPropertyName("thermostat2")]
         public WritableProperty Thermostat2 { get; set; }
     }
 }

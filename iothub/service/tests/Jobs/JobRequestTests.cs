@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using Castle.Components.DictionaryAdapter.Xml;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices.Tests.Jobs
 {
@@ -58,7 +58,7 @@ namespace Microsoft.Azure.Devices.Tests.Jobs
 
             // act
             var settings = new JsonSerializerSettings();
-            JobRequest deserializedRequest = JsonConvert.DeserializeObject<JobRequest>(JsonConvert.SerializeObject(request, settings));
+            JobRequest deserializedRequest = JsonSerializer.Deserialize<JobRequest>(JsonSerializer.Serialize(request, settings));
 
             // assert
             deserializedRequest.Should().NotBeNull();
