@@ -218,10 +218,10 @@ namespace Microsoft.Azure.Devices
             using AmqpMessage amqpMessage = MessageConverter.MessageToAmqpMessage(message);
             amqpMessage.Properties.To = $"/devices/{WebUtility.UrlEncode(deviceId)}/messages/deviceBound";
 
-            using var sendTimeoutCts = new CancellationTokenSource(sendTimeout);
+            using var sendTimeoutCts = new CancellationTokenSource();
             if (sendTimeout != TimeSpan.MaxValue)
             {
-                sendTimeoutCts.CancelAfter(openTimeout);
+                sendTimeoutCts.CancelAfter(sendTimeout);
             }
             using CancellationTokenSource sendCancellationToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, sendTimeoutCts.Token);
 
