@@ -4,8 +4,8 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices
 {
@@ -17,13 +17,13 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Gets the version of the collection.
         /// </summary>
-        [JsonProperty("$version", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("$version")]
         public long? Version { get; internal set; }
 
         /// <summary>
         /// Metadata about the properties.
         /// </summary>
-        [JsonProperty("$metadata")]
+        [JsonPropertyName("$metadata")]
         public ClientTwinMetadata Metadata { get; set; } = new();
 
         [JsonExtensionData]
@@ -106,7 +106,7 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         public string GetPropertiesAsJson()
         {
-            return JsonConvert.SerializeObject(Properties);
+            return JsonSerializer.Serialize(Properties);
         }
 
         private bool TryGetMemberInternal(string propertyName, out object result)

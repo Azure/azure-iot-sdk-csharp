@@ -2,7 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Diagnostics.CodeAnalysis;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices
 {
@@ -11,16 +11,16 @@ namespace Microsoft.Azure.Devices
     /// </summary>
     internal sealed class ErrorPayload1
     {
-        [JsonProperty("errorCode")]
+        [JsonPropertyName("errorCode")]
         internal string ErrorCode { get; set; }
 
-        [JsonProperty("trackingId")]
+        [JsonPropertyName("trackingId")]
         internal string TrackingId { get; set; }
 
-        [JsonProperty("message")]
+        [JsonPropertyName("message")]
         internal string Message { get; set; }
 
-        [JsonProperty("timestampUtc")]
+        [JsonPropertyName("timestampUtc")]
         internal string OccurredOnUtc { get; set; }
     }
 
@@ -28,7 +28,7 @@ namespace Microsoft.Azure.Devices
     {
         [SuppressMessage("Usage", "CA1507: Use nameof in place of string literal 'Message'",
             Justification = "This JsonProperty annotation depends on service-defined contract (name) and is independent of the property name selected by the SDK.")]
-        [JsonProperty("Message")]
+        [JsonPropertyName("Message")]
         internal string Message { get; set; }
     }
 }

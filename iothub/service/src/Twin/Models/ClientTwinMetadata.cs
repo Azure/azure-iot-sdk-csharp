@@ -3,8 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices
 {
@@ -16,7 +15,7 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// When a property was last updated.
         /// </summary>
-        [JsonProperty("$lastUpdated", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("$lastUpdated")]
         public DateTimeOffset? LastUpdatedOnUtc { get; set; }
 
         /// <summary>
@@ -25,7 +24,7 @@ namespace Microsoft.Azure.Devices
         /// <remarks>
         /// This should be not be included for reported properties metadata and must not be null for desired properties metadata.
         /// </remarks>
-        [JsonProperty("$lastUpdatedVersion", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("$lastUpdatedVersion")]
         public long? LastUpdatedVersion { get; set; }
 
         [JsonExtensionData]

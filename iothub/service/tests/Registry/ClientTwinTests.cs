@@ -7,7 +7,7 @@ using System.IO;
 using Azure;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices.Tests
 {
@@ -110,10 +110,10 @@ namespace Microsoft.Azure.Devices.Tests
                 ParentScopes = parentScopes,
             };
 
-            string twinJson = JsonConvert.SerializeObject(twin);
+            string twinJson = JsonSerializer.Serialize(twin);
             twinJson.Should().NotBeNull();
 
-            ClientTwin actual = JsonConvert.DeserializeObject<ClientTwin>(twinJson);
+            ClientTwin actual = JsonSerializer.Deserialize<ClientTwin>(twinJson);
             actual.Should().NotBeNull();
             actual.DeviceId.Should().Be(deviceId);
             actual.ModelId.Should().Be(modelId);
@@ -172,8 +172,8 @@ namespace Microsoft.Azure.Devices.Tests
 
             // act
 
-            string json = JsonConvert.SerializeObject(twin);
-            ClientTwin actual = JsonConvert.DeserializeObject<ClientTwin>(json);
+            string json = JsonSerializer.Serialize(twin);
+            ClientTwin actual = JsonSerializer.Deserialize<ClientTwin>(json);
 
             // assert
 
@@ -216,7 +216,7 @@ namespace Microsoft.Azure.Devices.Tests
             string complexTwinJson = File.ReadAllText("Registry/ComplexTwin.json");
 
             // act
-            ClientTwin twin = JsonConvert.DeserializeObject<ClientTwin>(complexTwinJson);
+            ClientTwin twin = JsonSerializer.Deserialize<ClientTwin>(complexTwinJson);
 
             // assert
 
@@ -319,36 +319,36 @@ namespace Microsoft.Azure.Devices.Tests
 
         private class CustomType
         {
-            [JsonProperty("customInt")]
+            [JsonPropertyName("customInt")]
             public int CustomInt { get; set; }
 
-            [JsonProperty("customString")]
+            [JsonPropertyName("customString")]
             public string CustomString { get; set; }
         }
 
         private class ThermostatReported
         {
-            [JsonProperty("__t")]
+            [JsonPropertyName("__t")]
             public string Component { get; set; }
 
             public WritablePropertyResponse<int> TargetTemperature { get; set; }
 
-            [JsonProperty("maxTempSinceLastReboot")]
+            [JsonPropertyName("maxTempSinceLastReboot")]
             public double MaxTempSinceLastReboot { get; set; }
         }
 
         private class WritablePropertyResponse<T>
         {
-            [JsonProperty("value")]
+            [JsonPropertyName("value")]
             public T Value { get; set; }
 
-            [JsonProperty("ac")]
+            [JsonPropertyName("ac")]
             public int Code { get; set; }
 
-            [JsonProperty("av")]
+            [JsonPropertyName("av")]
             public int Version { get; set; }
 
-            [JsonProperty("ad")]
+            [JsonPropertyName("ad")]
             public string Description { get; set; }
         }
     }

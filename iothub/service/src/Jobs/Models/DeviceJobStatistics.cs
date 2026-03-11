@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices
 {
@@ -13,31 +13,31 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Number of devices in the job.
         /// </summary>
-        [JsonProperty("deviceCount")]
+        [JsonPropertyName("deviceCount")]
         public int DeviceCount { get; protected internal set; }
 
         /// <summary>
         /// The number of failed jobs.
         /// </summary>
-        [JsonProperty("failedCount")]
+        [JsonPropertyName("failedCount")]
         public int FailedCount { get; protected internal set; }
 
         /// <summary>
         /// The number of successed jobs.
         /// </summary>
-        [JsonProperty("succeededCount")]
+        [JsonPropertyName("succeededCount")]
         public int SucceededCount { get; protected internal set; }
 
         /// <summary>
         /// The number of running jobs.
         /// </summary>
-        [JsonProperty("runningCount")]
+        [JsonPropertyName("runningCount")]
         public int RunningCount { get; protected internal set; }
 
         /// <summary>
         /// The number of pending (scheduled) jobs.
         /// </summary>
-        [JsonProperty("pendingCount")]
+        [JsonPropertyName("pendingCount")]
         public int PendingCount { get; protected internal set; }
     }
 }

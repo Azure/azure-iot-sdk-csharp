@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 using Azure;
 using Azure.Storage.Blobs;
 using Azure.Storage.Sas;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices.Samples
 {
@@ -34,7 +34,7 @@ namespace Microsoft.Azure.Devices.Samples
         {
             _hubClient = hubClient ?? throw new ArgumentNullException(nameof(hubClient));
             _blobContainerClient = sc ?? throw new ArgumentNullException(nameof(sc));
-            Console.WriteLine($"Delete devices without prefixes: {JsonConvert.SerializeObject(saveDevicesWithPrefix)}");
+            Console.WriteLine($"Delete devices without prefixes: {JsonSerializer.Serialize(saveDevicesWithPrefix)}");
             _saveDevicesWithPrefix = saveDevicesWithPrefix;
         }
 
@@ -148,7 +148,7 @@ namespace Microsoft.Azure.Devices.Samples
                 {
                     try
                     {
-                        ImportJobError importError = JsonConvert.DeserializeObject<ImportJobError>(error);
+                        ImportJobError importError = JsonSerializer.Deserialize<ImportJobError>(error);
                         Console.WriteLine($"\tImport error for {importError.DeviceId} of code {importError.ErrorCode} with status: '{importError.ErrorStatus}'.");
                     }
                     catch (Exception ex)
