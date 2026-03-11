@@ -3,7 +3,7 @@
 
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
 {
@@ -17,13 +17,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
             // arrange
 
             var customPayload = new CustomType { CustomInt = 4, CustomString = "bar" };
-            string body = JsonSerializer.Serialize(customPayload);
+            string body = JsonConvert.SerializeObject(customPayload);
 
             var registrationRequestPayload = new RegistrationRequestPayload();
             registrationRequestPayload.SetPayload(body);
 
             // act
-            CustomType result = JsonSerializer.Deserialize<CustomType>(registrationRequestPayload.Payload.ToString());
+            CustomType result = JsonConvert.DeserializeObject<CustomType>(registrationRequestPayload.Payload.ToString());
 
             // assert
 
@@ -33,10 +33,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
 
         private class CustomType
         {
-            [JsonPropertyName("customInt")]
+            [JsonProperty("customInt")]
             public int CustomInt { get; set; }
 
-            [JsonPropertyName("customString")]
+            [JsonProperty("customString")]
             public string CustomString { get; set; }
         }
     }

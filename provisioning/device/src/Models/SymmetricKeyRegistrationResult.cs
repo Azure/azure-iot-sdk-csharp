@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client
 {
@@ -19,7 +19,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// <summary>
         /// The Id of the enrollment group.
         /// </summary>
-        [JsonPropertyName("enrollmentGroupId")]
+        [JsonProperty("enrollmentGroupId")]
         public string EnrollmentGroupId { get; protected internal set; }
     }
 }

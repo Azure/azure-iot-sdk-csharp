@@ -4,7 +4,7 @@
 using System;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
 {
@@ -34,10 +34,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
                 Status = s_status,
                 RegistrationState = s_registrationState,
             };
-            string body = JsonSerializer.Serialize(source);
+            string body = JsonConvert.SerializeObject(source);
 
             // act
-            RegistrationOperationStatus registrationOperationStatus = JsonSerializer.Deserialize<RegistrationOperationStatus>(body);
+            RegistrationOperationStatus registrationOperationStatus = JsonConvert.DeserializeObject<RegistrationOperationStatus>(body);
 
             // assert
 

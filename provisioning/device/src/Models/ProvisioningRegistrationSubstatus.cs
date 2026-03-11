@@ -2,13 +2,15 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Runtime.Serialization;
-using System.Text.Json.Serialization;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client
 {
     /// <summary>
     /// The provisioning substatus type.
     /// </summary>
+    [JsonConverter(typeof(StringEnumConverter))]
     public enum ProvisioningRegistrationSubstatus
     {
         /// <summary>

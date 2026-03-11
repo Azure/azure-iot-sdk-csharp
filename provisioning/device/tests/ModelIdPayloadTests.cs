@@ -3,7 +3,7 @@
 
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
 {
@@ -20,10 +20,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
             {
                 ModelId = "test-model-id",
             };
-            string body = JsonSerializer.Serialize(source);
+            string body = JsonConvert.SerializeObject(source);
 
             // act
-            ModelIdPayload payload = JsonSerializer.Deserialize<ModelIdPayload>(body);
+            ModelIdPayload payload = JsonConvert.DeserializeObject<ModelIdPayload>(body);
 
             // assert
             payload.ModelId.Should().Be(source.ModelId);

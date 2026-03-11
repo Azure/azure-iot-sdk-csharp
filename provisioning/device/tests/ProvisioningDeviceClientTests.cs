@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
@@ -164,7 +164,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
             var mockRegistrationResult = new DeviceRegistrationResult
             {
                 Status = ProvisioningRegistrationStatus.Assigned,
-                Payload = new JRaw(JsonSerializer.Serialize(customPayload)),
+                Payload = new JRaw(JsonConvert.SerializeObject(customPayload)),
             };
 
             var mockTransportHandler = new Mock<ProvisioningTransportHandler>();
@@ -195,7 +195,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
             var mockRegistrationResult = new DeviceRegistrationResult
             {
                 Status = ProvisioningRegistrationStatus.Assigned,
-                Payload = new JRaw(JsonSerializer.Serialize(customPayload)),
+                Payload = new JRaw(JsonConvert.SerializeObject(customPayload)),
             };
 
             var mockTransportHandler = new Mock<ProvisioningTransportHandler>();
@@ -223,10 +223,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
 
         private class CustomType
         {
-            [JsonPropertyName("customInt")]
+            [JsonProperty("customInt")]
             public int CustomInt { get; set; }
 
-            [JsonPropertyName("customString")]
+            [JsonProperty("customString")]
             public string CustomString { get; set; }
         }
     }

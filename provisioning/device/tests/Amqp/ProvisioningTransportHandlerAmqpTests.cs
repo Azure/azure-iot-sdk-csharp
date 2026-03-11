@@ -6,7 +6,7 @@ using System.Security.Authentication;
 using FluentAssertions;
 using Microsoft.Azure.Amqp.Framing;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
 {
@@ -35,7 +35,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
         {
             // arrange
 
-            string errorDescriptionJsonString = JsonSerializer.Serialize(s_notTransientErrorDescription);
+            string errorDescriptionJsonString = JsonConvert.SerializeObject(s_notTransientErrorDescription);
 
             var rejected= new Rejected() { Error = new Error() { Description = errorDescriptionJsonString } };
 
@@ -59,7 +59,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
         {
             // arrange
 
-            string errorDescriptionJsonString = JsonSerializer.Serialize(s_transientErrorDescription);
+            string errorDescriptionJsonString = JsonConvert.SerializeObject(s_transientErrorDescription);
 
             var rejected = new Rejected() { Error = new Error() { Description = errorDescriptionJsonString } };
 

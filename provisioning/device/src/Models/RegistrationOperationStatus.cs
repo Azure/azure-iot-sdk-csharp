@@ -2,7 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client
 {
@@ -14,19 +14,19 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// <summary>
         /// Gets or sets operation Id.
         /// </summary>
-        [JsonPropertyName("operationId")]
+        [JsonProperty("operationId")]
         internal string OperationId { get; set; }
 
         /// <summary>
         /// Gets or sets device enrollment status.
         /// </summary>
-        [JsonPropertyName("status")]
+        [JsonProperty("status")]
         internal ProvisioningRegistrationStatus Status { get; set; }
 
         /// <summary>
         /// Gets or sets device registration status.
         /// </summary>
-        [JsonPropertyName("registrationState")]
+        [JsonProperty("registrationState")]
         internal DeviceRegistrationResult RegistrationState { get; set; }
 
         /// <summary>
