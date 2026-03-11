@@ -10,7 +10,7 @@ using FluentAssertions;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.E2ETests.Methods
 {
@@ -148,7 +148,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
 
             using var testDeviceCallbackHandler = new TestDeviceCallbackHandler(deviceClient, testDevice.Id);
             await testDeviceCallbackHandler.SetDeviceReceiveMethodAndRespondAsync<T>(
-                Encoding.UTF8.GetBytes(JsonSerializer.Serialize(directMethodResponseFromClient)), ct);
+                Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(directMethodResponseFromClient)), ct);
 
             DirectMethodServiceRequest directMethodRequest;
             if (typeof(T) == typeof(byte[]))
@@ -164,7 +164,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 directMethodRequest = new DirectMethodServiceRequest(MethodName)
                 {
                     ResponseTimeout = s_defaultMethodResponseTimeout,
-                    Payload = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(directMethodRequestFromService)),
+                    Payload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(directMethodRequestFromService)),
                 };
             }
 
@@ -203,7 +203,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 foreach (KeyValuePair<string, object> entry in castedActualClientResponsePayload)
                 {
                     object expectedValue = castedExpectedClientResponsePayload[entry.Key];
-                    string multipleEncodedValue = JsonSerializer.Deserialize<string>(Encoding.UTF8.GetString(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(expectedValue))));
+                    string multipleEncodedValue = JsonConvert.DeserializeObject<string>(Encoding.UTF8.GetString(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(expectedValue))));
                     entry.Value.ToString().Should().BeEquivalentTo(multipleEncodedValue);
                 }
             }

@@ -10,7 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Azure.Devices.Client;
-using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.E2ETests.Helpers
 {
@@ -127,7 +127,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                         containsProperty.Should().BeTrue($"Expecting property update patch received for {_testDeviceId} for {expectedPropertyName} to be {expectedTwinPropertyValue} but was: {patch.GetSerializedString()}");
 
                         // We don't support nested deserialization yet, so we'll need to serialize the response and compare them.
-                        JsonSerializer.Serialize(expectedTwinPropertyValue).Should().Be(JsonSerializer.Serialize(actualPropertyValue), "The property value should match what was set by service");
+                        JsonConvert.SerializeObject(expectedTwinPropertyValue).Should().Be(JsonConvert.SerializeObject(actualPropertyValue), "The property value should match what was set by service");
                     }
                     catch (Exception ex)
                     {
