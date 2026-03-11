@@ -71,7 +71,7 @@ namespace Microsoft.Azure.Devices.Client
         /// that have special serialization rules or require a specific byte encoding.
         /// <para>
         /// The default value is set to <see cref="DefaultPayloadConvention"/> which uses
-        /// <see href="https://www.nuget.org/packages/Newtonsoft.Json"/> and UTF-8 encoding.
+        /// <see href="https://www.nuget.org/packages/System.Text.Json"/> and UTF-8 encoding.
         /// </para>
         /// </remarks>
         public PayloadConvention PayloadConvention { get; set; } = DefaultPayloadConvention.Instance;

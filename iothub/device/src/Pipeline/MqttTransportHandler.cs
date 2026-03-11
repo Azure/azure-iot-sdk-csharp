@@ -11,6 +11,7 @@ using System.Linq;
 using System.Net;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -21,7 +22,6 @@ using MQTTnet.Adapter;
 using MQTTnet.Client;
 using MQTTnet.Exceptions;
 using MQTTnet.Protocol;
-using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Client.Transport
 {
@@ -1273,8 +1273,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
                             try
                             {
                                 // Use the encoder that has been agreed to between the client and service to decode the byte[] response
-                                // The response is deserialized into an SDK-defined type based on service-defined NewtonSoft.Json-based json property name.
-                                // For this reason, we use Newtonsoft.Json serializer for this deserialization.
+                                // The response is deserialized into an SDK-defined type based on service-defined System.Text.Json-based json property name.
+                                // For this reason, we use System.Text.Json serializer for this deserialization.
                                 TwinDocument clientTwinProperties = DefaultPayloadConvention.Instance.GetObject<TwinDocument>(payloadBytes);
 
                                 getTwinResponse.Twin = new TwinProperties(
@@ -1289,7 +1289,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
                                 twinOperation.TwinResponseTask.TrySetResult(getTwinResponse);
                             }
-                            catch (JsonReaderException ex)
+                            catch (JsonException ex)
                             {
                                 if (Logging.IsEnabled)
                                     Logging.Error(this, $"Failed to parse Twin JSON. Message body: '{Encoding.UTF8.GetString(payloadBytes)}'. Exception: {ex}.", nameof(HandleTwinResponse));

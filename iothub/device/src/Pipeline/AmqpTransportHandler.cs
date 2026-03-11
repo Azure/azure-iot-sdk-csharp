@@ -6,12 +6,12 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Devices.Client.Transport.Amqp;
 using Microsoft.Azure.Devices.Client.Transport.AmqpIot;
-using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Client.Transport
 {
@@ -382,8 +382,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
                 try
                 {
-                    // The response here is deserialized into an SDK-defined type based on service-defined NewtonSoft.Json-based json property name.
-                    // For this reason, we use NewtonSoft Json serializer for this deserialization.
+                    // The response here is deserialized into an SDK-defined type based on service-defined System.Text.Json-based json property name.
+                    // For this reason, we use System.Text.Json serializer for this deserialization.
                     TwinDocument clientTwinProperties = DefaultPayloadConvention.Instance.GetObject<TwinDocument>(responseFromService.BodyStream);
 
                     var twinDesiredProperties = new DesiredProperties(clientTwinProperties.Desired)
@@ -398,7 +398,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
                     return new TwinProperties(twinDesiredProperties, twinReportedProperties);
                 }
-                catch (JsonReaderException ex)
+                catch (JsonException ex)
                 {
                     if (Logging.IsEnabled)
                     {

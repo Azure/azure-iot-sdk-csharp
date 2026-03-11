@@ -7,11 +7,11 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Amqp.Framing;
-using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 {
@@ -225,7 +225,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
                             try
                             {
-                                errorResponse = JsonConvert.DeserializeObject<IotHubClientErrorResponseMessage>(errorResponseString);
+                                errorResponse = JsonSerializer.Deserialize<IotHubClientErrorResponseMessage>(errorResponseString);
                             }
                             catch (JsonException ex)
                             {

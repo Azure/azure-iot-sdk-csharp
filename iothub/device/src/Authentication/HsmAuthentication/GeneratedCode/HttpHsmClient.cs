@@ -14,7 +14,6 @@ using System;
 using System.Text;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using Newtonsoft.Json;
 using System.Threading;
 using System.Net;
 using System.Threading.Tasks;
@@ -24,9 +23,10 @@ using System.Reflection;
 using System.Runtime.Serialization;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using Newtonsoft.Json.Converters;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices.Client.HsmAuthentication.GeneratedCode
 {
@@ -35,22 +35,13 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.GeneratedCode
     internal partial class HttpHsmClient
     {
         private readonly HttpClient _httpClient;
-        private readonly Lazy<JsonSerializerSettings> _settings;
 
         internal HttpHsmClient(HttpClient httpClient)
         {
             _httpClient = httpClient;
-            _settings = new Lazy<JsonSerializerSettings>(() =>
-            {
-                var settings = new JsonSerializerSettings();
-                UpdateJsonSerializerSettings(settings);
-                return settings;
-            });
         }
 
         internal string BaseUrl { get; set; } = "http://";
-
-        partial void UpdateJsonSerializerSettings(JsonSerializerSettings settings);
 
         partial void PrepareRequest(HttpClient client, HttpRequestMessage request, string url);
         partial void PrepareRequest(HttpClient client, HttpRequestMessage request, StringBuilder urlBuilder);
@@ -78,7 +69,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.GeneratedCode
             urlBuilder.Length--;
 
             using var request = new HttpRequestMessage();
-            var content = new StringContent(JsonConvert.SerializeObject(payload, _settings.Value));
+            var content = new StringContent(JsonSerializer.Serialize(payload));
             content.Headers.ContentType = MediaTypeHeaderValue.Parse("application/json");
             request.Content = content;
             request.Method = new HttpMethod("POST");
@@ -109,7 +100,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.GeneratedCode
                 var result = default(SignResponse);
                 try
                 {
-                    result = JsonConvert.DeserializeObject<SignResponse>(responseData, _settings.Value);
+                    result = JsonSerializer.Deserialize<SignResponse>(responseData);
                     return result;
                 }
                 catch (Exception ex)
@@ -125,7 +116,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.GeneratedCode
                 var result = default(ErrorResponse);
                 try
                 {
-                    result = JsonConvert.DeserializeObject<ErrorResponse>(responseData, _settings.Value);
+                    result = JsonSerializer.Deserialize<ErrorResponse>(responseData);
                 }
                 catch (Exception ex)
                 {
@@ -141,7 +132,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.GeneratedCode
                 var result = default(ErrorResponse);
                 try
                 {
-                    result = JsonConvert.DeserializeObject<ErrorResponse>(responseData, _settings.Value);
+                    result = JsonSerializer.Deserialize<ErrorResponse>(responseData);
                 }
                 catch (Exception ex)
                 {
@@ -196,7 +187,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.GeneratedCode
                 var result = default(TrustBundleResponse);
                 try
                 {
-                    result = JsonConvert.DeserializeObject<TrustBundleResponse>(responseData, _settings.Value);
+                    result = JsonSerializer.Deserialize<TrustBundleResponse>(responseData);
                     return result;
                 }
                 catch (Exception ex)
@@ -212,7 +203,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.GeneratedCode
                 var result = default(ErrorResponse);
                 try
                 {
-                    result = JsonConvert.DeserializeObject<ErrorResponse>(responseData, _settings.Value);
+                    result = JsonSerializer.Deserialize<ErrorResponse>(responseData);
                 }
                 catch (Exception ex)
                 {
@@ -264,7 +255,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.GeneratedCode
         private byte[] _data;
 
         /// <summary>Name of key to perform sign operation.</summary>
-        [JsonProperty("keyId", Required = Required.Always)]
+        [JsonPropertyName("keyId")]
         public string KeyId
         {
             get { return _keyId; }
@@ -279,8 +270,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.GeneratedCode
         }
 
         /// <summary>Sign algorithm to be used.</summary>
-        [JsonProperty("algo", Required = Required.Always)]
-        [JsonConverter(typeof(StringEnumConverter))]
+        [JsonPropertyName("algo")]
         public SignRequestAlgo Algo
         {
             get { return _algo; }
@@ -295,7 +285,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.GeneratedCode
         }
 
         /// <summary>Data to be signed.</summary>
-        [JsonProperty("data", Required = Required.Always)]
+        [JsonPropertyName("data")]
         public byte[] Data
         {
             get { return _data; }
@@ -311,12 +301,12 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.GeneratedCode
 
         public string ToJson()
         {
-            return JsonConvert.SerializeObject(this);
+            return JsonSerializer.Serialize(this, options);
         }
 
         public static SignRequest FromJson(string data)
         {
-            return JsonConvert.DeserializeObject<SignRequest>(data);
+            return JsonSerializer.Deserialize<SignRequest>(data, options);
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -327,6 +317,14 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.GeneratedCode
             if (handler != null)
                 handler(this, new PropertyChangedEventArgs(propertyName));
         }
+
+        private static JsonSerializerOptions options = new JsonSerializerOptions()
+        {
+            Converters =
+            {
+                new JsonStringEnumConverter()
+            }
+        };
     }
 
     internal partial class SignResponse : INotifyPropertyChanged
@@ -334,7 +332,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.GeneratedCode
         private byte[] _digest;
 
         /// <summary>Signature of the data.</summary>
-        [JsonProperty("digest", Required = Required.Always)]
+        [JsonPropertyName("digest")]
         public byte[] Digest
         {
             get { return _digest; }
@@ -350,12 +348,12 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.GeneratedCode
 
         public string ToJson()
         {
-            return JsonConvert.SerializeObject(this);
+            return JsonSerializer.Serialize(this);
         }
 
         public static SignResponse FromJson(string data)
         {
-            return JsonConvert.DeserializeObject<SignResponse>(data);
+            return JsonSerializer.Deserialize<SignResponse>(data);
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -375,7 +373,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.GeneratedCode
         private byte[] _initializationVector;
 
         /// <summary>The data to be encrypted.</summary>
-        [JsonProperty("plaintext", Required = Required.Always)]
+        [JsonPropertyName("plaintext")]
         public byte[] Plaintext
         {
             get { return _plaintext; }
@@ -390,7 +388,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.GeneratedCode
         }
 
         /// <summary>An initialization vector used to encrypt the data.</summary>
-        [JsonProperty("initializationVector", Required = Required.Always)]
+        [JsonPropertyName("initializationVector")]
         public byte[] InitializationVector
         {
             get { return _initializationVector; }
@@ -406,12 +404,12 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.GeneratedCode
 
         public string ToJson()
         {
-            return JsonConvert.SerializeObject(this);
+            return JsonSerializer.Serialize(this);
         }
 
         public static EncryptRequest FromJson(string data)
         {
-            return JsonConvert.DeserializeObject<EncryptRequest>(data);
+            return JsonSerializer.Deserialize<EncryptRequest>(data);
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -430,7 +428,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.GeneratedCode
         private byte[] _ciphertext;
 
         /// <summary>The encrypted form of the data encoded in base 64.</summary>
-        [JsonProperty("ciphertext", Required = Required.Always)]
+        [JsonPropertyName("ciphertext")]
         public byte[] Ciphertext
         {
             get { return _ciphertext; }
@@ -446,12 +444,12 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.GeneratedCode
 
         public string ToJson()
         {
-            return JsonConvert.SerializeObject(this);
+            return JsonSerializer.Serialize(this);
         }
 
         public static EncryptResponse FromJson(string data)
         {
-            return JsonConvert.DeserializeObject<EncryptResponse>(data);
+            return JsonSerializer.Deserialize<EncryptResponse>(data);
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -470,7 +468,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.GeneratedCode
         private byte[] _initializationVector;
 
         /// <summary>The data to be decrypted.</summary>
-        [JsonProperty("ciphertext", Required = Required.Always)]
+        [JsonPropertyName("ciphertext")]
         public byte[] Ciphertext
         {
             get { return _ciphertext; }
@@ -485,7 +483,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.GeneratedCode
         }
 
         /// <summary>An initialization vector used to decrypt the data.</summary>
-        [JsonProperty("initializationVector", Required = Required.Always)]
+        [JsonPropertyName("initializationVector")]
         public byte[] InitializationVector
         {
             get { return _initializationVector; }
@@ -501,12 +499,12 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.GeneratedCode
 
         public string ToJson()
         {
-            return JsonConvert.SerializeObject(this);
+            return JsonSerializer.Serialize(this);
         }
 
         public static DecryptRequest FromJson(string data)
         {
-            return JsonConvert.DeserializeObject<DecryptRequest>(data);
+            return JsonSerializer.Deserialize<DecryptRequest>(data);
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -524,7 +522,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.GeneratedCode
         private byte[] _plaintext;
 
         /// <summary>The decrypted form of the data encoded in base 64.</summary>
-        [JsonProperty("plaintext", Required = Required.Always)]
+        [JsonPropertyName("plaintext")]
         public byte[] Plaintext
         {
             get { return _plaintext; }
@@ -540,12 +538,12 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.GeneratedCode
 
         public string ToJson()
         {
-            return JsonConvert.SerializeObject(this);
+            return JsonSerializer.Serialize(this);
         }
 
         public static DecryptResponse FromJson(string data)
         {
-            return JsonConvert.DeserializeObject<DecryptResponse>(data);
+            return JsonSerializer.Deserialize<DecryptResponse>(data);
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -564,7 +562,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.GeneratedCode
         private DateTime _expiration;
 
         /// <summary>Subject common name</summary>
-        [JsonProperty("commonName", Required = Required.Always)]
+        [JsonPropertyName("commonName")]
         public string CommonName
         {
             get { return _commonName; }
@@ -579,7 +577,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.GeneratedCode
         }
 
         /// <summary>Certificate expiration date-time (ISO 8601)</summary>
-        [JsonProperty("expiration", Required = Required.Always)]
+        [JsonPropertyName("expiration")]
         public DateTime Expiration
         {
             get { return _expiration; }
@@ -595,12 +593,12 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.GeneratedCode
 
         public string ToJson()
         {
-            return JsonConvert.SerializeObject(this);
+            return JsonSerializer.Serialize(this);
         }
 
         public static ServerCertificateRequest FromJson(string data)
         {
-            return JsonConvert.DeserializeObject<ServerCertificateRequest>(data);
+            return JsonSerializer.Deserialize<ServerCertificateRequest>(data);
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -619,7 +617,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.GeneratedCode
         private string _certificate;
         private System.DateTime _expiration;
 
-        [JsonProperty("privateKey", Required = Required.Always)]
+        [JsonPropertyName("privateKey")]
         public PrivateKey PrivateKey
         {
             get { return _privateKey; }
@@ -634,7 +632,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.GeneratedCode
         }
 
         /// <summary>Base64 encoded PEM formatted byte array containing the certificate and its chain.</summary>
-        [JsonProperty("certificate", Required = Required.Always)]
+        [JsonPropertyName("certificate")]
         public string Certificate
         {
             get { return _certificate; }
@@ -649,7 +647,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.GeneratedCode
         }
 
         /// <summary>Certificate expiration date-time (ISO 8601)</summary>
-        [JsonProperty("expiration", Required = Required.Always)]
+        [JsonPropertyName("expiration")]
         public DateTime Expiration
         {
             get { return _expiration; }
@@ -665,12 +663,12 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.GeneratedCode
 
         public string ToJson()
         {
-            return JsonConvert.SerializeObject(this);
+            return JsonSerializer.Serialize(this);
         }
 
         public static CertificateResponse FromJson(string data)
         {
-            return JsonConvert.DeserializeObject<CertificateResponse>(data);
+            return JsonSerializer.Deserialize<CertificateResponse>(data);
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -688,7 +686,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.GeneratedCode
         private string _certificate;
 
         /// <summary>Base64 encoded PEM formatted byte array containing the trusted certificates.</summary>
-        [JsonProperty("certificate", Required = Required.Always)]
+        [JsonPropertyName("certificate")]
         public string Certificate
         {
             get { return _certificate; }
@@ -704,12 +702,12 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.GeneratedCode
 
         public string ToJson()
         {
-            return JsonConvert.SerializeObject(this);
+            return JsonSerializer.Serialize(this);
         }
 
         public static TrustBundleResponse FromJson(string data)
         {
-            return JsonConvert.DeserializeObject<TrustBundleResponse>(data);
+            return JsonSerializer.Deserialize<TrustBundleResponse>(data);
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -729,8 +727,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.GeneratedCode
         private string _bytes;
 
         /// <summary>Indicates format of the key (present in PEM formatted bytes or a reference)</summary>
-        [JsonProperty("type", Required = Required.Always)]
-        [JsonConverter(typeof(StringEnumConverter))]
+        [JsonPropertyName("type")]
         public PrivateKeyType Type
         {
             get { return _type; }
@@ -745,7 +742,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.GeneratedCode
         }
 
         /// <summary>Reference to private key.</summary>
-        [JsonProperty("ref", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("ref")]
         public string Ref
         {
             get { return _ref; }
@@ -760,7 +757,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.GeneratedCode
         }
 
         /// <summary>Base64 encoded PEM formatted byte array</summary>
-        [JsonProperty("bytes", Required = Required.Default, NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("bytes")]
         public string Bytes
         {
             get { return _bytes; }
@@ -776,12 +773,12 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.GeneratedCode
 
         public string ToJson()
         {
-            return JsonConvert.SerializeObject(this);
+            return JsonSerializer.Serialize(this, options);
         }
 
         public static PrivateKey FromJson(string data)
         {
-            return JsonConvert.DeserializeObject<PrivateKey>(data);
+            return JsonSerializer.Deserialize<PrivateKey>(data, options);
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -792,13 +789,21 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.GeneratedCode
             if (handler != null)
                 handler(this, new PropertyChangedEventArgs(propertyName));
         }
+
+        private static JsonSerializerOptions options = new JsonSerializerOptions()
+        {
+            Converters =
+            {
+                new JsonStringEnumConverter()
+            }
+        };
     }
 
     internal partial class ErrorResponse : INotifyPropertyChanged
     {
         private string _message;
 
-        [JsonProperty("message", Required = Required.Always)]
+        [JsonPropertyName("message")]
         public string Message
         {
             get { return _message; }
@@ -814,12 +819,12 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.GeneratedCode
 
         public string ToJson()
         {
-            return JsonConvert.SerializeObject(this);
+            return JsonSerializer.Serialize(this);
         }
 
         public static ErrorResponse FromJson(string data)
         {
-            return JsonConvert.DeserializeObject<ErrorResponse>(data);
+            return JsonSerializer.Deserialize<ErrorResponse>(data);
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

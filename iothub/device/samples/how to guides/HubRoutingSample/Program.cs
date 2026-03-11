@@ -4,11 +4,10 @@
 using System;
 using System.IO;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using CommandLine;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Devices.Client.Samples
 {
@@ -149,7 +148,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                     await deviceClient.SendTelemetryAsync(message, token);
 
                     // Print out the message.
-                    Console.WriteLine("{0} > Sent message: {1}", DateTime.UtcNow, JsonConvert.SerializeObject(telemetryDataPoint));
+                    Console.WriteLine("{0} > Sent message: {1}", DateTime.UtcNow, JsonSerializer.Serialize(telemetryDataPoint));
                 }
                 catch (OperationCanceledException) { }
 
@@ -183,8 +182,8 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
             // Parse the first line into a message object. Retrieve the body as a string.
             //   This string was encoded as Base64 when it was written.
-            JObject messageObject = JObject.Parse(fileLines[0]);
-            string body = messageObject.Value<string>("Body");
+            var messageObject = JsonDocument.Parse(fileLines[0]);
+            string body = messageObject.RootElement.GetProperty("Body").GetString();
 
             // Convert the body from Base64, then from UTF-32 to text, and write it out to the new file
             //   so you can view the result.

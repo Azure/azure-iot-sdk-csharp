@@ -12,7 +12,8 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
+using System.Text.Json;
 
 namespace Microsoft.Azure.Devices.Client.Tests
 {
@@ -359,9 +360,9 @@ namespace Microsoft.Azure.Devices.Client.Tests
             };
 
             const string methodName = "TestMethodName";
-            byte[] methodBody = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(new CustomDirectMethodPayload { Grade = "good" }));
+            byte[] methodBody = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new CustomDirectMethodPayload { Grade = "good" }));
             await moduleClient.SetDirectMethodCallbackAsync(methodCallback).ConfigureAwait(false);
-            var directMethodRequest = new DirectMethodRequest(methodName, Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(methodBody)))
+            var directMethodRequest = new DirectMethodRequest(methodName, Encoding.UTF8.GetBytes(JsonSerializer.Serialize(methodBody)))
             {
                 PayloadConvention = DefaultPayloadConvention.Instance,
             };
@@ -376,7 +377,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
 
             methodCallbackCalled.Should().BeTrue();
             methodName.Should().Be(actualMethodName);
-            Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(actualMethodBody)).Should().BeEquivalentTo(methodBody);
+            Encoding.UTF8.GetBytes(JsonSerializer.Serialize(actualMethodBody)).Should().BeEquivalentTo(methodBody);
 
             // arrange
             methodCallbackCalled = false;
@@ -424,7 +425,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
 
         private class CustomDirectMethodPayload
         {
-            [JsonProperty("grade")]
+            [JsonPropertyName("grade")]
             public string Grade { get; set; }
         }
     }

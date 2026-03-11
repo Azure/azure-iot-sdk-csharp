@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices.Client.Samples
 {
@@ -238,7 +238,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                             $" maxTemp={report.maxTemp}, minTemp={report.minTemp}, avgTemp={report.avgTemp}, " +
                             $"startTime={report.startTime.LocalDateTime}, endTime={report.endTime.LocalDateTime}");
 
-                        return Task.FromResult(new DirectMethodResponse((int)StatusCode.Completed) { Payload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(report)) });
+                        return Task.FromResult(new DirectMethodResponse((int)StatusCode.Completed) { Payload = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(report)) });
                     }
                 }
 
