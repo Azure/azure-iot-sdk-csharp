@@ -2,40 +2,40 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices.E2ETests.Helpers
 {
     internal class ThermostatTwin
     {
-        [JsonProperty("$dtId")]
+        [JsonPropertyName("$dtId")]
         public string Id { get; set; }
 
-        [JsonProperty("$metadata")]
+        [JsonPropertyName("$metadata")]
         public ThermostatMetadata Metadata { get; set; }
 
-        [JsonProperty("maxTempSinceLastReboot")]
+        [JsonPropertyName("maxTempSinceLastReboot")]
         public double MaxTempSinceLastReboot { get; set; }
 
-        [JsonProperty("targetTemperature")]
+        [JsonPropertyName("targetTemperature")]
         public double TargetTemperature { get; set; }
     }
 
     internal class ThermostatMetadata
     {
-        [JsonProperty("$model")]
+        [JsonPropertyName("$model")]
         public string ModelId { get; set; }
 
-        [JsonProperty("maxTempSinceLastReboot")]
+        [JsonPropertyName("maxTempSinceLastReboot")]
         public ReportedPropertyMetadata MaxTempSinceLastReboot { get; set; }
 
-        [JsonProperty("targetTemperature")]
+        [JsonPropertyName("targetTemperature")]
         public WritableProperty TargetTemperature { get; set; }
     }
 
     internal class ReportedPropertyMetadata
     {
-        [JsonProperty("lastUpdateTime")]
+        [JsonPropertyName("lastUpdateTime")]
         public DateTimeOffset LastUpdateTime { get; set; }
     }
 }

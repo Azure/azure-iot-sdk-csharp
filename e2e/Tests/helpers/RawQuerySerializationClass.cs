@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices.E2ETests.Helpers
 {
@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
     public class RawQuerySerializationClass
     {
 #pragma warning disable CA1507 // Use nameof in place of string
-        [JsonProperty("TotalNumberOfDevices")]
+        [JsonPropertyName("TotalNumberOfDevices")]
 #pragma warning restore CA1507 // Use nameof in place of string
         public int TotalNumberOfDevices { get; set; }
     }
