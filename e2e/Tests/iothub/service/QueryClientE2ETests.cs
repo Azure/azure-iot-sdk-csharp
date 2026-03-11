@@ -26,7 +26,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
         // There is some latency between when a twin/job is created and when it can be queried. This
         // timeout is for how long to wait for this latency before failing the test.
-        private readonly TimeSpan _queryableDelayTimeout = TimeSpan.FromMinutes(1);
+        private readonly TimeSpan _queryableDelayTimeout = TimeSpan.FromMinutes(3);
 
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
