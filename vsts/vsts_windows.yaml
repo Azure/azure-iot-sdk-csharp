@@ -127,17 +127,14 @@ jobs:
           X509_CHAIN_INTERMEDIATE2_PFX_CERTIFICATE: $(X509_CHAIN_INTERMEDIATE2_PFX_CERTIFICATE)
           STORAGE_ACCOUNT_CONNECTION_STRING: $(STORAGE_ACCOUNT_CONNECTION_STRING)
 
-          # Environment variables for the DevOps pipeline
-          FRAMEWORK: $(FRAMEWORK)
-
       - task: PublishTestResults@2
         displayName: "Publish Test Results **/*.trx"
         inputs:
           testRunner: VSTest
           testResultsFiles: "**/*.trx"
-          testRunTitle: "Windows Tests ($(FRAMEWORK)) (Attempt $(System.JobAttempt))"
+          testRunTitle: "Windows Tests (Attempt $(System.JobAttempt))"
           platform: Windows
-          configuration: "Debug UT + Release E2E ($(FRAMEWORK))"
+          configuration: "Debug UT + Release E2E"
         condition: always()
         
       - task: ComponentGovernanceComponentDetection@0
