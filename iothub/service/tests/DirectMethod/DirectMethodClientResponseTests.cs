@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Text.Json.Serialization;
-using Newtonsoft.Json.Linq;
+using System.Text.Json;
 
 namespace Microsoft.Azure.Devices.Tests.DirectMethod
 {
@@ -23,7 +23,7 @@ namespace Microsoft.Azure.Devices.Tests.DirectMethod
             var source = new DirectMethodClientResponse
             {
                 Status = expectedStatus,
-                JsonPayload = new JRaw(JsonSerializer.Serialize(expectedPayload)),
+                JsonPayload = JsonDocument.Parse(JsonSerializer.Serialize(expectedPayload)),
             };
 
             // act
@@ -43,7 +43,7 @@ namespace Microsoft.Azure.Devices.Tests.DirectMethod
             var source = new DirectMethodClientResponse
             {
                 Status = expectedStatus,
-                JsonPayload = new JRaw(JsonSerializer.Serialize(expectedPayload)),
+                JsonPayload = JsonDocument.Parse(JsonSerializer.Serialize(expectedPayload)),
             };
             string body = JsonSerializer.Serialize(source);
 
@@ -65,7 +65,7 @@ namespace Microsoft.Azure.Devices.Tests.DirectMethod
             var source = new DirectMethodClientResponse
             {
                 Status = expectedStatus,
-                JsonPayload = new JRaw(JsonSerializer.Serialize(expectedPayload)),
+                JsonPayload = JsonDocument.Parse(JsonSerializer.Serialize(expectedPayload)),
             };
             string body = JsonSerializer.Serialize(source);
 
@@ -87,7 +87,7 @@ namespace Microsoft.Azure.Devices.Tests.DirectMethod
             var source = new DirectMethodClientResponse
             {
                 Status = expectedStatus,
-                JsonPayload = new JRaw(JsonSerializer.Serialize(expectedPayload)),
+                JsonPayload = JsonDocument.Parse(JsonSerializer.Serialize(expectedPayload)),
             };
             string body = JsonSerializer.Serialize(source);
 
@@ -109,7 +109,7 @@ namespace Microsoft.Azure.Devices.Tests.DirectMethod
             var source = new DirectMethodClientResponse
             {
                 Status = expectedStatus,
-                JsonPayload = new JRaw(JsonSerializer.Serialize(expectedPayload)),
+                JsonPayload = JsonDocument.Parse(JsonSerializer.Serialize(expectedPayload)),
             };
             string body = JsonSerializer.Serialize(source);
 
@@ -131,7 +131,7 @@ namespace Microsoft.Azure.Devices.Tests.DirectMethod
             var source = new DirectMethodClientResponse
             {
                 Status = expectedStatus,
-                JsonPayload = new JRaw(JsonSerializer.Serialize(expectedPayload)),
+                JsonPayload = JsonDocument.Parse(JsonSerializer.Serialize(expectedPayload)),
             };
             string body = JsonSerializer.Serialize(source);
 
@@ -153,7 +153,7 @@ namespace Microsoft.Azure.Devices.Tests.DirectMethod
             var source = new DirectMethodClientResponse
             {
                 Status = expectedStatus,
-                JsonPayload = new JRaw(JsonSerializer.Serialize(expectedPayload)),
+                JsonPayload = JsonDocument.Parse(JsonSerializer.Serialize(expectedPayload)),
             };
             string body = JsonSerializer.Serialize(source);
 
@@ -175,7 +175,7 @@ namespace Microsoft.Azure.Devices.Tests.DirectMethod
             var source = new DirectMethodClientResponse
             {
                 Status = expectedStatus,
-                JsonPayload = new JRaw(JsonSerializer.Serialize(expectedPayload)),
+                JsonPayload = JsonDocument.Parse(JsonSerializer.Serialize(expectedPayload)),
             };
             string body = JsonSerializer.Serialize(source);
 
@@ -212,7 +212,7 @@ namespace Microsoft.Azure.Devices.Tests.DirectMethod
             var source = new DirectMethodClientResponse
             {
                 Status = expectedStatus,
-                JsonPayload = new JRaw(JsonSerializer.Serialize(TimeSpan.FromSeconds(30)))
+                JsonPayload = JsonDocument.Parse(JsonSerializer.Serialize(TimeSpan.FromSeconds(30)))
             };
 
             // act and assert

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using System.Text;
 using System.Text.Json.Serialization;
+using System.Text.Json;
 
 namespace Microsoft.Azure.Devices.Samples
 {
@@ -41,7 +42,7 @@ namespace Microsoft.Azure.Devices.Samples
             _logger.LogDebug($"Get the {_deviceId} device twin.");
 
             ClientTwin twin = await _serviceClient.Twins.GetAsync(_deviceId);
-            _logger.LogDebug($"{_deviceId} twin: \n{JsonSerializer.Serialize(twin, Formatting.Indented)}");
+            _logger.LogDebug($"{_deviceId} twin: \n{JsonSerializer.Serialize(twin)}");
 
             return twin;
         }

@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Azure;
 using Microsoft.Extensions.Logging;
 using System.Text.Json.Serialization;
+using System.Text.Json;
 
 namespace Microsoft.Azure.Devices.Samples
 {
@@ -54,7 +55,7 @@ namespace Microsoft.Azure.Devices.Samples
                 .DigitalTwins
                 .GetAsync<T>(_digitalTwinId);
             T thermostatTwin = getDigitalTwinResponse.DigitalTwin;
-            _logger.LogDebug($"{_digitalTwinId} twin: \n{JsonSerializer.Serialize(thermostatTwin, Formatting.Indented)}");
+            _logger.LogDebug($"{_digitalTwinId} twin: \n{JsonSerializer.Serialize(thermostatTwin)}");
 
             return thermostatTwin;
         }

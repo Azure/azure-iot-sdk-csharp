@@ -10,6 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 using CommandLine;
 using System.Text.Json.Serialization;
+using System.Text.Json;
 
 namespace Microsoft.Azure.Devices.Samples.InvokeDeviceMethod
 {

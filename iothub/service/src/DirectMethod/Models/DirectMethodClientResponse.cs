@@ -39,13 +39,13 @@ namespace Microsoft.Azure.Devices
         /// To get the payload as a specified type, use <see cref="TryGetPayload{T}(out T)"/>.
         /// </remarks>
         [JsonIgnore]
-        public string PayloadAsString => JsonPayload.Value<string>();
+        public string PayloadAsString => JsonPayload.RootElement.GetRawText();
 
         [JsonIgnore]
         internal byte[] PayloadAsBytes => Encoding.UTF8.GetBytes(PayloadAsString);
 
         [JsonPropertyName("payload")]
-        internal JRaw JsonPayload { get; set; }
+        internal JsonDocument JsonPayload { get; set; }
 
         /// <summary>
         /// Tries to deserialize the payload as the specified type.

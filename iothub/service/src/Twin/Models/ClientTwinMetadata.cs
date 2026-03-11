@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices
@@ -28,7 +29,7 @@ namespace Microsoft.Azure.Devices
         public long? LastUpdatedVersion { get; set; }
 
         [JsonExtensionData]
-        internal IDictionary<string, JToken> Properties { get; set; } = new Dictionary<string, JToken>();
+        internal IDictionary<string, JsonElement> Properties { get; set; } = new Dictionary<string, JsonElement>();
 
         /// <summary>
         /// Gets the specified property's metadata by name as another metadata object.
@@ -40,7 +41,7 @@ namespace Microsoft.Azure.Devices
         {
             propertyValue = default;
 
-            if (!Properties.TryGetValue(propertyName, out JToken jTokenValue))
+            if (!Properties.TryGetValue(propertyName, out JsonElement jTokenValue))
             {
                 return false;
             }
@@ -48,7 +49,7 @@ namespace Microsoft.Azure.Devices
             // Try convert.
             try
             {
-                propertyValue = jTokenValue.ToObject<ClientTwinMetadata>();
+                propertyValue = JsonSerializer.Deserialize<ClientTwinMetadata>(jTokenValue);
                 return true;
             }
             catch (InvalidCastException)

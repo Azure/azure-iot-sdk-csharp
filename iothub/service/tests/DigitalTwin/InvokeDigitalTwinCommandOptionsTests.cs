@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Text.Json.Serialization;
+using System.Text.Json;
 
 namespace Microsoft.Azure.Devices.Tests.DigitalTwin
 {
@@ -31,7 +32,7 @@ namespace Microsoft.Azure.Devices.Tests.DigitalTwin
             };
             
             // assert
-            JsonConvert.DeserializeObject(options.Payload).Should().Be(samplePayload);
+            JsonSerializer.Deserialize<int>(options.Payload).Should().Be(samplePayload);
             options.ConnectTimeout.Should().Be(connectTime);
             options.ResponseTimeout.Should().Be(requestTimeout);
         }

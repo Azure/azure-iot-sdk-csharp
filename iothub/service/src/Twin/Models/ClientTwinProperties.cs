@@ -27,7 +27,7 @@ namespace Microsoft.Azure.Devices
         public ClientTwinMetadata Metadata { get; set; } = new();
 
         [JsonExtensionData]
-        internal IDictionary<string, JToken> Properties { get; set; } = new Dictionary<string, JToken>();
+        internal IDictionary<string, JsonElement> Properties { get; set; } = new Dictionary<string, JsonElement>();
 
         /// <summary>
         /// Gets the count of properties in the collection.
@@ -46,9 +46,9 @@ namespace Microsoft.Azure.Devices
             get => TryGetMemberInternal(propertyName, out dynamic value)
                 ? value
                 : throw new InvalidOperationException($"Unexpected property name '{propertyName}'.");
-            set => Properties[propertyName] = value is null || value is JToken
+            set => Properties[propertyName] = value is null || value is JsonElement
                 ? value
-                : JToken.FromObject(value);
+                : JsonSerializer.Serialize(value);
         }
 
         /// <summary>
@@ -72,24 +72,14 @@ namespace Microsoft.Azure.Devices
         {
             propertyValue = default;
 
-            if (!Properties.TryGetValue(propertyName, out JToken jTokenValue))
+            if (!Properties.TryGetValue(propertyName, out JsonElement jTokenValue))
             {
                 return false;
             }
 
-            // Try cast.
             try
             {
-                propertyValue = jTokenValue.Value<T>();
-                return true;
-            }
-            catch (InvalidCastException)
-            { }
-
-            // Try convert.
-            try
-            {
-                propertyValue = jTokenValue.ToObject<T>();
+                propertyValue = JsonSerializer.Deserialize<T>(jTokenValue);
                 return true;
             }
             catch (InvalidCastException)
@@ -113,7 +103,7 @@ namespace Microsoft.Azure.Devices
         {
             result = default;
 
-            if (!Properties.TryGetValue(propertyName, out JToken jTokenValue))
+            if (!Properties.TryGetValue(propertyName, out JsonElement jTokenValue))
             {
                 return false;
             }

@@ -10,6 +10,7 @@ using Azure.Core;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Text.Json.Serialization;
+using System.Text.Json;
 
 namespace Microsoft.Azure.Devices.Tests.Jobs
 {
@@ -43,8 +44,7 @@ namespace Microsoft.Azure.Devices.Tests.Jobs
             };
 
             // act
-            var settings = new JsonSerializerSettings();
-            ScheduledJobsOptions deserializedRequest = JsonSerializer.Deserialize<ScheduledJobsOptions>(JsonSerializer.Serialize(options, settings));
+            ScheduledJobsOptions deserializedRequest = JsonSerializer.Deserialize<ScheduledJobsOptions>(JsonSerializer.Serialize(options));
 
             // assert
             deserializedRequest.Should().NotBeNull();
