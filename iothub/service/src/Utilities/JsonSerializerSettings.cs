@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Devices.Utilities
         public static JsonSerializerOptions Options { get; set; } = new()
         {
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-            
+            Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) }
         };
     }
 }
