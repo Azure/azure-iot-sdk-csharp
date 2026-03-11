@@ -30,7 +30,7 @@ namespace Microsoft.Azure.Devices.Tests.Authentication
             DateTime expiryDate = DateTime.UtcNow; // Close to expiry
             var testAccessToken = new AccessToken(TokenValue, expiryDate);
 
-            var tokenCredentialProperties = new IotHubTokenCredentialProperties(HostName, mockCredential.Object, Array.Empty<String>());
+            var tokenCredentialProperties = new IotHubTokenCredentialProperties(HostName, mockCredential.Object, new string[] { "https://iothubs.azure.net/.default" });
 
             mockCredential
                 .Setup(c => c.GetToken(It.IsAny<TokenRequestContext>(), It.IsAny<CancellationToken>()))
@@ -96,7 +96,7 @@ namespace Microsoft.Azure.Devices.Tests.Authentication
         {
             // arrange
             var mockCredential = new Mock<TokenCredential>();
-            var tokenCredentialProperties = new IotHubTokenCredentialProperties(HostName, mockCredential.Object, Array.Empty<String>());
+            var tokenCredentialProperties = new IotHubTokenCredentialProperties(HostName, mockCredential.Object, new string[] { "https://iothubs.azure.net/.default" });
 
             string expectedAuthorizationHeader = $"{TokenType}";
             DateTimeOffset expiryDateTimeOffset = DateTimeOffset.UtcNow;

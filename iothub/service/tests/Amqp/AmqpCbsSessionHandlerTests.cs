@@ -23,7 +23,7 @@ namespace Microsoft.Azure.Devices.Tests.Amqp
         {
             // arrange
             var mockCredential = new Mock<TokenCredential>();
-            var tokenCredentialProperties = new IotHubTokenCredentialProperties(HostName, mockCredential.Object, Array.Empty<String>());
+            var tokenCredentialProperties = new IotHubTokenCredentialProperties(HostName, mockCredential.Object, new string[] { "https://iothubs.azure.net/.default" });
 
             using var cbsSessionHandler = new MockableAmqpCbsSessionHandler(tokenCredentialProperties);
             var mockAmqpCbsLink = new Mock<MockableAmqpCbsLink>();
@@ -45,7 +45,7 @@ namespace Microsoft.Azure.Devices.Tests.Amqp
         {
             // arrange
             var mockCredential = new Mock<TokenCredential>();
-            var tokenCredentialProperties = new IotHubTokenCredentialProperties(HostName, mockCredential.Object, Array.Empty<String>());
+            var tokenCredentialProperties = new IotHubTokenCredentialProperties(HostName, mockCredential.Object, new string[] { "https://iothubs.azure.net/.default" });
 
             using var cbsSessionHandler = new MockableAmqpCbsSessionHandler(tokenCredentialProperties);
             var mockAmqpCbsLink = new Mock<MockableAmqpCbsLink>();
