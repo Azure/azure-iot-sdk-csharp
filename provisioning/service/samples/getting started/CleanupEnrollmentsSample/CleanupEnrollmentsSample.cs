@@ -7,7 +7,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Azure;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
 {

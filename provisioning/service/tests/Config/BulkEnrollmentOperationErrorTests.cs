@@ -2,7 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
 {
@@ -26,7 +26,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
                 "}";
 
             // act
-            BulkEnrollmentOperationError bulkError = JsonConvert.DeserializeObject<BulkEnrollmentOperationError>(erroJson);
+            BulkEnrollmentOperationError bulkError = JsonSerializer.Deserialize<BulkEnrollmentOperationError>(erroJson);
 
             // assert
             Assert.IsNotNull(bulkError);
@@ -45,7 +45,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
                 "}";
 
             // act
-            BulkEnrollmentOperationError bulkError = JsonConvert.DeserializeObject<BulkEnrollmentOperationError>(erroJson);
+            BulkEnrollmentOperationError bulkError = JsonSerializer.Deserialize<BulkEnrollmentOperationError>(erroJson);
 
             // assert
             Assert.IsNotNull(bulkError);

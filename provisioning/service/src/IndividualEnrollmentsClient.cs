@@ -10,7 +10,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
@@ -68,7 +68,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                                 HttpMethod.Put,
                                 GetEnrollmentUri(individualEnrollment.RegistrationId),
                                 null,
-                                JsonConvert.SerializeObject(individualEnrollment),
+                                JsonSerializer.Serialize(individualEnrollment),
                                 individualEnrollment.ETag,
                                 cancellationToken)
                             .ConfigureAwait(false);
@@ -77,7 +77,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 .ConfigureAwait(false);
 
             string payload = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-            return JsonConvert.DeserializeObject<IndividualEnrollment>(payload);
+            return JsonSerializer.Deserialize<IndividualEnrollment>(payload);
         }
 
         /// <summary>
@@ -116,7 +116,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 .ConfigureAwait(false);
 
             string payload = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-            return JsonConvert.DeserializeObject<IndividualEnrollment>(payload);
+            return JsonSerializer.Deserialize<IndividualEnrollment>(payload);
         }
 
         /// <summary>
@@ -231,7 +231,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                                 HttpMethod.Post,
                                 GetEnrollmentUri(),
                                 null,
-                                JsonConvert.SerializeObject(bulkOperation),
+                                JsonSerializer.Serialize(bulkOperation),
                                 new ETag(),
                                 cancellationToken)
                             .ConfigureAwait(false);
@@ -240,7 +240,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 .ConfigureAwait(false);
 
             string payload = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-            return JsonConvert.DeserializeObject<BulkEnrollmentOperationResult>(payload);
+            return JsonSerializer.Deserialize<BulkEnrollmentOperationResult>(payload);
         }
 
         /// <summary>
@@ -376,7 +376,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 .ConfigureAwait(false);
 
             string payload = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-            return JsonConvert.DeserializeObject<AttestationMechanism>(payload);
+            return JsonSerializer.Deserialize<AttestationMechanism>(payload);
         }
 
         private static Uri GetEnrollmentUri(string registrationId)

@@ -56,8 +56,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
                 Assert.AreEqual(actualJson.Length, 0, FormatExpectedActual("empty string", actualJson));
             }
 
-            JObject expectedJObject = Newtonsoft.Json.JsonConvert.DeserializeObject<JObject>(expectedJson);
-            JObject actualJObject = Newtonsoft.Json.JsonConvert.DeserializeObject<JObject>(actualJson);
+            JObject expectedJObject = Newtonsoft.Json.JsonSerializer.Deserialize<JObject>(expectedJson);
+            JObject actualJObject = Newtonsoft.Json.JsonSerializer.Deserialize<JObject>(actualJson);
 
             AreEqual(expectedJObject, actualJObject);
         }
