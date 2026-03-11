@@ -34,7 +34,7 @@ namespace Microsoft.Azure.Devices.Tests.Amqp
             using var amqpMessage = AmqpMessage.Create();
 
             var mockCredential = new Mock<TokenCredential>();
-            var tokenCredentialProperties = new IotHubTokenCredentialProperties(HostName, mockCredential.Object);
+            var tokenCredentialProperties = new IotHubTokenCredentialProperties(HostName, mockCredential.Object, Array.Empty<String>());
             var mockAmqpConnection = new Mock<AmqpConnection>();
             var mockWorkerSession = new Mock<AmqpSessionHandler>();
             var mockAmqpCbsSessionHelper = new Mock<AmqpCbsSessionHandler>();
@@ -68,7 +68,7 @@ namespace Microsoft.Azure.Devices.Tests.Amqp
             using var amqpMessage = AmqpMessage.Create();
 
             var mockCredential = new Mock<TokenCredential>();
-            var tokenCredentialProperties = new IotHubTokenCredentialProperties(HostName, mockCredential.Object);
+            var tokenCredentialProperties = new IotHubTokenCredentialProperties(HostName, mockCredential.Object, Array.Empty<String>());
             var mockWorkerSession = new Mock<AmqpSessionHandler>();
             var mockAmqpCbsSessionHelper = new Mock<AmqpCbsSessionHandler>();
 
@@ -97,7 +97,7 @@ namespace Microsoft.Azure.Devices.Tests.Amqp
             using var amqpMessage = AmqpMessage.Create();
 
             var mockCredential = new Mock<TokenCredential>();
-            var tokenCredentialProperties = new IotHubTokenCredentialProperties(HostName, mockCredential.Object);
+            var tokenCredentialProperties = new IotHubTokenCredentialProperties(HostName, mockCredential.Object, Array.Empty<String>());
             var mockWorkerSession = new Mock<AmqpSessionHandler>();
             var mockAmqpCbsSessionHelper = new Mock<AmqpCbsSessionHandler>();
 
@@ -126,7 +126,7 @@ namespace Microsoft.Azure.Devices.Tests.Amqp
             using var amqpMessage = AmqpMessage.Create();
 
             var mockCredential = new Mock<TokenCredential>();
-            var tokenCredentialProperties = new IotHubTokenCredentialProperties(HostName, mockCredential.Object);
+            var tokenCredentialProperties = new IotHubTokenCredentialProperties(HostName, mockCredential.Object, Array.Empty<String>());
             var mockWorkerSession = new Mock<AmqpSessionHandler>();
             var mockAmqpCbsSessionHelper = new Mock<AmqpCbsSessionHandler>();
 
