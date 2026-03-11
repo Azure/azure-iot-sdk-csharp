@@ -2,7 +2,8 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Text.Json.Serialization;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace Microsoft.Azure.Devices
 {
@@ -14,13 +15,13 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Job identifier.
         /// </summary>
-        [JsonPropertyName("jobId")]
+        [JsonProperty("jobId")]
         internal string JobId { get; set; }
 
         /// <summary>
         /// [Required] The type of job to execute.
         /// </summary>
-        [JsonPropertyName("type")]
+        [JsonProperty("type")]
         internal JobType JobType { get; set; }
 
         /// <summary>
@@ -29,7 +30,7 @@ namespace Microsoft.Azure.Devices
         /// <remarks>
         /// Required if jobType is cloud-to-device method.
         /// </remarks>
-        [JsonPropertyName("cloudToDeviceMethod")]
+        [JsonProperty("cloudToDeviceMethod")]
         internal DirectMethodServiceRequest DirectMethodRequest { get; set; }
 
         /// <summary>
@@ -38,7 +39,7 @@ namespace Microsoft.Azure.Devices
         /// <remarks>
         /// Required if the job type is update twin.
         /// </remarks>
-        [JsonPropertyName("updateTwin")]
+        [JsonProperty("updateTwin")]
         internal ClientTwin UpdateTwin { get; set; }
 
         /// <summary>
@@ -47,13 +48,14 @@ namespace Microsoft.Azure.Devices
         /// <remarks>
         /// Required if job type is update twin or cloud-to-device method.
         /// </remarks>
-        [JsonPropertyName("queryCondition")]
+        [JsonProperty("queryCondition")]
         internal string QueryCondition { get; set; }
 
         /// <summary>
         /// ISO 8601 date time to start the job.
         /// </summary>
-        [JsonPropertyName("startTime")]
+        [JsonProperty("startTime")]
+        [JsonConverter(typeof(IsoDateTimeConverter))]
         internal DateTimeOffset StartOn { get; set; }
 
         /// <summary>
@@ -62,7 +64,7 @@ namespace Microsoft.Azure.Devices
         [JsonIgnore]
         internal TimeSpan? MaxExecutionTime { get; set; }
 
-        [JsonPropertyName("maxExecutionTimeInSeconds")]
+        [JsonProperty("maxExecutionTimeInSeconds", DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
         internal long? MaxExecutionTimeInSeconds
         {
             get => MaxExecutionTime != null ? (long)MaxExecutionTime?.TotalSeconds : null;

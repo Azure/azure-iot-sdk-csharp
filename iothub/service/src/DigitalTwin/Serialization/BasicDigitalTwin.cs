@@ -2,7 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Collections.Generic;
-using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices
 {
@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Devices
         /// <remarks>
         /// This is present at the root of every digital twin.
         /// </remarks>
-        [JsonPropertyName("$dtId")]
+        [JsonProperty("$dtId")]
         public string Id { get; set; }
 
         /// <summary>
@@ -26,7 +26,7 @@ namespace Microsoft.Azure.Devices
         /// <remarks>
         /// This field is present on every digital twin.
         /// </remarks>
-        [JsonPropertyName("$metadata")]
+        [JsonProperty("$metadata")]
         public DigitalTwinMetadata Metadata { get; set; }
 
         /// <summary>

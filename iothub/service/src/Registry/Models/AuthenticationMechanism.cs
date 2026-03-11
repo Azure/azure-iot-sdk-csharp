@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices
 {
@@ -26,7 +26,7 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Gets or sets the symmetric key used for authentication.
         /// </summary>
-        [JsonPropertyName("symmetricKey")]
+        [JsonProperty("symmetricKey")]
         public SymmetricKey SymmetricKey
         {
             get => _symmetricKey;
@@ -43,7 +43,7 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Gets or sets the X509 client certificate thumbprint.
         /// </summary>
-        [JsonPropertyName("x509Thumbprint")]
+        [JsonProperty("x509Thumbprint")]
         public X509Thumbprint X509Thumbprint
         {
             get => _x509Thumbprint;
@@ -60,7 +60,7 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Gets or sets the authentication type.
         /// </summary>
-        [JsonPropertyName("type")]
+        [JsonProperty("type")]
         public ClientAuthenticationType Type { get; set; }
     }
 }

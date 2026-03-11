@@ -14,7 +14,7 @@ using FluentAssertions;
 using Microsoft.Azure.Amqp;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Tests
 {

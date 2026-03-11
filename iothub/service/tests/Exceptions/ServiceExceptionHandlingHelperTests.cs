@@ -7,7 +7,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Tests.Exceptions
 {
@@ -32,7 +32,7 @@ namespace Microsoft.Azure.Devices.Tests.Exceptions
                     OccurredOnUtc = "2022-09-12T21:59:47.99936Z",
                 },
             };
-            httpResponseMessage.Content = new StringContent(JsonSerializer.Serialize(exceptionResult));
+            httpResponseMessage.Content = new StringContent(JsonConvert.SerializeObject(exceptionResult));
 
             // act
             Tuple<string, IotHubServiceErrorCode> pair = await ServiceExceptionHandlingHelper.GetErrorCodeAndTrackingIdAsync(httpResponseMessage).ConfigureAwait(false);
@@ -54,7 +54,7 @@ namespace Microsoft.Azure.Devices.Tests.Exceptions
             using var httpResponseMessage = new HttpResponseMessage(HttpStatusCode.BadRequest);
             var exceptionResult = new ResponseMessageWrapper
             {
-                Message = JsonSerializer.Serialize(new ErrorPayload1
+                Message = JsonConvert.SerializeObject(new ErrorPayload1
                 {
                     ErrorCode = ((int)expectedErrorCode).ToString(),
                     TrackingId = expectedTrackingId,
@@ -62,7 +62,7 @@ namespace Microsoft.Azure.Devices.Tests.Exceptions
                     OccurredOnUtc = "2022-10-19T16:47:22.0203257Z",
                 })
             };
-            httpResponseMessage.Content = new StringContent(JsonSerializer.Serialize(exceptionResult));
+            httpResponseMessage.Content = new StringContent(JsonConvert.SerializeObject(exceptionResult));
 
             // act
             Tuple<string, IotHubServiceErrorCode> pair = await ServiceExceptionHandlingHelper.GetErrorCodeAndTrackingIdAsync(httpResponseMessage).ConfigureAwait(false);
@@ -102,7 +102,7 @@ namespace Microsoft.Azure.Devices.Tests.Exceptions
                 // A read-world message in the response content which includes the non-numeric error code returned by the hub service.
                 Message = "ErrorCode:PreconditionFailed;Precondition failed: Device version did not match, existingVersion:957482805 newVersion:957482804"
             };
-            httpResponseMessage.Content = new StringContent(JsonSerializer.Serialize(exceptionResult));
+            httpResponseMessage.Content = new StringContent(JsonConvert.SerializeObject(exceptionResult));
 
             // act
             Tuple<string, IotHubServiceErrorCode> pair = await ServiceExceptionHandlingHelper.GetErrorCodeAndTrackingIdAsync(httpResponseMessage).ConfigureAwait(false);
@@ -122,7 +122,7 @@ namespace Microsoft.Azure.Devices.Tests.Exceptions
                 // Invalid field name of error code in the response content.
                 Message = "InvalidField:PreconditionFailed;Precondition failed: Device version did not match, existingVersion:957482805 newVersion:957482804"
             };
-            httpResponseMessage.Content = new StringContent(JsonSerializer.Serialize(exceptionResult));
+            httpResponseMessage.Content = new StringContent(JsonConvert.SerializeObject(exceptionResult));
 
             // act
             Tuple<string, IotHubServiceErrorCode> pair = await ServiceExceptionHandlingHelper.GetErrorCodeAndTrackingIdAsync(httpResponseMessage).ConfigureAwait(false);
@@ -141,7 +141,7 @@ namespace Microsoft.Azure.Devices.Tests.Exceptions
             {
                 Message = ""
             };
-            httpResponseMessage.Content = new StringContent(JsonSerializer.Serialize(exceptionResult));
+            httpResponseMessage.Content = new StringContent(JsonConvert.SerializeObject(exceptionResult));
 
             // act
             Tuple<string, IotHubServiceErrorCode> pair = await ServiceExceptionHandlingHelper.GetErrorCodeAndTrackingIdAsync(httpResponseMessage).ConfigureAwait(false);

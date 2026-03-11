@@ -5,10 +5,10 @@ using System;
 using System.IO;
 using System.Net;
 using System.Text;
-using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Amqp.Framing;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Amqp
 {
@@ -49,7 +49,7 @@ namespace Microsoft.Azure.Devices.Amqp
         {
             using var reader = new StreamReader(amqpMessage.BodyStream, Encoding.UTF8);
             string jsonString = await reader.ReadToEndAsync().ConfigureAwait(false);
-            return JsonSerializer.Deserialize<T>(jsonString);
+            return JsonConvert.DeserializeObject<T>(jsonString, JsonSerializerSettingsInitializer.GetJsonSerializerSettings());
         }
 
         internal static Exception GetExceptionFromOutcome(Outcome outcome)

@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices
 {
@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// The user identity resource Id used to access the storage account for import and export jobs.
         /// </summary>
-        [JsonPropertyName("userAssignedIdentity")]
+        [JsonProperty("userAssignedIdentity")]
         public string UserAssignedIdentity { get; set; }
     }
 }

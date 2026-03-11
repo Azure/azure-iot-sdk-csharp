@@ -11,7 +11,7 @@ using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Amqp.Framing;
 using Microsoft.Azure.Devices.Amqp;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Tests.Amqp
 {

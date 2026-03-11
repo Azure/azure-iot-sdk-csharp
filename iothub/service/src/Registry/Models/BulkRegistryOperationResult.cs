@@ -2,7 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Collections.Generic;
-using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices
 {
@@ -14,13 +14,13 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Whether or not the operation was successful.
         /// </summary>
-        [JsonPropertyName("isSuccessful")]
+        [JsonProperty("isSuccessful")]
         public bool IsSuccessful { get; protected internal set; }
 
         /// <summary>
         /// If the operation was not successful, this contains DeviceRegistryOperationError objects.
         /// </summary>
-        [JsonPropertyName("errors")]
+        [JsonProperty("errors")]
         public IList<DeviceRegistryOperationError> Errors { get; internal set; } = new List<DeviceRegistryOperationError>();
     }
 }

@@ -2,6 +2,8 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace Microsoft.Azure.Devices
 {
@@ -10,6 +12,7 @@ namespace Microsoft.Azure.Devices
     /// For more information, see <see href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-security#iot-hub-permissions"/>.
     /// </summary>
     [Flags]
+    [JsonConverter(typeof(StringEnumConverter))]
     internal enum AccessRights
     {
         /// <summary>

@@ -2,12 +2,16 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Runtime.Serialization;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
     /// Identifies the behavior when merging a device to the registry during import actions.
     /// </summary>
+    [JsonConverter(typeof(StringEnumConverter))]
     public enum ImportMode
     {
         /// <summary>

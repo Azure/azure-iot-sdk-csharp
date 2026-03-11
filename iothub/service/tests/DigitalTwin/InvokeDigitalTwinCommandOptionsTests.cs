@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Tests.DigitalTwin
 {
@@ -25,7 +25,7 @@ namespace Microsoft.Azure.Devices.Tests.DigitalTwin
             var requestTimeout = TimeSpan.FromSeconds(1);
             var options = new InvokeDigitalTwinCommandOptions
             {
-                Payload = JsonSerializer.Serialize(samplePayload),
+                Payload = JsonConvert.SerializeObject(samplePayload),
                 ConnectTimeout = connectTime,
                 ResponseTimeout = requestTimeout
             };

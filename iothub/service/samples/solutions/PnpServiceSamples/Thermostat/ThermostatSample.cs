@@ -5,7 +5,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using System.Text;
-using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Samples
 {
@@ -41,7 +41,7 @@ namespace Microsoft.Azure.Devices.Samples
             _logger.LogDebug($"Get the {_deviceId} device twin.");
 
             ClientTwin twin = await _serviceClient.Twins.GetAsync(_deviceId);
-            _logger.LogDebug($"{_deviceId} twin: \n{JsonSerializer.Serialize(twin, Formatting.Indented)}");
+            _logger.LogDebug($"{_deviceId} twin: \n{JsonConvert.SerializeObject(twin, Formatting.Indented)}");
 
             return twin;
         }
@@ -78,7 +78,7 @@ namespace Microsoft.Azure.Devices.Samples
             var commandInvocation = new DirectMethodServiceRequest(getMaxMinReportCommandName)
             {
                 ResponseTimeout = TimeSpan.FromSeconds(30),
-                Payload = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(DateTimeOffset.Now.Subtract(TimeSpan.FromMinutes(2)))),
+                Payload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(DateTimeOffset.Now.Subtract(TimeSpan.FromMinutes(2)))),
             };
 
             _logger.LogDebug($"Invoke the {getMaxMinReportCommandName} command on {_deviceId} device twin.");

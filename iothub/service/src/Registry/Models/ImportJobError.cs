@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices
 {
@@ -22,19 +22,19 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// The Id of the device for the error.
         /// </summary>
-        [JsonPropertyName("deviceId")]
+        [JsonProperty("deviceId")]
         public string DeviceId { get; set; }
 
         /// <summary>
         /// An error code for the device import.
         /// </summary>
-        [JsonPropertyName("errorCode")]
+        [JsonProperty("errorCode")]
         public string ErrorCode { get; set; }
 
         /// <summary>
         /// A textual reason for the error.
         /// </summary>
-        [JsonPropertyName("errorStatus")]
+        [JsonProperty("errorStatus")]
         public string ErrorStatus { get; set; }
     }
 }

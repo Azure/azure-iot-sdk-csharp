@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace Microsoft.Azure.Devices
 {
@@ -8,6 +10,7 @@ namespace Microsoft.Azure.Devices
     /// Specifies the various feedback status codes for a cloud-to-device message sent to a device.
     /// </summary>
     /// <seealso href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-messages-c2d#the-cloud-to-device-message-life-cycle"/>.
+    [JsonConverter(typeof(StringEnumConverter))]
     public enum FeedbackStatusCode
     {
         /// <summary>

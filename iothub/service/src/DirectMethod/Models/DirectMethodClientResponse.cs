@@ -2,8 +2,8 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Text;
-using System.Text.Json;
-using System.Text.Json.Serialization;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Devices
 {
@@ -29,7 +29,7 @@ namespace Microsoft.Azure.Devices
         /// Can be any status code value (int), but it is recommended to use
         /// HTTP status codes, which are well-known and documented.
         /// </remarks>
-        [JsonPropertyName("status")]
+        [JsonProperty("status")]
         public int Status { get; protected internal set; }
 
         /// <summary>
@@ -44,7 +44,7 @@ namespace Microsoft.Azure.Devices
         [JsonIgnore]
         internal byte[] PayloadAsBytes => Encoding.UTF8.GetBytes(PayloadAsString);
 
-        [JsonPropertyName("payload")]
+        [JsonProperty("payload")]
         internal JRaw JsonPayload { get; set; }
 
         /// <summary>
@@ -75,10 +75,10 @@ namespace Microsoft.Azure.Devices
 
             try
             {
-                value = JsonSerializer.Deserialize<T>(Encoding.UTF8.GetString(PayloadAsBytes));
+                value = JsonConvert.DeserializeObject<T>(Encoding.UTF8.GetString(PayloadAsBytes));
                 return true;
             }
-            catch (JsonException)
+            catch (JsonSerializationException)
             {
                 return false;
             }

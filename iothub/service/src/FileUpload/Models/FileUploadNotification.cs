@@ -2,7 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices
 {
@@ -24,37 +24,37 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Id of the device which uploaded the file.
         /// </summary>
-        [JsonPropertyName("deviceId")]
+        [JsonProperty("deviceId")]
         public string DeviceId { get; protected internal set; }
 
         /// <summary>
         /// URI path of the uploaded file.
         /// </summary>
-        [JsonPropertyName("blobUri")]
+        [JsonProperty("blobUri")]
         public Uri BlobUriPath { get; protected internal set; }
 
         /// <summary>
         /// Name of the uploaded file.
         /// </summary>
-        [JsonPropertyName("blobName")]
+        [JsonProperty("blobName")]
         public string BlobName { get; protected internal set; }
 
         /// <summary>
         /// Date and time indicating when the file was last updated in UTC.
         /// </summary>
-        [JsonPropertyName("lastUpdatedTime")]
+        [JsonProperty("lastUpdatedTime")]
         public DateTimeOffset? LastUpdatedOnUtc { get; protected internal set; }
 
         /// <summary>
         /// Size of the uploaded file in bytes.
         /// </summary>
-        [JsonPropertyName("blobSizeInBytes")]
+        [JsonProperty("blobSizeInBytes")]
         public long BlobSizeInBytes { get; protected internal set; }
 
         /// <summary>
         /// Date and time indicating when the notification was created in UTC.
         /// </summary>
-        [JsonPropertyName("enqueuedTimeUtc")]
+        [JsonProperty("enqueuedTimeUtc")]
         public DateTimeOffset EnqueuedOnUtc { get; protected internal set; }
     }
 }

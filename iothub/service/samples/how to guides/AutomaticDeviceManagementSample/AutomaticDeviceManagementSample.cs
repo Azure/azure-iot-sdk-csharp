@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Samples
 {
@@ -102,7 +102,7 @@ namespace Microsoft.Azure.Devices.Samples
             // Check configuration's metrics for expected conditions
             foreach (Configuration configuration in configurations)
             {
-                string configurationString = JsonSerializer.Serialize(configuration, Formatting.Indented);
+                string configurationString = JsonConvert.SerializeObject(configuration, Formatting.Indented);
                 Console.WriteLine(configurationString);
                 await Task.Delay(1000);
             }

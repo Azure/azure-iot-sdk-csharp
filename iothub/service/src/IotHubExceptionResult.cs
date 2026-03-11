@@ -2,7 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Diagnostics.CodeAnalysis;
-using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices
 {
@@ -13,7 +13,7 @@ namespace Microsoft.Azure.Devices
     {
         [SuppressMessage("Usage", "CA1507: Use nameof in place of string literal 'Message'",
             Justification = "This JsonProperty annotation depends on service-defined contract (name) and is independent of the property name selected by the SDK.")]
-        [JsonPropertyName("Message")]
+        [JsonProperty("Message")]
         internal ErrorPayload1 Message { get; set; }
     }
 
@@ -24,7 +24,7 @@ namespace Microsoft.Azure.Devices
     {
         [SuppressMessage("Usage", "CA1507: Use nameof in place of string literal 'Message'",
             Justification = "This JsonProperty annotation depends on service-defined contract (name) and is independent of the property name selected by the SDK.")]
-        [JsonPropertyName("Message")]
+        [JsonProperty("Message")]
         internal string Message { get; set; }
 
     }

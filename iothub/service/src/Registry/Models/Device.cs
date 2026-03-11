@@ -3,8 +3,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text.Json.Serialization;
 using Azure;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices
 {
@@ -34,7 +34,7 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Device Id.
         /// </summary>
-        [JsonPropertyName("deviceId")]
+        [JsonProperty("deviceId")]
         public string Id { get; internal set; }
 
         /// <summary>
@@ -43,67 +43,69 @@ namespace Microsoft.Azure.Devices
         /// <remarks>
         /// This value is used to distinguish devices with the same deviceId, when they have been deleted and re-created.
         /// </remarks>
-        [JsonPropertyName("generationId")]
+        [JsonProperty("generationId")]
         public string GenerationId { get; internal set; }
 
         /// <summary>
         /// Device's ETag.
         /// </summary>
-        [JsonPropertyName("etag")]
+        [JsonProperty("etag")]
+        // NewtonsoftJsonETagConverter is used here because otherwise the ETag isn't serialized properly
+        [JsonConverter(typeof(NewtonsoftJsonETagConverter))]
         public ETag ETag { get; set; }
 
         /// <summary>
         /// Device's connection state.
         /// </summary>
-        [JsonPropertyName("connectionState")]
+        [JsonProperty("connectionState")]
         public ClientConnectionState ConnectionState { get; internal set; }
 
         /// <summary>
         /// Device's status.
         /// </summary>
-        [JsonPropertyName("status")]
+        [JsonProperty("status")]
         public ClientStatus Status { get; set; }
 
         /// <summary>
         /// Reason, if any, for the device to be in specified status.
         /// </summary>
-        [JsonPropertyName("statusReason")]
+        [JsonProperty("statusReason")]
         public string StatusReason { get; set; }
 
         /// <summary>
         /// Time when the connection state was last updated.
         /// </summary>
-        [JsonPropertyName("connectionStateUpdatedTime")]
+        [JsonProperty("connectionStateUpdatedTime")]
         public DateTimeOffset? ConnectionStateUpdatedOnUtc { get; internal set; }
 
         /// <summary>
         /// Time when the status was last updated.
         /// </summary>
-        [JsonPropertyName("statusUpdatedTime")]
+        [JsonProperty("statusUpdatedTime")]
         public DateTimeOffset? StatusUpdatedOnUtc { get; internal set; }
 
         /// <summary>
         /// Time when the device was last active.
         /// </summary>
-        [JsonPropertyName("lastActivityTime")]
+        [JsonProperty("lastActivityTime")]
         public DateTimeOffset? LastActiveOnUtc { get; internal set; }
 
         /// <summary>
         /// Number of messages sent to the device from the cloud.
         /// </summary>
-        [JsonPropertyName("cloudToDeviceMessageCount")]
+        [JsonProperty("cloudToDeviceMessageCount")]
         public int CloudToDeviceMessageCount { get; internal set; }
 
         /// <summary>
         /// Device's authentication mechanism.
         /// </summary>
-        [JsonPropertyName("authentication")]
+        [JsonProperty("authentication")]
         public AuthenticationMechanism Authentication { get; set; } = new();
 
         /// <summary>
         ///  Capabilities that are enabled one the device.
         /// </summary>
-        [JsonPropertyName("capabilities")]
+        [JsonProperty("capabilities")]
         public virtual ClientCapabilities Capabilities { get; set; } = new();
 
         /// <summary>
@@ -114,7 +116,7 @@ namespace Microsoft.Azure.Devices
         /// For leaf devices, the value to set a parent edge device can be retrieved from the parent edge device's scope property.
         /// For more information, see <see href="https://docs.microsoft.com/azure/iot-edge/iot-edge-as-gateway?view=iotedge-2020-11#parent-and-child-relationships"/>.
         /// </remarks>
-        [JsonPropertyName("deviceScope")]
+        [JsonProperty("deviceScope")]
         public virtual string Scope { get; set; }
 
         /// <summary>
@@ -129,7 +131,7 @@ namespace Microsoft.Azure.Devices
         ///
         /// For more information, see <see href="https://docs.microsoft.com/azure/iot-edge/iot-edge-as-gateway?view=iotedge-2020-11#parent-and-child-relationships"/>.
         /// </remarks>
-        [JsonPropertyName("parentScopes")]
+        [JsonProperty("parentScopes")]
         public virtual IList<string> ParentScopes { get; internal set; } = new List<string>();
     }
 }

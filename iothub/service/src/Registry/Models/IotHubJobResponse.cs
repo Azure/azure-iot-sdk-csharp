@@ -3,7 +3,7 @@
 
 using System;
 using System.Linq;
-using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices
 {
@@ -34,7 +34,7 @@ namespace Microsoft.Azure.Devices
         /// <remarks>
         /// This value is created by the service. If specified by the user, it will be ignored.
         /// </remarks>
-        [JsonPropertyName("jobId")]
+        [JsonProperty("jobId")]
         public string JobId { get; protected internal set; }
 
         /// <summary>
@@ -43,7 +43,7 @@ namespace Microsoft.Azure.Devices
         /// <remarks>
         /// This value is created by the service. If specified by the user, it will be ignored.
         /// </remarks>
-        [JsonPropertyName("startTimeUtc")]
+        [JsonProperty("startTimeUtc")]
         public DateTimeOffset? StartedOnUtc { get; protected internal set; }
 
         /// <summary>
@@ -52,7 +52,7 @@ namespace Microsoft.Azure.Devices
         /// <remarks>
         /// This value is created by the service. If specified by the user, it will be ignored.
         /// </remarks>
-        [JsonPropertyName("endTimeUtc")]
+        [JsonProperty("endTimeUtc")]
         public DateTimeOffset? EndedOnUtc { get; protected internal set; }
 
         /// <summary>
@@ -61,7 +61,7 @@ namespace Microsoft.Azure.Devices
         /// <remarks>
         /// This value is created by the service. If specified by the user, it will be ignored.
         /// </remarks>
-        [JsonPropertyName("status")]
+        [JsonProperty("status")]
         public JobStatus Status { get; protected internal set; }
 
         /// <summary>
@@ -70,7 +70,7 @@ namespace Microsoft.Azure.Devices
         /// <remarks>
         /// This value is created by the service. If specified by the user, it will be ignored.
         /// </remarks>
-        [JsonPropertyName("failureReason")]
+        [JsonProperty("failureReason")]
         public string FailureReason { get; protected internal set; }
 
         /// <summary>
