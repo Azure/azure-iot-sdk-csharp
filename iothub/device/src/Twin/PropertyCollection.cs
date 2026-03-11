@@ -3,6 +3,7 @@
 
 using System.Collections;
 using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Client
 {

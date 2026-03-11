@@ -2,7 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Client
 {
@@ -26,7 +26,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The name of the file for which a SAS URI will be generated.
         /// </summary>
-        [JsonPropertyName("blobName")]
+        [JsonProperty("blobName")]
         public string BlobName { get; }
     }
 }

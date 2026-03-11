@@ -11,9 +11,9 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Client.Transport
 {
@@ -241,7 +241,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
             token.ThrowIfCancellationRequested();
 
             using Stream stream = await content.ReadAsStreamAsync(token).ConfigureAwait(false);
-            return JsonSerializer.Deserialize<T>(stream);
+            using var reader = new StreamReader(stream);
+            using var jsonReader = new JsonTextReader(reader);
+            return new JsonSerializer().Deserialize<T>(jsonReader);
         }
 
         public void Dispose()

@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Client
 {
@@ -10,16 +10,16 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     internal sealed class ErrorPayload
     {
-        [JsonPropertyName("errorCode")]
+        [JsonProperty("errorCode")]
         internal dynamic ErrorCode { get; set; }
 
-        [JsonPropertyName("trackingId")]
+        [JsonProperty("trackingId")]
         internal string TrackingId { get; set; }
 
-        [JsonPropertyName("message")]
+        [JsonProperty("message")]
         internal string Message { get; set; }
 
-        [JsonPropertyName("timestampUtc")]
+        [JsonProperty("timestampUtc")]
         internal string OccurredOnUtc { get; set; }
 
         [JsonIgnore]

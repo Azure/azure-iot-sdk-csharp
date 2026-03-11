@@ -4,10 +4,10 @@
 using System.Net.Http;
 using System.Net;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Newtonsoft.Json;
 using FluentAssertions;
 using System;
 using System.Threading.Tasks;
-using System.Text.Json;
 
 namespace Microsoft.Azure.Devices.Client.Tests
 {
@@ -26,7 +26,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
             using var httpResponseMessage = new HttpResponseMessage(HttpStatusCode.BadRequest);
             var exceptionResult = new IotHubExceptionResult
             {
-                Message = JsonSerializer.Serialize(
+                Message = JsonConvert.SerializeObject(
                     new ErrorPayload
                     {
                         ErrorCode = ((int)expectedErrorCode).ToString(),
@@ -35,7 +35,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
                         OccurredOnUtc = "2023-03-14T16:57:54.324613222+00:00",
                     }),
             };
-            httpResponseMessage.Content = new StringContent(JsonSerializer.Serialize(exceptionResult));
+            httpResponseMessage.Content = new StringContent(JsonConvert.SerializeObject(exceptionResult));
 
             // act
 
@@ -60,7 +60,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
             using var httpResponseMessage = new HttpResponseMessage(HttpStatusCode.BadRequest);
             var exceptionResult = new IotHubExceptionResult
             {
-                Message = JsonSerializer.Serialize(
+                Message = JsonConvert.SerializeObject(
                     new ErrorPayload
                     {
                         ErrorCode = (int)expectedErrorCode,
@@ -69,7 +69,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
                         OccurredOnUtc = "2023-03-14T16:57:54.324613222+00:00",
                     }),
             };
-            httpResponseMessage.Content = new StringContent(JsonSerializer.Serialize(exceptionResult));
+            httpResponseMessage.Content = new StringContent(JsonConvert.SerializeObject(exceptionResult));
 
             // act
 
@@ -93,7 +93,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
             {
                 Message = "",
             };
-            httpResponseMessage.Content = new StringContent(JsonSerializer.Serialize(exceptionResult));
+            httpResponseMessage.Content = new StringContent(JsonConvert.SerializeObject(exceptionResult));
 
             // act
 

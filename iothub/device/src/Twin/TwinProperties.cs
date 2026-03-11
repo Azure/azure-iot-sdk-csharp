@@ -2,7 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Collections.Generic;
-using System.Text.Json;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Client
 {
@@ -36,13 +36,14 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Gets the Twin as a JSON string
         /// </summary>
+        /// <param name="formatting">Optional. Formatting for the output JSON string.</param>
         /// <returns>JSON string</returns>
-        public string ToJson()
+        public string ToJson(Formatting formatting = Formatting.None)
         {
             var properties = new Dictionary<string, object>
             {
-                { "desired", Desired },
-                { "reported", Reported }
+                { "desired", JsonConvert.DeserializeObject(Desired.GetSerializedString()) },
+                { "reported", JsonConvert.DeserializeObject(Reported.GetSerializedString()) }
             };
 
             var formattedTwinProperties = new Dictionary<string, Dictionary<string, object>>
@@ -50,7 +51,7 @@ namespace Microsoft.Azure.Devices.Client
                 { "properties", properties },
             };
 
-            return JsonSerializer.Serialize(formattedTwinProperties);
+            return JsonConvert.SerializeObject(formattedTwinProperties);
         }
     }
 }

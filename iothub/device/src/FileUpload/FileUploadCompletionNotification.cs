@@ -2,7 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Client
 {
@@ -30,13 +30,13 @@ namespace Microsoft.Azure.Devices.Client
         /// The value should equal the <see cref="FileUploadSasUriResponse.CorrelationId"/>
         /// returned from IoT hub when first getting the SAS URI for this file upload.
         /// </summary>
-        [JsonPropertyName("correlationId")]
+        [JsonProperty("correlationId")]
         public string CorrelationId { get; }
 
         /// <summary>
         /// Whether the file upload was successful or not.
         /// </summary>
-        [JsonPropertyName("isSuccess")]
+        [JsonProperty("isSuccess")]
         public bool IsSuccess { get; }
 
         /// <summary>
@@ -46,7 +46,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <remarks>
         /// This property is optional.
         /// </remarks>
-        [JsonPropertyName("statusCode")]
+        [JsonProperty("statusCode")]
         public int StatusCode { get; set; }
 
         /// <summary>
@@ -56,7 +56,7 @@ namespace Microsoft.Azure.Devices.Client
         /// This property is optional.
         /// </remarks>
         /// </summary>
-        [JsonPropertyName("statusDescription")]
+        [JsonProperty("statusDescription")]
         public string StatusDescription { get; set; }
     }
 }

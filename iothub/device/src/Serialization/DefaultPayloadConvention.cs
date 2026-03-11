@@ -4,20 +4,35 @@
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text;
-using System.Text.Json;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
-    /// The default implementation of the <see cref="PayloadConvention"/> class for System.Text.Json.
+    /// The default implementation of the <see cref="PayloadConvention"/> class for Newtonsoft.Json.
     /// </summary>
     /// <remarks>
-    /// This class makes use of the <see cref="Encoding.UTF8"/> encoder.
+    /// This class makes use of the <see cref="JsonConvert"/> serializer and the <see cref="Encoding.UTF8"/> encoder.
     /// </remarks>
     public sealed class DefaultPayloadConvention : PayloadConvention
     {
+        /// <summary>
+        /// A static instance of JsonSerializerSettings which sets DateParseHandling to None.
+        /// </summary>
+        /// <remarks>
+        /// By default, serializing/deserializing with Newtonsoft.Json will try to parse date-formatted
+        /// strings to a date type, which drops trailing zeros in the microseconds portion. By
+        /// specifying DateParseHandling with None, the original string will be read as-is. For more details
+        /// about the known issue, see https://github.com/JamesNK/Newtonsoft.Json/issues/1511.
+        /// </remarks>
+        private static readonly JsonSerializerSettings s_settings = new()
+        {
+            DateParseHandling = DateParseHandling.None,
+        };
+
         private DefaultPayloadConvention()
         {
+            JsonConvert.DefaultSettings = () => s_settings;
         }
 
         internal static Encoding Encoding => Encoding.UTF8;
@@ -67,13 +82,13 @@ namespace Microsoft.Azure.Devices.Client
 
             try
             {
-                deserialized = JsonSerializer.Deserialize<T>(jsonObjectAsText);
+                deserialized = JsonConvert.DeserializeObject<T>(jsonObjectAsText);
             }
-            catch (JsonException)
+            catch (JsonReaderException)
             {
                 // T should always be of type byte[] here, so this is basically a no-op.
                 // However, .NET does not allow us to simply return "payload as T" or other basic casts.
-                deserialized = JsonSerializer.Deserialize<T>(JsonSerializer.Serialize(Encoding.UTF8.GetBytes(jsonObjectAsText)));
+                deserialized = JsonConvert.DeserializeObject<T>(JsonConvert.SerializeObject(Encoding.UTF8.GetBytes(jsonObjectAsText)));
             }
             return deserialized;
         }
@@ -81,7 +96,7 @@ namespace Microsoft.Azure.Devices.Client
         // For internal and unit testing use
         internal static string Serialize(object objectToSerialize)
         {
-            return JsonSerializer.Serialize(objectToSerialize);
+            return JsonConvert.SerializeObject(objectToSerialize);
         }
     }
 }

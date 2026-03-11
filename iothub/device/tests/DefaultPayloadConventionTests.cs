@@ -2,10 +2,10 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Text.Json.Serialization;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Devices.Client.Tests
 {
@@ -43,7 +43,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
             JObject payload = s_cut.GetObject<JObject>(jsonStr);
 
             //assert
-            payload.ToString().Should().Be(s_serializedPayloadString);
+            payload.ToString(Formatting.None).Should().Be(s_serializedPayloadString);
         }
 
         [TestMethod]
@@ -124,16 +124,16 @@ namespace Microsoft.Azure.Devices.Client.Tests
 
         private class CustomType
         {
-            [JsonPropertyName("intProp")]
+            [JsonProperty("intProp")]
             public int IntProp { get; set; }
 
-            [JsonPropertyName("stringProp")]
+            [JsonProperty("stringProp")]
             public string StringProp { get; set; }
         }
 
         private class TestDateTime
         {
-            [JsonPropertyName("time")]
+            [JsonProperty("time")]
             public string DateTimeString { get; set; }
         }
     }
