@@ -5,6 +5,7 @@ using System;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.Azure.Devices.Utilities;
 
 namespace Microsoft.Azure.Devices
 {
@@ -45,8 +46,8 @@ namespace Microsoft.Azure.Devices
         [JsonIgnore]
         public object PayloadAsObject
         {
-            get => JsonSerializer.Deserialize<object>(Encoding.UTF8.GetString(Payload)); // TODO hmmm
-            set => Payload = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(value));
+            get => JsonSerializer.Deserialize<object>(Encoding.UTF8.GetString(Payload), JsonSerializerSettings.Options); // TODO hmmm
+            set => Payload = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(value, JsonSerializerSettings.Options));
         }
 
         /// <summary>

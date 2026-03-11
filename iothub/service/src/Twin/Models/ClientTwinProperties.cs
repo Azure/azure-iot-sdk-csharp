@@ -6,6 +6,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.Azure.Devices.Utilities;
 
 namespace Microsoft.Azure.Devices
 {
@@ -48,7 +49,7 @@ namespace Microsoft.Azure.Devices
                 : throw new InvalidOperationException($"Unexpected property name '{propertyName}'.");
             set => Properties[propertyName] = value is null || value is JsonElement
                 ? value
-                : JsonSerializer.Serialize(value);
+                : JsonSerializer.Serialize(value, JsonSerializerSettings.Options);
         }
 
         /// <summary>
@@ -79,7 +80,7 @@ namespace Microsoft.Azure.Devices
 
             try
             {
-                propertyValue = JsonSerializer.Deserialize<T>(jTokenValue);
+                propertyValue = JsonSerializer.Deserialize<T>(jTokenValue, JsonSerializerSettings.Options);
                 return true;
             }
             catch (InvalidCastException)
@@ -96,7 +97,7 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         public string GetPropertiesAsJson()
         {
-            return JsonSerializer.Serialize(Properties);
+            return JsonSerializer.Serialize(Properties, JsonSerializerSettings.Options);
         }
 
         private bool TryGetMemberInternal(string propertyName, out object result)

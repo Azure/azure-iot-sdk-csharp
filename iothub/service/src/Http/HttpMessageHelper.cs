@@ -9,6 +9,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Azure;
+using Microsoft.Azure.Devices.Utilities;
 
 namespace Microsoft.Azure.Devices
 {
@@ -34,7 +35,7 @@ namespace Microsoft.Azure.Devices
         {
             Debug.Assert(payload != null, "Upstream caller should have validated the payload.");
 
-            string str = JsonSerializer.Serialize(payload);
+            string str = JsonSerializer.Serialize(payload, JsonSerializerSettings.Options);
             return new StringContent(str, Encoding.UTF8, ApplicationJson);
         }
 
@@ -65,7 +66,7 @@ namespace Microsoft.Azure.Devices
         internal static async Task<T> DeserializeResponseAsync<T>(HttpResponseMessage response)
         {
             string str = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-            return JsonSerializer.Deserialize<T>(str);
+            return JsonSerializer.Deserialize<T>(str, JsonSerializerSettings.Options);
         }
 
         /// <summary>

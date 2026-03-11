@@ -4,6 +4,7 @@
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.Azure.Devices.Utilities;
 
 namespace Microsoft.Azure.Devices
 {
@@ -75,7 +76,7 @@ namespace Microsoft.Azure.Devices
 
             try
             {
-                value = JsonSerializer.Deserialize<T>(Encoding.UTF8.GetString(PayloadAsBytes));
+                value = JsonSerializer.Deserialize<T>(Encoding.UTF8.GetString(PayloadAsBytes), JsonSerializerSettings.Options);
                 return true;
             }
             catch (JsonException)
