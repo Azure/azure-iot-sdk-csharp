@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
@@ -39,12 +39,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
             var source = new DeviceRegistrationResult
             {
                 Status = expectedStatus,
-                Payload = new JRaw(JsonConvert.SerializeObject(expectedPayload)),
+                Payload = new JRaw(JsonSerializer.Serialize(expectedPayload)),
             };
-            string body = JsonConvert.SerializeObject(source);
+            string body = JsonSerializer.Serialize(source);
 
             // act
-            DeviceRegistrationResult result = JsonConvert.DeserializeObject<DeviceRegistrationResult>(body);
+            DeviceRegistrationResult result = JsonSerializer.Deserialize<DeviceRegistrationResult>(body);
 
             // assert
 
@@ -63,12 +63,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
             var source = new DeviceRegistrationResult
             {
                 Status = expectedStatus,
-                Payload = new JRaw(JsonConvert.SerializeObject(expectedPayload)),
+                Payload = new JRaw(JsonSerializer.Serialize(expectedPayload)),
             };
-            string body = JsonConvert.SerializeObject(source);
+            string body = JsonSerializer.Serialize(source);
 
             // act
-            DeviceRegistrationResult result = JsonConvert.DeserializeObject<DeviceRegistrationResult>(body);
+            DeviceRegistrationResult result = JsonSerializer.Deserialize<DeviceRegistrationResult>(body);
 
             // assert
 
@@ -87,12 +87,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
             var source = new DeviceRegistrationResult
             {
                 Status = expectedStatus,
-                Payload = new JRaw(JsonConvert.SerializeObject(expectedPayload)),
+                Payload = new JRaw(JsonSerializer.Serialize(expectedPayload)),
             };
-            string body = JsonConvert.SerializeObject(source);
+            string body = JsonSerializer.Serialize(source);
 
             // act
-            DeviceRegistrationResult result = JsonConvert.DeserializeObject<DeviceRegistrationResult>(body);
+            DeviceRegistrationResult result = JsonSerializer.Deserialize<DeviceRegistrationResult>(body);
 
             // assert
 
@@ -111,12 +111,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
             var source = new DeviceRegistrationResult
             {
                 Status = expectedStatus,
-                Payload = new JRaw(JsonConvert.SerializeObject(expectedPayload)),
+                Payload = new JRaw(JsonSerializer.Serialize(expectedPayload)),
             };
-            string body = JsonConvert.SerializeObject(source);
+            string body = JsonSerializer.Serialize(source);
 
             // act
-            DeviceRegistrationResult result = JsonConvert.DeserializeObject<DeviceRegistrationResult>(body);
+            DeviceRegistrationResult result = JsonSerializer.Deserialize<DeviceRegistrationResult>(body);
 
             // assert
 
@@ -135,12 +135,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
             var source = new DeviceRegistrationResult
             {
                 Status = expectedStatus,
-                Payload = new JRaw(JsonConvert.SerializeObject(expectedPayload)),
+                Payload = new JRaw(JsonSerializer.Serialize(expectedPayload)),
             };
-            string body = JsonConvert.SerializeObject(source);
+            string body = JsonSerializer.Serialize(source);
 
             // act
-            DeviceRegistrationResult result = JsonConvert.DeserializeObject<DeviceRegistrationResult>(body);
+            DeviceRegistrationResult result = JsonSerializer.Deserialize<DeviceRegistrationResult>(body);
 
             // assert
 
@@ -159,12 +159,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
             var source = new DeviceRegistrationResult
             {
                 Status = expectedStatus,
-                Payload = new JRaw(JsonConvert.SerializeObject(expectedPayload)),
+                Payload = new JRaw(JsonSerializer.Serialize(expectedPayload)),
             };
-            string body = JsonConvert.SerializeObject(source);
+            string body = JsonSerializer.Serialize(source);
 
             // act
-            DeviceRegistrationResult result = JsonConvert.DeserializeObject<DeviceRegistrationResult>(body);
+            DeviceRegistrationResult result = JsonSerializer.Deserialize<DeviceRegistrationResult>(body);
 
             // assert
 
@@ -183,12 +183,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
             var source = new DeviceRegistrationResult
             {
                 Status = expectedStatus,
-                Payload = new JRaw(JsonConvert.SerializeObject(expectedPayload)),
+                Payload = new JRaw(JsonSerializer.Serialize(expectedPayload)),
             };
-            string body = JsonConvert.SerializeObject(source);
+            string body = JsonSerializer.Serialize(source);
 
             // act
-            DeviceRegistrationResult result = JsonConvert.DeserializeObject<DeviceRegistrationResult>(body);
+            DeviceRegistrationResult result = JsonSerializer.Deserialize<DeviceRegistrationResult>(body);
 
             // assert
 
@@ -200,10 +200,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
 
         private class CustomType
         {
-            [JsonProperty("customInt")]
+            [JsonPropertyName("customInt")]
             public int CustomInt { get; set; }
 
-            [JsonProperty("customString")]
+            [JsonPropertyName("customString")]
             public string CustomString { get; set; }
         }
     }

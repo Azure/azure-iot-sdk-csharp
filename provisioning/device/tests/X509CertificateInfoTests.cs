@@ -4,7 +4,7 @@
 using System;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
 {
@@ -37,10 +37,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
                 SerialNumber= FakeSerialNumber,
                 Version= FakeVersion,
             };
-            string body = JsonConvert.SerializeObject(source);
+            string body = JsonSerializer.Serialize(source);
 
             // act
-            X509CertificateInfo certificateInfo = JsonConvert.DeserializeObject<X509CertificateInfo>(body);
+            X509CertificateInfo certificateInfo = JsonSerializer.Deserialize<X509CertificateInfo>(body);
 
             // assert
 

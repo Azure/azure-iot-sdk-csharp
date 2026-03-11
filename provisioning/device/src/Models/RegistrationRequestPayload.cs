@@ -2,8 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client
 {
@@ -18,7 +17,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// <remarks>
         /// The service supports passing a DTDL model Id, so one supported payload is <see cref="ModelIdPayload"/>.
         /// </remarks>
-        [JsonProperty("payload")]
+        [JsonPropertyName("payload")]
         public object Payload { get; set; }
 
         /// <summary>

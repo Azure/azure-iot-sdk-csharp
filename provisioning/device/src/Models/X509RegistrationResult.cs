@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client
 {
@@ -20,19 +20,19 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// <summary>
         /// Information about the X509 certificate.
         /// </summary>
-        [JsonProperty("certificateInfo")]
+        [JsonPropertyName("certificateInfo")]
         public X509CertificateInfo CertificateInfo { get; protected internal set; }
 
         /// <summary>
         /// The device provisioning service enrollment group Id.
         /// </summary>
-        [JsonProperty("enrollmentGroupId")]
+        [JsonPropertyName("enrollmentGroupId")]
         public string EnrollmentGroupId { get; protected internal set; }
 
         /// <summary>
         /// Signing information about the certificate.
         /// </summary>
-        [JsonProperty("signingCertificateInfo")]
+        [JsonPropertyName("signingCertificateInfo")]
         public X509CertificateInfo SigningCertificateInfo { get; protected internal set; }
 
     }

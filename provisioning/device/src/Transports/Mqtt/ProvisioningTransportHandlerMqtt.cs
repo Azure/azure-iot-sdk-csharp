@@ -17,7 +17,7 @@ using MQTTnet.Client;
 using MQTTnet.Exceptions;
 using MQTTnet.Formatter;
 using MQTTnet.Protocol;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client
 {
@@ -246,7 +246,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             byte[] payload = Array.Empty<byte>();
             if (provisioningRequest.Payload != null)
             {
-                string requestString = JsonConvert.SerializeObject(provisioningRequest.Payload);
+                string requestString = JsonSerializer.Serialize(provisioningRequest.Payload);
                 payload = Encoding.UTF8.GetBytes(requestString);
             }
 
@@ -427,14 +427,14 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             {
                 // The initial provisioning request's response topic is shaped like "$dps/registrations/res/202/?$rid=1&retry-after=3"
                 string jsonString = Encoding.UTF8.GetString(receivedEventArgs.ApplicationMessage.Payload);
-                RegistrationOperationStatus operation = JsonConvert.DeserializeObject<RegistrationOperationStatus>(jsonString);
+                RegistrationOperationStatus operation = JsonSerializer.Deserialize<RegistrationOperationStatus>(jsonString);
                 _startProvisioningRequestStatusSource.TrySetResult(operation);
             }
             else
             {
                 // All status polling requests' response topics are shaped like "$dps/registrations/res/200/?$rid=2"
                 string jsonString = Encoding.UTF8.GetString(receivedEventArgs.ApplicationMessage.Payload);
-                RegistrationOperationStatus operation = JsonConvert.DeserializeObject<RegistrationOperationStatus>(jsonString);
+                RegistrationOperationStatus operation = JsonSerializer.Deserialize<RegistrationOperationStatus>(jsonString);
 
                 operation.RetryAfter = ProvisioningErrorDetailsMqtt.GetRetryAfterFromTopic(topic, s_defaultOperationPollingInterval);
 

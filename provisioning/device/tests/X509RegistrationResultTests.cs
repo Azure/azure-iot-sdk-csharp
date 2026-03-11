@@ -3,7 +3,7 @@
 
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
 {
@@ -23,10 +23,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
             {
                 CertificateInfo = s_certificateInfo,
             };
-            string body = JsonConvert.SerializeObject(source);
+            string body = JsonSerializer.Serialize(source);
 
             // act
-            X509RegistrationResult result = JsonConvert.DeserializeObject<X509RegistrationResult>(body);
+            X509RegistrationResult result = JsonSerializer.Deserialize<X509RegistrationResult>(body);
 
             // assert
             result.CertificateInfo.Should().BeEquivalentTo(source.CertificateInfo);
@@ -41,10 +41,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
             {
                 EnrollmentGroupId = FakeEnrollmentGroupId,
             };
-            string body = JsonConvert.SerializeObject(source);
+            string body = JsonSerializer.Serialize(source);
 
             // act
-            X509RegistrationResult result = JsonConvert.DeserializeObject<X509RegistrationResult>(body);
+            X509RegistrationResult result = JsonSerializer.Deserialize<X509RegistrationResult>(body);
 
             // assert
             result.EnrollmentGroupId.Should().Be(source.EnrollmentGroupId);
@@ -59,10 +59,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
             {
                 SigningCertificateInfo = s_certificateInfo,
             };
-            string body = JsonConvert.SerializeObject(source);
+            string body = JsonSerializer.Serialize(source);
 
             // act
-            X509RegistrationResult result = JsonConvert.DeserializeObject<X509RegistrationResult>(body);
+            X509RegistrationResult result = JsonSerializer.Deserialize<X509RegistrationResult>(body);
 
             // assert
             result.SigningCertificateInfo.Should().BeEquivalentTo(source.SigningCertificateInfo);

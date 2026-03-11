@@ -3,7 +3,7 @@
 
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
 {
@@ -22,10 +22,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
             {
                 EnrollmentGroupId = FakeEnrollmentGroupId,
             };
-            string body = JsonConvert.SerializeObject(source);
+            string body = JsonSerializer.Serialize(source);
 
             // act
-            SymmetricKeyRegistrationResult result = JsonConvert.DeserializeObject<SymmetricKeyRegistrationResult>(body);
+            SymmetricKeyRegistrationResult result = JsonSerializer.Deserialize<SymmetricKeyRegistrationResult>(body);
 
             // assert
             result.EnrollmentGroupId.Should().Be(source.EnrollmentGroupId);

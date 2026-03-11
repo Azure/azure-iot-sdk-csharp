@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client
 {
@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// For more information on device provisioning service and plug and play compatibility,
         /// For information on DTDL, see <see href="https://github.com/Azure/opendigitaltwins-dtdl/blob/master/DTDL/v2/dtdlv2.md"/>
         /// </remarks>
-        [JsonProperty("modelId")]
+        [JsonPropertyName("modelId")]
         public string ModelId { get; set; }
     }
 }

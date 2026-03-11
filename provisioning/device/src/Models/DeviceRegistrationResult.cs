@@ -2,8 +2,8 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client
 {
@@ -21,79 +21,79 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// <summary>
         /// This id is used to uniquely identify a device registration of an enrollment.
         /// </summary>
-        [JsonProperty("registrationId")]
+        [JsonPropertyName("registrationId")]
         public string RegistrationId { get; protected internal set; }
 
         /// <summary>
         /// Registration create date time (in UTC).
         /// </summary>
-        [JsonProperty("createdDateTimeUtc")]
+        [JsonPropertyName("createdDateTimeUtc")]
         public DateTimeOffset? CreatedOnUtc { get; protected internal set; }
 
         /// <summary>
         /// The assigned Azure IoT hub.
         /// </summary>
-        [JsonProperty("assignedHub")]
+        [JsonPropertyName("assignedHub")]
         public string AssignedHub { get; protected internal set; }
 
         /// <summary>
         /// The Device Id.
         /// </summary>
-        [JsonProperty("deviceId")]
+        [JsonPropertyName("deviceId")]
         public string DeviceId { get; protected internal set; }
 
         /// <summary>
         /// The status of the operation.
         /// </summary>
-        [JsonProperty("status")]
+        [JsonPropertyName("status")]
         public ProvisioningRegistrationStatus Status { get; protected internal set; }
 
         /// <summary>
         /// The substatus of the operation.
         /// </summary>
-        [JsonProperty("substatus")]
+        [JsonPropertyName("substatus")]
         public ProvisioningRegistrationSubstatus Substatus { get; protected internal set; }
 
         /// <summary>
         /// The time when the device last refreshed the registration.
         /// </summary>
-        [JsonProperty("lastUpdatedDateTimeUtc")]
+        [JsonPropertyName("lastUpdatedDateTimeUtc")]
         public DateTimeOffset? LastUpdatedOnUtc { get; protected internal set; }
 
         /// <summary>
         /// Error code.
         /// </summary>
-        [JsonProperty("errorCode")]
+        [JsonPropertyName("errorCode")]
         public int? ErrorCode { get; protected internal set; }
 
         /// <summary>
         /// Error message.
         /// </summary>
-        [JsonProperty("errorMessage")]
+        [JsonPropertyName("errorMessage")]
         public string ErrorMessage { get; protected internal set; }
 
         /// <summary>
         /// The entity tag associated with the resource.
         /// </summary>
-        [JsonProperty("etag")]
+        [JsonPropertyName("etag")]
         public string ETag { get; protected internal set; }
 
         /// <summary>
         /// The custom data returned from the webhook to the device.
         /// </summary>
-        [JsonProperty("payload")]
+        [JsonPropertyName("payload")]
         protected internal JRaw Payload { get; set; }
 
         /// <summary>
         /// The registration result for X.509 certificate authentication.
         /// </summary>
-        [JsonProperty("x509")]
+        [JsonPropertyName("x509")]
         public X509RegistrationResult X509 { get; protected internal set; }
 
         /// <summary>
         /// The registration result for symmetric key authentication.
         /// </summary>
-        [JsonProperty("symmetricKey")]
+        [JsonPropertyName("symmetricKey")]
         public SymmetricKeyRegistrationResult SymmetricKey { get; protected internal set; }
 
         /// <summary>
@@ -112,7 +112,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
             try
             {
-                value = JsonConvert.DeserializeObject<T>(Payload.Value<string>());
+                value = JsonSerializer.Deserialize<T>(Payload.Value<string>());
                 return true;
             }
             catch (JsonException)
