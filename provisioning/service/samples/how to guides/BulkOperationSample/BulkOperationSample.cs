@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
 {
@@ -50,7 +50,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
                 .IndividualEnrollments
                 .RunBulkOperationAsync(BulkOperationMode.Create, individualEnrollments);
             _logger.LogInformation("\nResult of the create bulk enrollment.");
-            _logger.LogInformation(JsonSerializer.Serialize(bulkEnrollmentOperationResult));
+            _logger.LogInformation(JsonConvert.SerializeObject(bulkEnrollmentOperationResult));
 
             return individualEnrollments;
         }
@@ -74,7 +74,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
             BulkEnrollmentOperationResult bulkEnrollmentOperationResult = await _provisioningServiceClient
                 .IndividualEnrollments
                 .RunBulkOperationAsync(BulkOperationMode.Delete, individualEnrollments);
-            _logger.LogInformation(JsonSerializer.Serialize(bulkEnrollmentOperationResult));
+            _logger.LogInformation(JsonConvert.SerializeObject(bulkEnrollmentOperationResult));
         }
 
         public async Task QueryIndividualEnrollmentsAsync()

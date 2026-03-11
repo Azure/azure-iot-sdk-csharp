@@ -4,12 +4,15 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
     /// <summary>
     /// Represents a collection of properties for device twin.
     /// </summary>
+    [JsonConverter(typeof(InitialTwinPropertiesJsonConverter))]
     public class InitialTwinPropertyCollection : IEnumerable<KeyValuePair<string, object>>
     {
         internal const string MetadataName = "$metadata";

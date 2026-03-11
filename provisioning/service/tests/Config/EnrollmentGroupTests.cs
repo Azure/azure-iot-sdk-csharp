@@ -5,7 +5,7 @@ using System;
 using Azure;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
 {
@@ -124,7 +124,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
                 "}";
 
             // act
-            Action act = () => JsonSerializer.Deserialize<EnrollmentGroup>(invalidJson);
+            Action act = () => JsonConvert.DeserializeObject<EnrollmentGroup>(invalidJson);
 
             // assert
             act.Should().Throw<ArgumentNullException>();
@@ -134,7 +134,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
         public void EnrollmentGroupConstructorJsonSucceed()
         {
             // arrange
-            EnrollmentGroup enrollmentGroup = JsonSerializer.Deserialize<EnrollmentGroup>(s_sampleEnrollmentGroupJson);
+            EnrollmentGroup enrollmentGroup = JsonConvert.DeserializeObject<EnrollmentGroup>(s_sampleEnrollmentGroupJson);
 
             // act - assert
             Assert.IsNotNull(enrollmentGroup);
@@ -176,7 +176,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
                 "   },\n" +
                 "   \"etag\": \"" + s_sampleEtag + "\"\n" +
                 "}";
-            EnrollmentGroup enrollmentGroup = JsonSerializer.Deserialize<EnrollmentGroup>(minJson);
+            EnrollmentGroup enrollmentGroup = JsonConvert.DeserializeObject<EnrollmentGroup>(minJson);
 
             // act - assert
             Assert.IsNotNull(enrollmentGroup);

@@ -3,7 +3,7 @@
 
 using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
 {
@@ -130,7 +130,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
             var initialTwin = new InitialTwin{ Tags = tags, DesiredProperties = desiredProperties };
 
             // act
-            string jsonResult = JsonSerializer.Serialize(initialTwin);
+            string jsonResult = JsonConvert.SerializeObject(initialTwin);
 
             // assert
             TestAssert.AreEqualJson(OnlyTagsInitialTwinJson, jsonResult);
@@ -145,7 +145,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
             var initialTwin = new InitialTwin{ Tags = tags, DesiredProperties = desiredProperties };
 
             // act
-            string jsonResult = JsonSerializer.Serialize(initialTwin);
+            string jsonResult = JsonConvert.SerializeObject(initialTwin);
 
             // assert
             TestAssert.AreEqualJson(OnlyDesiredPropertiesInitialTwinJson, jsonResult);
@@ -160,7 +160,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
             var initialTwin = new InitialTwin{ Tags = tags, DesiredProperties = desiredProperties };
 
             // act
-            string jsonResult = JsonSerializer.Serialize(initialTwin);
+            string jsonResult = JsonConvert.SerializeObject(initialTwin);
 
             // assert
             TestAssert.AreEqualJson(FullInitialTwinJson, jsonResult);
@@ -170,10 +170,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
         public void InitialTwinSucceedOnFromJson()
         {
             // act
-            InitialTwin initialTwin = JsonSerializer.Deserialize<InitialTwin>(FullInitialTwinJson);
+            InitialTwin initialTwin = JsonConvert.DeserializeObject<InitialTwin>(FullInitialTwinJson);
 
             // assert
-            TestAssert.AreEqualJson(FullInitialTwinJson, JsonSerializer.Serialize(initialTwin));
+            TestAssert.AreEqualJson(FullInitialTwinJson, JsonConvert.SerializeObject(initialTwin));
         }
     }
 }

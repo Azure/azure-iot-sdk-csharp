@@ -2,11 +2,13 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Text.Json.Serialization;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
     [Flags]
+    [JsonConverter(typeof(StringEnumConverter))]
     internal enum AccessRights
     {
         RegistryRead = 1,

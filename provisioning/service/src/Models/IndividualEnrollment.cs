@@ -7,7 +7,8 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading;
 using Azure;
-using System.Text.Json.Serialization;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
@@ -96,25 +97,25 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// A valid registration Id shall be alphanumeric, lowercase, and may contain hyphens. Max characters 128.
         /// </remarks>
         /// <exception cref="InvalidOperationException">If the provided string does not fit the registration Id requirements</exception>
-        [JsonPropertyName("registrationId")]
+        [JsonProperty("registrationId")]
         public string RegistrationId { get; internal set; }
 
         /// <summary>
         /// Desired IoT hub device Id (optional).
         /// </summary>
-        [JsonPropertyName("deviceId")]
+        [JsonProperty("deviceId", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public string DeviceId { get; set; }
 
         /// <summary>
         /// Current registration state.
         /// </summary>
-        [JsonPropertyName("registrationState")]
+        [JsonProperty("registrationState", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public DeviceRegistrationState RegistrationState { get; internal set; }
 
         /// <summary>
         /// Attestation mechanism.
         /// </summary>
-        [JsonPropertyName("attestation")]
+        [JsonProperty("attestation")]
         private AttestationMechanism _attestation;
 
         /// <summary>
@@ -146,61 +147,63 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <summary>
         /// Desired IoT hub to assign the device to.
         /// </summary>
-        [JsonPropertyName("iotHubHostName")]
+        [JsonProperty("iotHubHostName", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public string IotHubHostName { get; set; }
 
         /// <summary>
         /// Initial twin state.
         /// </summary>
-        [JsonPropertyName("initialTwin")]
+        [JsonProperty("initialTwin", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public InitialTwin InitialTwinState { get; set; }
 
         /// <summary>
         /// The provisioning status.
         /// </summary>
-        [JsonPropertyName("provisioningStatus")]
+        [JsonProperty("provisioningStatus", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public ProvisioningStatus? ProvisioningStatus { get; set; }
 
         /// <summary>
         /// The DateTime this resource was created.
         /// </summary>
-        [JsonPropertyName("createdDateTimeUtc")]
+        [JsonProperty("createdDateTimeUtc", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public DateTimeOffset? CreatedOnUtc { get; internal set; }
 
         /// <summary>
         /// The DateTime this resource was last updated.
         /// </summary>
-        [JsonPropertyName("lastUpdatedDateTimeUtc")]
+        [JsonProperty("lastUpdatedDateTimeUtc", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public DateTimeOffset? LastUpdatedOnUtc { get; internal set; }
 
         /// <summary>
         /// Enrollment's ETag.
         /// </summary>
-        [JsonPropertyName("etag")]
+        [JsonProperty("etag", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        // NewtonsoftJsonETagConverter is used here because otherwise the ETag isn't serialized properly
+        [JsonConverter(typeof(NewtonsoftJsonETagConverter))]
         public ETag ETag { get; set; }
 
         /// <summary>
         /// Capabilities of the device.
         /// </summary>
-        [JsonPropertyName("capabilities")]
+        [JsonProperty("capabilities", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public InitialTwinCapabilities Capabilities { get; set; }
 
         /// <summary>
         /// The behavior when a device is re-provisioned to an IoT hub.
         /// </summary>
-        [JsonPropertyName("reprovisionPolicy")]
+        [JsonProperty("reprovisionPolicy", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public ReprovisionPolicy ReprovisionPolicy { get; set; }
 
         /// <summary>
         /// Custom allocation definition.
         /// </summary>
-        [JsonPropertyName("customAllocationDefinition")]
+        [JsonProperty("customAllocationDefinition", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public CustomAllocationDefinition CustomAllocationDefinition { get; set; }
 
         /// <summary>
         /// The allocation policy of this resource. Overrides the tenant level allocation policy.
         /// </summary>
-        [JsonPropertyName("allocationPolicy")]
+        [JsonProperty("allocationPolicy", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public AllocationPolicy? AllocationPolicy { get; set; }
 
         /// <summary>
@@ -209,7 +212,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <remarks>
         /// Must be a subset of tenant level list of IoT hubs.
         /// </remarks>
-        [JsonPropertyName("iotHubs")]
+        [JsonProperty("iotHubs", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public IList<string> IotHubs { get; set; } = new List<string>();
 
         /// <summary>

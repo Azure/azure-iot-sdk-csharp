@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
 {
@@ -59,7 +59,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
                 Enrollments = s_individualEnrollments,
             };
 
-            string actual = JsonSerializer.Serialize(operation);
+            string actual = JsonConvert.SerializeObject(operation);
 
             // assert
             actual.Should().Be(expected);

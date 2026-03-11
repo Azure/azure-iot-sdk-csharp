@@ -4,7 +4,7 @@
 using System;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
 {
@@ -113,7 +113,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
             var tpmAttestation = new TpmAttestation(endorsementKey, storageRootKey);
 
             // act
-            string json = JsonSerializer.Serialize(tpmAttestation);
+            string json = JsonConvert.SerializeObject(tpmAttestation);
 
             // assert
             TestAssert.AreEqualJson(expectedJson, json);
@@ -131,7 +131,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
             var tpmAttestation = new TpmAttestation(endorsementKey);
 
             // act
-            string json = JsonSerializer.Serialize(tpmAttestation);
+            string json = JsonConvert.SerializeObject(tpmAttestation);
 
             // assert
             TestAssert.AreEqualJson(expectedJson, json);
@@ -151,7 +151,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
             var tpmAttestation = new TpmAttestation(endorsementKey, storageRootKey);
 
             // act
-            string json = JsonSerializer.Serialize(tpmAttestation);
+            string json = JsonConvert.SerializeObject(tpmAttestation);
 
             // assert
             TestAssert.AreEqualJson(expectedJson, json);
@@ -170,7 +170,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
                 "}";
 
             // act
-            TpmAttestation tpmAttestation = JsonSerializer.Deserialize<TpmAttestation>(json);
+            TpmAttestation tpmAttestation = JsonConvert.DeserializeObject<TpmAttestation>(json);
 
             // assert
             Assert.AreEqual(endorsementKey, tpmAttestation.EndorsementKey);
@@ -188,7 +188,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
                 "}";
 
             // act - assert
-            Action act = () => JsonSerializer.Deserialize<TpmAttestation>(json);
+            Action act = () => JsonConvert.DeserializeObject<TpmAttestation>(json);
             var error = act.Should().Throw<ArgumentException>();
         }
 
@@ -204,7 +204,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
                 "}";
 
             // act - assert
-            Action act = () => JsonSerializer.Deserialize<TpmAttestation>(json);
+            Action act = () => JsonConvert.DeserializeObject<TpmAttestation>(json);
             var error = act.Should().Throw<ArgumentException>();
         }
 
@@ -219,7 +219,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
                 "}";
 
             // act
-            TpmAttestation tpmAttestation = JsonSerializer.Deserialize<TpmAttestation>(json);
+            TpmAttestation tpmAttestation = JsonConvert.DeserializeObject<TpmAttestation>(json);
 
             // assert
             Assert.AreEqual(endorsementKey, tpmAttestation.EndorsementKey);
@@ -238,7 +238,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
                 "}";
 
             // act
-            TpmAttestation tpmAttestation = JsonSerializer.Deserialize<TpmAttestation>(json);
+            TpmAttestation tpmAttestation = JsonConvert.DeserializeObject<TpmAttestation>(json);
 
             // assert
             Assert.AreEqual(endorsementKey, tpmAttestation.EndorsementKey);

@@ -6,7 +6,7 @@ using System.Net;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
-using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
@@ -59,13 +59,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <summary>
         /// Certificate
         /// </summary>
-        [JsonPropertyName("certificate")]
+        [JsonProperty("certificate", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public string Certificate { get; private set; }
 
         /// <summary>
         /// Certificate properties.
         /// </summary>
-        [JsonPropertyName("info")]
+        [JsonProperty("info", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public X509CertificateInfo Info { get; private set; }
 
         private static void ValidateCertificate(X509Certificate2 certificate)

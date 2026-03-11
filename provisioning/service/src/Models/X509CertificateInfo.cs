@@ -3,7 +3,7 @@
 
 using System;
 using System.Net;
-using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
@@ -53,49 +53,49 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <summary>
         /// Distinguished name from the certificate.
         /// </summary>
-        [JsonPropertyName("subjectName")]
+        [JsonProperty("subjectName")]
         public string SubjectName { get; protected private set; }
 
         /// <summary>
         /// SHA-1 hash value of the certificate as a hexadecimal string.
         /// </summary>
-        [JsonPropertyName("sha1Thumbprint")]
+        [JsonProperty("sha1Thumbprint")]
         public string Sha1Thumbprint { get; protected private set; }
 
         /// <summary>
         /// SHA-256 hash value of the certificate as a hexadecimal string.
         /// </summary>
-        [JsonPropertyName("sha256Thumbprint")]
+        [JsonProperty("sha256Thumbprint")]
         public string Sha256Thumbprint { get; protected private set; }
 
         /// <summary>
         /// Issuer distinguished name.
         /// </summary>
-        [JsonPropertyName("issuerName")]
+        [JsonProperty("issuerName")]
         public string IssuerName { get; protected private set; }
 
         /// <summary>
         /// The date on which the certificate becomes valid.
         /// </summary>
-        [JsonPropertyName("notBeforeUtc")]
+        [JsonProperty("notBeforeUtc")]
         public DateTimeOffset NotBeforeUtc { get; protected private set; }
 
         /// <summary>
         /// The date on which the certificate is no longer valid.
         /// </summary>
-        [JsonPropertyName("notAfterUtc")]
+        [JsonProperty("notAfterUtc")]
         public DateTimeOffset NotAfterUtc { get; protected private set; }
 
         /// <summary>
         /// The serial number.
         /// </summary>
-        [JsonPropertyName("serialNumber")]
+        [JsonProperty("serialNumber")]
         public string SerialNumber { get; protected private set; }
 
         /// <summary>
         /// The X509 format version.
         /// </summary>
-        [JsonPropertyName("version")]
+        [JsonProperty("version")]
         public int Version { get; protected private set; }
     }
 }

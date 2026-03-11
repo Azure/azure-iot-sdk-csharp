@@ -5,7 +5,7 @@ using System;
 using System.Text;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
 {
@@ -36,7 +36,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
 
             var symmetricKeyAttestation = new SymmetricKeyAttestation(_validKeyValue, _validKeyValue2);
 
-            string json = JsonSerializer.Serialize(symmetricKeyAttestation);
+            string json = JsonConvert.SerializeObject(symmetricKeyAttestation);
 
             json.Should().Be(expectedJson);
         }
@@ -50,7 +50,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
                 "  \"secondaryKey\":\"" + _validKeyValue2 + "\"" +
                 "}";
 
-            var symmetricKeyAttestation = JsonSerializer.Deserialize<SymmetricKeyAttestation>(expectedJson);
+            var symmetricKeyAttestation = JsonConvert.DeserializeObject<SymmetricKeyAttestation>(expectedJson);
 
             symmetricKeyAttestation.PrimaryKey.Should().Be(_validKeyValue);
             symmetricKeyAttestation.SecondaryKey.Should().Be(_validKeyValue2);

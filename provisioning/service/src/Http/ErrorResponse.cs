@@ -1,4 +1,4 @@
-﻿using System.Text.Json.Serialization;
+﻿using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
@@ -7,23 +7,23 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// </summary>
     internal sealed class ErrorResponse
     {
-        [JsonPropertyName("errorCode")]
+        [JsonProperty("errorCode")]
         internal int ErrorCode { get; set; }
 
-        [JsonPropertyName("code")]
+        [JsonProperty("code")]
         internal int Code
         {
             get => ErrorCode;
             set => ErrorCode = value;
         }
 
-        [JsonPropertyName("trackingId")]
+        [JsonProperty("trackingId")]
         internal string TrackingId { get; set; }
 
-        [JsonPropertyName("message")]
+        [JsonProperty("message")]
         internal string Message { get; set; }
 
-        [JsonPropertyName("timestampUtc")]
+        [JsonProperty("timestampUtc")]
         internal string OccurredOnUtc { get; set; }
     }
 }

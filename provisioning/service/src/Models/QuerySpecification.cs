@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
@@ -22,7 +22,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <summary>
         /// The query to issue.
         /// </summary>
-        [JsonPropertyName("query")]
+        [JsonProperty("query")]
         internal string Query { get; set; }
     }
 }

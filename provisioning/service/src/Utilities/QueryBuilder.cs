@@ -7,7 +7,7 @@ using System.IO;
 using Azure;
 using System.Threading.Tasks;
 using System.Threading;
-using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 using System.Net.Http;
 using System.Globalization;
 
@@ -53,7 +53,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                                 HttpMethod.Post,
                                 path,
                                 null,
-                                JsonSerializer.Serialize(new QuerySpecification(query)),
+                                JsonConvert.SerializeObject(new QuerySpecification(query)),
                                 new ETag(),
                                 cancellationToken)
                             .ConfigureAwait(false);

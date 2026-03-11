@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using Newtonsoft.Json.Linq;
 using static Microsoft.Azure.Devices.Provisioning.Service.InitialTwinPropertyCollection;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service

@@ -3,7 +3,7 @@
 
 using System.Collections.Generic;
 using System.Threading;
-using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
@@ -19,13 +19,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <summary>
         /// Operation mode
         /// </summary>
-        [JsonPropertyName("mode")]
+        [JsonProperty("mode")]
         internal BulkOperationMode Mode { get; set; }
 
         /// <summary>
         /// Enrollments for bulk operation
         /// </summary>
-        [JsonPropertyName("enrollmentGroups")]
+        [JsonProperty("enrollmentGroups")]
         internal IList<EnrollmentGroup> Enrollments { get; set; }
     }
 }

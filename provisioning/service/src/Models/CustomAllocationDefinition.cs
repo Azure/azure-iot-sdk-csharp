@@ -2,7 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
@@ -14,13 +14,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <summary>
         /// The webhook URL used for allocation requests.
         /// </summary>
-        [JsonPropertyName("webhookUrl")]
+        [JsonProperty("webhookUrl")]
         public Uri WebhookUrl { get; set; }
 
         /// <summary>
         /// The API version of the provisioning service types (such as IndividualEnrollment) sent in the custom allocation request.
         /// </summary>
-        [JsonPropertyName("apiVersion")]
+        [JsonProperty("apiVersion")]
         public string ApiVersion { get; set; }
     }
 }
