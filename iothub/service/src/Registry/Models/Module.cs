@@ -32,7 +32,7 @@ namespace Microsoft.Azure.Devices
             Argument.AssertNotNullOrWhiteSpace(deviceId, nameof(deviceId));
             Argument.AssertNotNullOrWhiteSpace(moduleId, nameof(moduleId));
 
-            Id = moduleId;
+            ModuleId = moduleId;
             DeviceId = deviceId;
         }
 
@@ -40,7 +40,7 @@ namespace Microsoft.Azure.Devices
         /// Module Id.
         /// </summary>
         [JsonPropertyName("moduleId")]
-        public string Id { get; internal set; }
+        public string ModuleId { get; internal set; }
 
         /// <summary>
         /// Device Id.
