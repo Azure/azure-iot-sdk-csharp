@@ -32,11 +32,22 @@ namespace Microsoft.Azure.Devices
                 {
                     if (value is JsonElement jsonElementValue)
                     {
-                        if (jsonElementValue.ValueKind == JsonValueKind.String)
+                        switch (jsonElementValue.ValueKind)
                         {
-                            return jsonElementValue.GetString();
+                            case JsonValueKind.String:
+                                return jsonElementValue.GetString();
+                            case JsonValueKind.True:
+                                return true;
+                            case JsonValueKind.False:
+                                return false;
+                            case JsonValueKind.Number:
+                                return jsonElementValue.GetInt64();
+                            case JsonValueKind.Array:
+                            case JsonValueKind.Object:
+                            case JsonValueKind.Undefined:
+                            case JsonValueKind.Null:
+                                return jsonElementValue; // no casting/conversion needed
                         }
-                        //TODO bool, int, etc.
                     }
                     return value;
                 }
