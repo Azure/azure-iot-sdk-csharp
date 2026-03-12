@@ -1411,42 +1411,58 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         /// Sends a certificate signing request to IoT Hub and receives a new certificate.
         /// This implements the two-phase MQTT protocol for certificate signing requests.
         /// </summary>
-        public override async Task<CertificateSigningOperation> SendCertificateSigningRequestAsync(
+        public override CertificateSigningOperation SendCertificateSigningRequest(
             CertificateSigningRequest request,
             CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, request, nameof(SendCertificateSigningRequestAsync));
+                Logging.Enter(this, request, nameof(SendCertificateSigningRequest));
 
             cancellationToken.ThrowIfCancellationRequested();
             EnsureValidState();
 
+            string rid = Guid.NewGuid().ToString();
+            var operation = new CertificateSigningOperation();
+
+            void OnCsrResponse(Message possibleResponse)
+                => HandleCsrResponseMessage(possibleResponse, rid, operation);
+
+            _csrResponseEvent += OnCsrResponse;
+
+            // Unsubscribe the handler when the operation completes (success or failure).
+            _ = operation.Completed.ContinueWith(
+                _ => _csrResponseEvent -= OnCsrResponse,
+                TaskScheduler.Default);
+
+            // Kick off subscribe + send in the background; failures propagate through the operation.
+            _ = SubscribeAndSendCsrAsync(operation, request, rid, cancellationToken);
+
+            if (Logging.IsEnabled)
+                Logging.Exit(this, request, nameof(SendCertificateSigningRequest));
+
+            return operation;
+        }
+
+        private async Task SubscribeAndSendCsrAsync(
+            CertificateSigningOperation operation,
+            CertificateSigningRequest request,
+            string rid,
+            CancellationToken cancellationToken)
+        {
             try
             {
                 await SubscribeToCsrResponseTopicAsync().ConfigureAwait(false);
 
-                string rid = Guid.NewGuid().ToString();
-                var operation = new CertificateSigningOperation();
-
-                void OnCsrResponse(Message possibleResponse)
-                    => HandleCsrResponseMessage(possibleResponse, rid, operation);
-
-                _csrResponseEvent += OnCsrResponse;
-
-                // Unsubscribe the handler when the operation completes (success or failure).
-                _ = operation.Completed.ContinueWith(
-                    _ => _csrResponseEvent -= OnCsrResponse,
-                    TaskScheduler.Default);
-
                 using Message requestMessage = CreateCsrRequestMessage(request, rid);
                 await SendEventAsync(requestMessage, cancellationToken).ConfigureAwait(false);
-
-                return operation;
             }
-            finally
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {
-                if (Logging.IsEnabled)
-                    Logging.Exit(this, request, nameof(SendCertificateSigningRequestAsync));
+                operation.SetCanceled(cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                operation.SetFailed(ex);
             }
         }
 

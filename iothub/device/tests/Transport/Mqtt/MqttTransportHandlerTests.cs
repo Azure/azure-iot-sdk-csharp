@@ -665,7 +665,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
 
             // act
             await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
-            CertificateSigningOperation operation = await transport.SendCertificateSigningRequestAsync(csr, CancellationToken.None).ConfigureAwait(false);
+            CertificateSigningOperation operation = transport.SendCertificateSigningRequest(csr, CancellationToken.None);
             CertificateAcceptedResponse accepted = await operation.Accepted.ConfigureAwait(false);
             CertificateSigningResponse result = await operation.Completed.ConfigureAwait(false);
 
@@ -735,7 +735,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
 
             // act
             await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
-            CertificateSigningOperation operation = await transport.SendCertificateSigningRequestAsync(csr, CancellationToken.None).ConfigureAwait(false);
+            CertificateSigningOperation operation = transport.SendCertificateSigningRequest(csr, CancellationToken.None);
             CertificateSigningRequestException exception = await Assert.ThrowsExceptionAsync<CertificateSigningRequestException>(async () =>
             {
                 await operation.Accepted.ConfigureAwait(false);
@@ -785,7 +785,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
 
             // act
             await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
-            CertificateSigningOperation operation = await transport.SendCertificateSigningRequestAsync(csr, CancellationToken.None).ConfigureAwait(false);
+            CertificateSigningOperation operation = transport.SendCertificateSigningRequest(csr, CancellationToken.None);
             CertificateSigningRequestException exception = await Assert.ThrowsExceptionAsync<CertificateSigningRequestException>(async () =>
             {
                 await operation.Accepted.ConfigureAwait(false);
@@ -838,7 +838,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
 
             // act
             await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
-            CertificateSigningOperation operation = await transport.SendCertificateSigningRequestAsync(csr, CancellationToken.None).ConfigureAwait(false);
+            CertificateSigningOperation operation = transport.SendCertificateSigningRequest(csr, CancellationToken.None);
             CertificateSigningRequestException exception = await Assert.ThrowsExceptionAsync<CertificateSigningRequestException>(async () =>
             {
                 await operation.Accepted.ConfigureAwait(false);
@@ -885,7 +885,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
 
             // act
             await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
-            CertificateSigningOperation operation = await transport.SendCertificateSigningRequestAsync(csr, CancellationToken.None).ConfigureAwait(false);
+            CertificateSigningOperation operation = transport.SendCertificateSigningRequest(csr, CancellationToken.None);
             CertificateSigningRequestException exception = await Assert.ThrowsExceptionAsync<CertificateSigningRequestException>(async () =>
             {
                 await operation.Accepted.ConfigureAwait(false);
@@ -911,7 +911,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
 
             // act
             await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
-            CertificateSigningOperation operation = await transport.SendCertificateSigningRequestAsync(csr, CancellationToken.None).ConfigureAwait(false);
+            CertificateSigningOperation operation = transport.SendCertificateSigningRequest(csr, CancellationToken.None);
 
             // assert - Accepted should not be completed since no response was sent
             Assert.IsFalse(operation.Accepted.IsCompleted);
@@ -950,7 +950,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
 
             // act
             await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
-            CertificateSigningOperation operation = await transport.SendCertificateSigningRequestAsync(csr, CancellationToken.None).ConfigureAwait(false);
+            CertificateSigningOperation operation = transport.SendCertificateSigningRequest(csr, CancellationToken.None);
             CertificateAcceptedResponse accepted = await operation.Accepted.ConfigureAwait(false);
 
             // assert - Accepted completed but Completed should not be done since no 200 was sent
@@ -1002,7 +1002,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
 
             // act
             await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
-            CertificateSigningOperation operation = await transport.SendCertificateSigningRequestAsync(csr, CancellationToken.None).ConfigureAwait(false);
+            CertificateSigningOperation operation = transport.SendCertificateSigningRequest(csr, CancellationToken.None);
             CertificateAcceptedResponse accepted = await operation.Accepted.ConfigureAwait(false);
             CertificateSigningResponse result = await operation.Completed.ConfigureAwait(false);
 
@@ -1065,7 +1065,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
 
             // act
             await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
-            CertificateSigningOperation operation = await transport.SendCertificateSigningRequestAsync(csr, CancellationToken.None).ConfigureAwait(false);
+            CertificateSigningOperation operation = transport.SendCertificateSigningRequest(csr, CancellationToken.None);
             CertificateAcceptedResponse accepted = await operation.Accepted.ConfigureAwait(false);
             CertificateSigningResponse result = await operation.Completed.ConfigureAwait(false);
 

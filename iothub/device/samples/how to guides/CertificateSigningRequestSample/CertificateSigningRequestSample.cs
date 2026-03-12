@@ -104,7 +104,7 @@ public sealed class CertificateSigningRequestSample : IDisposable
             try
             {
                 Console.WriteLine("Sending CSR request...");
-                CertificateSigningOperation operation = await _deviceClient!.SendCertificateSigningRequestAsync(csrRequest, _cts.Token);
+                CertificateSigningOperation operation = _deviceClient!.SendCertificateSigningRequest(csrRequest, _cts.Token);
 
                 Console.WriteLine("Waiting for acceptance (Phase 1)...");
                 CertificateAcceptedResponse accepted = await operation.Accepted;
@@ -114,32 +114,48 @@ public sealed class CertificateSigningRequestSample : IDisposable
                 response = await operation.Completed;
                 Console.WriteLine($"Received certificate response with {response.Certificates?.Count ?? 0} certificate(s)");
             }
-            catch (CertificateSigningRequestException csrEx)
+            catch (CertificateSigningRequestException ex) when (ex.ActiveRequestId != null)
             {
-                Console.WriteLine($"CSR operation failed with error code {csrEx.ErrorCode}: {csrEx.Message}");
-
-                if (csrEx.CorrelationId != null)
+                // 409005: A conflicting active CSR operation is already in progress.
+                Console.WriteLine($"CSR conflict (error {ex.ErrorCode}): {ex.Message}");
+                Console.WriteLine($"  Active request ID: {ex.ActiveRequestId}");
+                Console.WriteLine($"  Active operation expires: {ex.OperationExpires}");
+                return 1;
+            }
+            catch (CertificateSigningRequestException ex) when (ex.RetryAfterSeconds.HasValue)
+            {
+                // 429002/429003/503001: Transient throttling or service unavailable.
+                Console.WriteLine($"CSR throttled (error {ex.ErrorCode}): {ex.Message}");
+                Console.WriteLine($"  Retry after: {ex.RetryAfterSeconds} seconds");
+                return 1;
+            }
+            catch (CertificateSigningRequestException ex) when (ex.CertificateSigningRequestError != null)
+            {
+                // 400040: CSR decode or validation failure.
+                Console.WriteLine($"CSR validation failed (error {ex.ErrorCode}): {ex.Message}");
+                Console.WriteLine($"  CSR error: {ex.CertificateSigningRequestError}");
+                if (ex.CorrelationId != null)
                 {
-                    Console.WriteLine($"  Correlation ID: {csrEx.CorrelationId}");
+                    Console.WriteLine($"  Correlation ID: {ex.CorrelationId}");
                 }
 
-                if (csrEx.CertificateSigningRequestError != null)
+                return 1;
+            }
+            catch (CertificateSigningRequestException ex)
+            {
+                // Any other CSR error (500001 server error, 400001 protocol, etc.)
+                Console.WriteLine($"CSR operation failed (error {ex.ErrorCode}): {ex.Message}");
+                if (ex.CorrelationId != null)
                 {
-                    Console.WriteLine($"  CSR error: {csrEx.CertificateSigningRequestError}");
+                    Console.WriteLine($"  Correlation ID: {ex.CorrelationId}");
                 }
 
-                if (csrEx.RetryAfterSeconds.HasValue)
-                {
-                    Console.WriteLine($"  Retry after: {csrEx.RetryAfterSeconds} seconds");
-                }
-
-                // 409005 indicates a conflicting active operation already in progress.
-                if (csrEx.ActiveRequestId != null)
-                {
-                    Console.WriteLine($"  Active request ID: {csrEx.ActiveRequestId}");
-                    Console.WriteLine($"  Active operation expires: {csrEx.OperationExpires}");
-                }
-
+                return 1;
+            }
+            catch (ArgumentException ex)
+            {
+                // Argument validation failed in the call chain (e.g., null request, empty Id or CertificateSigningRequestData).
+                Console.WriteLine($"Invalid CSR request: {ex.Message}");
                 return 1;
             }
 

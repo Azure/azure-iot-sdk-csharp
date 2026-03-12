@@ -628,7 +628,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </para>
         /// <para><b>Reconnection Behavior:</b></para>
         /// <para>
-        /// If the device disconnects at any point during the CSR operation, reconnect and call <see cref="SendCertificateSigningRequestAsync"/> again.
+        /// If the device disconnects at any point during the CSR operation, reconnect and call <see cref="SendCertificateSigningRequest"/> again.
         /// If error 409005 (CredentialOperationActive) is received, set <see cref="CertificateSigningRequest.Replace"/> to "*"
         /// to replace any active operation, or to the specific request ID of your previous request if you saved it.
         /// </para>
@@ -649,10 +649,10 @@ namespace Microsoft.Azure.Devices.Client
         /// <exception cref="NotSupportedException">Thrown when using non-MQTT transport.</exception>
         /// <exception cref="CertificateSigningRequestException">Thrown when the request fails with specific error details.</exception>
         /// <exception cref="ObjectDisposedException">Thrown when the client has been disposed.</exception>
-        public Task<CertificateSigningOperation> SendCertificateSigningRequestAsync(
+        public CertificateSigningOperation SendCertificateSigningRequest(
             CertificateSigningRequest request,
             CancellationToken cancellationToken = default) =>
-            InternalClient.SendCertificateSigningRequestAsync(request, cancellationToken);
+            InternalClient.SendCertificateSigningRequest(request, cancellationToken);
 
         /// <summary>
         /// Uploads a stream to a block blob in a storage account associated with the IoTHub for that device.

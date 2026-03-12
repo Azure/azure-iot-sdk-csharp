@@ -598,7 +598,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return sw.ToString();
         }
 
-        public override Task<CertificateSigningOperation> SendCertificateSigningRequestAsync(
+        public override CertificateSigningOperation SendCertificateSigningRequest(
             CertificateSigningRequest request,
             CancellationToken cancellationToken)
         {
