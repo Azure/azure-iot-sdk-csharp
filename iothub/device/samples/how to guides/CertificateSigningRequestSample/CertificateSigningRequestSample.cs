@@ -103,7 +103,7 @@ public sealed class CertificateSigningRequestSample : IDisposable
             CertificateSigningResponse response;
             try
             {
-                Console.WriteLine("Sending CSR request...");
+                Console.WriteLine($"Sending CSR request ({csrRequest.RequestId})...");
                 CertificateSigningOperation operation = _deviceClient!.SendCertificateSigningRequest(csrRequest, _cts.Token);
 
                 Console.WriteLine("Waiting for acceptance (Phase 1)...");

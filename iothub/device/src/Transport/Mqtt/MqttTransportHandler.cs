@@ -1421,11 +1421,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             cancellationToken.ThrowIfCancellationRequested();
             EnsureValidState();
 
-            string rid = Guid.NewGuid().ToString();
             var operation = new CertificateSigningOperation();
 
             void OnCsrResponse(Message possibleResponse)
-                => HandleCsrResponseMessage(possibleResponse, rid, operation);
+                => HandleCsrResponseMessage(possibleResponse, request.RequestId, operation);
 
             _csrResponseEvent += OnCsrResponse;
 
@@ -1435,7 +1434,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 TaskScheduler.Default);
 
             // Kick off subscribe + send in the background; failures propagate through the operation.
-            _ = SubscribeAndSendCsrAsync(operation, request, rid, cancellationToken);
+            _ = SubscribeAndSendCsrAsync(operation, request, cancellationToken);
 
             if (Logging.IsEnabled)
                 Logging.Exit(this, request, nameof(SendCertificateSigningRequest));
@@ -1446,14 +1445,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         private async Task SubscribeAndSendCsrAsync(
             CertificateSigningOperation operation,
             CertificateSigningRequest request,
-            string rid,
             CancellationToken cancellationToken)
         {
             try
             {
                 await SubscribeToCsrResponseTopicAsync().ConfigureAwait(false);
 
-                using Message requestMessage = CreateCsrRequestMessage(request, rid);
+                using Message requestMessage = CreateCsrRequestMessage(request);
                 await SendEventAsync(requestMessage, cancellationToken).ConfigureAwait(false);
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
@@ -1523,7 +1521,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             return reader.ReadToEnd();
         }
 
-        private Message CreateCsrRequestMessage(CertificateSigningRequest request, string rid)
+        private Message CreateCsrRequestMessage(CertificateSigningRequest request)
         {
             string body = JsonConvert.SerializeObject(request);
             var bodyStream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(body));
@@ -1532,7 +1530,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             requestMessage.MqttTopicName = string.Format(
                 CultureInfo.InvariantCulture,
                 CsrRequestTopic,
-                rid);
+                request.RequestId);
 
             return requestMessage;
         }
