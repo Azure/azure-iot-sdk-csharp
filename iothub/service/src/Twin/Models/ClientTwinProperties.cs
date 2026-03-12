@@ -27,8 +27,22 @@ namespace Microsoft.Azure.Devices
         [JsonPropertyName("$metadata")]
         public ClientTwinMetadata Metadata { get; set; } = new();
 
-        [JsonExtensionData]
-        internal IDictionary<string, JsonElement> Properties { get; set; } = new Dictionary<string, JsonElement>();
+        /// <summary>
+        /// All of the user-defined properties for this twin document
+        /// </summary>
+        [JsonPropertyName("properties")]
+        public ClientTwinExtraProperties Properties { get; set; } = new();
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="propertyName"></param>
+        /// <returns></returns>
+        public dynamic this[string propertyName]
+        {
+            get => Properties[propertyName];
+            set => Properties[propertyName] = value;
+        }
 
         /// <summary>
         /// Gets the count of properties in the collection.
@@ -37,56 +51,13 @@ namespace Microsoft.Azure.Devices
         public int Count => Properties.Count;
 
         /// <summary>
-        /// Property indexer.
-        /// </summary>
-        /// <param name="propertyName">Name of the property to get.</param>
-        /// <returns>Value for the given property name.</returns>
-        /// <exception cref="InvalidOperationException">When the specified <paramref name="propertyName"/> does not exist in the collection.</exception>
-        public dynamic this[string propertyName]
-        {
-            get => TryGetMemberInternal(propertyName, out dynamic value)
-                ? value
-                : throw new InvalidOperationException($"Unexpected property name '{propertyName}'.");
-            set => Properties[propertyName] = value is null || value is JsonElement
-                ? value
-                : JsonSerializer.Serialize(value, JsonSerializerSettings.Options);
-        }
-
-        /// <summary>
         /// Determines whether the specified property is present.
         /// </summary>
         /// <param name="propertyName">The property to locate.</param>
         /// <returns>true if the specified property is present; otherwise, false.</returns>
         public bool Contains(string propertyName)
         {
-            return Properties.ContainsKey(propertyName);
-        }
-
-        /// <summary>
-        /// Gets the specified property by name as the specified type.
-        /// </summary>
-        /// <typeparam name="T">The type to convert to.</typeparam>
-        /// <param name="propertyName">The name of the property.</param>
-        /// <param name="propertyValue">The resulting value.</param>
-        /// <returns>True if the property exists and could be converted, otherwise false.</returns>
-        public bool TryGetValue<T>(string propertyName, out T propertyValue)
-        {
-            propertyValue = default;
-
-            if (!Properties.TryGetValue(propertyName, out JsonElement jTokenValue))
-            {
-                return false;
-            }
-
-            try
-            {
-                propertyValue = JsonSerializer.Deserialize<T>(jTokenValue, JsonSerializerSettings.Options);
-                return true;
-            }
-            catch (InvalidCastException)
-            { }
-
-            return false;
+            return Properties.Contains(propertyName);
         }
 
         /// <inheritdoc />
@@ -100,18 +71,17 @@ namespace Microsoft.Azure.Devices
             return JsonSerializer.Serialize(Properties, JsonSerializerSettings.Options);
         }
 
-        private bool TryGetMemberInternal(string propertyName, out object result)
+        /// <summary>
+        /// Gets the specified property by name as the specified type.
+        /// </summary>
+        /// <typeparam name="T">The type to convert to.</typeparam>
+        /// <param name="propertyName">The name of the property.</param>
+        /// <param name="propertyValue">The resulting value.</param>
+        /// <returns>True if the property exists and could be converted, otherwise false.</returns>
+        public bool TryGetValue<T>(string propertyName, out T propertyValue)
         {
-            result = default;
-
-            if (!Properties.TryGetValue(propertyName, out JsonElement jTokenValue))
-            {
-                return false;
-            }
-
-            result = jTokenValue;
-
-            return true;
+            return Properties.TryGetValue(propertyName, out propertyValue);
         }
+
     }
 }
