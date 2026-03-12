@@ -1,31 +1,41 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+
+using System.Text.Json.Serialization;
+
 namespace Microsoft.Azure.Devices
 {
-    using Newtonsoft.Json;
-
     /// <summary>
-    /// Contains device registry statistics that can be retrieved from IotHub.
+    /// The device registry statistics that can be retrieved from IoT hub.
     /// </summary>
     public class RegistryStatistics
     {
         /// <summary>
-        /// Gets or sets the count of all Devices
+        /// Creates an instance of this class. Provided for unit testing purposes only.
         /// </summary>
-        [JsonProperty(PropertyName = "totalDeviceCount")]
-        public long TotalDeviceCount { get; set; }
+        /// <remarks>
+        /// This class can be inherited from and set by unit tests for mocking purposes.
+        /// </remarks>
+        protected internal RegistryStatistics()
+        { }
 
         /// <summary>
-        /// Gets or sets the count of all enabled Devices
+        /// Gets or sets the count of all devices.
         /// </summary>
-        [JsonProperty(PropertyName = "enabledDeviceCount")]
-        public long EnabledDeviceCount { get; set; }
+        [JsonPropertyName("totalDeviceCount")]
+        public long TotalDeviceCount { get; protected internal set; }
 
         /// <summary>
-        /// Gets or sets the count of all disabled Devices
+        /// Gets or sets the count of all enabled devices.
         /// </summary>
-        [JsonProperty(PropertyName = "disabledDeviceCount")]
-        public long DisabledDeviceCount { get; set; }
+        [JsonPropertyName("enabledDeviceCount")]
+        public long EnabledDeviceCount { get; protected internal set; }
+
+        /// <summary>
+        /// Gets or sets the count of all disabled devices.
+        /// </summary>
+        [JsonPropertyName("disabledDeviceCount")]
+        public long DisabledDeviceCount { get; protected internal set; }
     }
 }

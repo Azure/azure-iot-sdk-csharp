@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 using Azure.Messaging.EventHubs.Consumer;
 using CommandLine;
 
-namespace ReadD2cMessages
+namespace Microsoft.Azure.Devices.Samples.ReadD2CMessages
 {
     /// <summary>
     /// A sample to illustrate reading Device-to-Cloud messages from a service app.
@@ -103,7 +103,7 @@ namespace ReadD2cMessages
                     }
                 }
             }
-            catch (TaskCanceledException)
+            catch (OperationCanceledException)
             {
                 // This is expected when the token is signaled; it should not be considered an
                 // error in this scenario.
@@ -112,11 +112,14 @@ namespace ReadD2cMessages
 
         private static void PrintProperties(KeyValuePair<string, object> prop)
         {
-            string propValue = prop.Value is DateTime time
-                ? time.ToString("O") // using a built-in date format here that includes milliseconds
-                : prop.Value.ToString();
+            if (prop.Value != null)
+            {
+                string propValue = prop.Value is DateTime time
+                    ? time.ToString("O") // using a built-in date format here that includes milliseconds
+                    : prop.Value.ToString();
 
-            Console.WriteLine($"\t\t{prop.Key}: {propValue}");
+                Console.WriteLine($"\t\t{prop.Key}: {propValue}");
+            }
         }
     }
 }

@@ -1,16 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using CommandLine;
-using Microsoft.Azure.Devices.Logging;
-using Microsoft.Azure.Devices.Provisioning.Client;
-using Microsoft.Azure.Devices.Provisioning.Client.PlugAndPlay;
-using Microsoft.Azure.Devices.Provisioning.Client.Transport;
-using Microsoft.Azure.Devices.Shared;
-using Microsoft.Extensions.Logging;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using CommandLine;
+using Microsoft.Azure.Devices.Logging;
+using Microsoft.Azure.Devices.Provisioning.Client;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Azure.Devices.Client.Samples
 {
@@ -21,6 +18,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
         // Both Thermostat models are identical in definition but this is done to allow IoT Central to handle
         // TemperatureController model correctly.
         private const string ModelId = "dtmi:com:example:TemperatureController;2";
+
         private const string SdkEventProviderPrefix = "Microsoft-Azure-";
 
         public static async Task Main(string[] args)
@@ -66,7 +64,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
             try
             {
-                using DeviceClient deviceClient = await SetupDeviceClientAsync(parameters, logger, cts.Token);
+                await using IotHubDeviceClient deviceClient = await SetupDeviceClientAsync(parameters, logger, cts.Token);
                 var sample = new TemperatureControllerSample(deviceClient, logger);
 
                 await sample.PerformOperationsAsync(cts.Token);
@@ -80,7 +78,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 // cancellation timeout of 4 minutes: https://github.com/Azure/azure-iot-sdk-csharp/blob/64f6e9f24371bc40ab3ec7a8b8accbfb537f0fe1/iothub/device/src/InternalClient.cs#L1922
                 await deviceClient.CloseAsync(CancellationToken.None);
             }
-            catch (Exception ex) when (ex is OperationCanceledException || ex is ProvisioningTransportException)
+            catch (Exception ex) when (ex is OperationCanceledException || ex is ProvisioningClientException)
             {
                 // User canceled the operation. Nothing to do here.
             }
@@ -101,15 +99,15 @@ namespace Microsoft.Azure.Devices.Client.Samples
             return loggerFactory.CreateLogger<TemperatureControllerSample>();
         }
 
-        private static async Task<DeviceClient> SetupDeviceClientAsync(Parameters parameters, ILogger logger, CancellationToken cancellationToken)
+        private static async Task<IotHubDeviceClient> SetupDeviceClientAsync(Parameters parameters, ILogger logger, CancellationToken cancellationToken)
         {
-            DeviceClient deviceClient;
+            IotHubDeviceClient deviceClient;
             switch (parameters.DeviceSecurityType.ToLowerInvariant())
             {
                 case "dps":
                     logger.LogDebug($"Initializing via DPS");
                     DeviceRegistrationResult dpsRegistrationResult = await ProvisionDeviceAsync(parameters, cancellationToken);
-                    var authMethod = new DeviceAuthenticationWithRegistrySymmetricKey(dpsRegistrationResult.DeviceId, parameters.DeviceSymmetricKey);
+                    var authMethod = new ClientAuthenticationWithSharedAccessKeyRefresh(parameters.DeviceSymmetricKey, dpsRegistrationResult.DeviceId);
                     deviceClient = InitializeDeviceClient(dpsRegistrationResult.AssignedHub, authMethod);
                     break;
 
@@ -128,41 +126,41 @@ namespace Microsoft.Azure.Devices.Client.Samples
         // Provision a device via DPS, by sending the PnP model Id as DPS payload.
         private static async Task<DeviceRegistrationResult> ProvisionDeviceAsync(Parameters parameters, CancellationToken cancellationToken)
         {
-            using SecurityProvider symmetricKeyProvider = new SecurityProviderSymmetricKey(parameters.DeviceId, parameters.DeviceSymmetricKey, null);
-            using ProvisioningTransportHandler mqttTransportHandler = new ProvisioningTransportHandlerMqtt();
-            ProvisioningDeviceClient pdc = ProvisioningDeviceClient.Create(parameters.DpsEndpoint, parameters.DpsIdScope, symmetricKeyProvider, mqttTransportHandler);
+            var symmetricKeyProvider = new AuthenticationProviderSymmetricKey(parameters.DeviceId, parameters.DeviceSymmetricKey, null);
+            var pdc = new ProvisioningDeviceClient(parameters.DpsEndpoint, parameters.DpsIdScope, symmetricKeyProvider);
 
-            var pnpPayload = new ProvisioningRegistrationAdditionalData
+            var pnpPayload = new RegistrationRequestPayload
             {
-                JsonData = PnpConvention.CreateDpsPayload(ModelId),
+                Payload = new ModelIdPayload { ModelId = ModelId },
             };
             return await pdc.RegisterAsync(pnpPayload, cancellationToken);
         }
 
-        // Initialize the device client instance using connection string based authentication, over Mqtt protocol (TCP, with fallback over Websocket) and
+        // Initialize the device client instance using connection string based authentication, over Mqtt protocol and
         // setting the ModelId into ClientOptions.
-        private static DeviceClient InitializeDeviceClient(string deviceConnectionString)
+        private static IotHubDeviceClient InitializeDeviceClient(string deviceConnectionString)
         {
-            var options = new ClientOptions
+            var options = new IotHubClientOptions
             {
                 ModelId = ModelId,
             };
 
-            DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(deviceConnectionString, TransportType.Mqtt, options);
+            var deviceClient = new IotHubDeviceClient(deviceConnectionString, options);
 
             return deviceClient;
         }
 
-        // Initialize the device client instance using symmetric key based authentication, over Mqtt protocol (TCP, with fallback over Websocket)
+        // Initialize the device client instance using symmetric key based authentication, over Mqtt protocol
         // and setting the ModelId into ClientOptions.
-        private static DeviceClient InitializeDeviceClient(string hostname, IAuthenticationMethod authenticationMethod)
+        private static IotHubDeviceClient InitializeDeviceClient(string hostname, IAuthenticationMethod authenticationMethod)
         {
-            var options = new ClientOptions
+            var options = new IotHubClientOptions
             {
                 ModelId = ModelId,
+                PayloadConvention = SystemTextJsonPayloadConvention.Instance,
             };
 
-            DeviceClient deviceClient = DeviceClient.Create(hostname, authenticationMethod, TransportType.Mqtt, options);
+            var deviceClient = new IotHubDeviceClient(hostname, authenticationMethod, options);
 
             return deviceClient;
         }

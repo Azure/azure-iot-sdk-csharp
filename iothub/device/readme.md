@@ -60,9 +60,9 @@ API reference documentation can be found online at https://msdn.microsoft.com/li
 [run-sample-on-desktop-windows]: ../../doc/get_started/windows-desktop-csharp.md
 [run-sample-on-windows-iot-core]: ../../doc/get_started/windows10-iotcore-csharp.md
 [dotnet-api-ref]: https://msdn.microsoft.com/library/microsoft.azure.devices.aspx
-[azure-functions]: https://azure.microsoft.com/en-us/services/functions/
-[binding-redirect]:https://msdn.microsoft.com/en-us/library/eftw1fys(v=vs.110).aspx
+[azure-functions]: https://azure.microsoft.com/services/functions/
+[binding-redirect]:https://msdn.microsoft.com/library/eftw1fys(v=vs.110).aspx
 [github-issue-978]: https://github.com/Azure/azure-iot-sdks/issues/978
-[project-json]:https://docs.microsoft.com/en-us/azure/azure-functions/functions-reference-csharp
-[package-management]: https://docs.microsoft.com/en-us/azure/azure-functions/functions-reference-csharp#package-management
+[project-json]:https://docs.microsoft.com/azure/azure-functions/functions-reference-csharp
+[package-management]: https://docs.microsoft.com/azure/azure-functions/functions-reference-csharp#package-management
 [how-to-use]: ../../readme.md#how-to-use-the-azure-iot-sdks-for-net

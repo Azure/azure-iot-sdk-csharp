@@ -2,9 +2,9 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Collections.Generic;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
-namespace Microsoft.Azure.Devices.Serialization
+namespace Microsoft.Azure.Devices
 {
     /// <summary>
     /// An optional, helper class for deserializing a digital twin.
@@ -15,7 +15,7 @@ namespace Microsoft.Azure.Devices.Serialization
         /// <summary>
         /// The Id of the model that the digital twin or component is modeled by. This is present on a digital twin's root level metadata.
         /// </summary>
-        [JsonProperty("$model")]
+        [JsonPropertyName("$model")]
         public string ModelId { get; set; }
 
         /// <summary>

@@ -1,14 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Azure.Devices.Client;
-using Microsoft.Azure.Devices.Provisioning.Client.Transport;
-using Microsoft.Azure.Devices.Shared;
 using System;
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Azure.Devices.Client;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
 {
@@ -18,71 +18,89 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
     /// </summary>
     internal class ProvisioningDeviceClientSample
     {
-        private readonly Parameters _parameters;
+        private readonly ILogger _logger;
+        private static volatile ProvisioningDeviceClient s_provClient;
+        private static volatile DeviceRegistrationResult s_provResult;
+        private static ProvisioningClientOptions s_clientOptions;
+        private static IotHubClientTransportSettings s_hubTransportSettings;
+        private static CancellationTokenSource s_appCancellation;
+        private readonly string _idScope;
+        private readonly string _globalDeviceEndpoint;
+        private string _certificatePassword;
+        private readonly string _certificatePath;
+        private readonly string _certificateName;
 
-        public ProvisioningDeviceClientSample(Parameters parameters)
+        public ProvisioningDeviceClientSample(Parameters parameters, ILogger logger)
         {
-            _parameters = parameters;
+            s_clientOptions = parameters.GetClientOptions();
+            s_hubTransportSettings = parameters.GetHubTransportSettings();
+            _certificatePath = parameters.GetCertificatePath();
+            _logger = logger;
+            _idScope = parameters.IdScope;
+            _globalDeviceEndpoint = parameters.GlobalDeviceEndpoint;
+            _certificateName = parameters.CertificateName;
+            _certificatePassword = parameters.CertificatePassword;
         }
 
         public async Task RunSampleAsync()
         {
-            Console.WriteLine($"Loading the certificate...");
-            using X509Certificate2 certificate = LoadProvisioningCertificate();
-            using var security = new SecurityProviderX509Certificate(certificate);
-
-            Console.WriteLine($"Initializing the device provisioning client...");
-
-            using ProvisioningTransportHandler transport = GetTransportHandler();
-            var provClient = ProvisioningDeviceClient.Create(
-                _parameters.GlobalDeviceEndpoint,
-                _parameters.IdScope,
-                security,
-                transport);
-
-            Console.WriteLine($"Initialized for registration Id {security.GetRegistrationID()}.");
-
-            Console.WriteLine("Registering with the device provisioning service... ");
-            DeviceRegistrationResult result = await provClient.RegisterAsync();
-
-            Console.WriteLine($"Registration status: {result.Status}.");
-            if (result.Status != ProvisioningRegistrationStatusType.Assigned)
+            s_appCancellation = new CancellationTokenSource();
+            Console.CancelKeyPress += (sender, eventArgs) =>
             {
-                Console.WriteLine($"Registration status did not assign a hub, so exiting this sample.");
+                eventArgs.Cancel = true;
+                s_appCancellation.Cancel();
+                _logger.LogWarning("Sample execution cancellation requested; will exit.");
+            };
+
+            _logger.LogInformation("Loading the certificate...");
+            using X509Certificate2 certificate = LoadProvisioningCertificate();
+            var security = new AuthenticationProviderX509(certificate);
+
+            _logger.LogInformation("Initializing the device provisioning client...");
+
+            try
+            {
+                s_provClient = new ProvisioningDeviceClient(
+                    _globalDeviceEndpoint,
+                    _idScope,
+                    security,
+                    s_clientOptions);
+            }
+            catch (ProvisioningClientException ex)
+            {
+                _logger.LogError($"ProvioningClientException encountered. Reason: [{ex.GetType()}: {ex.Message}]");
+            }
+
+            _logger.LogInformation($"Initialized for registration Id '{security.GetRegistrationId()}'.");
+
+            _logger.LogInformation("Registering with the device provisioning service... ");
+            s_provResult = await s_provClient.RegisterAsync(s_appCancellation.Token);
+
+            _logger.LogInformation($"Registration status: {s_provResult.Status}.");
+            if (s_provResult.Status != ProvisioningRegistrationStatus.Assigned)
+            {
+                _logger.LogWarning("Registration status did not assign a hub, so exiting this sample.");
                 return;
             }
 
-            Console.WriteLine($"Device {result.DeviceId} registered to {result.AssignedHub}.");
+            _logger.LogInformation($"Device '{s_provResult.DeviceId}' registered to IoT hub hostname '{s_provResult.AssignedHub}'.");
 
-            Console.WriteLine("Creating X509 authentication for IoT Hub...");
-            using var auth = new DeviceAuthenticationWithX509Certificate(
-                result.DeviceId,
-                certificate);
+            _logger.LogInformation("Creating X509 authentication for IoT Hub...");
+            var auth = new ClientAuthenticationWithX509Certificate(
+                certificate,
+                s_provResult.DeviceId);
 
-            Console.WriteLine($"Testing the provisioned device with IoT Hub...");
-            using var iotClient = DeviceClient.Create(result.AssignedHub, auth, _parameters.TransportType);
+            _logger.LogInformation("Testing the provisioned device with IoT Hub...");
+            var hubOptions = new IotHubClientOptions(s_hubTransportSettings);
+            await using var iotHubClient = new IotHubDeviceClient(s_provResult.AssignedHub, auth, hubOptions);
 
-            Console.WriteLine("Sending a telemetry message...");
-            using var message = new Message(Encoding.UTF8.GetBytes("TestMessage"));
-            await iotClient.SendEventAsync(message);
+            await iotHubClient.OpenAsync(s_appCancellation.Token);
+            _logger.LogInformation($"Sending a telemetry message...");
+            var message = new TelemetryMessage("TestMessage");
+            await iotHubClient.SendTelemetryAsync(message, s_appCancellation.Token);
 
-            await iotClient.CloseAsync();
-            Console.WriteLine("Finished.");
-        }
-
-        private ProvisioningTransportHandler GetTransportHandler()
-        {
-            return _parameters.TransportType switch
-            {
-                TransportType.Mqtt => new ProvisioningTransportHandlerMqtt(),
-                TransportType.Mqtt_Tcp_Only => new ProvisioningTransportHandlerMqtt(TransportFallbackType.TcpOnly),
-                TransportType.Mqtt_WebSocket_Only => new ProvisioningTransportHandlerMqtt(TransportFallbackType.WebSocketOnly),
-                TransportType.Amqp => new ProvisioningTransportHandlerAmqp(),
-                TransportType.Amqp_Tcp_Only => new ProvisioningTransportHandlerAmqp(TransportFallbackType.TcpOnly),
-                TransportType.Amqp_WebSocket_Only => new ProvisioningTransportHandlerAmqp(TransportFallbackType.WebSocketOnly),
-                TransportType.Http1 => new ProvisioningTransportHandlerHttp(),
-                _ => throw new NotSupportedException($"Unsupported transport type {_parameters.TransportType}"),
-            };
+            await iotHubClient.CloseAsync(s_appCancellation.Token);
+            _logger.LogInformation("Finished.");
         }
 
         private X509Certificate2 LoadProvisioningCertificate()
@@ -90,16 +108,17 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
             ReadCertificatePassword();
 
             var certificateCollection = new X509Certificate2Collection();
+            
             certificateCollection.Import(
-                _parameters.GetCertificatePath(),
-                _parameters.CertificatePassword,
+                _certificatePath,
+                _certificatePassword,
                 X509KeyStorageFlags.UserKeySet);
 
             X509Certificate2 certificate = null;
 
             foreach (X509Certificate2 element in certificateCollection)
             {
-                Console.WriteLine($"Found certificate: {element?.Thumbprint} {element?.Subject}; PrivateKey: {element?.HasPrivateKey}");
+                _logger.LogInformation($"Found certificate: {element?.Thumbprint} {element?.Subject}; PrivateKey: {element?.HasPrivateKey}");
                 if (certificate == null && element.HasPrivateKey)
                 {
                     certificate = element;
@@ -112,23 +131,23 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
 
             if (certificate == null)
             {
-                throw new FileNotFoundException($"{_parameters.CertificateName} did not contain any certificate with a private key.");
+                throw new FileNotFoundException($"{_certificateName} did not contain any certificate with a private key.");
             }
 
-            Console.WriteLine($"Using certificate {certificate.Thumbprint} {certificate.Subject}");
+            _logger.LogInformation($"Using certificate {certificate.Thumbprint} {certificate.Subject}");
 
             return certificate;
         }
 
         private void ReadCertificatePassword()
         {
-            if (!string.IsNullOrWhiteSpace(_parameters.CertificatePassword))
+            if (!string.IsNullOrWhiteSpace(_certificatePassword))
             {
                 return;
             }
 
             var password = new StringBuilder();
-            Console.WriteLine($"Enter the PFX password for {_parameters.CertificateName}:");
+            Console.WriteLine($"Enter the PFX password for {_certificateName}:");
 
             while (true)
             {
@@ -153,7 +172,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
                 }
             }
 
-            _parameters.CertificatePassword = password.ToString();
+            _certificatePassword = password.ToString();
         }
     }
 }

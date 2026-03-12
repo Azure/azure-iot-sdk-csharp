@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
-// Copyright (c) Microsoft. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information
 
 using System;
 using System.Collections.Generic;
@@ -9,12 +7,11 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
-using Microsoft.Azure.Devices.Client.Test.ConnectionString;
-using Microsoft.Azure.Devices.Client.Transport.Amqp;
+using Microsoft.Azure.Devices.Client.Transport;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 
-namespace Microsoft.Azure.Devices.Client.Test.Transport
+namespace Microsoft.Azure.Devices.Client.Tests.Transport
 {
     [TestClass]
     [TestCategory("Unit")]
@@ -29,101 +26,79 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
         }
 
         [TestMethod]
-        public async Task AmqpTransportHandlerSendEventAsyncTokenCancellationRequested()
+        public async Task AmqpTransportHandlerSendTelemetryAsyncTokenCancellationRequested()
         {
-            await TestOperationCanceledByToken(token => CreateFromConnectionString().SendEventAsync(new Message(), token)).ConfigureAwait(false);
+            await TestOperationCanceledByToken(token => CreateFromConnectionString().SendTelemetryAsync(new TelemetryMessage(), token)).ConfigureAwait(false);
         }
 
         [TestMethod]
-        public async Task AmqpTransportHandlerSendEventAsyncMultipleMessagesTokenCancellationRequested()
+        public async Task AmqpTransportHandlerSendTelemetryAsyncMultipleMessagesTokenCancellationRequested()
         {
-            await TestOperationCanceledByToken(token => CreateFromConnectionString().SendEventAsync(new List<Message>(), token)).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        public async Task AmqpTransportHandlerReceiveAsyncTokenCancellationRequested()
-        {
-            await TestOperationCanceledByToken(token => CreateFromConnectionString().ReceiveAsync(token)).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        public async Task AmqpTransportHandlerCompleteAsyncTokenCancellationRequested()
-        {
-            await TestOperationCanceledByToken(token => CreateFromConnectionString().CompleteAsync(Guid.NewGuid().ToString(), token)).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        public async Task AmqpTransportHandlerAbandonAsyncTokenCancellationRequested()
-        {
-            await TestOperationCanceledByToken(token => CreateFromConnectionString().AbandonAsync(Guid.NewGuid().ToString(), token)).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        public async Task AmqpTransportHandlerRejectAsyncTokenCancellationRequested()
-        {
-            await TestOperationCanceledByToken(token => CreateFromConnectionString().RejectAsync(Guid.NewGuid().ToString(), token)).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        public async Task AmqpTransport_Select_CorrectReceiverLink_ForEdgeModule()
-        {
-            // Test that we do not call EnableReceiveMessageAsync when we call EnableEventReceiveAsync indicating this is an Edge Module 
-            Mock<MoqableAmqpTransportHandler> mockedMockAmqpTransportHandler = new Mock<MoqableAmqpTransportHandler>();
-
-            mockedMockAmqpTransportHandler.Setup(p => p.EnableEventReceiveAsync(true, default)).CallBase();
-            mockedMockAmqpTransportHandler.Setup(p => p.EnableReceiveMessageAsync(default)).Returns(Task.FromResult(0));
-            
-            await mockedMockAmqpTransportHandler.Object.EnableEventReceiveAsync(false, default);
-
-            bool enableReceiveMessageAsyncWasCalled = mockedMockAmqpTransportHandler.Invocations.Where(x => x.Method.Name.Contains("EnableReceiveMessageAsync")).Any();
-
-            enableReceiveMessageAsyncWasCalled.Should().BeFalse();
+            await TestOperationCanceledByToken(token => CreateFromConnectionString().SendTelemetryAsync(new List<TelemetryMessage>(), token)).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task AmqpTransport_Select_CorrectReceiverLink_ForModuleTwin()
         {
-            Mock<MoqableAmqpTransportHandler> mockedMockAmqpTransportHandler = new Mock<MoqableAmqpTransportHandler>();
+            var mockedMockAmqpTransportHandler = new Mock<MockableAmqpTransportHandler>();
 
-            mockedMockAmqpTransportHandler.Setup(p => p.EnableEventReceiveAsync(false, default)).CallBase();
+            mockedMockAmqpTransportHandler.Setup(p => p.EnableReceiveMessageAsync(default)).CallBase();
             mockedMockAmqpTransportHandler.Setup(p => p.EnableReceiveMessageAsync(default)).Returns(Task.FromResult(0));
 
-            await mockedMockAmqpTransportHandler.Object.EnableEventReceiveAsync(false, default);
-            
+            await mockedMockAmqpTransportHandler.Object.EnableReceiveMessageAsync(default);
+
             bool enableReceiveMessageAsyncWasCalled = mockedMockAmqpTransportHandler.Invocations.Where(x => x.Method.Name.Contains("EnableReceiveMessageAsync")).Any();
 
             enableReceiveMessageAsyncWasCalled.Should().BeTrue();
         }
 
         [TestMethod]
-        [Obsolete]
         public void AmqpTransportHandler_RejectAmqpSettingsChange()
         {
-            // Added [Obsolete] attribute to this method to suppress CS0618 message for ConnectionIdleTimeout
-            var amqpTransportHandler1 = new AmqpTransportHandler(new PipelineContext(), new IotHubConnectionString(IotHubConnectionStringBuilder.Create(TestConnectionString)), new AmqpTransportSettings(TransportType.Amqp_Tcp_Only, 60, new AmqpConnectionPoolSettings()
+            var transportSettings1 = new IotHubClientAmqpSettings
             {
-                Pooling = true,
-                MaxPoolSize = 10,
-                ConnectionIdleTimeout = TimeSpan.FromMinutes(1)
-            }));
+                PrefetchCount = 60,
+                ConnectionPoolSettings = new AmqpConnectionPoolSettings
+                {
+                    UsePooling = true,
+                    MaxPoolSize = 10,
+                },
+            };
+            var pipelineContext1 = new PipelineContext
+            {
+                IotHubConnectionCredentials = new IotHubConnectionCredentials(TestConnectionString),
+                IotHubClientTransportSettings = transportSettings1,
+            };
+            IDelegatingHandler nextHandlerMock = new Mock<IDelegatingHandler>().Object;
+
+            using var amqpTransportHandler1 = new AmqpTransportHandler(pipelineContext1, nextHandlerMock);
 
             try
             {
-                // Try to create a set AmqpTransportHandler with different connection pool settings.
-                var amqpTransportHandler2 = new AmqpTransportHandler(new PipelineContext(), new IotHubConnectionString(IotHubConnectionStringBuilder.Create(TestConnectionString)), new AmqpTransportSettings(TransportType.Amqp_Tcp_Only, 60, new AmqpConnectionPoolSettings()
+                var transportSettings2 = new IotHubClientAmqpSettings
                 {
-                    Pooling = true,
-                    MaxPoolSize = 7, // different pool size
-                    ConnectionIdleTimeout = TimeSpan.FromMinutes(1)
-                }));
+                    PrefetchCount = 60,
+                    ConnectionPoolSettings = new AmqpConnectionPoolSettings
+                    {
+                        UsePooling = true,
+                        MaxPoolSize = 7, // different pool size
+                    },
+                };
+                var pipelineContext2 = new PipelineContext
+                {
+                    IotHubConnectionCredentials = new IotHubConnectionCredentials(TestConnectionString),
+                    IotHubClientTransportSettings = transportSettings2,
+                };
+
+                using var amqpTransportHandler2 = new AmqpTransportHandler(pipelineContext2, nextHandlerMock);
             }
-            catch (ArgumentException ae)
+            catch (ArgumentException ex)
             {
-                Assert.IsTrue(ae.Message.Contains("AmqpTransportSettings cannot be modified from the initial settings."), "Did not return the correct error message");
+                ex.Message.Should().Contain("AmqpTransportSettings cannot be modified from the initial settings.");
             }
         }
 
-        private async Task TestOperationCanceledByToken(Func<CancellationToken, Task> asyncMethod)
+        private static async Task TestOperationCanceledByToken(Func<CancellationToken, Task> asyncMethod)
         {
             using var tokenSource = new CancellationTokenSource();
             tokenSource.Cancel();
@@ -136,12 +111,16 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             catch (OperationCanceledException) { }
         }
 
-        private AmqpTransportHandler CreateFromConnectionString()
+        private static AmqpTransportHandler CreateFromConnectionString()
         {
-            return new AmqpTransportHandler(
-                new PipelineContext(),
-                IotHubConnectionStringExtensions.Parse(TestConnectionString),
-                new AmqpTransportSettings(TransportType.Amqp_Tcp_Only));
+            var pipelineContext = new PipelineContext
+            {
+                IotHubConnectionCredentials = new IotHubConnectionCredentials(TestConnectionString),
+                IotHubClientTransportSettings = new IotHubClientAmqpSettings(),
+            };
+            IDelegatingHandler nextHandlerMock = new Mock<IDelegatingHandler>().Object;
+
+            return new AmqpTransportHandler(pipelineContext, nextHandlerMock);
         }
     }
 }

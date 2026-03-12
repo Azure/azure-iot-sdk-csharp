@@ -4,61 +4,60 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Runtime.Serialization;
 using System.Text;
-using System.Threading;
 using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Amqp.Encoding;
 using Microsoft.Azure.Amqp.Framing;
-using Microsoft.Azure.Devices.Client.Common.Api;
-using Microsoft.Azure.Devices.Shared;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 {
-    internal class AmqpIotMessageConverter
+    internal sealed class AmqpIotMessageConverter
     {
-        private const string LockTokenName = "x-opt-lock-token";
         private const string SequenceNumberName = "x-opt-sequence-number";
         private const string TimeSpanName = AmqpConstants.Vendor + ":timespan";
         private const string UriName = AmqpConstants.Vendor + ":uri";
         private const string DateTimeOffsetName = AmqpConstants.Vendor + ":datetime-offset";
         private const string InputName = "x-opt-input-name";
-
-        private const string AmqpDiagIdKey = "Diagnostic-Id";
-        private const string AmqpDiagCorrelationContextKey = "Correlation-Context";
-
         private const string MethodName = "IoThub-methodname";
         private const string Status = "IoThub-status";
+        private const string FailedToSerializeUnsupportedType = "Failed to serialize an unsupported type of '{0}'.";
 
         #region AmqpMessage <--> Message
 
-        public static Message AmqpMessageToMessage(AmqpMessage amqpMessage)
+        internal static IncomingMessage AmqpMessageToIncomingMessage(AmqpMessage amqpMessage, PayloadConvention payloadConvention)
         {
-            if (amqpMessage == null)
+            Argument.AssertNotNull(amqpMessage, nameof(amqpMessage));
+
+            using var ms = new MemoryStream();
+            using (amqpMessage)
             {
-                throw Fx.Exception.ArgumentNull(nameof(AmqpMessage));
+                amqpMessage.BodyStream.CopyTo(ms);
+
+                var message = new IncomingMessage(ms.ToArray())
+                {
+                    PayloadConvention = payloadConvention,
+                };
+
+                UpdateMessageHeaderAndProperties(amqpMessage, message);
+
+                return message;
             }
-            Stream stream = amqpMessage.BodyStream;
-            var message = new Message(stream, StreamDisposalResponsibility.Sdk);
-            UpdateMessageHeaderAndProperties(amqpMessage, message);
-            return message;
         }
 
-        public static AmqpMessage MessageToAmqpMessage(Message message)
+        internal static AmqpMessage OutgoingMessageToAmqpMessage(TelemetryMessage message)
         {
-            if (message == null)
-            {
-                throw Fx.Exception.ArgumentNull(nameof(Message));
-            }
-            message.ThrowIfDisposed();
+            Argument.AssertNotNull(message, nameof(message));
 
-            AmqpMessage amqpMessage = message.HasBodyStream()
-                ? AmqpMessage.Create(message.GetBodyStream(), false)
+            AmqpMessage amqpMessage = message.Payload != null
+                ? AmqpMessage.Create(new MemoryStream(message.GetPayloadAsBytes()), true)
                 : AmqpMessage.Create();
 
-            UpdateAmqpMessageHeadersAndProperties(amqpMessage, message);
+            UpdateAmqpMessageHeadersAndProperties(message, amqpMessage);
 
             return amqpMessage;
         }
@@ -66,10 +65,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         /// <summary>
         /// Copies the properties from the AMQP message to the Message instance.
         /// </summary>
-        public static void UpdateMessageHeaderAndProperties(AmqpMessage amqpMessage, Message message)
+        internal static void UpdateMessageHeaderAndProperties(AmqpMessage amqpMessage, IncomingMessage message)
         {
-            Fx.AssertAndThrow(amqpMessage.DeliveryTag != null, "AmqpMessage should always contain delivery tag.");
-            message.DeliveryTag = amqpMessage.DeliveryTag;
+            if (amqpMessage.DeliveryTag == null)
+            {
+                throw new InvalidOperationException("AmqpMessage should always contain delivery tag.");
+            }
 
             SectionFlag sections = amqpMessage.Sections;
             if ((sections & SectionFlag.Properties) != 0)
@@ -80,7 +81,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
                 if (amqpMessage.Properties.AbsoluteExpiryTime.HasValue)
                 {
-                    message.ExpiryTimeUtc = amqpMessage.Properties.AbsoluteExpiryTime.Value;
+                    message.ExpiresOnUtc = amqpMessage.Properties.AbsoluteExpiryTime.Value;
                 }
 
                 message.CorrelationId = amqpMessage.Properties.CorrelationId?.ToString();
@@ -102,11 +103,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
             if ((sections & SectionFlag.MessageAnnotations) != 0)
             {
-                if (amqpMessage.MessageAnnotations.Map.TryGetValue(LockTokenName, out string lockToken))
-                {
-                    message.LockToken = lockToken;
-                }
-
                 if (amqpMessage.MessageAnnotations.Map.TryGetValue(SequenceNumberName, out ulong sequenceNumber))
                 {
                     message.SequenceNumber = sequenceNumber;
@@ -114,27 +110,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
                 if (amqpMessage.MessageAnnotations.Map.TryGetValue(MessageSystemPropertyNames.EnqueuedTime, out DateTime enqueuedTime))
                 {
-                    message.EnqueuedTimeUtc = enqueuedTime;
-                }
-
-                if (amqpMessage.MessageAnnotations.Map.TryGetValue(MessageSystemPropertyNames.DeliveryCount, out byte deliveryCount))
-                {
-                    message.DeliveryCount = deliveryCount;
+                    message.EnqueuedOnUtc = enqueuedTime;
                 }
 
                 if (amqpMessage.MessageAnnotations.Map.TryGetValue(InputName, out string inputName))
                 {
                     message.InputName = inputName;
-                }
-
-                if (amqpMessage.MessageAnnotations.Map.TryGetValue(MessageSystemPropertyNames.ConnectionDeviceId, out string connectionDeviceId))
-                {
-                    message.ConnectionDeviceId = connectionDeviceId;
-                }
-
-                if (amqpMessage.MessageAnnotations.Map.TryGetValue(MessageSystemPropertyNames.ConnectionModuleId, out string connectionModuleId))
-                {
-                    message.ConnectionModuleId = connectionModuleId;
                 }
             }
 
@@ -142,36 +123,22 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             {
                 foreach (KeyValuePair<MapKey, object> pair in amqpMessage.ApplicationProperties.Map)
                 {
-                    if (TryGetNetObjectFromAmqpObject(pair.Value, MappingType.ApplicationProperty, out object netObject))
+                    if (TryGetNetObjectFromAmqpObject(pair.Value, MappingType.ApplicationProperty, out object netObject)
+                        && netObject is string stringObject)
                     {
-                        string stringObject = netObject as string;
-
-                        if (stringObject != null)
+                        switch (pair.Key.ToString())
                         {
-                            switch (pair.Key.ToString())
-                            {
-                                case MessageSystemPropertyNames.Operation:
-                                    message.SystemProperties[pair.Key.ToString()] = stringObject;
-                                    break;
+                            case MessageSystemPropertyNames.MessageSchema:
+                                message.MessageSchema = stringObject;
+                                break;
 
-                                case MessageSystemPropertyNames.MessageSchema:
-                                    message.MessageSchema = stringObject;
-                                    break;
+                            case MessageSystemPropertyNames.CreationTimeUtc:
+                                message.CreatedOnUtc = DateTime.Parse(stringObject, CultureInfo.InvariantCulture);
+                                break;
 
-                                case MessageSystemPropertyNames.CreationTimeUtc:
-                                    message.CreationTimeUtc = DateTime.Parse(stringObject, CultureInfo.InvariantCulture);
-                                    break;
-
-                                default:
-                                    message.Properties[pair.Key.ToString()] = stringObject;
-                                    break;
-                            }
-                        }
-                        else
-                        {
-                            // TODO: RDBug 4093369 Handling of non-string property values in AMQP messages
-                            // Drop non-string properties and log an error
-                            Fx.Exception.TraceHandled(new InvalidDataException("IotHub does not accept non-string Amqp properties"), "MessageConverter.UpdateMessageHeaderAndProperties");
+                            default:
+                                message.Properties[pair.Key.ToString()] = stringObject;
+                                break;
                         }
                     }
                 }
@@ -181,18 +148,15 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         /// <summary>
         /// Copies the Message instance's properties to the AmqpMessage instance.
         /// </summary>
-        public static void UpdateAmqpMessageHeadersAndProperties(AmqpMessage amqpMessage, Message data, bool copyUserProperties = true)
+        internal static void UpdateAmqpMessageHeadersAndProperties(TelemetryMessage data, AmqpMessage amqpMessage, bool copyUserProperties = true)
         {
+            // First populate the required fields defined in AmqpMessage.Properties
+
             amqpMessage.Properties.MessageId = data.MessageId;
 
-            if (data.To != null)
+            if (!data.ExpiresOnUtc.Equals(default))
             {
-                amqpMessage.Properties.To = data.To;
-            }
-
-            if (!data.ExpiryTimeUtc.Equals(default))
-            {
-                amqpMessage.Properties.AbsoluteExpiryTime = data.ExpiryTimeUtc;
+                amqpMessage.Properties.AbsoluteExpiryTime = data.ExpiresOnUtc.UtcDateTime;
             }
 
             if (data.CorrelationId != null)
@@ -205,15 +169,21 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                 amqpMessage.Properties.UserId = new ArraySegment<byte>(Encoding.UTF8.GetBytes(data.UserId));
             }
 
-            if (amqpMessage.ApplicationProperties == null)
+            // Then populate the optional fields defined in AmqpMessage.Properties
+
+            if (data.SystemProperties.TryGetValue(MessageSystemPropertyNames.ContentType, out object propertyValue))
             {
-                amqpMessage.ApplicationProperties = new ApplicationProperties();
+                amqpMessage.Properties.ContentType = (string)propertyValue;
             }
 
-            if (data.SystemProperties.TryGetValue(MessageSystemPropertyNames.Ack, out object propertyValue))
+            if (data.SystemProperties.TryGetValue(MessageSystemPropertyNames.ContentEncoding, out propertyValue))
             {
-                amqpMessage.ApplicationProperties.Map["iothub-ack"] = (string)propertyValue;
+                amqpMessage.Properties.ContentEncoding = (string)propertyValue;
             }
+
+            // Now populate the additional TelemetryMessage SystemProperties into the map AmqpMessage.ApplicationProperties
+
+            amqpMessage.ApplicationProperties ??= new ApplicationProperties();
 
             if (data.SystemProperties.TryGetValue(MessageSystemPropertyNames.MessageSchema, out propertyValue))
             {
@@ -223,17 +193,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             if (data.SystemProperties.TryGetValue(MessageSystemPropertyNames.CreationTimeUtc, out propertyValue))
             {
                 // Convert to string that complies with ISO 8601
-                amqpMessage.ApplicationProperties.Map[MessageSystemPropertyNames.CreationTimeUtc] = ((DateTime)propertyValue).ToString("o", CultureInfo.InvariantCulture);
-            }
-
-            if (data.SystemProperties.TryGetValue(MessageSystemPropertyNames.ContentType, out propertyValue))
-            {
-                amqpMessage.Properties.ContentType = (string)propertyValue;
-            }
-
-            if (data.SystemProperties.TryGetValue(MessageSystemPropertyNames.ContentEncoding, out propertyValue))
-            {
-                amqpMessage.Properties.ContentEncoding = (string)propertyValue;
+                amqpMessage.ApplicationProperties.Map[MessageSystemPropertyNames.CreationTimeUtc] = ((DateTimeOffset)propertyValue).ToString("o", CultureInfo.InvariantCulture);
             }
 
             if (data.SystemProperties.TryGetValue(MessageSystemPropertyNames.OutputName, out propertyValue))
@@ -261,74 +221,65 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                     }
                 }
             }
-
-            if (IotHubClientDiagnostic.HasDiagnosticProperties(data))
-            {
-                amqpMessage.MessageAnnotations.Map[AmqpDiagIdKey] = data.SystemProperties[MessageSystemPropertyNames.DiagId];
-                amqpMessage.MessageAnnotations.Map[AmqpDiagCorrelationContextKey] = data.SystemProperties[MessageSystemPropertyNames.DiagCorrelationContext];
-            }
         }
 
         #endregion AmqpMessage <--> Message
 
         #region AmqpMessage <--> Methods
 
-        public static AmqpMessage ConvertMethodResponseInternalToAmqpMessage(MethodResponseInternal methodResponseInternal)
+        internal static AmqpMessage ConvertDirectMethodResponseToAmqpMessage(DirectMethodResponse directMethodResponse)
         {
-            methodResponseInternal.ThrowIfDisposed();
-
-            AmqpMessage amqpMessage = methodResponseInternal.BodyStream == null
+            AmqpMessage amqpMessage = directMethodResponse.Payload == null
                 ? AmqpMessage.Create()
-                : AmqpMessage.Create(methodResponseInternal.BodyStream, false);
+                : AmqpMessage.Create(new MemoryStream(directMethodResponse.Payload), true);
 
-            PopulateAmqpMessageFromMethodResponse(amqpMessage, methodResponseInternal);
+            PopulateAmqpMessageFromMethodResponse(amqpMessage, directMethodResponse);
             return amqpMessage;
         }
 
         /// <summary>
         /// Copies the properties from the AMQP message to the MethodRequest instance.
         /// </summary>
-        public static MethodRequestInternal ConstructMethodRequestFromAmqpMessage(AmqpMessage amqpMessage, CancellationToken cancellationToken)
+        internal static DirectMethodRequest ConstructMethodRequestFromAmqpMessage(AmqpMessage amqpMessage, PayloadConvention payloadConvention)
         {
-            if (amqpMessage == null)
-            {
-                throw Fx.Exception.ArgumentNull(nameof(AmqpMessage));
-            }
+            Argument.AssertNotNull(amqpMessage, nameof(amqpMessage));
 
             string methodRequestId = string.Empty;
             string methodName = string.Empty;
 
-            SectionFlag sections = amqpMessage.Sections;
-            if ((sections & SectionFlag.Properties) != 0)
+            using (amqpMessage)
             {
-                // Extract only the Properties that we support
-                methodRequestId = amqpMessage.Properties.CorrelationId?.ToString();
-            }
+                SectionFlag sections = amqpMessage.Sections;
+                if ((sections & SectionFlag.Properties) != 0)
+                {
+                    // Extract only the Properties that we support
+                    methodRequestId = amqpMessage.Properties.CorrelationId?.ToString();
+                }
 
-            if ((sections & SectionFlag.ApplicationProperties) != 0
-                && !(amqpMessage.ApplicationProperties?.Map.TryGetValue(new MapKey(MethodName), out methodName) ?? false))
-            {
-                Fx.Exception.TraceHandled(new InvalidDataException("Method name is missing"), "MethodConverter.ConstructMethodRequestFromAmqpMessage");
-            }
+                amqpMessage.ApplicationProperties?.Map.TryGetValue(new MapKey(MethodName), out methodName);
 
-            return new MethodRequestInternal(methodName, methodRequestId, amqpMessage.BodyStream, cancellationToken);
+                using var ms = new MemoryStream();
+                amqpMessage.BodyStream.CopyTo(ms);
+                return new DirectMethodRequest(methodName, ms.ToArray())
+                {
+                    PayloadConvention = payloadConvention,
+                    RequestId = methodRequestId,
+                };
+            }
         }
 
         /// <summary>
         /// Copies the Method instance's properties to the AmqpMessage instance.
         /// </summary>
-        public static void PopulateAmqpMessageFromMethodResponse(AmqpMessage amqpMessage, MethodResponseInternal methodResponseInternal)
+        internal static void PopulateAmqpMessageFromMethodResponse(AmqpMessage amqpMessage, DirectMethodResponse directMethodResponse)
         {
-            Fx.Assert(methodResponseInternal.RequestId != null, "Request Id is missing in the methodResponse.");
+            Debug.Assert(directMethodResponse.RequestId != null, "Request Id is missing in the methodResponse.");
 
-            amqpMessage.Properties.CorrelationId = new Guid(methodResponseInternal.RequestId);
+            amqpMessage.Properties.CorrelationId = new Guid(directMethodResponse.RequestId);
 
-            if (amqpMessage.ApplicationProperties == null)
-            {
-                amqpMessage.ApplicationProperties = new ApplicationProperties();
-            }
+            amqpMessage.ApplicationProperties ??= new ApplicationProperties();
 
-            amqpMessage.ApplicationProperties.Map[Status] = methodResponseInternal.Status;
+            amqpMessage.ApplicationProperties.Map[Status] = directMethodResponse.Status;
         }
 
         #endregion AmqpMessage <--> Methods
@@ -367,9 +318,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                     {
                         netObject = amqpSymbol.Value;
                     }
-                    else if (amqpObject is ArraySegment<byte>)
+                    else if (amqpObject is ArraySegment<byte> binValue)
                     {
-                        var binValue = (ArraySegment<byte>)amqpObject;
                         if (binValue.Count == binValue.Array.Length)
                         {
                             netObject = binValue.Array;
@@ -401,8 +351,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                     }
                     else if (mappingType == MappingType.ApplicationProperty)
                     {
-                        throw FxTrace.Exception.AsError(new SerializationException(
-                            IotHubApiResources.GetString(ApiResources.FailedToSerializeUnsupportedType, amqpObject.GetType().FullName)));
+                        throw new SerializationException(
+                            string.Format(CultureInfo.InvariantCulture, FailedToSerializeUnsupportedType, amqpObject.GetType().FullName));
                     }
                     else if (amqpObject is AmqpMap map)
                     {
@@ -482,9 +432,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                     }
                     else if (mappingType == MappingType.ApplicationProperty)
                     {
-                        throw FxTrace.Exception.AsError(
-                            new SerializationException(
-                                IotHubApiResources.GetString(ApiResources.FailedToSerializeUnsupportedType, netObject.GetType().FullName)));
+                        throw new SerializationException(
+                            string.Format(CultureInfo.InvariantCulture, FailedToSerializeUnsupportedType, netObject.GetType().FullName));
                     }
                     else if (netObject is byte[] netObjectBytes)
                     {

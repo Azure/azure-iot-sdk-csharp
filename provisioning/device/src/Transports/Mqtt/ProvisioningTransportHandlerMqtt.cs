@@ -1,0 +1,454 @@
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using System.Net;
+using System.Security.Authentication;
+using System.Security.Cryptography.X509Certificates;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Azure.Devices.Provisioning.Client.Transports.Mqtt;
+using MQTTnet;
+using MQTTnet.Client;
+using MQTTnet.Exceptions;
+using MQTTnet.Formatter;
+using MQTTnet.Protocol;
+using Newtonsoft.Json;
+
+namespace Microsoft.Azure.Devices.Provisioning.Client
+{
+    /// <summary>
+    /// Represents the MQTT protocol implementation for the provisioning transport handler.
+    /// </summary>
+    internal sealed class ProvisioningTransportHandlerMqtt : ProvisioningTransportHandler
+    {
+        private const int MqttTcpPort = 8883;
+        private const string UsernameFormat = "{0}/registrations/{1}/api-version={2}&ClientVersion={3}";
+        private const string SubscribeFilter = "$dps/registrations/res/#";
+        private const string RegisterTopic = "$dps/registrations/PUT/iotdps-register/?$rid={0}";
+        private const string GetOperationsTopic = "$dps/registrations/GET/iotdps-get-operationstatus/?$rid={0}&operationId={1}";
+        private const string BasicProxyAuthentication = "Basic";
+
+        private static readonly TimeSpan s_defaultOperationPollingInterval = TimeSpan.FromSeconds(2);
+
+        private readonly MqttFactory _mqttFactory = new(new MqttLogger());
+
+        private TaskCompletionSource<RegistrationOperationStatus> _startProvisioningRequestStatusSource;
+        private TaskCompletionSource<RegistrationOperationStatus> _checkRegistrationOperationStatusSource;
+        private int _packetId;
+        private Exception _connectionLossCause;
+
+        private readonly ProvisioningClientOptions _options;
+        private readonly ProvisioningClientMqttSettings _settings;
+        private readonly MqttQualityOfServiceLevel _publishingQualityOfService;
+        private readonly MqttQualityOfServiceLevel _receivingQualityOfService;
+
+        /// <summary>
+        /// Creates an instance of the ProvisioningTransportHandlerMqtt class using the specified fallback type.
+        /// </summary>
+        /// <param name="options">The options for the connection and messages sent/received on the connection.</param>
+        internal ProvisioningTransportHandlerMqtt(ProvisioningClientOptions options)
+        {
+            _options = options;
+            _settings = (ProvisioningClientMqttSettings)options.TransportSettings;
+
+            _publishingQualityOfService = _settings.PublishToServerQoS == QualityOfService.AtLeastOnce
+                ? MqttQualityOfServiceLevel.AtLeastOnce : MqttQualityOfServiceLevel.AtMostOnce;
+
+            _receivingQualityOfService = _settings.ReceivingQoS == QualityOfService.AtLeastOnce
+                ? MqttQualityOfServiceLevel.AtLeastOnce : MqttQualityOfServiceLevel.AtMostOnce;
+        }
+
+        /// <summary>
+        /// Registers a device described by the message.
+        /// </summary>
+        /// <param name="provisioningRequest">The provisioning request message.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>The registration result.</returns>
+        internal override async Task<DeviceRegistrationResult> RegisterAsync(
+            ProvisioningTransportRegisterRequest provisioningRequest,
+            CancellationToken cancellationToken)
+        {
+            if (Logging.IsEnabled)
+                Logging.Enter(this, $"{nameof(ProvisioningTransportHandlerMqtt)}.{nameof(RegisterAsync)}");
+
+            Argument.AssertNotNull(provisioningRequest, nameof(provisioningRequest));
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            _connectionLossCause = null;
+            using IMqttClient mqttClient = _mqttFactory.CreateMqttClient();
+            MqttClientOptionsBuilder mqttClientOptionsBuilder = CreateMqttClientOptions(mqttClient, provisioningRequest);
+            mqttClient.ApplicationMessageReceivedAsync += HandleReceivedMessageAsync;
+
+            using var connectionLostCancellationToken = new CancellationTokenSource();
+
+            // Link the user-supplied cancellation token with a cancellation token that is cancelled
+            // when the connection is lost so that all operations stop when either the user
+            // cancels the token or when the connection is lost.
+            using var linkedCancellationToken = CancellationTokenSource.CreateLinkedTokenSource(
+                cancellationToken,
+                connectionLostCancellationToken.Token);
+
+            Task HandleDisconnectionAsync(MqttClientDisconnectedEventArgs disconnectedEventArgs)
+            {
+                _connectionLossCause = disconnectedEventArgs.Exception;
+
+                if (Logging.IsEnabled)
+                    Logging.Error(this, $"MQTT connection was lost {disconnectedEventArgs.Reason}/{disconnectedEventArgs.ReasonString}: '{_connectionLossCause}'.");
+
+                // If it was an unexpected disconnect. Ignore cases when the user intentionally closes the connection.
+                connectionLostCancellationToken.Cancel();
+                return Task.CompletedTask;
+            }
+
+            // Additional context to be included in the error message thrown if the connection is lost to explain
+            // when the connection was lost. Mostly for e2e test debugging, but users may find this helpful as well.
+            string currentStatus = "opening MQTT connection";
+            try
+            {
+                try
+                {
+                    MqttClientConnectResult connectResult = await mqttClient
+                        .ConnectAsync(mqttClientOptionsBuilder.Build(), cancellationToken)
+                        .ConfigureAwait(false);
+
+                    if (Logging.IsEnabled)
+                        Logging.Info(this, $"MQTT connect responded with status code '{connectResult.ResultCode}'");
+
+                    mqttClient.DisconnectedAsync += HandleDisconnectionAsync;
+                }
+                catch (MqttCommunicationException ex)
+                {
+                    if (ContainsAuthenticationException(ex))
+                    {
+                        throw new ProvisioningClientException(ex.Message, ex, false);
+                    }
+                    throw new ProvisioningClientException(ex.Message, ex, true);
+                }
+                catch (Exception ex) when (ex is not OperationCanceledException)
+                {
+                    throw new ProvisioningClientException("Failed to open the MQTT connection.", ex, true);
+                }
+
+                currentStatus = "subscribing to registration responses";
+                await SubscribeToRegistrationResponseMessagesAsync(mqttClient, linkedCancellationToken.Token).ConfigureAwait(false);
+
+                currentStatus = "publishing registration request";
+                RegistrationOperationStatus registrationStatus = await PublishRegistrationRequestAsync(
+                        mqttClient,
+                        provisioningRequest,
+                        linkedCancellationToken.Token)
+                    .ConfigureAwait(false);
+
+                if (Logging.IsEnabled)
+                    Logging.Info(this, $"Successfully sent the initial registration request. Current status '{registrationStatus.Status}'. Now polling until provisioning has finished.");
+
+                currentStatus = "polling for registration state";
+                DeviceRegistrationResult registrationResult = await PollUntilProvisionigFinishesAsync(
+                        mqttClient,
+                        registrationStatus.OperationId,
+                        linkedCancellationToken.Token)
+                    .ConfigureAwait(false);
+
+                try
+                {
+                    currentStatus = "closing MQTT connection";
+                    mqttClient.DisconnectedAsync -= HandleDisconnectionAsync;
+                    await mqttClient.DisconnectAsync(new MqttClientDisconnectOptions(), cancellationToken);
+                }
+                catch (Exception ex)
+                {
+                    // Deliberately not rethrowing the exception because this is a "best effort" close.
+                    // The service may not have acknowledged that the client closed the connection, but
+                    // all local resources have been closed. The service will eventually realize the
+                    // connection is closed in cases like these.
+
+                    if (Logging.IsEnabled)
+                        Logging.Error(this, $"Failed to gracefully close the MQTT client. {ex}");
+                }
+
+                return registrationResult;
+            }
+            catch (OperationCanceledException) when (connectionLostCancellationToken.IsCancellationRequested)
+            {
+                // _connectionLostCancellationToken is cancelled when the connection is lost. This acts as
+                // a signal to stop waiting on any service response and to throw the below exception up to the user
+                // so they can retry.
+
+                // Deliberately not including the caught exception as this exception's inner exception because
+                // if the user sees an OperationCancelledException in the thrown exception, they may think they cancelled
+                // the operation even though they didn't.
+                throw new ProvisioningClientException($"MQTT connection was lost while {currentStatus}.", _connectionLossCause, true);
+
+                // If it was the user's cancellation token that requested cancellation, then this catch block
+                // won't execute and the OperationCanceledException will be thrown as expected.
+            }
+            catch (MqttCommunicationTimedOutException ex) when (!cancellationToken.IsCancellationRequested)
+            {
+                // MQTTNet throws MqttCommunicationTimedOutException instead of OperationCanceledException
+                // when the cancellation token requests cancellation.
+                throw new ProvisioningClientException("Timed out while provisioning.", ex, true);
+            }
+            catch (MqttCommunicationTimedOutException ex) when (cancellationToken.IsCancellationRequested)
+            {
+                // MQTTNet throws MqttCommunicationTimedOutException instead of OperationCanceledException
+                // when the cancellation token requests cancellation.
+                throw new OperationCanceledException("Timed out while provisioning.", ex);
+            }
+            finally
+            {
+                mqttClient.ApplicationMessageReceivedAsync -= HandleReceivedMessageAsync; // safe to -= this value more than once
+                mqttClient.DisconnectedAsync -= HandleDisconnectionAsync; // safe to -= this value more than once
+            }
+        }
+
+        private async Task SubscribeToRegistrationResponseMessagesAsync(IMqttClient mqttClient, CancellationToken cancellationToken)
+        {
+            try
+            {
+                MqttClientSubscribeOptions subscribeOptions = new MqttClientSubscribeOptionsBuilder()
+                    .WithTopicFilter(SubscribeFilter, _receivingQualityOfService)
+                    .Build();
+
+                MqttClientSubscribeResult subscribeResults = await mqttClient.SubscribeAsync(
+                        subscribeOptions,
+                        cancellationToken)
+                    .ConfigureAwait(false);
+
+                if (subscribeResults?.Items == null)
+                {
+                    throw new ProvisioningClientException($"Failed to subscribe to topic '{SubscribeFilter}'.", true);
+                }
+
+                MqttClientSubscribeResultItem subscribeResult = subscribeResults.Items.FirstOrDefault();
+
+                if (!subscribeResult.TopicFilter.Topic.Equals(SubscribeFilter, StringComparison.Ordinal))
+                {
+                    throw new ProvisioningClientException($"Received unexpected subscription to topic '{subscribeResult.TopicFilter.Topic}'.", true);
+                }
+            }
+            catch (Exception ex) when (ex is not ProvisioningClientException && ex is not OperationCanceledException)
+            {
+                throw new ProvisioningClientException("Failed to subscribe to the registrations response topic.", ex, true);
+            }
+        }
+
+        private async Task<RegistrationOperationStatus> PublishRegistrationRequestAsync(
+            IMqttClient mqttClient,
+            ProvisioningTransportRegisterRequest provisioningRequest,
+            CancellationToken cancellationToken)
+        {
+            byte[] payload = Array.Empty<byte>();
+            if (provisioningRequest.Payload != null)
+            {
+                string requestString = JsonConvert.SerializeObject(provisioningRequest.Payload);
+                payload = Encoding.UTF8.GetBytes(requestString);
+            }
+
+            string registrationTopic = string.Format(CultureInfo.InvariantCulture, RegisterTopic, ++_packetId);
+            MqttApplicationMessage message = new MqttApplicationMessageBuilder()
+                .WithPayload(payload)
+                .WithTopic(registrationTopic)
+                .WithQualityOfServiceLevel(_publishingQualityOfService)
+                .Build();
+
+            _startProvisioningRequestStatusSource = new TaskCompletionSource<RegistrationOperationStatus>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            try
+            {
+                MqttClientPublishResult publishResult = await mqttClient.PublishAsync(message, cancellationToken).ConfigureAwait(false);
+
+                if (publishResult.ReasonCode != MqttClientPublishReasonCode.Success)
+                {
+                    throw new ProvisioningClientException($"Failed to publish the MQTT packet for message with reason code '{publishResult.ReasonCode}'.", true);
+                }
+            }
+            catch (Exception ex) when (ex is not ProvisioningClientException && ex is not OperationCanceledException)
+            {
+                throw new ProvisioningClientException("Failed to send the initial registration request.", ex, true);
+            }
+
+            if (Logging.IsEnabled)
+                Logging.Info(this, "Published the initial registration request, now waiting for the service's response.");
+
+            RegistrationOperationStatus registrationStatus = await _startProvisioningRequestStatusSource.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+            if (Logging.IsEnabled)
+                Logging.Info(this, $"Service responded to the initial registration request with status '{registrationStatus.Status}'.");
+
+            return registrationStatus.Status != ProvisioningRegistrationStatus.Assigning
+                ? throw new ProvisioningClientException($"Failed to provision. Service responded with status {registrationStatus.Status}.", true)
+                : registrationStatus;
+        }
+
+        private async Task<DeviceRegistrationResult> PollUntilProvisionigFinishesAsync(IMqttClient mqttClient, string operationId, CancellationToken cancellationToken)
+        {
+            while (true)
+            {
+                string topicName = string.Format(CultureInfo.InvariantCulture, GetOperationsTopic, ++_packetId, operationId);
+                MqttApplicationMessage message = new MqttApplicationMessageBuilder()
+                    .WithTopic(topicName)
+                    .WithQualityOfServiceLevel(_publishingQualityOfService)
+                    .Build();
+
+                _checkRegistrationOperationStatusSource = new TaskCompletionSource<RegistrationOperationStatus>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+                MqttClientPublishResult publishResult = await mqttClient.PublishAsync(message, cancellationToken).ConfigureAwait(false);
+
+                if (publishResult.ReasonCode != MqttClientPublishReasonCode.Success)
+                {
+                    throw new ProvisioningClientException($"Failed to publish the MQTT registration message with reason code '{publishResult.ReasonCode}'.", true);
+                }
+
+                RegistrationOperationStatus currentStatus = await _checkRegistrationOperationStatusSource.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+                if (Logging.IsEnabled)
+                    Logging.Info(this, $"Current provisioning state: {currentStatus.RegistrationState.Status}.");
+
+                if (currentStatus.RegistrationState.Status != ProvisioningRegistrationStatus.Assigning)
+                {
+                    return currentStatus.RegistrationState;
+                }
+
+                // The service is expected to return a value signalling how long to wait before polling again, but
+                // the SDK has a default value for when the service does not send that value. Included in this default value
+                // is some jitter to help stagger the requests if multiple provisioning device clients are checking their provisioning
+                // state at the same time.
+                TimeSpan pollingDelay = currentStatus.RetryAfter ?? RetryJitter.GenerateDelayWithJitterForRetry(s_defaultOperationPollingInterval);
+
+                if (Logging.IsEnabled)
+                    Logging.Info(this, $"Polling for the current state again in {pollingDelay}.");
+
+                await Task.Delay(pollingDelay, cancellationToken).ConfigureAwait(false);
+            }
+        }
+
+        private MqttClientOptionsBuilder CreateMqttClientOptions(IMqttClient mqttClient, ProvisioningTransportRegisterRequest provisioningRequest)
+        {
+            var mqttClientOptionsBuilder = new MqttClientOptionsBuilder();
+
+            string hostName = provisioningRequest.GlobalDeviceEndpoint;
+
+            if (_settings.Protocol == ProvisioningClientTransportProtocol.Tcp)
+            {
+                // "ssl://" prefix is not needed here because the MQTT library adds it for us.
+                string uri = hostName;
+                mqttClientOptionsBuilder.WithTcpServer(uri, MqttTcpPort);
+            }
+            else
+            {
+                string uri = $"wss://{hostName}";
+                mqttClientOptionsBuilder.WithWebSocketServer(uri);
+
+                if (_settings.Proxy != null)
+                {
+                    Uri serviceUri = new(uri);
+                    Uri proxyUri = _settings.Proxy.GetProxy(serviceUri);
+
+                    if (_settings.Proxy.Credentials == null)
+                    {
+                        mqttClientOptionsBuilder.WithProxy(proxyUri.AbsoluteUri);
+                    }
+                    else
+                    {
+                        NetworkCredential proxyCreds = _settings.Proxy.Credentials.GetCredential(serviceUri, BasicProxyAuthentication);
+                        mqttClientOptionsBuilder.WithProxy(proxyUri.AbsoluteUri, proxyCreds.UserName, proxyCreds.Password);
+                    }
+                }
+            }
+
+            var tlsParameters = new MqttClientOptionsBuilderTlsParameters();
+            string password = "";
+            if (provisioningRequest.Authentication is AuthenticationProviderX509 x509Auth)
+            {
+                tlsParameters.Certificates = new List<X509Certificate>
+                {
+                    x509Auth.ClientCertificate,
+                };
+            }
+            else if (provisioningRequest.Authentication is AuthenticationProviderSymmetricKey keyAuth)
+            {
+                password = ProvisioningSasBuilder.BuildSasSignature(
+                    keyAuth.PrimaryKey,
+                    string.Concat(
+                        provisioningRequest.IdScope,
+                        "/registrations/",
+                        provisioningRequest.Authentication.GetRegistrationId()),
+                    TimeSpan.FromHours(1));
+            }
+
+            string username = string.Format(
+                CultureInfo.InvariantCulture,
+                UsernameFormat,
+                provisioningRequest.IdScope,
+                provisioningRequest.Authentication.GetRegistrationId(),
+                ClientApiVersionHelper.ApiVersion,
+                Uri.EscapeDataString(_options.UserAgentInfo.ToString()));
+
+            mqttClientOptionsBuilder
+                .WithClientId(provisioningRequest.Authentication.GetRegistrationId())
+                .WithCredentials(username, password);
+
+            if (_settings.RemoteCertificateValidationCallback != null)
+            {
+                tlsParameters.CertificateValidationHandler = (args) => _settings.RemoteCertificateValidationCallback.Invoke(
+                    mqttClient,
+                    args.Certificate,
+                    args.Chain,
+                    args.SslPolicyErrors);
+            }
+
+            tlsParameters.UseTls = true;
+            tlsParameters.SslProtocol = _settings.SslProtocols;
+            tlsParameters.IgnoreCertificateRevocationErrors = !_settings.CertificateRevocationCheck;
+            mqttClientOptionsBuilder
+                .WithTls(tlsParameters)
+                .WithProtocolVersion(MqttProtocolVersion.V311)
+                .WithKeepAlivePeriod(_settings.IdleTimeout)
+                .WithTimeout(TimeSpan.FromMilliseconds(-1)); // MQTTNet will only time out if the cancellation token requests cancellation.
+
+            return mqttClientOptionsBuilder;
+        }
+
+        private Task HandleReceivedMessageAsync(MqttApplicationMessageReceivedEventArgs receivedEventArgs)
+        {
+            receivedEventArgs.AutoAcknowledge = true;
+            string topic = receivedEventArgs.ApplicationMessage.Topic;
+
+            if (Logging.IsEnabled)
+                Logging.Info(this, $"Received MQTT message from service with topic '{topic}'.");
+
+            if (!_startProvisioningRequestStatusSource.Task.IsCompleted)
+            {
+                // The initial provisioning request's response topic is shaped like "$dps/registrations/res/202/?$rid=1&retry-after=3"
+                string jsonString = Encoding.UTF8.GetString(receivedEventArgs.ApplicationMessage.Payload);
+                RegistrationOperationStatus operation = JsonConvert.DeserializeObject<RegistrationOperationStatus>(jsonString);
+                _startProvisioningRequestStatusSource.TrySetResult(operation);
+            }
+            else
+            {
+                // All status polling requests' response topics are shaped like "$dps/registrations/res/200/?$rid=2"
+                string jsonString = Encoding.UTF8.GetString(receivedEventArgs.ApplicationMessage.Payload);
+                RegistrationOperationStatus operation = JsonConvert.DeserializeObject<RegistrationOperationStatus>(jsonString);
+
+                operation.RetryAfter = ProvisioningErrorDetailsMqtt.GetRetryAfterFromTopic(topic, s_defaultOperationPollingInterval);
+
+                _checkRegistrationOperationStatusSource.TrySetResult(operation);
+            }
+
+            return Task.CompletedTask;
+        }
+
+        internal static bool ContainsAuthenticationException(Exception ex)
+        {
+            return ex != null
+                && (ex is AuthenticationException
+                    || ContainsAuthenticationException(ex.InnerException));
+        }
+    }
+}

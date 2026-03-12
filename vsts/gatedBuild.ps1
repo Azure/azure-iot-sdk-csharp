@@ -31,7 +31,7 @@ dotnet --list-sdks
 $runTestCmd = ".\build.ps1 -clean -build -configuration DEBUG -framework $($env:FRAMEWORK) -noBuildBeforeTesting"
 if (IsPullRequestBuild)
 {
-	Write-Host "Pull request build detected, will run pr tests"
+	Write-Host "Pull request build detected, will run PR tests"
 	$runTestCmd += " -prtests"
 
 	if (ShouldSkipDPSTests)
@@ -46,18 +46,18 @@ if (IsPullRequestBuild)
 	
 	if (ShouldSkipIotHubTests)
 	{
-		Write-Host "Will skip Iot Hub tests"
+		Write-Host "Will skip IoT Hub tests"
 		$runTestCmd += " -skipIoTHubTests"
 	}
 	else
 	{
-		Write-Host "Will run Iot Hub tests"
+		Write-Host "Will run IoT Hub tests"
 	}
 }
 else
 {
 	#Likely a nightly or CI build
-	Write-Host "Not a pull request build, will run all tests"
+	Write-Host "Not a pull request build, will run all tests and samples"
 	$runTestCmd += " -unittests -e2etests"
 }
 

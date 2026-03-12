@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
 using System;
-using Microsoft.Azure.Devices.Shared;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
+using System.Text.Json.Serialization;
+using Azure;
 
 namespace Microsoft.Azure.Devices
 {
@@ -14,87 +14,89 @@ namespace Microsoft.Azure.Devices
         "Naming",
         "CA1716:Identifiers should not match keywords",
         Justification = "Cannot rename public facing types since they are considered behavior changes.")]
-    public class Module : IETagHolder
+    public class Module
     {
         /// <summary>
-        /// Creates a new instance of <see cref="Module"/>
+        /// Creates a new instance of this class. For serialization purposes only.
         /// </summary>
-        public Module()
-        {
-        }
+        internal Module()
+        { }
 
         /// <summary>
-        /// Creates a new instance of <see cref="Module"/>
+        /// Creates an instance of this class.
         /// </summary>
         /// <param name="deviceId">Device identifier</param>
         /// <param name="moduleId">Module identifier</param>
         public Module(string deviceId, string moduleId)
         {
-            Id = moduleId;
+            Argument.AssertNotNullOrWhiteSpace(deviceId, nameof(deviceId));
+            Argument.AssertNotNullOrWhiteSpace(moduleId, nameof(moduleId));
+
+            ModuleId = moduleId;
             DeviceId = deviceId;
-            ConnectionState = DeviceConnectionState.Disconnected;
-            LastActivityTime = ConnectionStateUpdatedTime = DateTime.MinValue;
         }
 
         /// <summary>
-        /// Module Id
+        /// Module Id.
         /// </summary>
-        [JsonProperty(PropertyName = "moduleId")]
-        public string Id { get; internal set; }
+        [JsonPropertyName("moduleId")]
+        public string ModuleId { get; internal set; }
 
         /// <summary>
-        /// Device Id
+        /// Device Id.
         /// </summary>
-        [JsonProperty(PropertyName = "deviceId")]
+        [JsonPropertyName("deviceId")]
         public string DeviceId { get; internal set; }
 
         /// <summary>
-        /// Modules's Generation Id
+        /// Modules's generation Id.
         /// </summary>
-        [JsonProperty(PropertyName = "generationId")]
+        /// <remarks>
+        /// This value is used to distinguish devices with the same deviceId, when they have been deleted and re-created.
+        /// </remarks>
+        [JsonPropertyName("generationId")]
         public string GenerationId { get; internal set; }
 
         /// <summary>
-        /// Module's ETag
+        /// Module's ETag.
         /// </summary>
-        [JsonProperty(PropertyName = "etag")]
-        public string ETag { get; set; }
+        [JsonPropertyName("etag")]
+        public ETag ETag { get; set; }
 
         /// <summary>
-        /// Modules's ConnectionState
+        /// Modules's connection state.
         /// </summary>
-        [JsonProperty(PropertyName = "connectionState")]
-        [JsonConverter(typeof(StringEnumConverter))]
-        public DeviceConnectionState ConnectionState { get; set; }
+        [JsonPropertyName("connectionState")]
+        public ClientConnectionState ConnectionState { get; internal set; }
 
         /// <summary>
-        /// Time when the <see cref="ConnectionState"/> was last updated
+        /// Time when the connection state was last updated.
         /// </summary>
-        [JsonProperty(PropertyName = "connectionStateUpdatedTime")]
-        public DateTime ConnectionStateUpdatedTime { get; set; }
+        [JsonPropertyName("connectionStateUpdatedTime")]
+        public DateTimeOffset? ConnectionStateUpdatedOnUtc { get; internal set; }
 
         /// <summary>
-        /// Time when the <see cref="Module"/> was last active
+        /// Time when the module was last active.
         /// </summary>
-        [JsonProperty(PropertyName = "lastActivityTime")]
-        public DateTime LastActivityTime { get; internal set; }
+        [JsonPropertyName("lastActivityTime")]
+        public DateTimeOffset? LastActiveOnUtc { get; internal set; }
 
         /// <summary>
-        /// Number of messages sent to the Module from the Cloud
+        /// Number of messages sent to the module from the cloud.
         /// </summary>
-        [JsonProperty(PropertyName = "cloudToDeviceMessageCount")]
+        [JsonPropertyName("cloudToDeviceMessageCount")]
         public int CloudToDeviceMessageCount { get; internal set; }
 
         /// <summary>
-        /// Device's authentication mechanism
+        /// Device's authentication mechanism.
         /// </summary>
-        [JsonProperty(PropertyName = "authentication")]
-        public AuthenticationMechanism Authentication { get; set; }
+        [JsonPropertyName("authentication")]
+        public AuthenticationMechanism Authentication { get; set; } = new();
 
         /// <summary>
-        /// represents the modules managed by owner
+        /// Represents the modules managed by owner.
         /// </summary>
-        [JsonProperty(PropertyName = "managedBy")]
+        [JsonPropertyName("managedBy")]
         public string ManagedBy { get; set; }
     }
 }

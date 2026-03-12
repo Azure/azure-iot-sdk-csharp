@@ -1,72 +1,256 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
-using System;
-using Microsoft.Azure.Devices.Shared;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Newtonsoft.Json;
 
-namespace Microsoft.Azure.Devices.Test
+using System;
+using System.Collections.Generic;
+using System.Text;
+using Azure;
+using FluentAssertions;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Text.Json.Serialization;
+using System.Text.Json;
+
+namespace Microsoft.Azure.Devices.Tests
 {
     [TestClass]
     [TestCategory("Unit")]
     public class SerializationTests
     {
         [TestMethod]
-        public void Twin_JsonDateParse_Ok()
+        public void ClientTwin_JsonParse_Ok()
         {
-            var now = DateTime.Now;
-            const string jsonString = @"
-{
- ""deviceId"": ""test"",
- ""etag"": ""AAAAAAAAAAM="",
- ""version"": 5,
- ""status"": ""enabled"",
- ""statusUpdateTime"": ""2018-06-29T21:17:08.7759733"",
- ""connectionState"": ""Connected"",
- ""lastActivityTime"": ""2018-06-29T21:17:08.7759733"",
-}";
+            // arrange - act
+            var clientTwin = new ClientTwin("test")
+            {
+                ETag = new ETag("AAAAAAAAAAM="),
+                Version = 5,
+                Status = ClientStatus.Enabled,
+                StatusUpdatedOnUtc = new DateTimeOffset(2023, 1, 20, 8, 6, 32, new TimeSpan(1, 0, 0)),
+                ConnectionState = ClientConnectionState.Connected,
+                LastActiveOnUtc = new DateTimeOffset(2023, 1, 19, 8, 6, 32, new TimeSpan(1, 0, 0)),
+            };
 
-            JsonConvert.DeserializeObject<Twin>(jsonString);
+            string clientTwinSerialized = JsonSerializer.Serialize(clientTwin);
+
+            ClientTwin ct = JsonSerializer.Deserialize<ClientTwin>(clientTwinSerialized);
+            
+            // assert
+            ct.Should().BeEquivalentTo(clientTwin);
         }
 
         [TestMethod]
-        public void Configuration_TestWithSchema_Ok()
+        public void Configuration_JsonParse_Ok()
         {
-            const string jsonString = @"
-{
-  ""id"": ""aa"",
-  ""schemaVersion"": ""1.0"",
-  ""content"": {
-    ""modulesContent"": {
-        ""$edgeAgent"": {
-            ""properties.desired"": {
-                ""schemaVersion"": ""1.0""
-            }
-        }
-    }
-  }
-}";
+            // arrange - act
+            const string ExpectedSchemaVersion = "1.0";
+            var configuration = new Configuration("aa")
+            {
+                Content = new ConfigurationContent
+                {
+                    ModulesContent =
+                    {
+                        {
+                            "edgeAgent", new Dictionary<string, object> { { "properties.desired", "test" } }
+                        }
+                    }
+                }
+            };
+            string configurationSerialized = JsonSerializer.Serialize(configuration);
+            Configuration c = JsonSerializer.Deserialize<Configuration>(configurationSerialized);
 
-            JsonConvert.DeserializeObject<Configuration>(jsonString);
+            // assert
+            c.SchemaVersion.Should().Be(ExpectedSchemaVersion);
+            c.Should().BeEquivalentTo(configuration);
         }
 
         [TestMethod]
-        public void Configuration_TestNullSchema_Ok()
+        public void ImportConfiguration_JsonParse_Ok()
         {
-            const string jsonString = @"
-{
-  ""id"": ""aa"",
-  ""content"": {
-    ""modulesContent"": {
-        ""$edgeAgent"": {
-            ""properties.desired"": {
-            }
-        }
-    }
-  }
-}";
+            // arrange - act
+            var importConfiguration = new ImportConfiguration("aa")
+            {
+                Id = "aa",
+                ImportMode = ConfigurationImportMode.CreateOrUpdateIfMatchETag
+            };
+            string importConfigurationSerialized = JsonSerializer.Serialize(importConfiguration);
 
-            JsonConvert.DeserializeObject<Configuration>(jsonString);
+            ImportConfiguration ic = JsonSerializer.Deserialize<ImportConfiguration>(importConfigurationSerialized);
+
+            // assert
+            ic.Should().BeEquivalentTo(importConfiguration);
+        }
+
+        [TestMethod]
+        public void FeedbackRecord_JsonParse_Ok()
+        {
+            // arrange - act
+            var feedbackRecord = new FeedbackRecord
+            {
+                OriginalMessageId = "1",
+                DeviceGenerationId = "2",
+                DeviceId = "testDeviceId",
+                EnqueuedOnUtc = new DateTimeOffset(2023, 1, 20, 8, 6, 32, new TimeSpan(1, 0, 0)),
+                StatusCode = FeedbackStatusCode.Success,
+                Description = "Success"
+            };
+            string feedbackRecordSerialized = JsonSerializer.Serialize(feedbackRecord);
+
+            // assert
+            FeedbackRecord fr = JsonSerializer.Deserialize<FeedbackRecord>(feedbackRecordSerialized);
+            fr.Should().BeEquivalentTo(feedbackRecord);
+        }
+
+        [TestMethod]
+        public void FileUploadNotification_JsonParse_Ok()
+        {
+            // arrange - act
+            var fileUploadNotification = new FileUploadNotification
+            {
+                DeviceId = "testDeviceId",
+                BlobName = "testBlob",
+                BlobUriPath = new Uri("https://myaccount.blob.core.windows.net"),
+                BlobSizeInBytes = 50,
+                LastUpdatedOnUtc = new DateTimeOffset(2023, 1, 19, 8, 7, 32, new TimeSpan(1, 0, 0)),
+                EnqueuedOnUtc = new DateTimeOffset(2023, 1, 20, 8, 6, 32, new TimeSpan(1, 0, 0))
+            };
+
+            string fileUploadNotificationSerialized = JsonSerializer.Serialize(fileUploadNotification);
+
+            FileUploadNotification fun = JsonSerializer.Deserialize<FileUploadNotification>(fileUploadNotificationSerialized);
+
+            // assert
+            fun.Should().BeEquivalentTo(fileUploadNotification);
+        }
+
+        [TestMethod]
+        public void BasicDigitalTwin_JsonParse_Ok()
+        {
+            // arrange - act
+            var basicDigitalTwin = new BasicDigitalTwin
+            {
+                Id = "twinId1234",
+                Metadata = new DigitalTwinMetadata
+                {
+                    ModelId = "modelId1234"
+                }
+            };
+
+            string basicDigitalTwinSerialized = JsonSerializer.Serialize(basicDigitalTwin);
+            BasicDigitalTwin bdt = JsonSerializer.Deserialize<BasicDigitalTwin>(basicDigitalTwinSerialized);
+
+            // assert
+            basicDigitalTwin.Should().BeEquivalentTo(bdt);
+        }
+
+        [TestMethod]
+        public void BasicDigitalTwin_WithCustomProperties_JsonParse_Ok()
+        {
+            // arrange - act
+            var basicDigitalTwin = new BasicDigitalTwin
+            {
+                Id = "twinId1234",
+                Metadata = new DigitalTwinMetadata
+                {
+                    ModelId = "modelId1234",
+                    WritableProperties =
+                    {
+                        { "additionalKey", "value" }
+                    }
+                },
+                CustomProperties =
+                {
+                    { "desiredValue", "sampleValue" },
+                    { "desiredVersion", 1 },
+                    { "ackVersion", 1 },
+                    { "ackCode", 200 },
+                    { "ackDescription", "Ack Description" }
+                }
+            };
+
+            string basicDigitalTwinSerialized = JsonSerializer.Serialize(basicDigitalTwin);
+            BasicDigitalTwin bdt = JsonSerializer.Deserialize<BasicDigitalTwin>(basicDigitalTwinSerialized);
+
+            // assert
+            basicDigitalTwin.Should().BeEquivalentTo(bdt);
+        }
+
+        [TestMethod]
+        public void WritableProperty_JsonParse_Ok()
+        {
+            // arrange - act
+            var writableProperty = new WritableProperty
+            {
+                DesiredValue = "sampleValue",
+                DesiredVersion = 1,
+                AckVersion = 1,
+                AckCode = 200,
+                AckDescription = "Ack Description",
+                LastUpdatedOnUtc = new DateTimeOffset(2023, 1, 20, 8, 6, 32, new TimeSpan(1, 0, 0))
+            };
+
+            string writablePropertySerialized = JsonSerializer.Serialize(writableProperty);
+            WritableProperty wp = JsonSerializer.Deserialize<WritableProperty>(writablePropertySerialized);
+
+            // assert
+            writableProperty.Should().BeEquivalentTo(wp);
+        }
+
+        [TestMethod]
+        public void ComponentMetadata_JsonParse_Ok()
+        {
+            // arrange - act
+            var componentMetadata = new ComponentMetadata
+            {
+                WritableProperties =
+                {
+                    { "key1", "sampleValue" },
+                    { "key2", 1 },
+                }
+            };
+            string componentMetadataSerialized = JsonSerializer.Serialize(componentMetadata);
+            ComponentMetadata metaData = JsonSerializer.Deserialize<ComponentMetadata>(componentMetadataSerialized);
+
+            // assert
+            metaData.Should().BeEquivalentTo(componentMetadata);
+        }
+
+        [TestMethod]
+        public void CloudToDeviceMethodScheduledJob_JsonParse_Ok()
+        {
+            // arrange - act
+            var cloudToDeviceMethodScheduledJob = new CloudToDeviceMethodScheduledJob(
+                new DirectMethodServiceRequest("testMethod")
+                {
+                    Payload = Encoding.UTF8.GetBytes(JsonSerializer.Serialize("testPayload"))
+                }
+            );
+
+            string cloudToDeviceMethodScheduledJobSerialized = JsonSerializer.Serialize(cloudToDeviceMethodScheduledJob);
+            CloudToDeviceMethodScheduledJob job = JsonSerializer.Deserialize<CloudToDeviceMethodScheduledJob>(cloudToDeviceMethodScheduledJobSerialized);
+
+            // assert
+            job.Should().BeEquivalentTo(cloudToDeviceMethodScheduledJob);
+        }
+
+        [TestMethod]
+        public void DeviceJobStatistics_JsonParse_Ok()
+        {
+            // arrange - act
+            var deviceJobStatistics = new DeviceJobStatistics
+            {
+                DeviceCount = 100,
+                FailedCount = 50,
+                SucceededCount = 0,
+                RunningCount = 20,
+                PendingCount = 30
+            };
+
+            string deviceJobStatisticsSerialized = JsonSerializer.Serialize(deviceJobStatistics);
+
+            DeviceJobStatistics statistics = JsonSerializer.Deserialize<DeviceJobStatistics>(deviceJobStatisticsSerialized);
+
+            // assert
+            statistics.Should().BeEquivalentTo(deviceJobStatistics);
         }
     }
 }

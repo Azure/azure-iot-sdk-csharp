@@ -8,6 +8,7 @@ namespace Microsoft.Azure.Devices.Samples
     /// <summary>
     /// Parameters for the application.
     /// </summary>
+
     internal class Parameters
     {
         [Option(
@@ -25,18 +26,16 @@ namespace Microsoft.Azure.Devices.Samples
         public string DeviceId { get; set; }
 
         [Option(
-            't',
-            "TransportType",
-            Default = TransportType.Amqp,
-            Required = false,
-            HelpText = "The transport to use to communicate with the IoT hub. Possible values include Amqp and Amqp_WebSocket_Only.")]
-        public TransportType TransportType { get; set; }
-
-        [Option(
             'r',
             "Application running time (in seconds)",
             Required = false,
             HelpText = "The running time for this console application. Leave it unassigned to run the application until it is explicitly canceled using Control+C.")]
         public double? ApplicationRunningTime { get; set; }
+
+        [Option(
+           "TransportProtocol",
+           Default = IotHubTransportProtocol.Tcp,
+           HelpText = "The transport to use to communicate with the device provisioning instance.")]
+        public IotHubTransportProtocol TransportProtocol { get; set; }
     }
 }

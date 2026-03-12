@@ -1,36 +1,35 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Azure.Devices.Serialization;
-using Newtonsoft.Json;
 using System;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices.Samples
 {
     internal class ThermostatTwin : BasicDigitalTwin
     {
-        [JsonProperty("$metadata")]
+        [JsonPropertyName("$metadata")]
         public new ThermostatMetadata Metadata { get; set; }
 
-        [JsonProperty("maxTempSinceLastReboot")]
+        [JsonPropertyName("maxTempSinceLastReboot")]
         public double? MaxTempSinceLastReboot { get; set; }
 
-        [JsonProperty("targetTemperature")]
+        [JsonPropertyName("targetTemperature")]
         public double? TargetTemperature { get; set; }
     }
 
     internal class ThermostatMetadata : DigitalTwinMetadata
     {
-        [JsonProperty("maxTempSinceLastReboot")]
+        [JsonPropertyName("maxTempSinceLastReboot")]
         public ReportedPropertyMetadata MaxTempSinceLastReboot { get; set; }
 
-        [JsonProperty("targetTemperature")]
+        [JsonPropertyName("targetTemperature")]
         public WritableProperty TargetTemperature { get; set; }
     }
 
     internal class ReportedPropertyMetadata
     {
-        [JsonProperty("lastUpdateTime")]
-        public DateTimeOffset LastUpdateTime { get; set; }
+        [JsonPropertyName("lastUpdateTime")]
+        public DateTimeOffset LastUpdatedOnUtc { get; set; }
     }
 }

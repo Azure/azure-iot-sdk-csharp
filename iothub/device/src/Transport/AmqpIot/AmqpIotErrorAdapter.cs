@@ -2,8 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using Microsoft.Azure.Devices.Common;
-using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Amqp.Encoding;
 using Microsoft.Azure.Amqp.Framing;
@@ -12,12 +10,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 {
     internal static class AmqpIotErrorAdapter
     {
-        public static readonly AmqpSymbol TimeoutName = AmqpIotConstants.Vendor + ":timeout";
         public static readonly AmqpSymbol StackTraceName = AmqpIotConstants.Vendor + ":stack-trace";
 
         // Error codes
         public static readonly AmqpSymbol DeadLetterName = AmqpIotConstants.Vendor + ":dead-letter";
 
+        public const string UnknownError = "Unknown error.";
+        public const string LinkReleased = "AMQP link released.";
         public const string DeadLetterReasonHeader = "DeadLetterReason";
         public const string DeadLetterErrorDescriptionHeader = "DeadLetterErrorDescription";
         public static readonly AmqpSymbol TimeoutError = AmqpIotConstants.Vendor + ":timeout";
@@ -27,13 +26,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         public static readonly AmqpSymbol ArgumentOutOfRangeError = AmqpIotConstants.Vendor + ":argument-out-of-range";
         public static readonly AmqpSymbol DeviceContainerThrottled = AmqpIotConstants.Vendor + ":device-container-throttled";
         public static readonly AmqpSymbol IotHubSuspended = AmqpIotConstants.Vendor + ":iot-hub-suspended";
+        public static readonly AmqpSymbol InternalError = "amqp:internal-error";
 
         public static Exception GetExceptionFromOutcome(Outcome outcome)
         {
             Exception retException;
             if (outcome == null)
             {
-                retException = new IotHubException("Unknown error.");
+                retException = new IotHubClientException(UnknownError);
                 return retException;
             }
 
@@ -44,231 +44,155 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             }
             else if (outcome.DescriptorCode == Released.Code)
             {
-                retException = new OperationCanceledException("AMQP link released.");
+                retException = new OperationCanceledException(LinkReleased);
             }
             else
             {
-                retException = new IotHubException("Unknown error.");
+                retException = new IotHubClientException(UnknownError);
             }
 
             return retException;
         }
 
-        public static Exception ToIotHubClientContract(AmqpException amqpException)
+        public static IotHubClientException ToIotHubClientContract(AmqpException amqpException)
         {
             Error error = amqpException.Error;
             AmqpSymbol amqpSymbol = error.Condition;
             string message = error.ToString();
 
+            IotHubClientErrorCode errorCode = IotHubClientErrorCode.Unknown;
+            bool isTransient = false;
+
             // Generic AMQP error
             if (Equals(AmqpErrorCode.InternalError, amqpSymbol))
             {
-                return new IotHubCommunicationException(message, amqpException);
+                errorCode = IotHubClientErrorCode.NetworkErrors;
+                isTransient = true;
             }
             else if (Equals(AmqpErrorCode.NotFound, amqpSymbol))
             {
-                return new DeviceNotFoundException(message, amqpException);
+                errorCode = IotHubClientErrorCode.DeviceNotFound;
             }
             else if (Equals(AmqpErrorCode.UnauthorizedAccess, amqpSymbol))
             {
-                return new UnauthorizedException(message, amqpException);
-            }
-            else if (Equals(AmqpErrorCode.DecodeError, amqpSymbol))
-            {
-                return new IotHubException(message, amqpException);
+                errorCode = IotHubClientErrorCode.Unauthorized;
             }
             else if (Equals(AmqpErrorCode.ResourceLimitExceeded, amqpSymbol))
             {
-                return new IotHubException(message, amqpException);
-            }
-            else if (Equals(AmqpErrorCode.NotAllowed, amqpSymbol))
-            {
-                return new InvalidOperationException(message, amqpException);
-            }
-            else if (Equals(AmqpErrorCode.InvalidField, amqpSymbol))
-            {
-                return new InvalidOperationException(message, amqpException);
-            }
-            else if (Equals(AmqpErrorCode.NotImplemented, amqpSymbol))
-            {
-                return new NotSupportedException(message, amqpException);
-            }
-            else if (Equals(AmqpErrorCode.ResourceLocked, amqpSymbol))
-            {
-                return new AmqpIotResourceException(message, amqpException, true);
+                errorCode = IotHubClientErrorCode.QuotaExceeded;
             }
             else if (Equals(AmqpErrorCode.PreconditionFailed, amqpSymbol))
             {
-                return new IotHubException(message, amqpException);
+                errorCode = IotHubClientErrorCode.PreconditionFailed;
             }
-            else if (Equals(AmqpErrorCode.ResourceDeleted, amqpSymbol))
+            else if (Equals(AmqpErrorCode.ResourceLocked, amqpSymbol))
             {
-                return new IotHubException(message, amqpException);
-            }
-            else if (Equals(AmqpErrorCode.IllegalState, amqpSymbol))
-            {
-                return new IotHubException(message, amqpException);
-            }
-            else if (Equals(AmqpErrorCode.FrameSizeTooSmall, amqpSymbol))
-            {
-                return new IotHubException(message, amqpException);
+                isTransient = true;
             }
             // AMQP Connection Error
-            else if (Equals(AmqpErrorCode.ConnectionForced, amqpSymbol))
+            else if (Equals(AmqpErrorCode.ConnectionForced, amqpSymbol)
+                || Equals(AmqpErrorCode.FramingError, amqpSymbol)
+                || Equals(AmqpErrorCode.ConnectionRedirect, amqpSymbol))
             {
-                return new AmqpIotResourceException(message, amqpException, true);
-            }
-            else if (Equals(AmqpErrorCode.FramingError, amqpSymbol))
-            {
-                return new AmqpIotResourceException(message, amqpException, true);
-            }
-            else if (Equals(AmqpErrorCode.ConnectionRedirect, amqpSymbol))
-            {
-                return new AmqpIotResourceException(message, amqpException, true);
+                isTransient = true;
             }
             // AMQP Session Error
-            else if (Equals(AmqpErrorCode.WindowViolation, amqpSymbol))
+            else if (Equals(AmqpErrorCode.WindowViolation, amqpSymbol)
+                || Equals(AmqpErrorCode.ErrantLink, amqpSymbol)
+                || Equals(AmqpErrorCode.HandleInUse, amqpSymbol)
+                || Equals(AmqpErrorCode.UnattachedHandle, amqpSymbol))
             {
-                return new AmqpIotResourceException(message, amqpException, true);
-            }
-            else if (Equals(AmqpErrorCode.ErrantLink, amqpSymbol))
-            {
-                return new AmqpIotResourceException(message, amqpException, true);
-            }
-            else if (Equals(AmqpErrorCode.HandleInUse, amqpSymbol))
-            {
-                return new AmqpIotResourceException(message, amqpException, true);
-            }
-            else if (Equals(AmqpErrorCode.UnattachedHandle, amqpSymbol))
-            {
-                return new AmqpIotResourceException(message, amqpException, true);
+                isTransient = true;
             }
             // AMQP Link Error
-            else if (Equals(AmqpErrorCode.DetachForced, amqpSymbol))
+            else if (Equals(AmqpErrorCode.DetachForced, amqpSymbol)
+                || Equals(AmqpErrorCode.TransferLimitExceeded, amqpSymbol)
+                || Equals(AmqpErrorCode.LinkRedirect, amqpSymbol)
+                || Equals(AmqpErrorCode.Stolen, amqpSymbol))
             {
-                return new AmqpIotResourceException(message, amqpException, true);
-            }
-            else if (Equals(AmqpErrorCode.TransferLimitExceeded, amqpSymbol))
-            {
-                return new AmqpIotResourceException(message, amqpException, true);
+                isTransient = true;
             }
             else if (Equals(AmqpErrorCode.MessageSizeExceeded, amqpSymbol))
             {
-                return new MessageTooLargeException(message, amqpException);
-            }
-            else if (Equals(AmqpErrorCode.LinkRedirect, amqpSymbol))
-            {
-                return new AmqpIotResourceException(message, amqpException, true);
-            }
-            else if (Equals(AmqpErrorCode.Stolen, amqpSymbol))
-            {
-                return new AmqpIotResourceException(message, amqpException, true);
+                errorCode = IotHubClientErrorCode.MessageTooLarge;
             }
             // AMQP Transaction Error
-            else if (Equals(AmqpErrorCode.TransactionUnknownId, amqpSymbol))
+            else if (Equals(AmqpErrorCode.TransactionRollback, amqpSymbol)
+                || Equals(AmqpErrorCode.TransactionTimeout, amqpSymbol))
             {
-                return new IotHubException(message, amqpException);
+                errorCode = IotHubClientErrorCode.NetworkErrors;
+                isTransient = true;
             }
-            else if (Equals(AmqpErrorCode.TransactionRollback, amqpSymbol))
+
+            return new IotHubClientException(message, errorCode, amqpException)
             {
-                return new IotHubCommunicationException(message, amqpException);
-            }
-            else if (Equals(AmqpErrorCode.TransactionTimeout, amqpSymbol))
-            {
-                return new IotHubCommunicationException(message, amqpException);
-            }
-            else
-            {
-                return new IotHubException(message, amqpException);
-            }
+                IsTransient = isTransient
+            };
         }
 
-        public static Exception ToIotHubClientContract(Error error)
+        public static IotHubClientException ToIotHubClientContract(Error error)
         {
-            Exception retException;
             if (error == null)
             {
-                retException = new IotHubException("Unknown error.");
-                return retException;
+                return new IotHubClientException(UnknownError);
             }
 
             string message = error.Description;
 
             string trackingId = null;
-            if (error.Info != null
-                && error.Info.TryGetValue(AmqpIotConstants.TrackingId, out trackingId))
+            if (error.Info != null)
             {
-                message = $"{message}\r\nTracking Id:{trackingId}";
+                error.Info.TryGetValue(AmqpIotConstants.TrackingId, out trackingId);
             }
+
+            IotHubClientErrorCode errorCode = IotHubClientErrorCode.Unknown;
 
             if (error.Condition.Equals(TimeoutError))
             {
-                retException = new TimeoutException(message);
+                errorCode = IotHubClientErrorCode.Timeout;
             }
             else if (error.Condition.Equals(AmqpErrorCode.NotFound))
             {
-                retException = new DeviceNotFoundException(message, (Exception)null);
-            }
-            else if (error.Condition.Equals(AmqpErrorCode.NotImplemented))
-            {
-                retException = new NotSupportedException(message);
+                errorCode = IotHubClientErrorCode.DeviceNotFound;
             }
             else if (error.Condition.Equals(MessageLockLostError))
             {
-                retException = new DeviceMessageLockLostException(message);
-            }
-            else if (error.Condition.Equals(AmqpErrorCode.NotAllowed))
-            {
-                retException = new InvalidOperationException(message);
+                errorCode = IotHubClientErrorCode.DeviceMessageLockLost;
             }
             else if (error.Condition.Equals(AmqpErrorCode.UnauthorizedAccess))
             {
-                retException = new UnauthorizedException(message);
-            }
-            else if (error.Condition.Equals(ArgumentError))
-            {
-                retException = new ArgumentException(message);
-            }
-            else if (error.Condition.Equals(ArgumentOutOfRangeError))
-            {
-                retException = new ArgumentOutOfRangeException(message);
+                errorCode = IotHubClientErrorCode.Unauthorized;
             }
             else if (error.Condition.Equals(AmqpErrorCode.MessageSizeExceeded))
             {
-                retException = new MessageTooLargeException(message);
+                errorCode = IotHubClientErrorCode.MessageTooLarge;
             }
             else if (error.Condition.Equals(AmqpErrorCode.ResourceLimitExceeded))
             {
-                // Note: The DeviceMaximumQueueDepthExceededException is not supposed to be thrown here as it is being mapped to the incorrect error code
-                // Error code 403004 is only applicable to C2D (Service client); see https://docs.microsoft.com/azure/iot-hub/iot-hub-troubleshoot-error-403004-devicemaximumqueuedepthexceeded
-                // Error code 403002 is applicable to D2C (Device client); see https://docs.microsoft.com/azure/iot-hub/iot-hub-troubleshoot-error-403002-iothubquotaexceeded
-                // We have opted not to change the exception type thrown here since it will be a breaking change, alternatively, we are adding the correct exception type
-                // as the inner exception.
-                retException = new DeviceMaximumQueueDepthExceededException(
-                    $"Please check the inner exception for more information.\n " +
-                    $"The correct exception type is `{nameof(QuotaExceededException)}` " +
-                    $"but since that is a breaking change to the current behavior in the SDK, you can refer to the inner exception " +
-                    $"for more information. Exception message: {message}",
-                    new QuotaExceededException(message));
+                errorCode = IotHubClientErrorCode.QuotaExceeded;
             }
             else if (error.Condition.Equals(DeviceContainerThrottled))
             {
-                retException = new IotHubThrottledException(message, null);
+                errorCode = IotHubClientErrorCode.Throttled;
             }
             else if (error.Condition.Equals(IotHubSuspended))
             {
-                retException = new IotHubSuspendedException(message);
+                errorCode = IotHubClientErrorCode.Suspended;
+                message = $"IoT hub {message} is suspended";
             }
-            else
+            else if (error.Condition.Equals(InternalError))
             {
-                retException = new IotHubException(message);
+                // Seems to happen in fault injection with Gateway V2
+                ErrorPayload result = ClientExceptionHandlingHelper.GetErrorCodeAndTrackingId(error.Description);
+                message = result.Message;
+                errorCode = result.IotHubClientErrorCode;
+                trackingId = result.TrackingId;
             }
 
-            if (trackingId != null
-                && retException is IotHubException hubEx)
+            var retException = new IotHubClientException(message, errorCode)
             {
-                hubEx.TrackingId = trackingId;
-            }
+                TrackingId = trackingId,
+            };
 
             return retException;
         }

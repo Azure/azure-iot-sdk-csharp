@@ -2,9 +2,12 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using Azure;
+using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Newtonsoft.Json;
 
-namespace Microsoft.Azure.Devices.Provisioning.Service.Test
+namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
 {
     [TestClass]
     [TestCategory("Unit")]
@@ -14,10 +17,21 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         private const string SampleIotHubHostName = "ContosoIoTHub.azure-devices.net";
         private const ProvisioningStatus SampleProvisioningStatus = ProvisioningStatus.Enabled;
         private const string SampleCreateDateTimeUTCString = "2017-11-14T12:34:18.123Z";
-        private DateTime SampleCreateDateTimeUTC = new DateTime(2017, 11, 14, 12, 34, 18, 123, DateTimeKind.Utc);
+        private readonly DateTime _sampleCreateDateTimeUTC = new(2017, 11, 14, 12, 34, 18, 123, DateTimeKind.Utc);
         private const string SampleLastUpdatedDateTimeUTCString = "2017-11-14T12:34:18.321Z";
-        private DateTime SampleLastUpdatedDateTimeUTC = new DateTime(2017, 11, 14, 12, 34, 18, 321, DateTimeKind.Utc);
-        private const string SampleEtag = "00000000-0000-0000-0000-00000000000";
+        private readonly DateTime _sampleLastUpdatedDateTimeUTC = new(2017, 11, 14, 12, 34, 18, 321, DateTimeKind.Utc);
+        private static readonly ETag s_sampleEtag = new("00000000-0000-0000-0000-00000000000");
+
+        private const string SampleEndorsementKey =
+            "AToAAQALAAMAsgAgg3GXZ0SEs/gakMyNRqXXJP1S124GUgtk8qHaGzMUaaoABgCAAEMAEAgAAAAAAAEAxsj" +
+            "2gUScTk1UjuioeTlfGYZrrimExB+bScH75adUMRIi2UOMxG1kw4y+9RW/IVoMl4e620VxZad0ARX2gUqVjY" +
+            "O7KPVt3dyKhZS3dkcvfBisBhP1XH9B33VqHG9SHnbnQXdBUaCgKAfxome8UmBKfe+naTsE5fkvjb/do3/dD" +
+            "6l4sGBwFCnKRdln4XpM03zLpoHFao8zOwt8l/uP3qUIxmCYv9A7m69Ms+5/pCkTu/rK4mRDsfhZ0QLfbzVI" +
+            "6zQFOKF/rwsfBtFeWlWtcuJMKlXdD8TXWElTzgh7JS4qhFzreL0c1mI0GCj+Aws0usZh7dLIVPnlgZcBhgy" +
+            "1SSDQMQ==";
+
+        private readonly TpmAttestation _sampleTpmAttestation = new(SampleEndorsementKey);
+
         private const string SamplePublicKeyCertificateString =
             "-----BEGIN CERTIFICATE-----\n" +
             "MIIBiDCCAS2gAwIBAgIFWks8LR4wCgYIKoZIzj0EAwIwNjEUMBIGA1UEAwwLcmlv\n" +
@@ -30,17 +44,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             "/yAQNj2Vji9RthQ33HG/QdL12b1ABU5UXgIhAPJujG/c/S+7vcREWI7bQcCb31JI\n" +
             "BDhWZbt4eyCvXZtZ\n" +
             "-----END CERTIFICATE-----\n";
-        private X509Attestation SampleX509RootAttestation = X509Attestation.CreateFromRootCertificates(SamplePublicKeyCertificateString);
-        private X509Attestation SampleX509ClientAttestation = X509Attestation.CreateFromClientCertificates(SamplePublicKeyCertificateString);
-        private const string SampleEndorsementKey =
-            "AToAAQALAAMAsgAgg3GXZ0SEs/gakMyNRqXXJP1S124GUgtk8qHaGzMUaaoABgCAAEMAEAgAAAAAAAEAxsj" +
-            "2gUScTk1UjuioeTlfGYZrrimExB+bScH75adUMRIi2UOMxG1kw4y+9RW/IVoMl4e620VxZad0ARX2gUqVjY" +
-            "O7KPVt3dyKhZS3dkcvfBisBhP1XH9B33VqHG9SHnbnQXdBUaCgKAfxome8UmBKfe+naTsE5fkvjb/do3/dD" +
-            "6l4sGBwFCnKRdln4XpM03zLpoHFao8zOwt8l/uP3qUIxmCYv9A7m69Ms+5/pCkTu/rK4mRDsfhZ0QLfbzVI" +
-            "6zQFOKF/rwsfBtFeWlWtcuJMKlXdD8TXWElTzgh7JS4qhFzreL0c1mI0GCj+Aws0usZh7dLIVPnlgZcBhgy" +
-            "1SSDQMQ==";
-        private TpmAttestation SampleTpmAttestation = new TpmAttestation(SampleEndorsementKey);
-        private string SampleEnrollmentGroupJson =
+
+        private readonly X509Attestation _sampleX509RootAttestation = X509Attestation.CreateFromRootCertificates(SamplePublicKeyCertificateString);
+        private readonly X509Attestation _sampleX509ClientAttestation = X509Attestation.CreateFromClientCertificates(SamplePublicKeyCertificateString);
+
+        private static readonly string s_sampleEnrollmentGroupJson =
             "{\n" +
             "   \"enrollmentGroupId\":\"" + SampleEnrollmentGroupId + "\",\n" +
             "   \"attestation\":{\n" +
@@ -71,33 +79,33 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             "   \"provisioningStatus\":\"" + SampleProvisioningStatus + "\",\n" +
             "   \"createdDateTimeUtc\": \"" + SampleCreateDateTimeUTCString + "\",\n" +
             "   \"lastUpdatedDateTimeUtc\": \"" + SampleLastUpdatedDateTimeUTCString + "\",\n" +
-            "   \"etag\": \"" + SampleEtag + "\"\n" +
+            "   \"etag\": \"" + s_sampleEtag.ToString() + "\"\n" +
             "}";
 
-        /* SRS_ENROLLMENT_GROUP_21_001: [The constructor shall store the provided parameters.] */
         [TestMethod]
         public void EnrollmentGroupConstructorSucceed()
         {
             // arrange - act
-            var individualEnrollment = new EnrollmentGroup(SampleEnrollmentGroupId, SampleX509RootAttestation);
+            var individualEnrollment = new EnrollmentGroup(SampleEnrollmentGroupId, _sampleX509RootAttestation);
 
             // assert
-            Assert.AreEqual(SampleEnrollmentGroupId, individualEnrollment.EnrollmentGroupId);
+            Assert.AreEqual(SampleEnrollmentGroupId, individualEnrollment.Id);
             Assert.AreEqual(SamplePublicKeyCertificateString, ((X509Attestation)individualEnrollment.Attestation).RootCertificates.Primary.Certificate);
         }
 
-        /* SRS_ENROLLMENT_GROUP_21_002: [The constructor shall throws ArgumentException if one of the provided parameters is null.] */
         [TestMethod]
         public void EnrollmentGroupConstructorThrowsOnInvalidParameters()
         {
             // arrange - act - assert
-            TestAssert.Throws<ArgumentException>(() => new EnrollmentGroup(SampleEnrollmentGroupId, null));
-            TestAssert.Throws<ArgumentException>(() => new EnrollmentGroup(SampleEnrollmentGroupId, SampleTpmAttestation));
-            TestAssert.Throws<ArgumentException>(() => new EnrollmentGroup(SampleEnrollmentGroupId, SampleX509ClientAttestation));
+            Action act = () => _ = new EnrollmentGroup(SampleEnrollmentGroupId, _sampleX509ClientAttestation);
+            act.Should().Throw<InvalidOperationException>();
+
+            act = () => _ = new EnrollmentGroup(SampleEnrollmentGroupId, _sampleTpmAttestation);
+            act.Should().Throw<InvalidOperationException>();
         }
 
         [TestMethod]
-        public void EnrollmentGroupConstructorJSONThrowsOnNonAttestation()
+        public void EnrollmentGroupConstructorJsonThrowsOnNonAttestation()
         {
             // arrange
             string invalidJson =
@@ -112,34 +120,36 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
                 "   \"provisioningStatus\":\"" + SampleProvisioningStatus + "\",\n" +
                 "   \"createdDateTimeUtc\": \"" + SampleCreateDateTimeUTCString + "\",\n" +
                 "   \"lastUpdatedDateTimeUtc\": \"" + SampleLastUpdatedDateTimeUTCString + "\",\n" +
-                "   \"etag\": \"" + SampleEtag + "\"\n" +
+                "   \"etag\": \"" + s_sampleEtag + "\"\n" +
                 "}";
 
-            // act - assert
-            TestAssert.Throws<ProvisioningServiceClientException>(() => Newtonsoft.Json.JsonConvert.DeserializeObject<EnrollmentGroup>(invalidJson));
+            // act
+            Action act = () => JsonConvert.DeserializeObject<EnrollmentGroup>(invalidJson);
+
+            // assert
+            act.Should().Throw<ArgumentNullException>();
         }
 
-        /* SRS_ENROLLMENT_GROUP_21_004: [The constructor shall store all parameters in the JSON.] */
         [TestMethod]
-        public void EnrollmentGroupConstructorJSONSucceed()
+        public void EnrollmentGroupConstructorJsonSucceed()
         {
             // arrange
-            EnrollmentGroup enrollmentGroup = Newtonsoft.Json.JsonConvert.DeserializeObject<EnrollmentGroup>(SampleEnrollmentGroupJson);
+            EnrollmentGroup enrollmentGroup = JsonConvert.DeserializeObject<EnrollmentGroup>(s_sampleEnrollmentGroupJson);
 
             // act - assert
             Assert.IsNotNull(enrollmentGroup);
-            Assert.AreEqual(SampleEnrollmentGroupId, enrollmentGroup.EnrollmentGroupId);
+            Assert.AreEqual(SampleEnrollmentGroupId, enrollmentGroup.Id);
             Assert.IsTrue(enrollmentGroup.Attestation is X509Attestation);
             Assert.AreEqual(SampleIotHubHostName, enrollmentGroup.IotHubHostName);
             Assert.IsNotNull(enrollmentGroup.InitialTwinState);
             Assert.AreEqual(SampleProvisioningStatus, enrollmentGroup.ProvisioningStatus);
-            Assert.AreEqual(SampleCreateDateTimeUTC, enrollmentGroup.CreatedDateTimeUtc);
-            Assert.AreEqual(SampleLastUpdatedDateTimeUTC, enrollmentGroup.LastUpdatedDateTimeUtc);
-            Assert.AreEqual(SampleEtag, enrollmentGroup.ETag);
+            Assert.AreEqual(_sampleCreateDateTimeUTC, enrollmentGroup.CreatedOnUtc);
+            Assert.AreEqual(_sampleLastUpdatedDateTimeUTC, enrollmentGroup.LastUpdatedOnUtc);
+            Assert.AreEqual(s_sampleEtag, enrollmentGroup.ETag);
         }
 
         [TestMethod]
-        public void EnrollmentGroupConstructorJSONSucceedOnMinimumJSON()
+        public void EnrollmentGroupConstructorJsonSucceedOnMinimumJson()
         {
             // arrange
             string minJson =
@@ -164,15 +174,15 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
                 "           }\n" +
                 "       }\n" +
                 "   },\n" +
-                "   \"etag\": \"" + SampleEtag + "\"\n" +
+                "   \"etag\": \"" + s_sampleEtag + "\"\n" +
                 "}";
-            EnrollmentGroup enrollmentGroup = Newtonsoft.Json.JsonConvert.DeserializeObject<EnrollmentGroup>(minJson);
+            EnrollmentGroup enrollmentGroup = JsonConvert.DeserializeObject<EnrollmentGroup>(minJson);
 
             // act - assert
             Assert.IsNotNull(enrollmentGroup);
-            Assert.AreEqual(SampleEnrollmentGroupId, enrollmentGroup.EnrollmentGroupId);
+            Assert.AreEqual(SampleEnrollmentGroupId, enrollmentGroup.Id);
             Assert.IsTrue(enrollmentGroup.Attestation is X509Attestation);
-            Assert.AreEqual(SampleEtag, enrollmentGroup.ETag);
+            Assert.AreEqual(s_sampleEtag, enrollmentGroup.ETag);
         }
     }
 }

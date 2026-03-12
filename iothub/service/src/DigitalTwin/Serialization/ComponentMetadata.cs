@@ -2,9 +2,9 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Collections.Generic;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
-namespace Microsoft.Azure.Devices.Serialization
+namespace Microsoft.Azure.Devices
 {
     /// <summary>
     /// An optional, helper class for deserializing a digital twin.

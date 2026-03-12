@@ -3,20 +3,17 @@
 
 using System;
 using Microsoft.Azure.Amqp;
-using Microsoft.Azure.Devices.Shared;
 
 namespace Microsoft.Azure.Devices
 {
     // This class overrides the trace providers available in Azure.Amqp library to
     // write into the service client log provider as well.
-    internal class AmqpTransportLog : AmqpTrace
+    internal sealed class AmqpTransportLog : AmqpTrace
     {
         public override void AmqpAbortThrowingException(string exception)
         {
             if (Logging.IsEnabled)
-            {
                 Logging.Info(exception, "AmqpAbortThrowingException:", "AmqpTransportLog");
-            }
 
             base.AmqpAbortThrowingException(exception);
         }

@@ -3,8 +3,8 @@
 
 namespace Microsoft.Azure.Devices.Client.Transport
 {
-    interface ITransportHandlerFactory
+    internal interface ITransportHandlerFactory
     {
-        IDelegatingHandler Create(PipelineContext context);
+        IDelegatingHandler Create(PipelineContext context, IDelegatingHandler nextHandler);
     }
 }

@@ -38,11 +38,10 @@ namespace Microsoft.Azure.Devices.Samples
             }
 
             logger.LogDebug("Set up the IoT hub service client and registry manager.");
-            using var serviceClient = ServiceClient.CreateFromConnectionString(parameters.HubConnectionString);
-            using var registryManager = RegistryManager.CreateFromConnectionString(parameters.HubConnectionString);
+            using var serviceClient = new IotHubServiceClient(parameters.HubConnectionString);
 
             logger.LogDebug("Set up and start the TemperatureController service sample.");
-            var temperatureControllerSample = new TemperatureControllerSample(serviceClient, registryManager, parameters.DeviceId, logger);
+            var temperatureControllerSample = new TemperatureControllerSample(serviceClient, parameters.DeviceId, logger);
             await temperatureControllerSample.RunSampleAsync();
         }
 

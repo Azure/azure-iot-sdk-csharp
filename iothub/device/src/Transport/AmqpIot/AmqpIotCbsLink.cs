@@ -5,12 +5,10 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Amqp;
-using Microsoft.Azure.Devices.Client.Extensions;
-using Microsoft.Azure.Devices.Shared;
 
 namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 {
-    internal class AmqpIotCbsLink
+    internal sealed class AmqpIotCbsLink
     {
         private readonly AmqpCbsLink _amqpCbsLink;
 
@@ -19,7 +17,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             _amqpCbsLink = amqpCbsLink;
         }
 
-        public async Task<DateTime> SendTokenAsync(
+        internal async Task<DateTime> SendTokenAsync(
             ICbsTokenProvider tokenProvider,
             Uri namespaceAddress,
             string audience,
@@ -38,16 +36,16 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                     .SendTokenAsync(tokenProvider, namespaceAddress, audience, resource, requiredClaims, cancellationToken)
                     .ConfigureAwait(false);
             }
-            catch (AmqpException e) when (!e.IsFatal())
+            catch (AmqpException ex) when (!Fx.IsFatal(ex))
             {
-                Exception ex = AmqpIotExceptionAdapter.ConvertToIotHubException(e);
-                if (ReferenceEquals(e, ex))
+                Exception iotEx = AmqpIotExceptionAdapter.ConvertToIotHubException(ex, null);
+                if (ReferenceEquals(ex, iotEx))
                 {
                     throw;
                 }
                 else
                 {
-                    throw ex;
+                    throw iotEx;
                 }
             }
             finally
