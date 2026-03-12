@@ -100,16 +100,48 @@ public sealed class CertificateSigningRequestSample : IDisposable
                 Convert.ToBase64String(csrData)) 
                 { Replace = "*" }; // Replace any active credential operation for this device
 
-            Console.WriteLine("Sending CSR request...");
-            CertificateSigningOperation operation = await _deviceClient!.SendCertificateSigningRequestAsync(csrRequest, _cts.Token);
+            CertificateSigningResponse response;
+            try
+            {
+                Console.WriteLine("Sending CSR request...");
+                CertificateSigningOperation operation = await _deviceClient!.SendCertificateSigningRequestAsync(csrRequest, _cts.Token);
 
-            Console.WriteLine("Waiting for acceptance (Phase 1)...");
-            CertificateAcceptedResponse accepted = await operation.Accepted;
-            Console.WriteLine($"CSR accepted. CorrelationId: {accepted.CorrelationId}, Expires: {accepted.OperationExpires}");
+                Console.WriteLine("Waiting for acceptance (Phase 1)...");
+                CertificateAcceptedResponse accepted = await operation.Accepted;
+                Console.WriteLine($"CSR accepted. CorrelationId: {accepted.CorrelationId}, Expires: {accepted.OperationExpires}");
 
-            Console.WriteLine("Waiting for certificate (Phase 2)...");
-            CertificateSigningResponse response = await operation.Completed;
-            Console.WriteLine($"Received certificate response with {response.Certificates?.Count ?? 0} certificate(s)");
+                Console.WriteLine("Waiting for certificate (Phase 2)...");
+                response = await operation.Completed;
+                Console.WriteLine($"Received certificate response with {response.Certificates?.Count ?? 0} certificate(s)");
+            }
+            catch (CertificateSigningRequestException csrEx)
+            {
+                Console.WriteLine($"CSR operation failed with error code {csrEx.ErrorCode}: {csrEx.Message}");
+
+                if (csrEx.CorrelationId != null)
+                {
+                    Console.WriteLine($"  Correlation ID: {csrEx.CorrelationId}");
+                }
+
+                if (csrEx.CertificateSigningRequestError != null)
+                {
+                    Console.WriteLine($"  CSR error: {csrEx.CertificateSigningRequestError}");
+                }
+
+                if (csrEx.RetryAfterSeconds.HasValue)
+                {
+                    Console.WriteLine($"  Retry after: {csrEx.RetryAfterSeconds} seconds");
+                }
+
+                // 409005 indicates a conflicting active operation already in progress.
+                if (csrEx.ActiveRequestId != null)
+                {
+                    Console.WriteLine($"  Active request ID: {csrEx.ActiveRequestId}");
+                    Console.WriteLine($"  Active operation expires: {csrEx.OperationExpires}");
+                }
+
+                return 1;
+            }
 
             if (response.Certificates == null || response.Certificates.Count == 0)
             {
