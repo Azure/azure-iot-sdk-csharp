@@ -194,16 +194,15 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
             else
             {
-                string mqttNetUriString = $"wss://{_hostName}/$iothub/websocket";
-                string proxyUriString = $"wss://{_hostName}/$iothub/websocket";
+                string uriString = $"wss://{_hostName}/$iothub/websocket";
                 _mqttClientOptionsBuilder.WithWebSocketServer(options =>
                 {
-                    options.WithUri(mqttNetUriString);
+                    options.WithUri(uriString);
 
                     IWebProxy proxy = _mqttTransportSettings.Proxy;
                     if (proxy != null)
                     {
-                        Uri serviceUri = new(proxyUriString);
+                        Uri serviceUri = new(uriString);
                         Uri proxyUri = _mqttTransportSettings.Proxy.GetProxy(serviceUri);
 
                         options.WithProxyOptions(proxyOptions =>

@@ -340,16 +340,15 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             }
             else
             {
-                string mqttNetUriString = $"{hostName}";
-                string proxyUriString = $"wss://{hostName}";
+                string uriString = $"wss://{hostName}";
                 mqttClientOptionsBuilder.WithWebSocketServer(options =>
                 {
-                    options.WithUri(mqttNetUriString);
+                    options.WithUri(uriString);
 
                     IWebProxy proxy = _settings.Proxy;
                     if (proxy != null)
                     {
-                        Uri serviceUri = new(proxyUriString);
+                        Uri serviceUri = new(uriString);
                         Uri proxyUri = _settings.Proxy.GetProxy(serviceUri);
 
                         options.WithProxyOptions(proxyOptions =>
