@@ -190,12 +190,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             if (_mqttTransportSettings.Protocol == IotHubClientTransportProtocol.Tcp)
             {
-                // "ssl://" prefix is not needed here because the MQTT library adds it for us.
                 _mqttClientOptionsBuilder.WithTcpServer(_hostName, ProtocolGatewayPort);
             }
             else
             {
-                string mqttNetUriString = $"{_hostName}/$iothub/websocket:443/mqtt";
+                string mqttNetUriString = $"wss://{_hostName}/$iothub/websocket";
                 string proxyUriString = $"wss://{_hostName}/$iothub/websocket";
                 _mqttClientOptionsBuilder.WithWebSocketServer(options =>
                 {
@@ -319,11 +318,15 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
                 _mqttClientOptions = _mqttClientOptionsBuilder.Build();
 
+                _mqttClient.ApplicationMessageReceivedAsync += HandleReceivedMessageAsync;
+
                 try
                 {
                     MqttClientConnectResult connack = await _mqttClient.ConnectAsync(_mqttClientOptions, cancellationToken).ConfigureAwait(false);
                     if (connack.ResultCode != MqttClientConnectResultCode.Success)
                     {
+                        _mqttClient.ApplicationMessageReceivedAsync -= HandleReceivedMessageAsync;
+                    
                         switch (connack.ResultCode)
                         {
                             case MqttClientConnectResultCode.BadUserNameOrPassword:
@@ -352,6 +355,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 }
                 catch (MqttCommunicationTimedOutException ex)
                 {
+                    _mqttClient.ApplicationMessageReceivedAsync -= HandleReceivedMessageAsync;
+
                     throw new IotHubClientException(
                         ConnectTimedOutErrorMessage,
                         IotHubClientErrorCode.Timeout,
@@ -359,6 +364,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 }
                 catch (MqttCommunicationException ex)
                 {
+                    _mqttClient.ApplicationMessageReceivedAsync -= HandleReceivedMessageAsync;
+
                     if (ex.InnerException is MqttCommunicationTimedOutException)
                     {
                         if (cancellationToken.IsCancellationRequested)
