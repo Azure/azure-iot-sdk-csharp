@@ -21,4 +21,8 @@
     <ProjectReference Include="..\..\..\..\transport\mqtt\src\Microsoft.Azure.Devices.Provisioning.Transport.Mqtt.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\..\samples\helpers\CertificateHelper\CertificateHelper.csproj" />
+  </ItemGroup>
+
 </Project>
