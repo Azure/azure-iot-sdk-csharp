@@ -594,7 +594,8 @@ namespace Microsoft.Azure.Devices.Client
             InternalClient.SendEventBatchAsync(messages, cancellationToken);
 
         /// <summary>
-        /// Sends a certificate signing request to IoT Hub and receives a new certificate.
+        /// Sends a certificate signing request to IoT Hub and returns a two-phase operation
+        /// for tracking acceptance and certificate delivery.
         /// </summary>
         /// <remarks>
         /// <para>
@@ -602,28 +603,36 @@ namespace Microsoft.Azure.Devices.Client
         /// The device must be connected with a valid certificate to request a new one.
         /// Requires Gen2/P SKU hub.
         /// </para>
-        /// 
+        ///
         /// <para><b>Transport Support:</b></para>
         /// <para>
         /// This operation is only supported over MQTT and MQTT_WS transport.
         /// </para>
-        /// 
+        ///
         /// <para><b>Two-Phase Response Flow:</b></para>
         /// <para>
-        /// 1. Phase 1: SDK waits up to 90 seconds for a 202 Accepted response.
-        /// 2. Phase 2: After acceptance, SDK waits until operationExpires (default ~12 hours) for the certificate.
+        /// The returned <see cref="CertificateSigningOperation"/> exposes two awaitable stages:
         /// </para>
+        /// <list type="number">
+        /// <item><description><see cref="CertificateSigningOperation.Accepted"/>: Completes when IoT Hub accepts the CSR (202 response). Contains correlation ID and operation expiration.</description></item>
+        /// <item><description><see cref="CertificateSigningOperation.Completed"/>: Completes when IoT Hub delivers the certificate (200 response). Contains the certificate chain.</description></item>
+        /// </list>
+        /// <code>
+        /// var operation = await deviceClient.SendCertificateSigningRequestAsync(csrRequest, cancellationToken);
+        /// var accepted = await operation.Accepted;   // Phase 1 - 202 Accepted
+        /// var completed = await operation.Completed;  // Phase 2 - 200 OK with certificate
+        /// </code>
         /// <para>
-        /// Consider sending keepalive messages (e.g., telemetry) while waiting for the result of <see cref="SendCertificateSigningRequestAsync"/>
+        /// Consider sending keepalive messages (e.g., telemetry) while waiting for <see cref="CertificateSigningOperation.Completed"/>
         /// to ensure the connection remains active, especially for long-running certificate issuance operations.
         /// </para>
         /// <para><b>Reconnection Behavior:</b></para>
         /// <para>
-        /// If the device disconnects at any point during the CSR operation, reconnect and call <see cref="SendCertificateSigningRequestAsync"/> again.
+        /// If the device disconnects at any point during the CSR operation, reconnect and call <see cref="SendCertificateSigningRequest"/> again.
         /// If error 409005 (CredentialOperationActive) is received, set <see cref="CertificateSigningRequest.Replace"/> to "*"
         /// to replace any active operation, or to the specific request ID of your previous request if you saved it.
         /// </para>
-        /// 
+        ///
         /// <para><b>Error Handling:</b></para>
         /// <list type="bullet">
         /// <item><description>409005: Active operation exists. Use <see cref="CertificateSigningRequest.Replace"/> = "*" to replace.</description></item>
@@ -635,16 +644,15 @@ namespace Microsoft.Azure.Devices.Client
         /// </remarks>
         /// <param name="request">The certificate signing request containing the Base64-encoded CSR.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <returns>The response containing the issued certificate chain and correlationId for diagnostics.</returns>
+        /// <returns>A <see cref="CertificateSigningOperation"/> with <see cref="CertificateSigningOperation.Accepted"/> and <see cref="CertificateSigningOperation.Completed"/> tasks.</returns>
         /// <exception cref="ArgumentNullException">Thrown when request is null.</exception>
         /// <exception cref="NotSupportedException">Thrown when using non-MQTT transport.</exception>
-        /// <exception cref="CredentialOperationException">Thrown when the request fails with specific error details.</exception>
-        /// <exception cref="TimeoutException">Thrown when Phase 1 (90s) or Phase 2 (operationExpires) times out.</exception>
+        /// <exception cref="CertificateSigningRequestException">Thrown when the request fails with specific error details.</exception>
         /// <exception cref="ObjectDisposedException">Thrown when the client has been disposed.</exception>
-        public Task<CertificateSigningResponse> SendCertificateSigningRequestAsync(
+        public CertificateSigningOperation SendCertificateSigningRequest(
             CertificateSigningRequest request,
             CancellationToken cancellationToken = default) =>
-            InternalClient.SendCertificateSigningRequestAsync(request, cancellationToken);
+            InternalClient.SendCertificateSigningRequest(request, cancellationToken);
 
         /// <summary>
         /// Uploads a stream to a block blob in a storage account associated with the IoTHub for that device.
