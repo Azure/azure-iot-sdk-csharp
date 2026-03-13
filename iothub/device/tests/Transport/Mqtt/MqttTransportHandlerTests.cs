@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client.Transport;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using MQTTnet.Client;
+using MQTTnet;
 
 namespace Microsoft.Azure.Devices.Client.Tests.Transport.Mqtt
 {

@@ -54,8 +54,8 @@
 
   <!--Nuget package dependencies-->
   <ItemGroup>
-    <PackageReference Include="MQTTnet" Version="4.1.4.563" />
-    <PackageReference Include="Microsoft.Azure.Amqp" Version="2.6.2" />
+    <PackageReference Include="MQTTnet" Version="5.1.0.1559" />
+    <PackageReference Include="Microsoft.Azure.Amqp" Version="2.7.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
   </ItemGroup>
 </Project>

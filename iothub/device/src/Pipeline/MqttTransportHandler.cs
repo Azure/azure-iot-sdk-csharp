@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Buffers;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -18,7 +19,6 @@ using System.Web;
 using Microsoft.Azure.Devices.Client.Transport.Mqtt;
 using MQTTnet;
 using MQTTnet.Adapter;
-using MQTTnet.Client;
 using MQTTnet.Exceptions;
 using MQTTnet.Protocol;
 using Newtonsoft.Json;
@@ -179,7 +179,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             _productInfo = context.ProductInfo;
             _payloadConvention = context.PayloadConvention;
 
-            var mqttFactory = new MqttFactory(new MqttLogger());
+            var mqttFactory = new MqttClientFactory(new MqttLogger());
             _mqttClient = mqttFactory.CreateMqttClient();
             _mqttClientOptionsBuilder = new MqttClientOptionsBuilder();
             _messageQueue = new ConcurrentQueue<IncomingMessage>();
@@ -195,46 +195,55 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
             else
             {
-                string uri = $"wss://{_hostName}/$iothub/websocket";
-                _mqttClientOptionsBuilder.WithWebSocketServer(uri);
-
-                IWebProxy proxy = _mqttTransportSettings.Proxy;
-                if (proxy != null)
+                string mqttNetUriString = $"{_hostName}/$iothub/websocket:443/mqtt";
+                string proxyUriString = $"wss://{_hostName}/$iothub/websocket";
+                _mqttClientOptionsBuilder.WithWebSocketServer(options =>
                 {
-                    Uri serviceUri = new(uri);
-                    Uri proxyUri = _mqttTransportSettings.Proxy.GetProxy(serviceUri);
+                    options.WithUri(mqttNetUriString);
 
-                    if (proxy.Credentials != null)
+                    IWebProxy proxy = _mqttTransportSettings.Proxy;
+                    if (proxy != null)
                     {
-                        NetworkCredential credentials = proxy.Credentials.GetCredential(serviceUri, BasicProxyAuthentication);
-                        string username = credentials.UserName;
-                        string password = credentials.Password;
-                        _mqttClientOptionsBuilder.WithProxy(proxyUri.AbsoluteUri, username, password);
+                        Uri serviceUri = new(proxyUriString);
+                        Uri proxyUri = _mqttTransportSettings.Proxy.GetProxy(serviceUri);
+
+                        options.WithProxyOptions(proxyOptions =>
+                        {
+
+                            if (proxy.Credentials != null)
+                            {
+                                NetworkCredential credentials = proxy.Credentials.GetCredential(serviceUri, BasicProxyAuthentication);
+                                string username = credentials.UserName;
+                                string password = credentials.Password;
+                                proxyOptions.WithUsername(username);
+                                proxyOptions.WithPassword(password);
+                            }
+
+                            proxyOptions.WithAddress(proxyUri.AbsoluteUri);
+                        });
                     }
-                    else
-                    {
-                        _mqttClientOptionsBuilder.WithProxy(proxyUri.AbsoluteUri);
-                    }
-                }
+                });
             }
 
-            var tlsParameters = new MqttClientOptionsBuilderTlsParameters();
-            List<X509Certificate> certs = _connectionCredentials.ClientCertificate == null
-                ? new List<X509Certificate>(0)
-                : new List<X509Certificate> { _connectionCredentials.ClientCertificate };
-
-            tlsParameters.Certificates = certs;
-            tlsParameters.IgnoreCertificateRevocationErrors = !_mqttTransportSettings.CertificateRevocationCheck;
-
-            if (_mqttTransportSettings?.RemoteCertificateValidationCallback != null)
+            _mqttClientOptionsBuilder.WithTlsOptions(tlsOptions =>
             {
-                tlsParameters.CertificateValidationHandler = CertificateValidationHandler;
-            }
+                List<X509Certificate2> certs = _connectionCredentials.ClientCertificate == null
+                    ? new List<X509Certificate2>(0)
+                    : new List<X509Certificate2> { _connectionCredentials.ClientCertificate };
 
-            tlsParameters.UseTls = true;
-            tlsParameters.SslProtocol = _mqttTransportSettings.SslProtocols;
+                tlsOptions.WithClientCertificates(certs);
+                tlsOptions.WithIgnoreCertificateRevocationErrors(!_mqttTransportSettings.CertificateRevocationCheck);
+
+                if (_mqttTransportSettings?.RemoteCertificateValidationCallback != null)
+                {
+                    tlsOptions.WithCertificateValidationHandler(CertificateValidationHandler);
+                }
+
+                tlsOptions.UseTls(true);
+                tlsOptions.WithSslProtocols(_mqttTransportSettings.SslProtocols);
+            });
+
             _mqttClientOptionsBuilder
-                .WithTls(tlsParameters)
                 .WithProtocolVersion(MQTTnet.Formatter.MqttProtocolVersion.V311) // 3.1.1
                 .WithCleanSession(_mqttTransportSettings.CleanSession)
                 .WithKeepAlivePeriod(_mqttTransportSettings.IdleTimeout)
@@ -312,59 +321,33 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
                 try
                 {
-                    await _mqttClient.ConnectAsync(_mqttClientOptions, cancellationToken).ConfigureAwait(false);
-                    _mqttClient.DisconnectedAsync += HandleDisconnectionAsync;
-                    _mqttClient.ApplicationMessageReceivedAsync += HandleReceivedMessageAsync;
-
-                    // The timer would invoke callback in the specified time and that duration thereafter.
-                    _twinTimeoutTimer.Change(TwinResponseTimeout, TwinResponseTimeout);
-                }
-                catch (MqttConnectingFailedException ex)
-                {
-                    MqttClientConnectResultCode connectCode = ex.ResultCode;
-                    switch (connectCode)
+                    MqttClientConnectResult connack = await _mqttClient.ConnectAsync(_mqttClientOptions, cancellationToken).ConfigureAwait(false);
+                    if (connack.ResultCode != MqttClientConnectResultCode.Success)
                     {
-                        case MqttClientConnectResultCode.BadUserNameOrPassword:
-                        case MqttClientConnectResultCode.NotAuthorized:
-                        case MqttClientConnectResultCode.ClientIdentifierNotValid:
-                            throw new IotHubClientException(
-                                "Failed to open the MQTT connection due to incorrect or unauthorized credentials",
-                                IotHubClientErrorCode.Unauthorized,
-                                ex);
-                        case MqttClientConnectResultCode.UnsupportedProtocolVersion:
-                            // Should never happen since the protocol version (3.1.1) is hardcoded
-                            throw new IotHubClientException(
-                                "Failed to open the MQTT connection due to an unsupported MQTT version",
-                                innerException: ex);
-                        case MqttClientConnectResultCode.ServerUnavailable:
-                            throw new IotHubClientException(
-                                "MQTT connection rejected because the server was unavailable",
-                                IotHubClientErrorCode.ServerBusy,
-                                ex);
-                        default:
-                            if (ex.InnerException is MqttCommunicationTimedOutException)
-                            {
-                                if (cancellationToken.IsCancellationRequested)
-                                {
-                                    // MQTTNet throws MqttCommunicationTimedOutException instead of OperationCanceledException
-                                    // when the cancellation token requests cancellation.
-                                    throw new OperationCanceledException(ConnectTimedOutErrorMessage, ex);
-                                }
-
-                                // This execption may be thrown even if cancellation has not been requested yet.
-                                // This case is treated as a timeout error rather than an OperationCanceledException
+                        switch (connack.ResultCode)
+                        {
+                            case MqttClientConnectResultCode.BadUserNameOrPassword:
+                            case MqttClientConnectResultCode.NotAuthorized:
+                            case MqttClientConnectResultCode.ClientIdentifierNotValid:
                                 throw new IotHubClientException(
-                                    ConnectTimedOutErrorMessage,
-                                    IotHubClientErrorCode.Timeout,
-                                    ex);
-                            }
-
-                            // MQTT 3.1.1 only supports the above connect return codes, so this default case
-                            // should never happen. For more details, see the MQTT 3.1.1 specification section "3.2.2.3 Connect Return code"
-                            // https://docs.oasis-open.org/mqtt/mqtt/v3.1.1/os/mqtt-v3.1.1-os.html
-                            // MQTT 5 supports a larger set of connect codes. See the MQTT 5.0 specification section "3.2.2.2 Connect Reason Code"
-                            // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901074
-                            throw new IotHubClientException("Failed to open the MQTT connection", IotHubClientErrorCode.NetworkErrors, ex);
+                                    "Failed to open the MQTT connection due to incorrect or unauthorized credentials",
+                                    IotHubClientErrorCode.Unauthorized);
+                            case MqttClientConnectResultCode.UnsupportedProtocolVersion:
+                                // Should never happen since the protocol version (3.1.1) is hardcoded
+                                throw new IotHubClientException(
+                                    "Failed to open the MQTT connection due to an unsupported MQTT version");
+                            case MqttClientConnectResultCode.ServerUnavailable:
+                                throw new IotHubClientException(
+                                    "MQTT connection rejected because the server was unavailable",
+                                    IotHubClientErrorCode.ServerBusy);
+                            default:
+                                // MQTT 3.1.1 only supports the above connect return codes, so this default case
+                                // should never happen. For more details, see the MQTT 3.1.1 specification section "3.2.2.3 Connect Return code"
+                                // https://docs.oasis-open.org/mqtt/mqtt/v3.1.1/os/mqtt-v3.1.1-os.html
+                                // MQTT 5 supports a larger set of connect codes. See the MQTT 5.0 specification section "3.2.2.2 Connect Reason Code"
+                                // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901074
+                                throw new IotHubClientException("Failed to open the MQTT connection. MQTT connack code: " + connack.ResultCode + " with reason: " + connack.ReasonString, IotHubClientErrorCode.NetworkErrors);
+                        }
                     }
                 }
                 catch (MqttCommunicationTimedOutException ex)
@@ -373,6 +356,24 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         ConnectTimedOutErrorMessage,
                         IotHubClientErrorCode.Timeout,
                         ex);
+                }
+                catch (MqttCommunicationException ex)
+                {
+                    if (ex.InnerException is MqttCommunicationTimedOutException)
+                    {
+                        if (cancellationToken.IsCancellationRequested)
+                        {
+                            // MQTTNet throws MqttCommunicationTimedOutException instead of OperationCanceledException
+                            // when the cancellation token requests cancellation.
+                            throw new OperationCanceledException(ConnectTimedOutErrorMessage);
+                        }
+
+                        // This execption may be thrown even if cancellation has not been requested yet.
+                        // This case is treated as a timeout error rather than an OperationCanceledException
+                        throw new IotHubClientException(ConnectTimedOutErrorMessage, IotHubClientErrorCode.Timeout);
+                    }
+
+                    throw new IotHubClientException("An unknown error occurred when connecting. See inner error for details", IotHubClientErrorCode.NetworkErrors, ex);
                 }
             }
             finally
@@ -1083,7 +1084,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         private IncomingMessage ProcessC2DMessage(MqttApplicationMessageReceivedEventArgs receivedEventArgs)
         {
-            byte[] payload = receivedEventArgs.ApplicationMessage.Payload;
+            byte[] payload = receivedEventArgs.ApplicationMessage.Payload.ToArray();
 
             var receivedCloudToDeviceMessage = new IncomingMessage(payload)
             {
@@ -1168,7 +1169,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             // This message is always QoS 0, so no ack will be sent.
             receivedEventArgs.AutoAcknowledge = true;
 
-            byte[] payload = receivedEventArgs.ApplicationMessage.Payload;
+            byte[] payload = receivedEventArgs.ApplicationMessage.Payload.ToArray();
 
             string[] tokens = Regex.Split(receivedEventArgs.ApplicationMessage.Topic, "/", RegexOptions.Compiled);
 
@@ -1192,7 +1193,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             // This message is always QoS 0, so no ack will be sent.
             receivedEventArgs.AutoAcknowledge = true;
 
-            Dictionary<string, object> desiredPropertyPatchDictionary = DefaultPayloadConvention.Instance.GetObject<Dictionary<string, object>>(receivedEventArgs.ApplicationMessage.Payload);
+            Dictionary<string, object> desiredPropertyPatchDictionary = DefaultPayloadConvention.Instance.GetObject<Dictionary<string, object>>(receivedEventArgs.ApplicationMessage.Payload.ToArray());
             var desiredPropertyPatch = new DesiredProperties(desiredPropertyPatchDictionary)
             {
                 PayloadConvention = _payloadConvention,
@@ -1208,7 +1209,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             if (ParseResponseTopic(receivedEventArgs.ApplicationMessage.Topic, out string receivedRequestId, out int status, out long version))
             {
-                byte[] payloadBytes = receivedEventArgs.ApplicationMessage.Payload ?? Array.Empty<byte>();
+                byte[] payloadBytes = receivedEventArgs.ApplicationMessage.Payload.ToArray() ?? Array.Empty<byte>();
 
                 if (_pendingTwinOperations.TryRemove(receivedRequestId, out PendingMqttTwinOperation twinOperation))
                 {
@@ -1310,7 +1311,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             receivedEventArgs.AutoAcknowledge = true;
 
-            var iotHubMessage = new IncomingMessage(receivedEventArgs.ApplicationMessage.Payload)
+            var iotHubMessage = new IncomingMessage(receivedEventArgs.ApplicationMessage.Payload.ToArray())
             {
                 PayloadConvention = _payloadConvention,
             };
