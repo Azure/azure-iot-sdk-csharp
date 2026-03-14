@@ -62,6 +62,6 @@
   <ItemGroup>
     <PackageReference Include="Azure.Core" Version="1.31.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-    <PackageReference Include="Microsoft.Azure.Amqp" Version="2.6.2" />
+    <PackageReference Include="Microsoft.Azure.Amqp" Version="2.7.0" />
   </ItemGroup>
 </Project>
