@@ -318,6 +318,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 _mqttClientOptions = _mqttClientOptionsBuilder.Build();
 
                 _mqttClient.ApplicationMessageReceivedAsync += HandleReceivedMessageAsync;
+                _mqttClient.DisconnectedAsync += HandleDisconnectionAsync;
 
                 try
                 {
@@ -325,7 +326,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     if (connack.ResultCode != MqttClientConnectResultCode.Success)
                     {
                         _mqttClient.ApplicationMessageReceivedAsync -= HandleReceivedMessageAsync;
-                    
+                        _mqttClient.DisconnectedAsync -= HandleDisconnectionAsync;
+
                         switch (connack.ResultCode)
                         {
                             case MqttClientConnectResultCode.BadUserNameOrPassword:
@@ -355,6 +357,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 catch (MqttCommunicationTimedOutException ex)
                 {
                     _mqttClient.ApplicationMessageReceivedAsync -= HandleReceivedMessageAsync;
+                    _mqttClient.DisconnectedAsync -= HandleDisconnectionAsync;
 
                     throw new IotHubClientException(
                         ConnectTimedOutErrorMessage,
@@ -364,6 +367,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 catch (MqttCommunicationException ex)
                 {
                     _mqttClient.ApplicationMessageReceivedAsync -= HandleReceivedMessageAsync;
+                    _mqttClient.DisconnectedAsync -= HandleDisconnectionAsync;
 
                     if (ex.InnerException is MqttCommunicationTimedOutException)
                     {
@@ -386,7 +390,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 if (Logging.IsEnabled)
                     Logging.Exit(this, cancellationToken, nameof(OpenAsync));
-
             }
         }
 
