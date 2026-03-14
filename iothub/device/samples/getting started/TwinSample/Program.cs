@@ -24,11 +24,6 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 .WithParsed(parsedParams =>
                 {
                     parameters = parsedParams;
-                    if (parameters.TransportType == TransportType.Http1)
-                    {
-                        Console.WriteLine("Twin operations aren't supported over HTTP.");
-                        Environment.Exit(1);
-                    }
                 })
                 .WithNotParsed(errors =>
                 {
@@ -39,9 +34,10 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 ? TimeSpan.FromSeconds((double)parameters.ApplicationRunningTime)
                 : Timeout.InfiniteTimeSpan;
 
-            using var deviceClient = DeviceClient.CreateFromConnectionString(
+            var options = new IotHubClientOptions(parameters.GetHubTransportSettings());
+            await using var deviceClient = new IotHubDeviceClient(
                 parameters.PrimaryConnectionString,
-                parameters.TransportType);
+                options);
             var sample = new TwinSample(deviceClient);
             await sample.RunSampleAsync(runningTime);
             await deviceClient.CloseAsync();

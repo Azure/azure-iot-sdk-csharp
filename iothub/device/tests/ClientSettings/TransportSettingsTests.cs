@@ -2,276 +2,332 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using Microsoft.Azure.Devices.Client.Transport.Mqtt;
+using System.Net;
+using System.Net.WebSockets;
+using System.Security.Authentication;
+using System.Security.Cryptography.X509Certificates;
+using System.Threading.Tasks;
+using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
 
-namespace Microsoft.Azure.Devices.Client.Test
+namespace Microsoft.Azure.Devices.Client.Tests
 {
     [TestClass]
     [TestCategory("Unit")]
     public class TransportSettingsTests
     {
-        private const string LocalCertFilename = "..\\..\\Microsoft.Azure.Devices.Client.Test\\LocalNoChain.pfx";
-        private const string LocalCertPasswordFile = "..\\..\\Microsoft.Azure.Devices.Client.Test\\TestCertsPassword.txt";
-
         [TestMethod]
-        [ExpectedException(typeof(ArgumentOutOfRangeException))]
-        public void AmqpTransportSettings_InvalidTransportTypeAmqp()
-        {
-            _ = new AmqpTransportSettings(TransportType.Amqp);
+        public void IotHubClientOptions_None_Throw()
+        {       
+            Action act = () => _ = new IotHubClientOptions(null);
+            act.Should().Throw<ArgumentNullException>();
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentOutOfRangeException))]
-        public void AmqpTransportSettings_InvalidTransportTypeAmqpHttp()
+        public void IotHubClientOptions_Mqtt_DoesNotThrow()
         {
-            _ = new AmqpTransportSettings(TransportType.Http1);
+            Action act = () => _ = new IotHubClientOptions(new IotHubClientMqttSettings());
+            act.Should().NotThrow();
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentOutOfRangeException))]
-        public void AmqpTransportSettings_UnderPrefetchCountMin()
+        public void IotHubClientOptions_Amqp_DoesNotThrow()
         {
-            _ = new AmqpTransportSettings(TransportType.Amqp_Tcp_Only, 0, new AmqpConnectionPoolSettings());
+            Action act = () => _ = new IotHubClientOptions(new IotHubClientAmqpSettings());
+            act.Should().NotThrow();
+        }
+
+        [TestMethod]
+        public void IotHubClientOptions_Http_Throws()
+        {
+            Action act = () => _ = new IotHubClientOptions(new IotHubClientHttpSettings());
+            act.Should().Throw<ArgumentException>();
+        }
+
+        [TestMethod]
+        public void IotHubClientOptions_DefaultValues()
+        {
+            var options = new IotHubClientOptions();
+            options.TransportSettings.Should().BeOfType<IotHubClientMqttSettings>();
+            options.HttpOperationTransportSettings.Should().BeOfType<IotHubClientHttpSettings>();
+            options.PayloadConvention.Should().Be(DefaultPayloadConvention.Instance);
+            options.SdkAssignsMessageId.Should().Be(SdkAssignsMessageId.Never);
         }
 
         [TestMethod]
         public void AmqpTransportSettings_DefaultPropertyValues()
         {
             // arrange
-            const TransportType transportType = TransportType.Amqp_WebSocket_Only;
-            const uint prefetchCount = 50;
+            const IotHubClientTransportProtocol expectedProtocol = IotHubClientTransportProtocol.Tcp;
+            const uint expectedPrefetchCount = 50;
 
             // act
-            var transportSetting = new AmqpTransportSettings(transportType);
+            var transportSetting = new IotHubClientAmqpSettings();
 
             // assert
-            Assert.AreEqual(transportType, transportSetting.GetTransportType(), "Should match initialized value");
-            Assert.AreEqual(prefetchCount, transportSetting.PrefetchCount, "Should default to 50");
+            transportSetting.Protocol.Should().Be(expectedProtocol);
+            transportSetting.PrefetchCount.Should().Be(expectedPrefetchCount);
+            transportSetting.IdleTimeout.Should().Be(TimeSpan.FromMinutes(2));
+            transportSetting.SslProtocols.Should().Be(SslProtocols.None);
+            transportSetting.ToString().Should().Be("IotHubClientAmqpSettings/Tcp");
         }
 
         [TestMethod]
-        public void AmqpTransportSettings_RespectsCtorParameters()
+        [DataRow(IotHubClientTransportProtocol.Tcp)]
+        [DataRow(IotHubClientTransportProtocol.WebSocket)]
+        public void AmqpTransportSettings_RespectsCtorParameter(IotHubClientTransportProtocol protocol)
         {
-            // arrange
-            const TransportType transportType = TransportType.Amqp_Tcp_Only;
-            const uint prefetchCount = 200;
-
-            // act
-            var transportSetting = new AmqpTransportSettings(transportType, prefetchCount, new AmqpConnectionPoolSettings());
-
-            // assert
-            Assert.AreEqual(transportType, transportSetting.GetTransportType(), "Should match initialized value");
-            Assert.AreEqual(prefetchCount, transportSetting.PrefetchCount, "Should match initialized value");
+            var transportSetting = new IotHubClientAmqpSettings(protocol);
+            transportSetting.Protocol.Should().Be(protocol);
         }
 
         [TestMethod]
-        public void Http1TransportSettings_DefaultTransportType()
-        {
-            Assert.AreEqual(TransportType.Http1, new Http1TransportSettings().GetTransportType(), "Should default to TransportType.Http1");
-        }
-
-        [TestMethod]
-        public void MqttTransportSettings_RespectsCtorParameterMqttTcpOnly()
-        {
-            // arrange
-            const TransportType transportType = TransportType.Mqtt_Tcp_Only;
-
-            // act
-            var transportSetting = new MqttTransportSettings(transportType);
-
-            // assert
-            Assert.AreEqual(transportType, transportSetting.GetTransportType(), "Should match initilized value");
-        }
-
-        [TestMethod]
-        public void MqttTransportSettings_RespectsCtorParameterMqttWebSocketOnly()
-        {
-            // arrange
-            const TransportType transportType = TransportType.Mqtt_WebSocket_Only;
-
-            // act
-            var transportSetting = new MqttTransportSettings(transportType);
-
-            // assert
-            Assert.AreEqual(transportType, transportSetting.GetTransportType(), "Should match initilized value");
-        }
-
-        [TestMethod]
-        [ExpectedException(typeof(ArgumentOutOfRangeException))]
-        public void MqttTransportSettings_InvalidTransportTypeMqtt()
-        {
-            _ = new MqttTransportSettings(TransportType.Mqtt);
-        }
-
-        [TestMethod]
-        [ExpectedException(typeof(ArgumentOutOfRangeException))]
-        public void AmqpTransportSettings_UnderOperationTimeoutMin()
-        {
-            _ = new AmqpTransportSettings(TransportType.Amqp, 200, new AmqpConnectionPoolSettings())
-            {
-                OperationTimeout = TimeSpan.Zero,
-            };
-        }
-
-        [TestMethod]
-        [ExpectedException(typeof(ArgumentOutOfRangeException))]
-        public void AmqpTransportSettings_UnderOpenTimeoutMin()
-        {
-            _ = new AmqpTransportSettings(TransportType.Amqp, 200, new AmqpConnectionPoolSettings())
-            {
-                OpenTimeout = TimeSpan.Zero,
-            };
-        }
-
-        [TestMethod]
-        public void AmqpTransportSettings_TimeoutPropertiesSet()
-        {
-            // arrange
-            var fiveMinutes = TimeSpan.FromMinutes(5);
-            var tenMinutes = TimeSpan.FromMinutes(10);
-
-            // act
-            var transportSetting = new AmqpTransportSettings(TransportType.Amqp_WebSocket_Only, 200, new AmqpConnectionPoolSettings())
-            {
-                OpenTimeout = fiveMinutes,
-                OperationTimeout = tenMinutes,
-            };
-
-            // assert
-            Assert.AreEqual(fiveMinutes, transportSetting.OpenTimeout, "Should match initialized value");
-            Assert.AreEqual(tenMinutes, transportSetting.OperationTimeout, "Should match initialized value");
-        }
-
-        [TestMethod]
-        public void AmqpTransportSettings_SetsDefaultTimeout()
+        public void MqttTransportSettings_DefaultPropertyValues()
         {
             // act
-            var transportSetting = new AmqpTransportSettings(TransportType.Amqp_WebSocket_Only, 200);
+            var transportSetting = new IotHubClientMqttSettings();
 
             // assert
-            Assert.AreEqual(AmqpTransportSettings.DefaultOpenTimeout, transportSetting.OpenTimeout, "Default OpenTimeout not set correctly");
-            Assert.AreEqual(AmqpTransportSettings.DefaultOperationTimeout, transportSetting.OperationTimeout, "Default OperationTimeout not set correctly");
-            Assert.AreEqual(AmqpTransportSettings.DefaultIdleTimeout, transportSetting.IdleTimeout, "Default IdleTimeout not set correctly");
-            Assert.AreEqual(AmqpTransportSettings.DefaultOperationTimeout, transportSetting.DefaultReceiveTimeout, "Default DefaultReceiveTimeout not set correctly");
+            transportSetting.Protocol.Should().Be(IotHubClientTransportProtocol.Tcp);
+            transportSetting.PublishToServerQoS.Should().Be(QualityOfService.AtLeastOnce);
+            transportSetting.ReceivingQoS.Should().Be(QualityOfService.AtLeastOnce);
+            transportSetting.IdleTimeout.Should().Be(TimeSpan.FromMinutes(2));
+            transportSetting.SslProtocols.Should().Be(SslProtocols.None);
         }
 
         [TestMethod]
-        public void AmqpTransportSettings_OverridesDefaultTimeout()
+        [DataRow(IotHubClientTransportProtocol.Tcp)]
+        [DataRow(IotHubClientTransportProtocol.WebSocket)]
+        public void MqttTransportSettings_RespectsCtorParameter(IotHubClientTransportProtocol protocol)
         {
-            // We want to test that the timeouts that we set on AmqpTransportSettings override the default timeouts.
-            // In order to test that, we need to ensure the test timeout values are different from the default timeout values.
-            // Adding a TimeSpan to the default timeout value is an easy way to achieve that.
-            var openTimeout = AmqpTransportSettings.DefaultOpenTimeout.Add(TimeSpan.FromMinutes(5));
-            var operationTimeout = AmqpTransportSettings.DefaultOperationTimeout.Add(TimeSpan.FromMinutes(5));
-            var idleTimeout = AmqpTransportSettings.DefaultIdleTimeout.Add(TimeSpan.FromMinutes(5));
-
-            // act
-            var transportSetting = new AmqpTransportSettings(TransportType.Amqp_WebSocket_Only, 200)
-            {
-                OpenTimeout = openTimeout,
-                OperationTimeout = operationTimeout,
-                IdleTimeout = idleTimeout,
-            };
-
-            // assert
-            Assert.AreEqual(openTimeout, transportSetting.OpenTimeout, "OpenTimeout not set correctly");
-            Assert.AreEqual(operationTimeout, transportSetting.OperationTimeout, "OperationTimeout not set correctly");
-            Assert.AreEqual(idleTimeout, transportSetting.IdleTimeout, "IdleTimeout not set correctly");
+            var transportSetting = new IotHubClientMqttSettings(protocol);
+            transportSetting.Protocol.Should().Be(protocol);
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentOutOfRangeException))]
-        public void AmqpConnectionPoolSettings_UnderMinPoolSize()
+        public void IotHubDeviceClient_NullX509Certificate()
         {
-            _ = new AmqpConnectionPoolSettings { MaxPoolSize = 0 };
+            Action act = () => _ = new ClientAuthenticationWithX509Certificate(null, "device1");
+            act.Should().Throw<ArgumentException>();
         }
 
         [TestMethod]
-        public void AmqpConnectionPoolSettings_MaxPoolSizeTest()
-        {
-            // arrange
-            const uint maxPoolSize = AmqpConnectionPoolSettings.AbsoluteMaxPoolSize;
-
-            // act
-            var connectionPoolSettings = new AmqpConnectionPoolSettings { MaxPoolSize = maxPoolSize };
-
-            // assert
-            Assert.AreEqual(maxPoolSize, connectionPoolSettings.MaxPoolSize, "Should match initialized value");
-        }
-
-        [TestMethod]
-        [ExpectedException(typeof(ArgumentOutOfRangeException))]
-        public void AmqpConnectionPoolSettings_OverMaxPoolSize()
-        {
-            _ = new AmqpConnectionPoolSettings { MaxPoolSize = AmqpConnectionPoolSettings.AbsoluteMaxPoolSize + 1 };
-        }
-
-        [TestMethod]
-        public void ConnectionPoolSettings_PoolingOff()
-        {
-            // act
-            var transportSetting = new AmqpTransportSettings(TransportType.Amqp_Tcp_Only, 200, new AmqpConnectionPoolSettings { Pooling = false });
-
-            // assert
-            Assert.IsFalse(transportSetting.AmqpConnectionPoolSettings.Pooling, "Should match initialized value");
-        }
-
-        [TestMethod]
-        public void AmqpTransportSettings_Equals()
-        {
-            // act
-            var amqpTransportSettings1 = new AmqpTransportSettings(TransportType.Amqp_Tcp_Only)
-            {
-                PrefetchCount = 100,
-                OpenTimeout = TimeSpan.FromMinutes(1),
-                OperationTimeout = TimeSpan.FromMinutes(1),
-            };
-            var amqpTransportSettings2 = new AmqpTransportSettings(TransportType.Amqp_Tcp_Only)
-            {
-                PrefetchCount = 70,
-                OpenTimeout = TimeSpan.FromMinutes(1),
-                OperationTimeout = TimeSpan.FromMinutes(1),
-            };
-            var amqpTransportSettings4 = new AmqpTransportSettings(TransportType.Amqp_Tcp_Only)
-            {
-                PrefetchCount = 100,
-                OpenTimeout = TimeSpan.FromMinutes(1),
-                OperationTimeout = TimeSpan.FromMinutes(2),
-            };
-            var amqpTransportSettings5 = new AmqpTransportSettings(TransportType.Amqp_Tcp_Only)
-            {
-                PrefetchCount = 100,
-                OpenTimeout = TimeSpan.FromMinutes(1),
-                OperationTimeout = TimeSpan.FromMinutes(1),
-            };
-            var amqpTransportSettings3 = new AmqpTransportSettings(TransportType.Amqp_Tcp_Only)
-            {
-                PrefetchCount = 100,
-                OpenTimeout = TimeSpan.FromMinutes(2),
-                OperationTimeout = TimeSpan.FromMinutes(1),
-            };
-
-            // assert
-            Assert.IsTrue(amqpTransportSettings1.Equals(amqpTransportSettings1), "An object should equal itself");
-            Assert.IsFalse(amqpTransportSettings1.Equals(null), "An instantiated object is not");
-            Assert.IsFalse(amqpTransportSettings1.Equals(new AmqpTransportSettings(TransportType.Amqp_Tcp_Only)));
-            Assert.IsFalse(amqpTransportSettings1.Equals(amqpTransportSettings2));
-            Assert.IsFalse(amqpTransportSettings1.Equals(amqpTransportSettings3));
-            Assert.IsFalse(amqpTransportSettings1.Equals(amqpTransportSettings4));
-            Assert.IsTrue(amqpTransportSettings1.Equals(amqpTransportSettings5));
-        }
-
-        [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
-        public void DeviceClient_NullX509Certificate()
+        public async Task IotHubDeviceClient_FileUploadTransport_Proxy()
         {
             // arrange
             const string hostName = "acme.azure-devices.net";
-            var authMethod = new DeviceAuthenticationWithX509Certificate("device1", null);
+            X509Certificate2 cert = new Mock<X509Certificate2>().Object;
+            var authMethod = new ClientAuthenticationWithX509Certificate(cert, "device1");
+            var options = new IotHubClientOptions(new IotHubClientAmqpSettings { PrefetchCount = 100 });
+            options.HttpOperationTransportSettings = new IotHubClientHttpSettings()
+            {
+                Proxy = new WebProxy(),
+            };
 
             // act
-            _ = DeviceClient.Create(hostName, authMethod, new ITransportSettings[] { new AmqpTransportSettings(TransportType.Amqp_Tcp_Only, 100) });
+            Func<Task> act = async () => { await using var deviceClient = new IotHubDeviceClient(hostName, authMethod, options); };
+
+            // assert
+            await act.Should().NotThrowAsync();
+        }
+
+        [TestMethod]
+        public void IotHubDeviceClient_NullX509CertificateChain()
+        {
+            X509Certificate2 cert = new Mock<X509Certificate2>().Object;
+            Action act = () => _ = new ClientAuthenticationWithX509Certificate(cert, certificateChain: null, "device1");
+            act.Should().Throw<ArgumentException>();
+        }
+
+        [TestMethod]
+        public void IotHubDeviceClient_NullX509Certificate_withChain()
+        {
+            Action act = () => _ = new ClientAuthenticationWithX509Certificate(null, certificateChain: null, "device1");
+            act.Should().Throw<ArgumentException>();
+        }
+
+        [TestMethod]
+        public void IotHubClientMqttSettings_Clone()
+        {
+            // arrange
+            var settings = new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket)
+            {
+                IdleTimeout = TimeSpan.FromSeconds(1),
+                PublishToServerQoS = QualityOfService.AtMostOnce,
+                ReceivingQoS = QualityOfService.AtMostOnce,
+                CleanSession = true,
+                WebSocketKeepAlive = TimeSpan.FromSeconds(1),
+                WillMessage = new WillMessage
+                {
+                    Payload = new byte[] { 1 },
+                    QualityOfService = QualityOfService.AtMostOnce
+                },
+                AuthenticationChain = "chain"
+            };
+            var options = new IotHubClientOptions(settings)
+            {
+                GatewayHostName = "sampleHost",
+                SdkAssignsMessageId = SdkAssignsMessageId.WhenUnset,
+                HttpOperationTransportSettings = new IotHubClientHttpSettings(),
+                PayloadConvention = DefaultPayloadConvention.Instance,
+                ModelId = "Id",
+                AdditionalUserAgentInfo = "info"
+            };
+
+            // act
+            var clone = options.Clone();
+
+            // assert
+            options.Should().NotBeSameAs(clone);
+            options.Should().BeEquivalentTo(clone);
+
+            options.GatewayHostName = "newHost";
+            options.Should().NotBeEquivalentTo(clone);
+        
+            settings.WillMessage.Payload.Should().NotBeNull();
+            settings.WillMessage.QualityOfService.Should().Be(QualityOfService.AtMostOnce);
+        }
+
+        [TestMethod]
+        public void IotHubClientAmqpSettings_Clone()
+        {
+            // arrange
+            var ConnectionPoolSettings = new AmqpConnectionPoolSettings
+            {
+                MaxPoolSize = 120,
+                UsePooling = true,
+            };
+            var ConnectionPoolSettings_copy = new AmqpConnectionPoolSettings
+            {
+                MaxPoolSize = 120,
+                UsePooling = true,
+            };
+            var settings = new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket)
+            {
+                IdleTimeout = TimeSpan.FromSeconds(1),
+                WebSocketKeepAlive = TimeSpan.FromSeconds(1),
+                AuthenticationChain = "chain",
+                PrefetchCount = 10,
+                ConnectionPoolSettings = ConnectionPoolSettings,
+                ClientWebSocket = new ClientWebSocket(),
+            };
+            var options = new IotHubClientOptions(settings)
+            {
+                GatewayHostName = "sampleHost",
+                SdkAssignsMessageId = SdkAssignsMessageId.WhenUnset,
+                HttpOperationTransportSettings = new IotHubClientHttpSettings(),
+                PayloadConvention = DefaultPayloadConvention.Instance,
+                ModelId = "Id",
+                AdditionalUserAgentInfo = "info"
+            };
+
+            // act
+            var clone = options.Clone();
+
+            // assert
+            options.Should().NotBeSameAs(clone);
+            options.Should().BeEquivalentTo(clone);
+
+            options.GatewayHostName = "newHost";
+            options.Should().NotBeEquivalentTo(clone);
+            ConnectionPoolSettings.Equals(ConnectionPoolSettings_copy);
+            ConnectionPoolSettings.Equals(null).Should().BeFalse();
+
+            settings.ClientWebSocket.Dispose();
+        }
+
+        [TestMethod]
+        public void IotHubClientAmqpPoolSettings_ArgumentOutOfRange_Throws()
+        {
+            Action act = () => _ = new AmqpConnectionPoolSettings
+            {
+                MaxPoolSize = 0,
+                UsePooling = true,
+            };
+            act.Should().Throw<ArgumentOutOfRangeException>();
+        }
+
+        [TestMethod]
+        public void IotHubClientNoRetry()
+        {
+            // arrange
+            var options = new IotHubClientOptions(new IotHubClientAmqpSettings());
+
+            // act
+            var clone = options.Clone();
+
+            // assert
+            options.RetryPolicy.Should().BeOfType<IotHubClientExponentialBackoffRetryPolicy>();
+            clone.RetryPolicy.Should().BeOfType<IotHubClientExponentialBackoffRetryPolicy>();
+
+            options.RetryPolicy = new IotHubClientNoRetry();
+            options.RetryPolicy.Should().BeOfType<IotHubClientNoRetry>();
+            clone.RetryPolicy.Should().BeOfType<IotHubClientExponentialBackoffRetryPolicy>();
+        }
+
+        [TestMethod]
+        public void IotHubClientIncrementalDelayRetryPolicy()
+        {
+            // arrange
+            var options = new IotHubClientOptions(new IotHubClientAmqpSettings());
+
+            // act
+            var clone = options.Clone();
+
+            // assert
+            options.RetryPolicy.Should().BeOfType<IotHubClientExponentialBackoffRetryPolicy>();
+            clone.RetryPolicy.Should().BeOfType<IotHubClientExponentialBackoffRetryPolicy>();
+
+            options.RetryPolicy = new IotHubClientIncrementalDelayRetryPolicy(0, TimeSpan.FromSeconds(1), TimeSpan.FromMinutes(100), false);
+            options.RetryPolicy.Should().BeOfType<IotHubClientIncrementalDelayRetryPolicy>();
+            clone.RetryPolicy.Should().BeOfType<IotHubClientExponentialBackoffRetryPolicy>();
+        }
+
+        [TestMethod]
+        public void IotHubClientFixedDelayRetryPolicy()
+        {
+            // arrange
+            var options = new IotHubClientOptions(new IotHubClientAmqpSettings());
+
+            // act
+            var clone = options.Clone();
+
+            // assert
+            options.RetryPolicy.Should().BeOfType<IotHubClientExponentialBackoffRetryPolicy>();
+            clone.RetryPolicy.Should().BeOfType<IotHubClientExponentialBackoffRetryPolicy>();
+
+            options.RetryPolicy = new IotHubClientFixedDelayRetryPolicy(0, TimeSpan.FromSeconds(1), false);
+            options.RetryPolicy.Should().BeOfType<IotHubClientFixedDelayRetryPolicy>();
+            clone.RetryPolicy.Should().BeOfType<IotHubClientExponentialBackoffRetryPolicy>();
+        }
+
+        [TestMethod]
+        public void IotHubClientCustomRetryPolicy()
+        {
+            // arrange
+            var options = new IotHubClientOptions(new IotHubClientAmqpSettings());
+
+            // act
+            var clone = options.Clone();
+
+            // assert
+            options.RetryPolicy.Should().BeOfType<IotHubClientExponentialBackoffRetryPolicy>();
+            clone.RetryPolicy.Should().BeOfType<IotHubClientExponentialBackoffRetryPolicy>();
+
+            options.RetryPolicy = new CustomRetryPolicy();
+            options.RetryPolicy.Should().BeOfType<CustomRetryPolicy>();
+            clone.RetryPolicy.Should().BeOfType<IotHubClientExponentialBackoffRetryPolicy>();
+        }
+
+        internal class CustomRetryPolicy : IIotHubClientRetryPolicy
+        {
+            public CustomRetryPolicy() { }
+
+            public bool ShouldRetry(uint currentRetryCount, Exception lastException, out TimeSpan retryDelay)
+            {
+                throw new NotImplementedException();
+            }
         }
     }
 }

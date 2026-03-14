@@ -6,15 +6,15 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Azure.Devices.Shared;
+using Microsoft.Azure.Devices.Client;
 
 namespace Microsoft.Azure.Devices.Client.Samples
 {
     public class TwinSample
     {
-        private readonly DeviceClient _deviceClient;
+        private readonly IotHubDeviceClient _deviceClient;
 
-        public TwinSample(DeviceClient deviceClient)
+        public TwinSample(IotHubDeviceClient deviceClient)
         {
             _deviceClient = deviceClient ?? throw new ArgumentNullException(nameof(deviceClient));
         }
@@ -30,17 +30,21 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 Console.WriteLine("Cancellation requested; will exit.");
             };
 
-            await _deviceClient.SetDesiredPropertyUpdateCallbackAsync(OnDesiredPropertyChangedAsync, null);
+            await _deviceClient.OpenAsync(cts.Token);
+            await _deviceClient.SetDesiredPropertyUpdateCallbackAsync(OnDesiredPropertyChangedAsync);
 
             Console.WriteLine("Retrieving twin...");
-            Twin twin = await _deviceClient.GetTwinAsync();
+            TwinProperties twin = await _deviceClient.GetTwinPropertiesAsync();
 
             Console.WriteLine("\tInitial twin value received:");
-            Console.WriteLine($"\t{twin.ToJson()}");
+            Console.WriteLine($"\tDesired properties: {twin.Desired.GetSerializedString()}");
+            Console.WriteLine($"\tReported properties: {twin.Reported.GetSerializedString()}");
 
             Console.WriteLine("Sending sample start time as reported property");
-            TwinCollection reportedProperties = new TwinCollection();
-            reportedProperties["DateTimeLastAppLaunch"] = DateTime.UtcNow;
+            var reportedProperties = new ReportedProperties
+            {
+                ["DateTimeLastAppLaunch"] = DateTime.UtcNow
+            };
 
             await _deviceClient.UpdateReportedPropertiesAsync(reportedProperties);
 
@@ -55,15 +59,15 @@ namespace Microsoft.Azure.Devices.Client.Samples
             }
 
             // This is how one can unsubscribe a callback for properties using a null callback handler.
-            await _deviceClient.SetDesiredPropertyUpdateCallbackAsync(null, null);
+            await _deviceClient.SetDesiredPropertyUpdateCallbackAsync(null);
         }
 
-        private async Task OnDesiredPropertyChangedAsync(TwinCollection desiredProperties, object userContext)
+        private async Task OnDesiredPropertyChangedAsync(DesiredProperties desiredProperties)
         {
-            var reportedProperties = new TwinCollection();
+            var reportedProperties = new ReportedProperties();
 
             Console.WriteLine("\tDesired properties requested:");
-            Console.WriteLine($"\t{desiredProperties.ToJson()}");
+            Console.WriteLine($"\t{desiredProperties.GetSerializedString()}");
 
             // For the purpose of this sample, we'll blindly accept all twin property write requests.
             foreach (KeyValuePair<string, object> desiredProperty in desiredProperties)

@@ -1,16 +1,22 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net8.0;netstandard2.1;netstandard2.0</TargetFrameworks>
-    <LangVersion>8.0</LangVersion>
+    <TargetFrameworks>net10.0</TargetFrameworks>
+    <LangVersion>9.0</LangVersion>
+    <EnableNETAnalyzers>True</EnableNETAnalyzers>
+    <AnalysisLevel>latest-recommended</AnalysisLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NeutralLanguage>en-US</NeutralLanguage>
     <OutputPath>.\bin\$(Configuration)</OutputPath>
     <DocumentationFile>$(OutputPath)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
     <RootDir>$(MSBuildProjectDirectory)\..\..\..</RootDir>
     <!-- Suppress framework end of life warnings as we have to keep supporting these frameworks for our customers -->
     <CheckEolTargetFramework>false</CheckEolTargetFramework>
+
+    <!-- We choose not to use braces in our many logging enabled checks -->
+    <NoWarn>0011,CA1863,SYSLIB0057</NoWarn>
   </PropertyGroup>
 
   <!-- delay sign the assembly for Release build -->
@@ -20,16 +26,8 @@
     <SignAssembly>true</SignAssembly>
   </PropertyGroup>
 
-  <!-- 
-    MSBuild flags Microsoft.CodeAnalysis.NetAnalyzers v6.0.0 with a warning because v7.0.0-preview has been released and MSBuild wants the projects to be updated to the newer version.
-    Since we will not take dependency on preview packages for our GA nugets, we'll temporarily skip analyzers upgrade warning. 
-  -->
   <PropertyGroup>
-    <_SkipUpgradeNetAnalyzersNuGetWarning>true</_SkipUpgradeNetAnalyzersNuGetWarning>
-  </PropertyGroup>
-
-  <PropertyGroup>
-    <Version>1.18.4</Version>
+    <Version>2.0.0-preview008</Version>
     <Title>Microsoft Azure IoT Provisioning Service Client SDK</Title>
     <IncludeSource>True</IncludeSource>
     <IncludeSymbols>True</IncludeSymbols>
@@ -42,37 +40,24 @@
     <PackageProjectUrl>https://github.com/Azure/azure-iot-sdk-csharp</PackageProjectUrl>
     <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
     <PackageTags>Microsoft Azure IoT Provisioning Service Client .NET HTTP</PackageTags>
+    <PackageReadmeFile>readme.md</PackageReadmeFile>
+    <RepositoryUrl>https://github.com/Azure/azure-iot-sdk-csharp</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
   </PropertyGroup>
 
   <ItemGroup>
     <None Include="$(RootDir)\LICENSE" Pack="true" PackagePath="" />
-    <None Include="$(RootDir)\shared\icons\nugetIcon.png" Pack="true" PackagePath="" />
+    <None Include="$(RootDir)\icons\nugetIcon.png" Pack="true" PackagePath="" />
+    <None Include="$(RootDir)\readme.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
   </ItemGroup>
 
-  <PropertyGroup>
-    <common>$(RootDir)\common\src</common>
-  </PropertyGroup>
-
+  <!--Nuget package dependencies-->
   <ItemGroup>
-    <Compile Include="$(common)\service\CommonResources.cs" Link="Common\CommonResources.cs" />
-    <Compile Include="$(common)\service\EventTraceActivity.cs" Link="Common\EventTraceActivity.cs" />
-    <Compile Include="$(common)\service\Resources.Designer.cs" Link="Common\Resources.Designer.cs" />
-    <Compile Include="$(common)\service\StringValidationHelper.cs" Link="Common\StringValidationHelper.cs" />
-    <Compile Include="$(common)\service\Utils.cs" Link="Common\Utils.cs" />
-    <Compile Include="$(Common)\DefaultWebProxySettings.cs" />
-    <Compile Include="$(Common)\HttpContentExtensions.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="$(RootDir)\shared\src\Microsoft.Azure.Devices.Shared.csproj" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="Azure.Core" Version="1.31.0" />
   </ItemGroup>
 
   <ItemGroup>

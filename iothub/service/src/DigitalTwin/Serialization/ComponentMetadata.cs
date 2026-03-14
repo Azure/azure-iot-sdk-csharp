@@ -4,7 +4,7 @@
 using System.Collections.Generic;
 using Newtonsoft.Json;
 
-namespace Microsoft.Azure.Devices.Serialization
+namespace Microsoft.Azure.Devices
 {
     /// <summary>
     /// An optional, helper class for deserializing a digital twin.

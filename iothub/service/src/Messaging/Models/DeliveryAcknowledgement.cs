@@ -1,11 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
     /// Specifies the different acknowledgement levels for message delivery.
     /// </summary>
+    [JsonConverter(typeof(StringEnumConverter))]
     public enum DeliveryAcknowledgement
     {
         /// <summary>
@@ -26,6 +30,6 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// An acknowledgement is sent on delivery success or failure.
         /// </summary>
-        Full
+        Full,
     }
 }

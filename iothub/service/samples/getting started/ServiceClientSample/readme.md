@@ -39,7 +39,7 @@ using var eventMessage = new Message(Encoding.UTF8.GetBytes(messagePayload))
     ContentType = "application/json",
 };
 
-await serviceClient.SendEventAsync(deviceId, message);
+await serviceClient.SendTelemetryAsync(deviceId, message);
 ```
 
 

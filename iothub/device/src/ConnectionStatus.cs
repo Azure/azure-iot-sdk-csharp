@@ -1,37 +1,41 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+
 namespace Microsoft.Azure.Devices.Client
 {
-#pragma warning disable CA1717 // Only FlagsAttribute enums should have plural names - Reason: Not plural.
     /// <summary>
-    /// Connection status supported by the client.
+    /// The connection status from a connection change event.
     /// </summary>
     public enum ConnectionStatus
-#pragma warning restore CA1717 // Only FlagsAttribute enums should have plural names - Reason: Not plural.
     {
         /// <summary>
         /// The device or module is disconnected.
-        /// <para>Inspect the associated <see cref="ConnectionStatusChangeReason"/> returned (and exception thrown, if any), and take appropriate action.</para>
         /// </summary>
+        /// <remarks>
+        /// Observe the associated <see cref="RecommendedAction"/> or <see cref="ConnectionStatusChangeReason"/> (and any exception thrown), and take appropriate action.
+        /// </remarks>
         Disconnected,
 
         /// <summary>
         /// The device or module is connected.
-        /// <para>The client is connected, and ready to be used.</para>
         /// </summary>
+        /// <remarks>The client is connected, and ready to be used.</remarks>
         Connected,
 
         /// <summary>
-        /// The device or module is attempting to reconnect.
-        /// <para>The client is attempting to recover the connection. Do NOT close or open the client instance when it is retrying.</para>
+        /// The client is attempting to reconnect per retry policy.
         /// </summary>
-        Disconnected_Retrying,
+        /// <remarks>The client is attempting to recover the connection. Do NOT close or open the client instance when it is retrying.</remarks>
+        DisconnectedRetrying,
 
         /// <summary>
-        /// The device connection was closed.
-        /// <para>If you want to perform more operations on the device client, you should <see cref="DeviceClient.Dispose()"/> and then re-initialize the client.</para>
+        /// The device connection was closed gracefully.
         /// </summary>
-        Disabled,
+        /// <remarks>
+        /// To perform more operations on the client, call <see cref="IDisposable.Dispose()"/> and then re-initialize the client.
+        /// </remarks>
+        Closed,
     }
 }

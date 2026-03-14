@@ -5,7 +5,7 @@ using CommandLine;
 using Microsoft.Azure.Devices;
 using System;
 
-namespace InvokeDeviceMethod
+namespace Microsoft.Azure.Devices.Samples.InvokeDeviceMethod
 {
     /// <summary>
     /// Command line parameters for the InvokeDeviceMethod sample
@@ -27,20 +27,5 @@ namespace InvokeDeviceMethod
             HelpText = "The Id of the device to receive the direct method." +
             "\nDefaults to 'MyDotnetDevice'.")]
         public string DeviceId { get; set; } = "MyDotnetDevice";
-
-        public static void ValidateConnectionString(string hubConnectionString)
-        {
-            try
-            {
-                _ = IotHubConnectionStringBuilder.Create(hubConnectionString);
-            }
-            catch (Exception)
-            {
-                Console.WriteLine("An IoT hub connection string needs to be specified, " +
-                    "please set the environment variable \"IOTHUB_DEVICE_CONNECTION_STRING\" " +
-                    "or pass in \"-c | --DeviceConnectionString\" through command line.");
-                Environment.Exit(1);
-            }
-        }
     }
 }

@@ -7,7 +7,7 @@ This folder contains samples to illustrate how to use the DigitalTwinClient to p
 
 ## Prerequisites
 In order to run the device samples on Linux or Windows, you will first need the following prerequisites:
-* [Setup your IoT hub][lnk-setup-iot-hub]
+* [Set up your IoT hub][lnk-setup-iot-hub]
 * [Provision your device and get its credentials][lnk-manage-iot-device]
 
 ## Setup Environment
@@ -36,15 +36,15 @@ You need to clone the repository or download the sample (the one you want to try
     dotnet run
     ```
 
-[lnk-thermostat-sample]: /iot-hub/Samples/service/DigitalTwinClientSamples/Thermostat/
+[lnk-thermostat-sample]: /iothub/service/samples/solutions/DigitalTwinClientSamples/Thermostat
 
-[lnk-temperatureController-sample]: /iot-hub/Samples/service/DigitalTwinClientSamples/TemperatureController/
+[lnk-temperatureController-sample]: /iothub/service/samples/solutions/DigitalTwinClientSamples/TemperatureController
 
 [lnk-setup-iot-hub]: https://aka.ms/howtocreateazureiothub
 
 [lnk-manage-iot-device]: https://github.com/Azure/azure-iot-device-ecosystem/blob/master/setup_iothub.md#create-new-device-in-the-iot-hub-device-identity-registry
 
-[lnk-thermostat-device-sample]: /iot-hub/Samples/device/PnpDeviceSamples/Thermostat
+[lnk-thermostat-device-sample]: /iothub/device/samples/solutions/PnpDeviceSamples/Thermostat
 
-[lnk-temperaturecontroller-device-sample]: /iot-hub/Samples/device/PnpDeviceSamples/TemperatureController
+[lnk-temperaturecontroller-device-sample]: /iothub/device/samples/solutions/PnpDeviceSamples/TemperatureController
 

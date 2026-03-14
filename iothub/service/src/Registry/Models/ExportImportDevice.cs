@@ -2,7 +2,8 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using Microsoft.Azure.Devices.Shared;
+using System.Collections.Generic;
+using Azure;
 using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices
@@ -12,64 +13,26 @@ namespace Microsoft.Azure.Devices
     /// </summary>
     public sealed class ExportImportDevice
     {
-        private string _eTag;
-        private string _twinETag;
-
         /// <summary>
-        /// The desired and reported properties of the twin.
-        /// </summary>
-        /// <remarks>
-        /// Type definition for the <see cref="Properties"/> property.
-        /// 
-        /// The maximum depth of the object is 10.
-        /// </remarks>
-        public sealed class PropertyContainer
-        {
-            /// <summary>
-            /// The collection of desired property key-value pairs.
-            /// </summary>
-            /// <remarks>
-            /// The keys are UTF-8 encoded, case-sensitive and up-to 1KB in length. Allowed characters
-            /// exclude UNICODE control characters (segments C0 and C1), '.', '$' and space. The
-            /// desired porperty values are JSON objects, up-to 4KB in length.
-            /// </remarks>
-            [JsonProperty(PropertyName = "desired", NullValueHandling = NullValueHandling.Ignore)]
-            public TwinCollection DesiredProperties { get; set; }
-
-            /// <summary>
-            /// The collection of reported property key-value pairs.
-            /// </summary>
-            /// <remarks>
-            /// The keys are UTF-8 encoded, case-sensitive and up-to 1KB in length. Allowed characters
-            /// exclude UNICODE control characters (segments C0 and C1), '.', '$' and space. The
-            /// reported property values are JSON objects, up-to 4KB in length.
-            /// </remarks>
-            [JsonProperty(PropertyName = "reported", NullValueHandling = NullValueHandling.Ignore)]
-            public TwinCollection ReportedProperties { get; set; }
-        }
-
-        /// <summary>
-        /// Create an ExportImportDevice.
+        /// Create an instance of this class.
         /// </summary>
         public ExportImportDevice()
-        {
-        }
+        { }
 
         /// <summary>
-        /// Create an ExportImportDevice.
+        /// Create an instance of this class.
         /// </summary>
         /// <param name="device">Device properties</param>
-        /// <param name="importmode">Identifies the behavior when merging a device to the registry during import actions.</param>
-        public ExportImportDevice(Device device, ImportMode importmode)
+        /// <param name="importMode">Identifies the behavior when merging a device to the registry during import actions.</param>
+        /// <exception cref="ArgumentNullException">When <paramref name="device"/> is null.</exception>
+        /// <exception cref="ArgumentException">When <paramref name="device"/> has an <see cref="Device.Id"/> that is empty or white space.</exception>
+        public ExportImportDevice(Device device, ImportMode importMode)
+            : this(device?.Id, importMode)
         {
-            if (device == null)
-            {
-                throw new ArgumentNullException(nameof(device));
-            }
+            Argument.AssertNotNull(device, nameof(device));
+            Argument.AssertNotNullOrWhiteSpace(device.Id, $"{nameof(device)}.{nameof(device.Id)}");
 
-            Id = device.Id;
-            _eTag = SanitizeETag(device.ETag);
-            ImportMode = importmode;
+            ETag = device.ETag;
             Status = device.Status;
             StatusReason = device.StatusReason;
             Authentication = device.Authentication;
@@ -78,36 +41,48 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
+        /// Create an instance of this class.
+        /// </summary>
+        /// <param name="deviceId">The device Id.</param>
+        /// <param name="importMode">Identifies the behavior when merging a device to the registry during import actions.</param>
+        /// <exception cref="ArgumentNullException">When <paramref name="deviceId"/> is null.</exception>
+        /// <exception cref="ArgumentException">When <paramref name="deviceId"/> is empty or white space.</exception>
+        public ExportImportDevice(string deviceId, ImportMode importMode)
+        {
+            Argument.AssertNotNullOrWhiteSpace(deviceId, nameof(deviceId));
+            Id = deviceId;
+            ImportMode = importMode;
+        }
+
+        /// <summary>
         /// The unique identifier of the device.
         /// </summary>
-        [JsonProperty(PropertyName = "id", Required = Required.Always)]
+        [JsonProperty("id")]
         public string Id { get; set; }
 
         /// <summary>
         /// The unique identifier of the module, if applicable.
         /// </summary>
-        [JsonProperty(PropertyName = "moduleId", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty("moduleId")]
         public string ModuleId { get; set; }
 
         /// <summary>
         /// A string representing an ETag for the entity as per RFC7232.
         /// </summary>
         /// <remarks>
-        ///  The value is only used if import mode is updateIfMatchETag, in that case the import operation is performed
-        ///  only if this ETag matches the value maintained by the server.
+        /// The value is only used if import mode is updateIfMatchETag, in that case the import operation is performed
+        /// only if this ETag matches the value maintained by the server.
         /// </remarks>
-        [JsonProperty(PropertyName = "eTag", NullValueHandling = NullValueHandling.Ignore)]
-        public string ETag
-        {
-            get => _eTag;
-            set => _eTag = SanitizeETag(value);
-        }
+        [JsonProperty("eTag")]
+        // NewtonsoftJsonETagConverter is used here because otherwise the ETag isn't serialized properly
+        [JsonConverter(typeof(NewtonsoftJsonETagConverter))]
+        public ETag ETag { get; set; }
 
         /// <summary>
         /// The type of registry operation and ETag preferences.
         /// </summary>
-        [JsonProperty(PropertyName = "importMode", DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
-        public ImportMode ImportMode { get; set; }
+        [JsonProperty("importMode")]
+        public ImportMode? ImportMode { get; set; }
 
         /// <summary>
         /// The status of the device or module.
@@ -115,8 +90,8 @@ namespace Microsoft.Azure.Devices
         /// <remarks>
         /// If disabled, it cannot connect to the service.
         /// </remarks>
-        [JsonProperty(PropertyName = "status", Required = Required.Always)]
-        public DeviceStatus Status { get; set; }
+        [JsonProperty("status")]
+        public ClientStatus Status { get; set; }
 
         /// <summary>
         /// The 128 character-long string that stores the reason for the device identity status.
@@ -124,7 +99,7 @@ namespace Microsoft.Azure.Devices
         /// <remarks>
         /// All UTF-8 characters are allowed.
         /// </remarks>
-        [JsonProperty(PropertyName = "statusReason", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty("statusReason")]
         public string StatusReason { get; set; }
 
         /// <summary>
@@ -134,8 +109,8 @@ namespace Microsoft.Azure.Devices
         /// This parameter is optional and defaults to SAS if not provided. In that case, primary/secondary
         /// access keys are auto-generated.
         /// </remarks>
-        [JsonProperty(PropertyName = "authentication")]
-        public AuthenticationMechanism Authentication { get; set; }
+        [JsonProperty("authentication")]
+        public AuthenticationMechanism Authentication { get; set; } = new();
 
         /// <summary>
         /// String representing a Twin ETag for the entity, as per RFC7232.
@@ -144,30 +119,28 @@ namespace Microsoft.Azure.Devices
         /// The value is only used if import mode is updateIfMatchETag, in that case the import operation is
         /// performed only if this ETag matches the value maintained by the server.
         /// </remarks>
-        [JsonProperty(PropertyName = "twinETag", NullValueHandling = NullValueHandling.Ignore)]
-        public string TwinETag
-        {
-            get => _twinETag;
-            set => _twinETag = SanitizeETag(value);
-        }
+        [JsonProperty("twinETag")]
+        // NewtonsoftJsonETagConverter is used here because otherwise the ETag isn't serialized properly
+        [JsonConverter(typeof(NewtonsoftJsonETagConverter))]
+        public ETag TwinETag { get; set; }
 
         /// <summary>
         /// The JSON document read and written by the solution back end. The tags are not visible to device apps.
         /// </summary>
-        [JsonProperty(PropertyName = "tags", NullValueHandling = NullValueHandling.Ignore)]
-        public TwinCollection Tags { get; set; }
+        [JsonProperty("tags")]
+        public IDictionary<string, object> Tags { get; internal set; } = new Dictionary<string, object>();
 
         /// <summary>
         /// The desired and reported properties for the device or module.
         /// </summary>
-        [JsonProperty(PropertyName = "properties", NullValueHandling = NullValueHandling.Ignore)]
-        public PropertyContainer Properties { get; set; }
+        [JsonProperty("properties")]
+        public ClientTwinDocument Properties { get; set; } = new();
 
         /// <summary>
         /// Status of capabilities enabled on the device or module.
         /// </summary>
-        [JsonProperty(PropertyName = "capabilities", NullValueHandling = NullValueHandling.Ignore)]
-        public DeviceCapabilities Capabilities { get; set; }
+        [JsonProperty("capabilities")]
+        public ClientCapabilities Capabilities { get; set; } = new();
 
         /// <summary>
         /// The scope of the device. For edge devices, this is auto-generated and immutable. For leaf
@@ -176,38 +149,10 @@ namespace Microsoft.Azure.Devices
         /// <remarks>
         /// For leaf devices, the value to set a parent edge device can be retrieved from the parent
         /// edge device's device scope property.
-        ///
         /// For more information, see
         /// <see href="https://docs.microsoft.com/azure/iot-edge/iot-edge-as-gateway?view=iotedge-2020-11#parent-and-child-relationships"/>.
         /// </remarks>
-        [JsonProperty(PropertyName = "deviceScope", NullValueHandling = NullValueHandling.Include)]
+        [JsonProperty("deviceScope")]
         public string DeviceScope { get; set; }
-
-        private static string SanitizeETag(string eTag)
-        {
-            if (!string.IsNullOrWhiteSpace(eTag))
-            {
-                string localETag = eTag;
-
-                if (eTag.StartsWith("\"", StringComparison.OrdinalIgnoreCase))
-                {
-                    // remove only the first char
-                    localETag = eTag.Substring(1);
-                }
-
-                if (localETag.EndsWith("\"", StringComparison.OrdinalIgnoreCase))
-                {
-                    // remove only the last char
-                    localETag = localETag.Remove(localETag.Length - 1);
-                }
-
-                return localETag;
-            }
-            else
-            {
-                // In case it is empty or contains whitespace
-                return eTag;
-            }
-        }
     }
 }

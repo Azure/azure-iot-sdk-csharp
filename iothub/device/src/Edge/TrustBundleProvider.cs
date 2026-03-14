@@ -6,63 +6,55 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Security.Cryptography.X509Certificates;
+using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client.HsmAuthentication;
 using Microsoft.Azure.Devices.Client.HsmAuthentication.GeneratedCode;
-using Microsoft.Azure.Devices.Client.TransientFaultHandling;
 
 namespace Microsoft.Azure.Devices.Client.Edge
 {
-    internal class TrustBundleProvider : ITrustBundleProvider
+    internal sealed class TrustBundleProvider : ITrustBundleProvider
     {
-        private static readonly ITransientErrorDetectionStrategy s_transientErrorDetectionStrategy = new ErrorDetectionStrategy();
+        private static readonly IIotHubClientRetryPolicy s_retryPolicy = new IotHubClientExponentialBackoffRetryPolicy(3, TimeSpan.FromSeconds(30));
 
-        private static readonly RetryStrategy s_transientRetryStrategy =
-            new ExponentialBackoffRetryStrategy(
-                retryCount: 3,
-                minBackoff: TimeSpan.FromSeconds(2),
-                maxBackoff: TimeSpan.FromSeconds(30),
-                deltaBackoff: TimeSpan.FromSeconds(3));
-
-        public async Task<IList<X509Certificate2>> GetTrustBundleAsync(Uri providerUri, string apiVersion)
+        public async Task<IList<X509Certificate2>> GetTrustBundleAsync(Uri providerUri, string apiVersion, CancellationToken cancellationToken)
         {
             try
             {
                 using HttpClient httpClient = HttpClientHelper.GetHttpClient(providerUri);
                 var hsmHttpClient = new HttpHsmClient(httpClient)
                 {
-                    BaseUrl = HttpClientHelper.GetBaseUrl(providerUri)
+                    BaseUrl = HttpClientHelper.GetBaseUri(providerUri)
                 };
-                TrustBundleResponse response = await GetTrustBundleWithRetryAsync(hsmHttpClient, apiVersion).ConfigureAwait(false);
+                TrustBundleResponse response = await GetTrustBundleWithRetryAsync(hsmHttpClient, apiVersion, cancellationToken).ConfigureAwait(false);
 
                 IList<X509Certificate2> certs = ParseCertificates(response.Certificate);
                 return certs;
             }
-            catch (Exception ex)
+            catch (SwaggerException<ErrorResponse> ex)
             {
-                switch (ex)
-                {
-                    case SwaggerException<ErrorResponse> errorResponseException:
-                        throw new HttpHsmComunicationException(
-                            $"Error calling GetTrustBundleWithRetry: {errorResponseException.Result?.Message ?? string.Empty}", errorResponseException.StatusCode);
-
-                    case SwaggerException swaggerException:
-                        throw new HttpHsmComunicationException(
-                            $"Error calling GetTrustBundleWithRetry: {swaggerException.Response ?? string.Empty}", swaggerException.StatusCode);
-
-                    default:
-                        throw;
-                }
+                throw new HttpHsmComunicationException(
+                    $"Error calling GetTrustBundleWithRetry: {ex.Result?.Message ?? string.Empty}", ex.StatusCode, ex);
+            }
+            catch (SwaggerException ex)
+            {
+                throw new HttpHsmComunicationException(
+                    $"Error calling GetTrustBundleWithRetry: {ex.Response ?? string.Empty}", ex.StatusCode, ex);
             }
         }
 
         private static async Task<TrustBundleResponse> GetTrustBundleWithRetryAsync(
             HttpHsmClient hsmHttpClient,
-            string apiVersion)
+            string apiVersion,
+            CancellationToken cancellationToken)
         {
-            var transientRetryPolicy = new RetryPolicy(s_transientErrorDetectionStrategy, s_transientRetryStrategy);
+            var transientRetryPolicy = new RetryHandler(s_retryPolicy);
             return await transientRetryPolicy
-                .RunWithRetryAsync(() => hsmHttpClient.TrustBundleAsync(apiVersion))
+                .RunWithRetryAsync(
+                    () => hsmHttpClient.TrustBundleAsync(apiVersion),
+                    (Exception ex) => ex is SwaggerException se && se.StatusCode >= 500,
+                    cancellationToken)
                 .ConfigureAwait(false);
         }
 
@@ -75,20 +67,15 @@ namespace Microsoft.Azure.Devices.Client.Edge
 
             // Extract each certificate's string. The final string from the split will either be empty
             // or a non-certificate entry, so it is dropped.
-            string delimiter = "-----END CERTIFICATE-----";
+            const string delimiter = "-----END CERTIFICATE-----";
             string[] rawCerts = pemCerts.Split(new[] { delimiter }, StringSplitOptions.None);
 
             return rawCerts
                .Take(rawCerts.Length - 1) // Drop the invalid entry
                .Select(c => $"{c}{delimiter}") // Re-add the certificate end-marker which was removed by split
-               .Select(c => System.Text.Encoding.UTF8.GetBytes(c))
+               .Select(c => Encoding.UTF8.GetBytes(c))
                .Select(c => new X509Certificate2(c))
                .ToList();
-        }
-
-        private class ErrorDetectionStrategy : ITransientErrorDetectionStrategy
-        {
-            public bool IsTransient(Exception ex) => ex is SwaggerException se && se.StatusCode >= 500;
         }
     }
 }

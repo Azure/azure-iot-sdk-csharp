@@ -1,236 +1,224 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
-using System;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using NSubstitute;
-using System.Threading.Tasks;
-using System.Threading;
-using Microsoft.Azure.Devices.Shared;
 
-namespace Microsoft.Azure.Devices.Client.Test
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using FluentAssertions;
+using Microsoft.Azure.Devices.Client.Transport.Mqtt;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
+
+namespace Microsoft.Azure.Devices.Client.Tests
 {
     [TestClass]
     [TestCategory("Unit")]
     public class DeviceClientTwinApiTests
     {
-        private static string fakeConnectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;SharedAccessKey=dGVzdFN0cmluZzE=";
+        private const string FakeHostName = "acme.azure-devices.net";
+        private const string FakeDeviceId = "fake";
+        private const string FakeSharedAccessKey = "dGVzdFN0cmluZzE=";
+        private const string FakeSharedAccessKeyName = "AllAccessKey";
+        private static readonly string s_fakeConnectionString = $"HostName={FakeHostName};SharedAccessKeyName={FakeSharedAccessKeyName};DeviceId={FakeDeviceId};SharedAccessKey={FakeSharedAccessKey}";
 
-        // Tests_SRS_DEVICECLIENT_18_003: `SetDesiredPropertyUpdateCallback` shall call the transport to register for PATCHes on it's first call.
         [TestMethod]
-        public async Task DeviceClientSetDesiredPropertyUpdateCallbackRegistersForPatchesOnFirstCall()
+        public async Task IotHubDeviceClient_SetDesiredPropertyUpdateCallbackAsyncRegistersForPatchesOnFirstCall()
         {
             // arrange
-            var innerHandler = Substitute.For<IDelegatingHandler>();
-            var client = DeviceClient.CreateFromConnectionString(fakeConnectionString);
-            client.InnerHandler = innerHandler;
-            DesiredPropertyUpdateCallback myCallback = (p, c) => TaskHelpers.CompletedTask;
-            var context = new object();
+            var innerHandler = new Mock<IDelegatingHandler>();
+            await using var client = new IotHubDeviceClient(s_fakeConnectionString);
+            client.InnerHandler = innerHandler.Object;
+            Func<DesiredProperties, Task> myCallback = (p) => Task.CompletedTask;
 
             // act
-#pragma warning disable CS0618 // Type or member is obsolete
-            await client.SetDesiredPropertyUpdateCallback(myCallback, context).ConfigureAwait(false);
-#pragma warning restore CS0618 // Type or member is obsolete
+            await client.SetDesiredPropertyUpdateCallbackAsync(myCallback).ConfigureAwait(false);
 
             // assert
-            await innerHandler.
-                Received(1).
-                EnableTwinPatchAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
-            Assert.AreEqual(client.InternalClient._desiredPropertyUpdateCallback, myCallback);
-        }
-
-        // Tests_SRS_DEVICECLIENT_18_003: `SetDesiredPropertyUpdateCallbackAsync` shall call the transport to register for PATCHes on it's first call.
-        [TestMethod]
-        public async Task DeviceClientSetDesiredPropertyUpdateCallbackAsyncRegistersForPatchesOnFirstCall()
-        {
-            // arrange
-            var innerHandler = Substitute.For<IDelegatingHandler>();
-            var client = DeviceClient.CreateFromConnectionString(fakeConnectionString);
-            client.InnerHandler = innerHandler;
-            DesiredPropertyUpdateCallback myCallback = (p, c) => TaskHelpers.CompletedTask;
-            var context = new object();
-
-            // act
-            await client.SetDesiredPropertyUpdateCallbackAsync(myCallback, context).ConfigureAwait(false);
-
-            // assert
-            await innerHandler.
-                Received(1).
-                EnableTwinPatchAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
-            Assert.AreEqual(client.InternalClient._desiredPropertyUpdateCallback, myCallback);
+            innerHandler.Verify(
+                x => x.EnableTwinPatchAsync(It.IsAny<CancellationToken>()), 
+                Times.Once);
         }
 
         [TestMethod]
-        public async Task DeviceClientDesiredPropertyUpdateCallbackUnsubscribes()
+        public async Task IotHubDeviceClient_DesiredPropertyUpdateCallbackUnsubscribes()
         {
             // arrange
-            var innerHandler = Substitute.For<IDelegatingHandler>();
-            var client = DeviceClient.CreateFromConnectionString(fakeConnectionString);
-            client.InnerHandler = innerHandler;
-            DesiredPropertyUpdateCallback myCallback = (p, c) => TaskHelpers.CompletedTask;
-            var context = new object();
+            var innerHandler = new Mock<IDelegatingHandler>();
+            await using var client = new IotHubDeviceClient(s_fakeConnectionString);
+            client.InnerHandler = innerHandler.Object;
+            Func<DesiredProperties, Task> myCallback = (p) => Task.CompletedTask;
 
             // act
-            await client.SetDesiredPropertyUpdateCallbackAsync(myCallback, context).ConfigureAwait(false);
-            await client.SetDesiredPropertyUpdateCallbackAsync(null, null).ConfigureAwait(false);
+            await client.SetDesiredPropertyUpdateCallbackAsync(myCallback).ConfigureAwait(false);
+            await client.SetDesiredPropertyUpdateCallbackAsync(null).ConfigureAwait(false);
 
             // assert
-            await innerHandler
-                .Received(1)
-                .DisableTwinPatchAsync(Arg.Any<CancellationToken>())
-                .ConfigureAwait(false);
+            innerHandler
+                .Verify(x => x.DisableTwinPatchAsync(It.IsAny<CancellationToken>()), 
+                Times.Once);
         }
 
-        // Tests_SRS_DEVICECLIENT_18_004: `SetDesiredPropertyUpdateCallback` shall not call the transport to register for PATCHes on subsequent calls
         [TestMethod]
-        public async Task DeviceClientSetDesiredPropertyUpdateCallbackDoesNotRegisterForPatchesAfterFirstCall()
+        public async Task IotHubDeviceClient_SetDesiredPropertyUpdateCallbackAsyncDoesNotRegisterForPatchesAfterFirstCall()
         {
             // arrange
-            var innerHandler = Substitute.For<IDelegatingHandler>();
-            var client = DeviceClient.CreateFromConnectionString(fakeConnectionString);
-            client.InnerHandler = innerHandler;
-            DesiredPropertyUpdateCallback myCallback = (p, c) => TaskHelpers.CompletedTask;
+            var innerHandler = new Mock<IDelegatingHandler>();
+            await using var client = new IotHubDeviceClient(s_fakeConnectionString);
+            client.InnerHandler = innerHandler.Object;
+            Func<DesiredProperties, Task> myCallback = (p) => Task.CompletedTask;
 
             // act
-#pragma warning disable CS0618 // Type or member is obsolete
-            await client.SetDesiredPropertyUpdateCallback(myCallback, null).ConfigureAwait(false);
-            await client.SetDesiredPropertyUpdateCallback(myCallback, null).ConfigureAwait(false);
-            await client.SetDesiredPropertyUpdateCallback(myCallback, null).ConfigureAwait(false);
-#pragma warning restore CS0618 // Type or member is obsolete
+            await client.SetDesiredPropertyUpdateCallbackAsync(myCallback).ConfigureAwait(false);
+            await client.SetDesiredPropertyUpdateCallbackAsync(myCallback).ConfigureAwait(false);
+            await client.SetDesiredPropertyUpdateCallbackAsync(myCallback).ConfigureAwait(false);
 
             // assert
-            await innerHandler.
-                Received(1).
-                EnableTwinPatchAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
+            innerHandler.Verify(
+                x => x.EnableTwinPatchAsync(It.IsAny<CancellationToken>()),
+                Times.Once);
         }
 
-        // Tests_SRS_DEVICECLIENT_18_004: `SetDesiredPropertyUpdateCallbackAsync` shall not call the transport to register for PATCHes on subsequent calls
         [TestMethod]
-        public async Task DeviceClientSetDesiredPropertyUpdateCallbackAsyncDoesNotRegisterForPatchesAfterFirstCall()
+        public async Task IotHubDeviceClient_GetTwinAsyncCallsSendTwinGetAsync()
         {
             // arrange
-            var innerHandler = Substitute.For<IDelegatingHandler>();
-            var client = DeviceClient.CreateFromConnectionString(fakeConnectionString);
-            client.InnerHandler = innerHandler;
-            DesiredPropertyUpdateCallback myCallback = (p, c) => TaskHelpers.CompletedTask;
+            var innerHandler = new Mock<IDelegatingHandler>();
+            await using var client = new IotHubDeviceClient(s_fakeConnectionString);
+            client.InnerHandler = innerHandler.Object;
 
             // act
-            await client.SetDesiredPropertyUpdateCallbackAsync(myCallback, null).ConfigureAwait(false);
-            await client.SetDesiredPropertyUpdateCallbackAsync(myCallback, null).ConfigureAwait(false);
-            await client.SetDesiredPropertyUpdateCallbackAsync(myCallback, null).ConfigureAwait(false);
+            await client.GetTwinPropertiesAsync().ConfigureAwait(false);
 
             // assert
-            await innerHandler.
-                Received(1).
-                EnableTwinPatchAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
+            innerHandler.Verify(
+                x => x.GetTwinAsync(It.IsAny<CancellationToken>()),
+                Times.Once);
         }
 
-        // Tests_SRS_DEVICECLIENT_18_001: `GetTwinAsync` shall call `SendTwinGetAsync` on the transport to get the twin state
         [TestMethod]
-        public async Task DeviceClientGetTwinAsyncCallsSendTwinGetAsync()
+        public void IotHubDeviceClient_Verify_GetTwinResponse()
         {
             // arrange
-            var innerHandler = Substitute.For<IDelegatingHandler>();
-            var client = DeviceClient.CreateFromConnectionString(fakeConnectionString);
-            client.InnerHandler = innerHandler;
-
-            // act
-            await client.GetTwinAsync().ConfigureAwait(false);
+            var reported = new ReportedProperties()
+            {
+                PayloadConvention = DefaultPayloadConvention.Instance,
+            };
+            reported["$version"] = "1";
+            reported.Add("key", "value");
+            var desired = new DesiredProperties(new Dictionary<string, object>() { { "$version", "1" }, { "id", "1234" } });
+            GetTwinResponse twinResponse = new GetTwinResponse
+            {
+                Status = 404,
+                Twin = new TwinProperties(desired, reported),
+                ErrorResponseMessage = new IotHubClientErrorResponseMessage
+                {
+                    ErrorCode = 404,
+                    TrackingId = "Id",
+                    Message = "message",
+                    OccurredOnUtc = "00:00:00",
+                },
+            };
 
             // assert
-            await innerHandler.
-                Received(1).
-                SendTwinGetAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
+            twinResponse.Status.Should().Be(404);
+            twinResponse.Twin.Should().BeEquivalentTo(twinResponse.Twin);
+            twinResponse.ErrorResponseMessage.Should().BeEquivalentTo(twinResponse.ErrorResponseMessage);
+            twinResponse.ErrorResponseMessage.ErrorCode.Should().Be(twinResponse.ErrorResponseMessage?.ErrorCode);
+            twinResponse.ErrorResponseMessage.TrackingId.Should().Be(twinResponse.ErrorResponseMessage?.TrackingId);
+            twinResponse.ErrorResponseMessage.Message.Should().Be(twinResponse.ErrorResponseMessage?.Message);
+            twinResponse.ErrorResponseMessage.OccurredOnUtc.Should().Be(twinResponse.ErrorResponseMessage?.OccurredOnUtc);
+            twinResponse.Twin.Desired.Should().Equal(desired);
+            twinResponse.Twin.Reported["$version"].Should().Be("1");
+            twinResponse.Twin.Reported.GetObjectBytes().Should().NotBeNull();
         }
 
-        // Tests_SRS_DEVICECLIENT_18_002: `UpdateReportedPropertiesAsync` shall call `SendTwinPatchAsync` on the transport to update the reported properties
         [TestMethod]
-        public async Task DeviceClientUpdateReportedPropertiesAsyncCallsSendTwinPatchAsync()
+        public async Task IotHubDeviceClient_UpdateReportedPropertiesAsyncCallsSendTwinPatchAsync()
         {
             // arrange
-            var innerHandler = Substitute.For<IDelegatingHandler>();
-            var client = DeviceClient.CreateFromConnectionString(fakeConnectionString);
-            client.InnerHandler = innerHandler;
-            var props = new TwinCollection();
+            var innerHandler = new Mock<IDelegatingHandler>();
+            await using var client = new IotHubDeviceClient(s_fakeConnectionString);
+            client.InnerHandler = innerHandler.Object;
+            var props = new ReportedProperties();
 
             // act
             await client.UpdateReportedPropertiesAsync(props).ConfigureAwait(false);
 
             // assert
-            await innerHandler.
-                Received(1).
-                SendTwinPatchAsync(Arg.Is(props), Arg.Any<CancellationToken>()).ConfigureAwait(false);
+            innerHandler.Verify(
+                x => x.UpdateReportedPropertiesAsync(props, It.IsAny<CancellationToken>()),
+                Times.Once);
         }
 
-        // Tests_SRS_DEVICECLIENT_18_006: `UpdateReportedPropertiesAsync` shall throw an `ArgumentNull` exception if `reportedProperties` is null
         [TestMethod]
-        [ExpectedException(typeof(ArgumentNullException))]
-        public async Task DeviceClientUpdateReportedPropertiesAsyncThrowsIfPatchIsNull()
+        public async Task IotHubDeviceClient_UpdateReportedPropertiesAsyncThrowsIfPatchIsNull()
         {
             // arrange
-            var innerHandler = Substitute.For<IDelegatingHandler>();
-            var client = DeviceClient.CreateFromConnectionString(fakeConnectionString);
-            client.InnerHandler = innerHandler;
+            var innerHandler = new Mock<IDelegatingHandler>();
+            await using var client = new IotHubDeviceClient(s_fakeConnectionString);
+            client.InnerHandler = innerHandler.Object;
 
-            // act and assert
-            await client.UpdateReportedPropertiesAsync(null).ConfigureAwait(false);
+            // act
+            Func<Task> act = async () =>
+            {
+                await client.UpdateReportedPropertiesAsync(null).ConfigureAwait(false);
+            };
+
+            // assert
+            await act.Should().ThrowAsync<ArgumentNullException>();
         }
 
-        //  Tests_SRS_DEVICECLIENT_18_005: When a patch is received from the service, the `callback` shall be called.
         [TestMethod]
-        public async Task DeviceClientCallbackIsCalledWhenPatchIsReceived()
+        public async Task IotHubDeviceClient_CallbackAsyncIsCalledWhenPatchIsReceived()
         {
             // arrange
-            var innerHandler = Substitute.For<IDelegatingHandler>();
-            var client = DeviceClient.CreateFromConnectionString(fakeConnectionString);
-            client.InnerHandler = innerHandler;
-            var myPatch = new TwinCollection();
+            var innerHandler = new Mock<IDelegatingHandler>();
+            await using var client = new IotHubDeviceClient(s_fakeConnectionString);
+            client.InnerHandler = innerHandler.Object;
+            var myPatch = new DesiredProperties(new Dictionary<string, object> { { "key", "value" }, { "$version", 1 } })
+            {
+                PayloadConvention = DefaultPayloadConvention.Instance,
+            };
 
             int callCount = 0;
-            TwinCollection receivedPatch = null;
-            DesiredPropertyUpdateCallback myCallback = (p, c) =>
+            DesiredProperties receivedPatch = null;
+            Task myCallback(DesiredProperties p)
             {
                 callCount++;
                 receivedPatch = p;
-                return TaskHelpers.CompletedTask;
-            };
-#pragma warning disable CS0618 // Type or member is obsolete
-            await client.SetDesiredPropertyUpdateCallback(myCallback, null).ConfigureAwait(false);
-#pragma warning restore CS0618 // Type or member is obsolete
+                return Task.CompletedTask;
+            }
+            await client.SetDesiredPropertyUpdateCallbackAsync(myCallback).ConfigureAwait(false);
 
             // act
-            client.InternalClient.OnReportedStatePatchReceived(myPatch);
+            client.OnDesiredStatePatchReceived(myPatch);
 
-            //assert
-            Assert.AreEqual(callCount, 1);
-            Assert.ReferenceEquals(myPatch, receivedPatch);
+            // assert
+            callCount.Should().Be(1);
+            myPatch.Should().BeEquivalentTo(receivedPatch);
         }
 
-        //  Tests_SRS_DEVICECLIENT_18_005: When a patch is received from the service, the `callback` shall be called.
         [TestMethod]
-        public async Task DeviceClientCallbackAsyncIsCalledWhenPatchIsReceived()
+        public async Task IotHubDeviceClient_PatchIsReceived_NoCallback()
         {
             // arrange
-            var innerHandler = Substitute.For<IDelegatingHandler>();
-            var client = DeviceClient.CreateFromConnectionString(fakeConnectionString);
-            client.InnerHandler = innerHandler;
-            var myPatch = new TwinCollection();
+            var innerHandler = new Mock<IDelegatingHandler>();
+            await using var client = new IotHubDeviceClient(s_fakeConnectionString);
+            client.InnerHandler = innerHandler.Object;
+            var myPatch = new DesiredProperties(new Dictionary<string, object> { { "key", "value" }, { "$version", 1 } })
+            {
+                PayloadConvention = DefaultPayloadConvention.Instance,
+            };
 
             int callCount = 0;
-            TwinCollection receivedPatch = null;
-            DesiredPropertyUpdateCallback myCallback = (p, c) =>
-            {
-                callCount++;
-                receivedPatch = p;
-                return TaskHelpers.CompletedTask;
-            };
-            await client.SetDesiredPropertyUpdateCallbackAsync(myCallback, null).ConfigureAwait(false);
+            await client.SetDesiredPropertyUpdateCallbackAsync(null).ConfigureAwait(false);
 
             // act
-            client.InternalClient.OnReportedStatePatchReceived(myPatch);
+            client.OnDesiredStatePatchReceived(myPatch);
 
             //assert
-            Assert.AreEqual(callCount, 1);
-            Assert.ReferenceEquals(myPatch, receivedPatch);
+            callCount.Should().Be(0);
         }
     }
 }

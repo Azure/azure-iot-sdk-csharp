@@ -17,11 +17,11 @@ This folder contains the following
 ## Usage
 
 The library is available as a NuGet package: **Microsoft.Azure.Devices**
-For a full step by step guide on how to use the library, checkout this [article](https://azure.microsoft.com/en-us/documentation/articles/iot-hub-csharp-csharp-getstarted/)
+For a full step by step guide on how to use the library, checkout this [article](https://azure.microsoft.com/documentation/articles/iot-hub-csharp-csharp-getstarted/)
 
 ## References
 
-To learn more on developing for the Azure IoT Hub service, visit our [developer guide](https://azure.microsoft.com/en-us/documentation/articles/iot-hub-devguide/)
+To learn more on developing for the Azure IoT Hub service, visit our [developer guide](https://azure.microsoft.com/documentation/articles/iot-hub-devguide/)
 
 [This document][devbox-setup] describes in details how to prepare you development environment as well as how to run the samples on Linux, Windows or other platforms.
 

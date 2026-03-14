@@ -1,0 +1,17 @@
+name: $(BuildID)_$(BuildDefinitionName)_$(SourceBranchName)_$(Date:yyyyMMdd)$(Rev:.r)
+
+jobs:
+  - job: LINUX
+    displayName: Linux
+    pool:
+      vmImage: ubuntu-20.04
+    steps:
+      - task: PowerShell@2
+        displayName: 'Cleanup IoT hub and DPS'
+        inputs:
+          targetType: 'inline'
+          script: '.\build.ps1 -runCleanupSamples'
+        env:
+          IOTHUB_CONNECTION_STRING: $(IOTHUB-CONNECTION-STRING)
+          PROVISIONING_CONNECTION_STRING: $(PROVISIONING-CONNECTION-STRING)
+          STORAGE_ACCOUNT_CONNECTION_STRING: $(STORAGE-ACCOUNT-CONNECTION-STRING)

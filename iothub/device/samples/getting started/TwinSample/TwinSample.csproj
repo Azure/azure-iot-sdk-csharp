@@ -2,21 +2,28 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <LangVersion>9.0</LangVersion>
+    <IsPackable>false</IsPackable>
+
+    <!--
+    Warning for using pre-release nugets can be ignored since this sample 
+    can't target a main release yet.
+    -->
+    <NoWarn>NU5104</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="CommandLineParser" Version="2.9.1" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(Configuration)' == 'Release'">
-    <PackageReference Include="Microsoft.Azure.Devices.Client" Version="1.41.2" />
-  </ItemGroup>
+  <!--<ItemGroup Condition="'$(Configuration)' == 'Release'">
+    <PackageReference Include="Microsoft.Azure.Devices.Client" Version="2.0.0-preview001" />
+  </ItemGroup>-->
 
-  <ItemGroup Condition="'$(Configuration)' == 'Debug'">
+  <ItemGroup>
+    <!--Condition="'$(Configuration)' == 'Debug'">-->
     <ProjectReference Include="..\..\..\src\Microsoft.Azure.Devices.Client.csproj" />
-    <ProjectReference Include="..\..\..\..\..\shared\src\Microsoft.Azure.Devices.Shared.csproj" />
   </ItemGroup>
 
 </Project>

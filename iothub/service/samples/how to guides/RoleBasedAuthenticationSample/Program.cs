@@ -1,12 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.Threading.Tasks;
 using Azure.Core;
 using Azure.Identity;
 using CommandLine;
 using Microsoft.Azure.Devices;
-using System;
-using System.Threading.Tasks;
 
 namespace RoleBasedAuthenticationSample
 {
@@ -42,13 +42,15 @@ namespace RoleBasedAuthenticationSample
             // DefaultAzureCredential supports different authentication mechanisms and determines the appropriate credential type based of the environment it is executing in.
             // It attempts to use multiple credential types in an order until it finds a working credential.
             // For more info see https://docs.microsoft.com/en-us/dotnet/api/azure.identity?view=azure-dotnet.
-            TokenCredential tokenCredential = new DefaultAzureCredential(); 
+            TokenCredential tokenCredential = new DefaultAzureCredential();
 
-            // There are constructors for all the other clients where you can pass AAD credentials - JobClient, RegistryManager, DigitalTwinClient
-            using var serviceClient = ServiceClient.Create(parameters.HostName, tokenCredential, parameters.TransportType);
+            var options = new IotHubServiceClientOptions
+            {
+                Protocol = parameters.Protocol,
+            };
+            using var serviceClient = new IotHubServiceClient(parameters.HostName, tokenCredential, options);
 
-            var sample = new RoleBasedAuthenticationSample();
-            await sample.RunSampleAsync(serviceClient, parameters.DeviceId);
+            await RoleBasedAuthenticationSample.RunSampleAsync(serviceClient, parameters.DeviceId);
         }
     }
 }
