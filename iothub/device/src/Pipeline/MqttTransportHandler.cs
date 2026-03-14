@@ -188,6 +188,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
             _connectionCredentials = context.IotHubConnectionCredentials;
             _messageQueueSize = _mqttTransportSettings.IncomingMessageQueueSize;
 
+            _mqttClient.ApplicationMessageReceivedAsync += HandleReceivedMessageAsync;
+            _mqttClient.DisconnectedAsync += HandleDisconnectionAsync;
+
             if (_mqttTransportSettings.Protocol == IotHubClientTransportProtocol.Tcp)
             {
                 _mqttClientOptionsBuilder.WithTcpServer(_hostName, ProtocolGatewayPort);
@@ -317,17 +320,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
                 _mqttClientOptions = _mqttClientOptionsBuilder.Build();
 
-                _mqttClient.ApplicationMessageReceivedAsync += HandleReceivedMessageAsync;
-                _mqttClient.DisconnectedAsync += HandleDisconnectionAsync;
-
                 try
                 {
                     MqttClientConnectResult connack = await _mqttClient.ConnectAsync(_mqttClientOptions, cancellationToken).ConfigureAwait(false);
                     if (connack.ResultCode != MqttClientConnectResultCode.Success)
                     {
-                        _mqttClient.ApplicationMessageReceivedAsync -= HandleReceivedMessageAsync;
-                        _mqttClient.DisconnectedAsync -= HandleDisconnectionAsync;
-
                         switch (connack.ResultCode)
                         {
                             case MqttClientConnectResultCode.BadUserNameOrPassword:
@@ -356,9 +353,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 }
                 catch (MqttCommunicationTimedOutException ex)
                 {
-                    _mqttClient.ApplicationMessageReceivedAsync -= HandleReceivedMessageAsync;
-                    _mqttClient.DisconnectedAsync -= HandleDisconnectionAsync;
-
                     throw new IotHubClientException(
                         ConnectTimedOutErrorMessage,
                         IotHubClientErrorCode.Timeout,
@@ -366,9 +360,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 }
                 catch (MqttCommunicationException ex)
                 {
-                    _mqttClient.ApplicationMessageReceivedAsync -= HandleReceivedMessageAsync;
-                    _mqttClient.DisconnectedAsync -= HandleDisconnectionAsync;
-
                     if (ex.InnerException is MqttCommunicationTimedOutException)
                     {
                         if (cancellationToken.IsCancellationRequested)
@@ -935,8 +926,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
             try
             {
                 _twinTimeoutTimer.Change(Timeout.Infinite, Timeout.Infinite);
-                _mqttClient.DisconnectedAsync -= HandleDisconnectionAsync;
-                _mqttClient.ApplicationMessageReceivedAsync -= HandleReceivedMessageAsync;
                 await _mqttClient.DisconnectAsync(new MqttClientDisconnectOptions(), cancellationToken).ConfigureAwait(false);
             }
             catch (Exception ex)
@@ -958,6 +947,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
         protected private override void Dispose(bool disposing)
         {
             base.Dispose(disposing);
+            _mqttClient.ApplicationMessageReceivedAsync -= HandleReceivedMessageAsync;
+            _mqttClient.DisconnectedAsync -= HandleDisconnectionAsync;
             _mqttClient?.Dispose();
             _twinTimeoutTimer?.Dispose();
         }
@@ -1085,8 +1076,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
             // During a disconnection, any pending twin updates won't be received, so we'll preemptively
             // cancel these operations so the client can retry once reconnected.
             RemoveOldOperations(TimeSpan.Zero);
-
-            _mqttClient.ApplicationMessageReceivedAsync -= HandleReceivedMessageAsync;
 
             return Task.CompletedTask;
         }
