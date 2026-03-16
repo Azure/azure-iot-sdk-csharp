@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Azure;
 using System.Text.Json.Serialization;
+using System.Text.Json;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
@@ -75,7 +76,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 .ConfigureAwait(false);
 
             string payload = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-            return JsonSerializer.Deserialize<DeviceRegistrationState>(payload);
+            return JsonSerializer.Deserialize<DeviceRegistrationState>(payload, JsonSerializerSettings.Options);
         }
 
         /// <summary>

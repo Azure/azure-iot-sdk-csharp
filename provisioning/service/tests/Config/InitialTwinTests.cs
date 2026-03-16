@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
             { "ConsumeUnity", "MPG" },
         };
 
-        private readonly InitialTwinPropertyCollection _sampleDesiredProperties = new()
+        private readonly ClientTwinProperties _sampleDesiredProperties = new()
         {
             ["Brand"] = "NiceCar",
             ["Model"] = "SNC4",
@@ -66,7 +66,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
         {
             // arrange
             Dictionary<string, object> tags = null;
-            InitialTwinPropertyCollection desiredProperties = null;
+            ClientTwinProperties desiredProperties = null;
 
             // act
             var initialTwin = new InitialTwin { Tags = tags, DesiredProperties = desiredProperties };
@@ -81,7 +81,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
         {
             // arrange
             Dictionary<string, object> tags = _sampleTags;
-            InitialTwinPropertyCollection desiredProperties = null;
+            ClientTwinProperties desiredProperties = null;
 
             // act
             var initialTwin = new InitialTwin { Tags = tags, DesiredProperties = desiredProperties };
@@ -96,7 +96,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
         {
             // arrange
             Dictionary<string, object> tags = null;
-            InitialTwinPropertyCollection desiredProperties = _sampleDesiredProperties;
+            ClientTwinProperties desiredProperties = _sampleDesiredProperties;
 
             // act
             var initialTwin = new InitialTwin{ Tags = tags, DesiredProperties = desiredProperties };
@@ -111,7 +111,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
         {
             // arrange
             Dictionary<string, object> tags = _sampleTags;
-            InitialTwinPropertyCollection desiredProperties = _sampleDesiredProperties;
+            ClientTwinProperties desiredProperties = _sampleDesiredProperties;
 
             // act
             var initialTwin = new InitialTwin{ Tags = tags, DesiredProperties = desiredProperties };
@@ -126,7 +126,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
         {
             // arrange
             Dictionary<string, object> tags = _sampleTags;
-            InitialTwinPropertyCollection desiredProperties = null;
+            ClientTwinProperties desiredProperties = null;
             var initialTwin = new InitialTwin{ Tags = tags, DesiredProperties = desiredProperties };
 
             // act
@@ -141,7 +141,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
         {
             // arrange
             Dictionary<string, object> tags = null;
-            InitialTwinPropertyCollection desiredProperties = _sampleDesiredProperties;
+            ClientTwinProperties desiredProperties = _sampleDesiredProperties;
             var initialTwin = new InitialTwin{ Tags = tags, DesiredProperties = desiredProperties };
 
             // act
@@ -156,7 +156,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
         {
             // arrange
             Dictionary<string, object> tags = _sampleTags;
-            InitialTwinPropertyCollection desiredProperties = _sampleDesiredProperties;
+            ClientTwinProperties desiredProperties = _sampleDesiredProperties;
             var initialTwin = new InitialTwin{ Tags = tags, DesiredProperties = desiredProperties };
 
             // act

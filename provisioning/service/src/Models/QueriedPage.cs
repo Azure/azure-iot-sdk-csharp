@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
@@ -18,7 +19,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         // in an async function.
         internal QueriedPage(HttpResponseMessage response, string payload)
         {
-            Items = JsonSerializer.Deserialize<IReadOnlyList<T>>(payload);
+            Items = JsonSerializer.Deserialize<IReadOnlyList<T>>(payload, JsonSerializerSettings.Options);
             ContinuationToken = response.Headers.SafeGetValue(ContinuationTokenHeader);
         }
 

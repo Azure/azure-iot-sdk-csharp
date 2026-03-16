@@ -17,6 +17,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// Gets and sets the twin desired properties.
         /// </summary>
         [JsonPropertyName("desired")]
-        public InitialTwinPropertyCollection Desired { get; set; } = new();
+        public ClientTwinProperties Desired { get; set; } = new();
     }
 }

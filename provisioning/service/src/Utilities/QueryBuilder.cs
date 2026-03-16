@@ -10,6 +10,7 @@ using System.Threading;
 using System.Text.Json.Serialization;
 using System.Net.Http;
 using System.Globalization;
+using System.Text.Json;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
@@ -53,7 +54,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                                 HttpMethod.Post,
                                 path,
                                 null,
-                                JsonSerializer.Serialize(new QuerySpecification(query)),
+                                JsonSerializer.Serialize(new QuerySpecification(query), JsonSerializerSettings.Options),
                                 new ETag(),
                                 cancellationToken)
                             .ConfigureAwait(false);
