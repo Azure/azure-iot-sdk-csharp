@@ -68,7 +68,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             IEnumerable<Module> modulesOnDevice = await serviceClient.Devices.GetModulesAsync(testDevice.Id).ConfigureAwait(false);
 
             List<string> moduleIdsOnDevice = modulesOnDevice
-                .Select(module => module.Id)
+                .Select(module => module.ModuleId)
                 .ToList();
 
             // assert
@@ -102,7 +102,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                     new Module(testDeviceId, testModuleId)).ConfigureAwait(false);
 
                 createdModule.DeviceId.Should().Be(testDeviceId);
-                createdModule.Id.Should().Be(testModuleId);
+                createdModule.ModuleId.Should().Be(testModuleId);
 
                 // Get device
                 // Get the device and compare ETag values (should remain unchanged);
