@@ -41,7 +41,7 @@ In v2, we've aimed to simplify this experience.
   - Microsoft.Azure.Devices.Provisioning.Transport.Mqtt
     > Rolled into Microsoft.Azure.Devices.Provisioning.Client.
   - Microsoft.Azure.Devices.Provisioning.Security.Tpm
-    > Deprecated.
+    > Deprecated and removed.
   - From preview001, Microsoft.Azure.Devices.Authentication.
     > Rolled into Microsoft.Azure.Devices.Provisioning.Client.
 
@@ -116,10 +116,7 @@ In the connection status callback, a third value, `RecommendedAction`, is now pr
 
 ## What will happen to the v1 SDK
 
-After the v2 SDK is released as GA (general availability), meaning it is no longer only in preview, there will be one final LTS of the v1 SDK released that we will support like any other LTS release (security bug fixes, some non-security bug fixes as needed).
-Users are still encouraged to migrate to v2 when they have the chance.
-
-> For more details on LTS releases, see [this document](./readme.md#long-term-support-lts).
+After the v2 SDK is released, meaning it is no longer only in preview, there may be support for security bug fixes and some non-security bug fixes as needed, but users are highly encouraged to migrate to v2 as that is where all new feature development will be done.
 
 ## Migration guide
 
@@ -584,7 +581,7 @@ Question:
 > Does this major version bump bring any changes to what platforms this SDK supports?
 
 Answer:
-> These SDKs now only target .NET Standard 2.0, which is usable by all modern .NET targets, including .NET 6.0.
+> These SDKs now only target .NET 10. Some previously targeted platforms are no longer supported by .NET itself, so this SDK can no longer support them.
 > The SDKs are tested with [this matrix](./supported_platforms.md).
 
 Question:

@@ -5,7 +5,7 @@ This SDK is tested nightly on a mix of .NET implementations on both Windows 10 a
 ## Supported .NET versions
 
 The NuGet packages provide targeting for the following .NET versions:
-- .NET Standard 2.0
+- .NET 10
 
 This SDK _should_ work with newer versions of .NET, but there are no guarantees that they will _always_ work for those until we officially add support for them nor are there guarantees that we will fix bugs that are only present on those versions.
 
@@ -18,10 +18,7 @@ Note that, while we only directly test on Windows 10, we do support other Window
 Nightly test platform details:
 
 .NET versions tested on
-- .NET 7.0
-- .NET 6.0
-- .NET Framework 4.7.2
-
+- .NET 10.0
 
 Default locale: en_US, platform encoding: Cp1252
 
@@ -34,8 +31,7 @@ Note that, while we only directly test on Ubuntu 20.04, we do generally support 
 Nightly test platform details:
 
 .NET versions tested on:
-- .NET 7.0
-- .NET 6.0
+- .NET 10.0
 
 Default locale: en_US, platform encoding: UTF-8
 

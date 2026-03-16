@@ -2,6 +2,7 @@
   <PropertyGroup>
     <TargetFrameworks>net10.0</TargetFrameworks>
     <LangVersion>9.0</LangVersion>
+    <Version>2.0.0</Version>
     <EnableNETAnalyzers>True</EnableNETAnalyzers>
     <AnalysisLevel>latest-recommended</AnalysisLevel>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
@@ -25,7 +26,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <Version>2.0.0-preview008</Version>
+    <Version>2.0.0</Version>
     <Title>Microsoft Azure IoT Device Client SDK</Title>
     <IncludeSource>True</IncludeSource>
     <IncludeSymbols>True</IncludeSymbols>
