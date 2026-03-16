@@ -31,7 +31,7 @@ namespace Microsoft.Azure.Devices
         /// HTTP status codes, which are well-known and documented.
         /// </remarks>
         [JsonPropertyName("status")]
-        public int Status { get; protected internal set; }
+        public int Status { get; set; }
 
         /// <summary>
         /// Get the payload as a JSON string.

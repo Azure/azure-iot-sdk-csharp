@@ -23,6 +23,6 @@ namespace Microsoft.Azure.Devices
         /// Number of devices connected to IoT hub.
         /// </summary>
         [JsonPropertyName("connectedDeviceCount")]
-        public long ConnectedDeviceCount { get; protected internal set; }
+        public long ConnectedDeviceCount { get; set; }
     }
 }

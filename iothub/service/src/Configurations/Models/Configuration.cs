@@ -34,7 +34,7 @@ namespace Microsoft.Azure.Devices
         /// The unique identifier of the configuration.
         /// </summary>
         [JsonPropertyName("id")]
-        public string Id { get; internal set; }
+        public string Id { get; set; }
 
         /// <summary>
         /// The schema version of the configuration.
@@ -73,13 +73,13 @@ namespace Microsoft.Azure.Devices
         /// The creation date and time of the configuration.
         /// </summary>
         [JsonPropertyName("createdTimeUtc")]
-        public DateTimeOffset? CreatedOnUtc { get; internal set; }
+        public DateTimeOffset? CreatedOnUtc { get; set; }
 
         /// <summary>
         /// The update date and time of the configuration.
         /// </summary>
         [JsonPropertyName("lastUpdatedTimeUtc")]
-        public DateTimeOffset? LastUpdatedOnUtc { get; internal set; }
+        public DateTimeOffset? LastUpdatedOnUtc { get; set; }
 
         /// <summary>
         /// The priority number assigned to the configuration.

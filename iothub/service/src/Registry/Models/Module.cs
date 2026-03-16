@@ -40,13 +40,13 @@ namespace Microsoft.Azure.Devices
         /// Module Id.
         /// </summary>
         [JsonPropertyName("moduleId")]
-        public string ModuleId { get; internal set; }
+        public string ModuleId { get; set; }
 
         /// <summary>
         /// Device Id.
         /// </summary>
         [JsonPropertyName("deviceId")]
-        public string DeviceId { get; internal set; }
+        public string DeviceId { get; set; }
 
         /// <summary>
         /// Modules's generation Id.
@@ -55,7 +55,7 @@ namespace Microsoft.Azure.Devices
         /// This value is used to distinguish devices with the same deviceId, when they have been deleted and re-created.
         /// </remarks>
         [JsonPropertyName("generationId")]
-        public string GenerationId { get; internal set; }
+        public string GenerationId { get; set; }
 
         /// <summary>
         /// Module's ETag.
@@ -67,25 +67,25 @@ namespace Microsoft.Azure.Devices
         /// Modules's connection state.
         /// </summary>
         [JsonPropertyName("connectionState")]
-        public ClientConnectionState ConnectionState { get; internal set; }
+        public ClientConnectionState ConnectionState { get; set; }
 
         /// <summary>
         /// Time when the connection state was last updated.
         /// </summary>
         [JsonPropertyName("connectionStateUpdatedTime")]
-        public DateTimeOffset? ConnectionStateUpdatedOnUtc { get; internal set; }
+        public DateTimeOffset? ConnectionStateUpdatedOnUtc { get; set; }
 
         /// <summary>
         /// Time when the module was last active.
         /// </summary>
         [JsonPropertyName("lastActivityTime")]
-        public DateTimeOffset? LastActiveOnUtc { get; internal set; }
+        public DateTimeOffset? LastActiveOnUtc { get; set; }
 
         /// <summary>
         /// Number of messages sent to the module from the cloud.
         /// </summary>
         [JsonPropertyName("cloudToDeviceMessageCount")]
-        public int CloudToDeviceMessageCount { get; internal set; }
+        public int CloudToDeviceMessageCount { get; set; }
 
         /// <summary>
         /// Device's authentication mechanism.

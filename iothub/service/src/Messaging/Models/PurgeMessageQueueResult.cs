@@ -24,12 +24,12 @@ namespace Microsoft.Azure.Devices
         /// The Id of the device whose messages are being purged.
         /// </summary>
         [JsonPropertyName("deviceId")]
-        public string DeviceId { get; protected internal set; }
+        public string DeviceId { get; set; }
 
         /// <summary>
         /// The total number of messages that were purged from the device's queue.
         /// </summary>
         [JsonPropertyName("totalMessagesPurged")]
-        public int TotalMessagesPurged { get; protected internal set; }
+        public int TotalMessagesPurged { get; set; }
     }
 }

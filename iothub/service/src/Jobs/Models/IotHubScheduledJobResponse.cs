@@ -29,19 +29,19 @@ namespace Microsoft.Azure.Devices
         /// The job Id.
         /// </summary>
         [JsonPropertyName("jobId")]
-        public string JobId { get; internal set; }
+        public string JobId { get; set; }
 
         /// <summary>
         /// Status of the job.
         /// </summary>
         [JsonPropertyName("status")]
-        public JobStatus Status { get; internal set; }
+        public JobStatus Status { get; set; }
 
         /// <summary>
         /// Scheduled job start time in UTC.
         /// </summary>
         [JsonPropertyName("createdDateTimeUtc")]
-        public DateTimeOffset? CreatedOnUtc { get; internal set; }
+        public DateTimeOffset? CreatedOnUtc { get; set; }
 
         // Some service Jobs APIs use "createdTime" as the key for this value and some others use "createdDateTimeUtc".
         // This private field is a workaround that allows us to deserialize either "createdTime" or "createdDateTimeUtc"
@@ -57,13 +57,13 @@ namespace Microsoft.Azure.Devices
         /// Represents the time the job started processing.
         /// </summary>
         [JsonPropertyName("startTimeUtc")]
-        public DateTimeOffset? StartedOnUtc { get; internal set; }
+        public DateTimeOffset? StartedOnUtc { get; set; }
 
         /// <summary>
         /// Represents the time the job stopped processing.
         /// </summary>
         [JsonPropertyName("endTimeUtc")]
-        public DateTimeOffset? EndedOnUtc { get; internal set; }
+        public DateTimeOffset? EndedOnUtc { get; set; }
 
         // Some service Jobs APIs use "endTime" as the key for this value and some others use "endTimeUtc".
         // This private field is a workaround that allows us to deserialize either "endTime" or "endTimeUtc"
@@ -82,13 +82,13 @@ namespace Microsoft.Azure.Devices
         /// If status is <see cref="JobStatus.Failed"/>, this represents a string containing the reason.
         /// </remarks>
         [JsonPropertyName("failureReason")]
-        public string FailureReason { get; internal set; }
+        public string FailureReason { get; set; }
 
         /// <summary>
         /// Represents a string containing a message with status about the job execution.
         /// </summary>
         [JsonPropertyName("statusMessage")]
-        public string StatusMessage { get; internal set; }
+        public string StatusMessage { get; set; }
 
         /// <summary>
         /// Convenience property to determine if the job is in a terminal state, based on <see cref="Status"/>.

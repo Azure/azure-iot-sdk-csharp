@@ -35,7 +35,7 @@ namespace Microsoft.Azure.Devices
         /// Device Id.
         /// </summary>
         [JsonPropertyName("deviceId")]
-        public string Id { get; internal set; }
+        public string Id { get; set; }
 
         /// <summary>
         /// Device's generation Id.
@@ -44,7 +44,7 @@ namespace Microsoft.Azure.Devices
         /// This value is used to distinguish devices with the same deviceId, when they have been deleted and re-created.
         /// </remarks>
         [JsonPropertyName("generationId")]
-        public string GenerationId { get; internal set; }
+        public string GenerationId { get; set; }
 
         /// <summary>
         /// Device's ETag.
@@ -56,7 +56,7 @@ namespace Microsoft.Azure.Devices
         /// Device's connection state.
         /// </summary>
         [JsonPropertyName("connectionState")]
-        public ClientConnectionState ConnectionState { get; internal set; }
+        public ClientConnectionState ConnectionState { get; set; }
 
         /// <summary>
         /// Device's status.
@@ -74,25 +74,25 @@ namespace Microsoft.Azure.Devices
         /// Time when the connection state was last updated.
         /// </summary>
         [JsonPropertyName("connectionStateUpdatedTime")]
-        public DateTimeOffset? ConnectionStateUpdatedOnUtc { get; internal set; }
+        public DateTimeOffset? ConnectionStateUpdatedOnUtc { get; set; }
 
         /// <summary>
         /// Time when the status was last updated.
         /// </summary>
         [JsonPropertyName("statusUpdatedTime")]
-        public DateTimeOffset? StatusUpdatedOnUtc { get; internal set; }
+        public DateTimeOffset? StatusUpdatedOnUtc { get; set; }
 
         /// <summary>
         /// Time when the device was last active.
         /// </summary>
         [JsonPropertyName("lastActivityTime")]
-        public DateTimeOffset? LastActiveOnUtc { get; internal set; }
+        public DateTimeOffset? LastActiveOnUtc { get; set; }
 
         /// <summary>
         /// Number of messages sent to the device from the cloud.
         /// </summary>
         [JsonPropertyName("cloudToDeviceMessageCount")]
-        public int CloudToDeviceMessageCount { get; internal set; }
+        public int CloudToDeviceMessageCount { get; set; }
 
         /// <summary>
         /// Device's authentication mechanism.
@@ -130,6 +130,6 @@ namespace Microsoft.Azure.Devices
         /// For more information, see <see href="https://docs.microsoft.com/azure/iot-edge/iot-edge-as-gateway?view=iotedge-2020-11#parent-and-child-relationships"/>.
         /// </remarks>
         [JsonPropertyName("parentScopes")]
-        public virtual IList<string> ParentScopes { get; internal set; } = new List<string>();
+        public virtual IList<string> ParentScopes { get; set; } = new List<string>();
     }
 }

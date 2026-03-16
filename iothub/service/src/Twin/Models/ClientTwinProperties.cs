@@ -19,13 +19,13 @@ namespace Microsoft.Azure.Devices
         /// Gets the version of the collection.
         /// </summary>
         [JsonPropertyName("$version")]
-        public long? Version { get; internal set; }
+        public long? Version { get; set; }
 
         /// <summary>
         /// Metadata about the properties.
         /// </summary>
         [JsonPropertyName("$metadata")]
-        public ClientTwinMetadata Metadata { get; set; } = new();
+        public ClientTwinMetadata Metadata { get; set; }
 
         /// <summary>
         /// 

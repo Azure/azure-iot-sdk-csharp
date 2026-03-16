@@ -35,7 +35,7 @@ namespace Microsoft.Azure.Devices
         /// This value is created by the service. If specified by the user, it will be ignored.
         /// </remarks>
         [JsonPropertyName("jobId")]
-        public string JobId { get; protected internal set; }
+        public string JobId { get; set; }
 
         /// <summary>
         /// When the job started running.
@@ -44,7 +44,7 @@ namespace Microsoft.Azure.Devices
         /// This value is created by the service. If specified by the user, it will be ignored.
         /// </remarks>
         [JsonPropertyName("startTimeUtc")]
-        public DateTimeOffset? StartedOnUtc { get; protected internal set; }
+        public DateTimeOffset? StartedOnUtc { get; set; }
 
         /// <summary>
         /// When the job finished.
@@ -53,7 +53,7 @@ namespace Microsoft.Azure.Devices
         /// This value is created by the service. If specified by the user, it will be ignored.
         /// </remarks>
         [JsonPropertyName("endTimeUtc")]
-        public DateTimeOffset? EndedOnUtc { get; protected internal set; }
+        public DateTimeOffset? EndedOnUtc { get; set; }
 
         /// <summary>
         /// The status of the job.
@@ -62,7 +62,7 @@ namespace Microsoft.Azure.Devices
         /// This value is created by the service. If specified by the user, it will be ignored.
         /// </remarks>
         [JsonPropertyName("status")]
-        public JobStatus Status { get; protected internal set; }
+        public JobStatus Status { get; set; }
 
         /// <summary>
         /// If status == failure, this represents a string containing the reason.
@@ -71,7 +71,7 @@ namespace Microsoft.Azure.Devices
         /// This value is created by the service. If specified by the user, it will be ignored.
         /// </remarks>
         [JsonPropertyName("failureReason")]
-        public string FailureReason { get; protected internal set; }
+        public string FailureReason { get; set; }
 
         /// <summary>
         /// Convenience property to determine if the job is in a terminal state, based on <see cref="Status"/>.

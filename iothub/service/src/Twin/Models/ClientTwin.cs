@@ -53,7 +53,7 @@ namespace Microsoft.Azure.Devices
         /// Gets and sets the twin tags.
         /// </summary>
         [JsonPropertyName("tags")]
-        public IDictionary<string, object> Tags { get; protected internal set; } = new Dictionary<string, object>();
+        public IDictionary<string, object> Tags { get; set; } = new Dictionary<string, object>();
 
         /// <summary>
         /// Gets and sets the twin properties.
@@ -68,7 +68,7 @@ namespace Microsoft.Azure.Devices
         /// Configuration properties are read only.
         /// </remarks>
         [JsonPropertyName("configurations")]
-        public IDictionary<string, ConfigurationInfo> Configurations { get; internal set; } = new Dictionary<string, ConfigurationInfo>();
+        public IDictionary<string, ConfigurationInfo> Configurations { get; set; } = new Dictionary<string, ConfigurationInfo>();
 
         /// <summary>
         /// Gets the twin capabilities.
@@ -77,7 +77,7 @@ namespace Microsoft.Azure.Devices
         /// Twin capabilities are read only.
         /// </remarks>
         [JsonPropertyName("capabilities")]
-        public ClientCapabilities Capabilities { get; internal set; } = new();
+        public ClientCapabilities Capabilities { get; set; } = new();
 
         /// <summary>
         /// Twin's ETag.
@@ -100,49 +100,49 @@ namespace Microsoft.Azure.Devices
         /// Gets the corresponding device's status.
         /// </summary>
         [JsonPropertyName("status")]
-        public ClientStatus? Status { get; internal set; }
+        public ClientStatus? Status { get; set; }
 
         /// <summary>
         /// Reason, if any, for the corresponding device to be in specified status.
         /// </summary>
         [JsonPropertyName("statusReason")]
-        public string StatusReason { get; internal set; }
+        public string StatusReason { get; set; }
 
         /// <summary>
         /// Time when the corresponding device's status was last updated.
         /// </summary>
         [JsonPropertyName("statusUpdateTime")]
-        public DateTimeOffset? StatusUpdatedOnUtc { get; internal set; }
+        public DateTimeOffset? StatusUpdatedOnUtc { get; set; }
 
         /// <summary>
         /// Corresponding device's connection state.
         /// </summary>
         [JsonPropertyName("connectionState")]
-        public ClientConnectionState? ConnectionState { get; internal set; }
+        public ClientConnectionState? ConnectionState { get; set; }
 
         /// <summary>
         /// Time when the corresponding device was last active.
         /// </summary>
         [JsonPropertyName("lastActivityTime")]
-        public DateTimeOffset? LastActiveOnUtc { get; internal set; }
+        public DateTimeOffset? LastActiveOnUtc { get; set; }
 
         /// <summary>
         /// Number of messages sent to the corresponding device from the cloud.
         /// </summary>
         [JsonPropertyName("cloudToDeviceMessageCount")]
-        public int? CloudToDeviceMessageCount { get; internal set; }
+        public int? CloudToDeviceMessageCount { get; set; }
 
         /// <summary>
         /// Corresponding device's authentication type.
         /// </summary>
         [JsonPropertyName("authenticationType")]
-        public ClientAuthenticationType? AuthenticationType { get; internal set; }
+        public ClientAuthenticationType? AuthenticationType { get; set; }
 
         /// <summary>
         /// Corresponding device's X509 thumbprint.
         /// </summary>
         [JsonPropertyName("x509Thumbprint")]
-        public X509Thumbprint X509Thumbprint { get; internal set; }
+        public X509Thumbprint X509Thumbprint { get; set; }
 
         /// <summary>
         /// The scope of the device. Auto-generated and immutable for edge devices and modifiable in leaf devices to create child/parent relationship.
@@ -151,7 +151,7 @@ namespace Microsoft.Azure.Devices
         /// For more information, see <see href="https://docs.microsoft.com/azure/iot-edge/iot-edge-as-gateway?view=iotedge-2020-11#parent-and-child-relationships"/>.
         /// </remarks>
         [JsonPropertyName("deviceScope")]
-        public string DeviceScope { get; internal set; }
+        public string DeviceScope { get; set; }
 
         /// <summary>
         /// The scopes of the upper level edge devices if applicable. Only available for edge devices.
@@ -160,6 +160,6 @@ namespace Microsoft.Azure.Devices
         /// For more information, see <see href="https://docs.microsoft.com/azure/iot-edge/iot-edge-as-gateway?view=iotedge-2020-11#parent-and-child-relationships"/>.
         /// </remarks>
         [JsonPropertyName("parentScopes")]
-        public virtual IReadOnlyList<string> ParentScopes { get; internal set; } = new List<string>();
+        public virtual IReadOnlyList<string> ParentScopes { get; set; } = new List<string>();
     }
 }

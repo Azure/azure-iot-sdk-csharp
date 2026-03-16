@@ -25,7 +25,7 @@ namespace Microsoft.Azure.Devices
         /// The type of job to execute.
         /// </summary>
         [JsonPropertyName("jobType")]
-        public JobType JobType { get; protected internal set; }
+        public JobType JobType { get; set; }
 
         // Some service Jobs APIs use "type" as the key for this value and some others use "jobType".
         // This private field is a workaround that allows us to deserialize either "type" or "jobType"
@@ -41,7 +41,7 @@ namespace Microsoft.Azure.Devices
         /// Device query condition.
         /// </summary>
         [JsonPropertyName("queryCondition")]
-        public string QueryCondition { get; protected internal set; }
+        public string QueryCondition { get; set; }
 
         /// <summary>
         /// Max execution time.
@@ -61,7 +61,7 @@ namespace Microsoft.Azure.Devices
         /// Different number of devices in the job.
         /// </summary>
         [JsonPropertyName("deviceJobStatistics")]
-        public DeviceJobStatistics DeviceJobStatistics { get; protected internal set; }
+        public DeviceJobStatistics DeviceJobStatistics { get; set; }
 
         /// <summary>
         /// The Id of the device for this response.
@@ -70,12 +70,12 @@ namespace Microsoft.Azure.Devices
         /// It can be null (e.g., in case of a parent orchestration).
         /// </remarks>
         [JsonPropertyName("deviceId")]
-        public string DeviceId { get; protected internal set; }
+        public string DeviceId { get; set; }
 
         /// <summary>
         /// The job Id of the parent orchestration, if any.
         /// </summary>
         [JsonPropertyName("parentJobId")]
-        public string ParentJobId { get; protected internal set; }
+        public string ParentJobId { get; set; }
     }
 }
