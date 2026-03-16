@@ -34,6 +34,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             {
                 Id = 123,
                 Name = "someName",
+                Nested = new CustomNestedTwinProperty()
+                { 
+                    Id = 456,
+                    Name = "someNestedName"
+                }
             },
         };
 
@@ -696,7 +701,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             // Validate the updated twin from the service-client
             ClientTwin completeTwin = await s_serviceClient.Twins.GetAsync(testDevice.Id, ct).ConfigureAwait(false);
             object actualProp = completeTwin.Properties.Desired[propName];
-            JsonConvert.SerializeObject(actualProp).Should().Be(JsonConvert.SerializeObject(propValue));
+            var actualSer = JsonConvert.SerializeObject(actualProp);
+            var expectedSer = JsonConvert.SerializeObject(propValue);
+            actualSer.Should().Be(expectedSer);
         }
 
         private async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGetAsync(IotHubClientTransportSettings transportSettings, string propName, string propValue, CancellationToken ct)
@@ -785,7 +792,15 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
 
     internal class CustomTwinProperty
     {
-        // The properties in here need to be public otherwise NewtonSoft.Json cannot serialize and deserialize them properly.
+        public int Id { get; set; }
+
+        public string Name { get; set; }
+
+        public CustomNestedTwinProperty Nested { get; set; }
+    }
+
+    internal class CustomNestedTwinProperty
+    {
         public int Id { get; set; }
 
         public string Name { get; set; }

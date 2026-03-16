@@ -53,22 +53,7 @@ namespace Microsoft.Azure.Devices
                 {
                     if (value is JsonElement jsonElementValue)
                     {
-                        switch (jsonElementValue.ValueKind)
-                        {
-                            case JsonValueKind.String:
-                                return jsonElementValue.GetString();
-                            case JsonValueKind.True:
-                                return true;
-                            case JsonValueKind.False:
-                                return false;
-                            case JsonValueKind.Number:
-                                return jsonElementValue.GetInt64();
-                            case JsonValueKind.Array:
-                            case JsonValueKind.Object:
-                            case JsonValueKind.Undefined:
-                            case JsonValueKind.Null:
-                                return jsonElementValue; // no casting/conversion needed
-                        }
+                        return FromJsonElement(jsonElementValue);
                     }
                     return value;
                 }
@@ -80,6 +65,43 @@ namespace Microsoft.Azure.Devices
             set => Properties[propertyName] = value is null || value is JsonElement
                 ? value
                 : JsonSerializer.SerializeToElement(value);
+        }
+
+        private static object FromJsonElement(JsonElement jsonElement)
+        {
+            switch (jsonElement.ValueKind)
+            {
+                case JsonValueKind.String:
+                    return jsonElement.GetString();
+                case JsonValueKind.True:
+                    return true;
+                case JsonValueKind.False:
+                    return false;
+                case JsonValueKind.Number:
+                    return jsonElement.GetInt64();
+                case JsonValueKind.Array:
+                    List<object> arrayWithElements = new List<object>();
+                    foreach (JsonElement jsonArrayElement in jsonElement.EnumerateArray())
+                    {
+                        arrayWithElements.Add(FromJsonElement(jsonArrayElement));
+                    }
+                    return arrayWithElements;
+                
+                case JsonValueKind.Object:
+                    Dictionary<string, object> objectFields = new Dictionary<string, object>();
+                    foreach (JsonProperty key in jsonElement.EnumerateObject())
+                    { 
+                        objectFields.TryAdd(key.Name, FromJsonElement(key.Value));
+                    }
+                    return objectFields;
+                case JsonValueKind.Null:
+                    return null;
+                case JsonValueKind.Undefined:
+                    return null;
+            }
+
+            // Should never happen
+            throw new ArgumentException("Unrecognized Json element type");
         }
 
         /// <summary>
