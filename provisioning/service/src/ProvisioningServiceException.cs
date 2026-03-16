@@ -2,10 +2,8 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Collections.Generic;
 using System.Net;
 using System.Net.Http.Headers;
-using System.Runtime.Serialization;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
@@ -15,12 +13,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     [Serializable]
     public class ProvisioningServiceException : Exception
     {
-        [NonSerialized]
-        private const string IsTransientValueSerializationStoreName = "ProvisioningServiceException-IsTransient";
-
-        [NonSerialized]
-        private const string TrackingIdValueSerializationStoreName = "ProvisioningServiceException-TrackingId";
-
         /// <summary>
         /// Creates an instance of this class.
         /// </summary>
@@ -104,21 +96,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             ErrorCode = errorCode;
             TrackingId = trackingId;
             Headers = headers;
-        }
-
-        /// <summary>
-        /// Creates a new instance of this class.
-        /// </summary>
-        /// <param name="info">The SerializationInfo that holds the serialized object data about the exception being thrown.</param>
-        /// <param name="context">The StreamingContext that contains contextual information about the source or destination.</param>
-        protected ProvisioningServiceException(SerializationInfo info, StreamingContext context)
-            : base(info, context)
-        {
-            if (info != null)
-            {
-                IsTransient = info.GetBoolean(IsTransientValueSerializationStoreName);
-                TrackingId = info.GetString(TrackingIdValueSerializationStoreName);
-            }
         }
 
         /// <summary>

@@ -75,44 +75,5 @@ namespace Microsoft.Azure.Devices.Tests.Exceptions
             exception.TrackingId.Should().BeNull();
             exception.ErrorCode.Should().Be(errorCode);
         }
-
-        [TestMethod]
-        public void IotHubServiceException_GetObjectData_NullInfoThrows()
-        {
-            // arrange - act
-            HttpStatusCode statusCode = HttpStatusCode.RequestTimeout;
-
-            var exception = new IotHubServiceException(
-                Message,
-                statusCode,
-                IotHubServiceErrorCode.RequestTimeout);
-            var sctx = new StreamingContext();
-
-            // act
-            Action act = () => exception.GetObjectData(null, sctx);
-
-            // assert
-            act.Should().Throw<ArgumentNullException>();
-        }
-
-        [TestMethod]
-        public void IotHubServiceException_GetObjectData_Ok()
-        {
-            // arrange - act
-            HttpStatusCode statusCode = HttpStatusCode.RequestTimeout;
-
-            var exception = new IotHubServiceException(
-                Message,
-                statusCode,
-                IotHubServiceErrorCode.RequestTimeout);
-            var sInfo = new SerializationInfo(GetType(), new FormatterConverter());
-            var sctx = new StreamingContext();
-
-            // act
-            Action act = () => exception.GetObjectData(sInfo, sctx);
-
-            // assert
-            act.Should().NotThrow(); // With proper parameters, act should not throw
-        }
     }
 }

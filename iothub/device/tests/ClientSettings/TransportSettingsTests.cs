@@ -49,8 +49,8 @@ namespace Microsoft.Azure.Devices.Client.Tests
         public void IotHubClientOptions_DefaultValues()
         {
             var options = new IotHubClientOptions();
-            options.TransportSettings.Should().BeOfType(typeof(IotHubClientMqttSettings));
-            options.HttpOperationTransportSettings.Should().BeOfType(typeof(IotHubClientHttpSettings));
+            options.TransportSettings.Should().BeOfType<IotHubClientMqttSettings>();
+            options.HttpOperationTransportSettings.Should().BeOfType<IotHubClientHttpSettings>();
             options.PayloadConvention.Should().Be(DefaultPayloadConvention.Instance);
             options.SdkAssignsMessageId.Should().Be(SdkAssignsMessageId.Never);
         }

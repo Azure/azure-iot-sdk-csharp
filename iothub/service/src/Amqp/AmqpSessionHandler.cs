@@ -132,7 +132,10 @@ namespace Microsoft.Azure.Devices.Amqp
 
             try
             {
-                _session.Closed -= _sessionLossHandler;
+                if (_session != null)
+                { 
+                    _session.Closed -= _sessionLossHandler;
+                }
 
                 if (_sendingLinkHandler != null)
                 {

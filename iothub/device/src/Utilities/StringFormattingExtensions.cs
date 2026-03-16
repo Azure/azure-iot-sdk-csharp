@@ -55,7 +55,7 @@ namespace Microsoft.Azure.Devices.Client
         public static string Truncate(this string message, int maximumSize)
         {
             return (message?.Length ?? 0) > maximumSize
-                ? message.Substring(0, maximumSize) + "...(truncated)"
+                ? new string(message.AsSpan(0, maximumSize)) + "...(truncated)"
                 : message;
         }
     }

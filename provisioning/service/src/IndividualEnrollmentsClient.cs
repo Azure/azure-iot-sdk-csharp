@@ -76,7 +76,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                     cancellationToken)
                 .ConfigureAwait(false);
 
-            string payload = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            string payload = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
             return JsonConvert.DeserializeObject<IndividualEnrollment>(payload);
         }
 
@@ -115,7 +115,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                     cancellationToken)
                 .ConfigureAwait(false);
 
-            string payload = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            string payload = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
             return JsonConvert.DeserializeObject<IndividualEnrollment>(payload);
         }
 
@@ -239,7 +239,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                     cancellationToken)
                 .ConfigureAwait(false);
 
-            string payload = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            string payload = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
             return JsonConvert.DeserializeObject<BulkEnrollmentOperationResult>(payload);
         }
 
@@ -375,7 +375,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                     cancellationToken)
                 .ConfigureAwait(false);
 
-            string payload = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            string payload = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
             return JsonConvert.DeserializeObject<AttestationMechanism>(payload);
         }
 

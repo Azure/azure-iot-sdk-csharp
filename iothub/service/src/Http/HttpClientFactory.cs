@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Net;
 using System.Net.Http;
 
 namespace Microsoft.Azure.Devices
@@ -20,17 +19,8 @@ namespace Microsoft.Azure.Devices
         // https://github.com/Azure/azure-sdk-for-net/blob/7e3cf643977591e9041f4c628fd4d28237398e0b/sdk/core/Azure.Core/src/Pipeline/ServicePointHelpers.cs#L28
         private const int DefaultMaxConnectionsPerServer = 50;
 
-        // How long, in milliseconds, a given cached TCP connection created by this client's HTTP layer will live before being closed.
-        // If this value is set to any negative value, the connection lease will be infinite. If this value is set to 0, then the TCP connection will close after
-        // each HTTP request and a new TCP connection will be opened upon the next request.
-        //
-        // By closing cached TCP connections and opening a new one upon the next request, the underlying HTTP client has a chance to do a DNS lookup
-        // to validate that it will send the requests to the correct IP address. While it is atypical for a given IoT hub to change its IP address, it does
-        // happen when a given IoT hub fails over into a different region.
-        //
-        // This default value is consistent with the default value used in Azure.Core
-        // https://github.com/Azure/azure-sdk-for-net/blob/7e3cf643977591e9041f4c628fd4d28237398e0b/sdk/core/Azure.Core/src/Pipeline/ServicePointHelpers.cs#L29
-        private static readonly TimeSpan s_defaultConnectionLeaseTimeout = TimeSpan.FromMinutes(5);
+        private const int RuntimeDefaultConnectionLimit = 2;
+        private const int IncreasedConnectionLimit = 50;
 
         /// <summary>
         /// Create an HTTP client for communicating with the provided host and that uses the
@@ -79,8 +69,25 @@ namespace Microsoft.Azure.Devices
             }
 
             httpMessageHandler.MaxConnectionsPerServer = DefaultMaxConnectionsPerServer;
-            ServicePoint servicePoint = ServicePointManager.FindServicePoint(httpsEndpoint);
-            servicePoint.ConnectionLeaseTimeout = s_defaultConnectionLeaseTimeout.Milliseconds;
+
+            try
+            {
+                // Only change when the default runtime limit is used
+                if (httpMessageHandler.MaxConnectionsPerServer == RuntimeDefaultConnectionLimit)
+                {
+                    httpMessageHandler.MaxConnectionsPerServer = IncreasedConnectionLimit;
+                }
+            }
+            catch (NotSupportedException)
+            {
+                // Some platforms might throw NotSupportedException
+                // when accessing handler options
+            }
+            catch (NotImplementedException)
+            {
+                // Some platforms (like Unity) might throw NotImplementedException
+                // when accessing handler options
+            }
 
             return new HttpClient(httpMessageHandler, true);
         }

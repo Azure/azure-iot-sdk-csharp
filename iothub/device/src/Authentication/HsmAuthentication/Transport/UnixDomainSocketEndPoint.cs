@@ -39,10 +39,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.Transport
 
         internal UnixDomainSocketEndPoint(SocketAddress socketAddress)
         {
-            if (socketAddress == null)
-            {
-                throw new ArgumentNullException(nameof(socketAddress));
-            }
+            ArgumentNullException.ThrowIfNull(socketAddress);
 
             if (socketAddress.Family != EndPointAddressFamily
                 || socketAddress.Size > NativeAddressSize)

@@ -134,7 +134,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             var ex = await Assert.ThrowsExceptionAsync<IotHubClientException>(
                         async () => await deviceClient.GetFileUploadSasUriAsync(request).ConfigureAwait(false),
                         "The provided custom HttpMessageHandler throws NotImplementedException when making any HTTP request");
-            ex.InnerException.Should().BeOfType(typeof(NotImplementedException));
+            ex.InnerException.Should().BeOfType<NotImplementedException>();
         }
 
         private async Task UploadFileGranularAsync(
@@ -202,15 +202,9 @@ namespace Microsoft.Azure.Devices.E2ETests
                     {
                         await deviceClient.CompleteFileUploadAsync(notification, ct).ConfigureAwait(false);
                     }
-                    catch (IotHubClientException ex) when (ex.ErrorCode is IotHubClientErrorCode.ServerError)
+                    catch (IotHubClientException ex)
                     {
-                        // Gateway V1 flow
-                        // Even though this is a 400 level error, service responds with a 500 level error for this case. 
-                    }
-                    catch (IotHubClientException ex) when (ex.ErrorCode is IotHubClientErrorCode.IotHubFormatError)
-                    {
-                        // Gateway V2 flow
-                        ex.Message.Should().Contain("Cannot decode correlation_id");
+                        ex.Message.Should().Contain("400000"); // bad format error code
                         ex.TrackingId.Should().NotBe(string.Empty);
                         ex.IsTransient.Should().BeFalse();
                     }

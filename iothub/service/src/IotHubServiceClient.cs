@@ -269,13 +269,13 @@ namespace Microsoft.Azure.Devices
             DirectMethods = new DirectMethodsClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory, _retryHandler);
             DigitalTwins = new DigitalTwinsClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory, _retryHandler);
             Twins = new TwinsClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory, _retryHandler);
-            Messages = new MessagesClient(_hostName, _credentialProvider, _httpClient, _httpRequestMessageFactory, _clientOptions, _retryHandler);
+            Messages = new MessagesClient(_credentialProvider, _httpClient, _httpRequestMessageFactory, _clientOptions, _retryHandler);
 
             MessageFeedback = new MessageFeedbackProcessorClient(_hostName, _credentialProvider, _clientOptions, _retryHandler);
             FileUploadNotifications = new FileUploadNotificationProcessorClient(_hostName, _credentialProvider, _clientOptions, _retryHandler);
 
             // Specify the JsonSerializerSettings for subclients
-            JsonConvert.DefaultSettings = JsonSerializerSettingsInitializer.GetJsonSerializerSettingsDelegate();
+            JsonConvert.DefaultSettings = JsonSerializerSettingsInitializer.GetJsonSerializerSettings;
 
             // Adds additional logging to the AMQP connections created by this client
             AmqpTrace.Provider = new AmqpTransportLog();

@@ -188,10 +188,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         protected private void ThrowIfDisposed()
         {
-            if (_isDisposed)
-            {
-                throw new ObjectDisposedException("IoT Client");
-            }
+            ObjectDisposedException.ThrowIf(_isDisposed, "IoT Client");
         }
 
         protected private virtual void Dispose(bool disposing)

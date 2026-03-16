@@ -313,13 +313,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 return;
             }
 
-            if (webSocketState == WebSocketState.Aborted ||
+            ObjectDisposedException.ThrowIf(webSocketState == WebSocketState.Aborted ||
                 webSocketState == WebSocketState.Closed ||
                 webSocketState == WebSocketState.CloseReceived ||
-                webSocketState == WebSocketState.CloseSent)
-            {
-                throw new ObjectDisposedException(GetType().Name);
-            }
+                webSocketState == WebSocketState.CloseSent, GetType().Name);
 
             throw new AmqpException(AmqpErrorCode.IllegalState, null);
         }

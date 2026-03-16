@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics.Tracing;
 using System.Globalization;
 using MQTTnet.Diagnostics;
+using MQTTnet.Diagnostics.Logger;
 
 namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 {
