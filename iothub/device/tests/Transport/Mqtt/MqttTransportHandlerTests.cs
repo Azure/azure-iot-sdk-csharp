@@ -666,12 +666,12 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             // act
             await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
             CertificateSigningOperation operation = transport.SendCertificateSigningRequest(csr, CancellationToken.None);
-            CertificateAcceptedResponse accepted = await operation.Accepted.ConfigureAwait(false);
+            CertificateSigningRequestAccepted signingRequestAccepted = await operation.Accepted.ConfigureAwait(false);
             CertificateSigningResponse result = await operation.Completed.ConfigureAwait(false);
 
             // assert
-            Assert.IsNotNull(accepted);
-            Assert.AreEqual(expectedCorrelationId, accepted.CorrelationId);
+            Assert.IsNotNull(signingRequestAccepted);
+            Assert.AreEqual(expectedCorrelationId, signingRequestAccepted.CorrelationId);
 
             Assert.IsNotNull(result);
             Assert.AreEqual(expectedCorrelationId, result.CorrelationId);
@@ -951,11 +951,11 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             // act
             await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
             CertificateSigningOperation operation = transport.SendCertificateSigningRequest(csr, CancellationToken.None);
-            CertificateAcceptedResponse accepted = await operation.Accepted.ConfigureAwait(false);
+            CertificateSigningRequestAccepted signingRequestAccepted = await operation.Accepted.ConfigureAwait(false);
 
             // assert - Accepted completed but Completed should not be done since no 200 was sent
-            Assert.IsNotNull(accepted);
-            Assert.AreEqual(expectedCorrelationId, accepted.CorrelationId);
+            Assert.IsNotNull(signingRequestAccepted);
+            Assert.AreEqual(expectedCorrelationId, signingRequestAccepted.CorrelationId);
             Assert.IsFalse(operation.Completed.IsCompleted);
         }
 
@@ -1003,11 +1003,11 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             // act
             await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
             CertificateSigningOperation operation = transport.SendCertificateSigningRequest(csr, CancellationToken.None);
-            CertificateAcceptedResponse accepted = await operation.Accepted.ConfigureAwait(false);
+            CertificateSigningRequestAccepted signingRequestAccepted = await operation.Accepted.ConfigureAwait(false);
             CertificateSigningResponse result = await operation.Completed.ConfigureAwait(false);
 
             // assert - both phases complete, caller is responsible for correlation ID validation
-            Assert.AreEqual(phase1CorrelationId, accepted.CorrelationId);
+            Assert.AreEqual(phase1CorrelationId, signingRequestAccepted.CorrelationId);
             Assert.AreEqual(phase2CorrelationId, result.CorrelationId);
         }
 
@@ -1066,11 +1066,11 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             // act
             await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
             CertificateSigningOperation operation = transport.SendCertificateSigningRequest(csr, CancellationToken.None);
-            CertificateAcceptedResponse accepted = await operation.Accepted.ConfigureAwait(false);
+            CertificateSigningRequestAccepted signingRequestAccepted = await operation.Accepted.ConfigureAwait(false);
             CertificateSigningResponse result = await operation.Completed.ConfigureAwait(false);
 
             // assert
-            Assert.IsNotNull(accepted);
+            Assert.IsNotNull(signingRequestAccepted);
             Assert.IsNotNull(result);
             Assert.IsNotNull(capturedRequestBody);
 

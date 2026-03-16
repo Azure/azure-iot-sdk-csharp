@@ -108,8 +108,8 @@ public sealed class CertificateSigningRequestSample : IDisposable
                 CertificateSigningOperation operation = _deviceClient!.SendCertificateSigningRequest(csrRequest, _cts.Token);
 
                 Console.WriteLine("Waiting for acceptance (Phase 1)...");
-                CertificateAcceptedResponse accepted = await operation.Accepted;
-                Console.WriteLine($"CSR accepted. CorrelationId: {accepted.CorrelationId}, Expires: {accepted.OperationExpires}");
+                CertificateSigningRequestAccepted signingRequestAccepted = await operation.Accepted;
+                Console.WriteLine($"CSR accepted. CorrelationId: {signingRequestAccepted.CorrelationId}, Expires: {signingRequestAccepted.OperationExpires}");
 
                 Console.WriteLine("Waiting for certificate (Phase 2)...");
                 response = await operation.Completed;

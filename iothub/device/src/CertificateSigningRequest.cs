@@ -28,7 +28,7 @@ namespace Microsoft.Azure.Devices.Client
         /// property to replace an existing pending request.
         /// </summary>
         [JsonIgnore]
-        public string RequestId = Guid.NewGuid().ToString();
+        public readonly string RequestId = Guid.NewGuid().ToString();
         
         /// <summary>
         /// Required. The device ID the certificate will be issued for.

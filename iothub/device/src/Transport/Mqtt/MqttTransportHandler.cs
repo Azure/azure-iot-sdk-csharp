@@ -1477,7 +1477,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 switch (status)
                 {
                     case 202:
-                        var accepted = JsonConvert.DeserializeObject<CertificateAcceptedResponse>(body);
+                        var accepted = JsonConvert.DeserializeObject<CertificateSigningRequestAccepted>(body);
                         operation.SetAccepted(accepted);
                         break;
                     case 200:

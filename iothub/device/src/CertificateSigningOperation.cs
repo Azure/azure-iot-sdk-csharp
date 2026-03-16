@@ -36,8 +36,8 @@ namespace Microsoft.Azure.Devices.Client
     /// </remarks>
     public class CertificateSigningOperation
     {
-        private readonly TaskCompletionSource<CertificateAcceptedResponse> _accepted
-            = new TaskCompletionSource<CertificateAcceptedResponse>(TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly TaskCompletionSource<CertificateSigningRequestAccepted> _accepted
+            = new TaskCompletionSource<CertificateSigningRequestAccepted>(TaskCreationOptions.RunContinuationsAsynchronously);
 
         private readonly TaskCompletionSource<CertificateSigningResponse> _completed
             = new TaskCompletionSource<CertificateSigningResponse>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -51,7 +51,7 @@ namespace Microsoft.Azure.Devices.Client
         /// for the specific failure reason (e.g., 400040 for CSR decode failure, 409005 for an active conflicting operation,
         /// 429002/429003 for throttling).
         /// </exception>
-        public Task<CertificateAcceptedResponse> Accepted => _accepted.Task;
+        public Task<CertificateSigningRequestAccepted> Accepted => _accepted.Task;
 
         /// <summary>
         /// A task that completes when IoT Hub delivers the issued certificate (200 OK).
@@ -64,7 +64,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </exception>
         public Task<CertificateSigningResponse> Completed => _completed.Task;
 
-        internal void SetAccepted(CertificateAcceptedResponse response) => _accepted.TrySetResult(response);
+        internal void SetAccepted(CertificateSigningRequestAccepted response) => _accepted.TrySetResult(response);
 
         internal void SetCompleted(CertificateSigningResponse response) => _completed.TrySetResult(response);
 

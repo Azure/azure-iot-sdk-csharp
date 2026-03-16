@@ -43,7 +43,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
 
             // Step 2: Create security provider based on authentication type
             Console.WriteLine($"\nStep 2: Creating security provider ({_parameters.AuthType})...");
-            using SecurityProvider security = CreateSecurityProvider();
+            using X509Certificate2? authCert = _parameters.AuthType == AuthenticationType.X509
+                ? LoadX509Certificate()
+                : null;
+            using SecurityProvider security = CreateSecurityProvider(authCert);
             Console.WriteLine($"  Registration ID: {security.GetRegistrationID()}");
 
             // Step 3: Create provisioning client
@@ -124,7 +127,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
                     chainCerts.Add(new X509Certificate2(certBytes));
                 }
 
-                var auth = new DeviceAuthenticationWithX509Certificate(
+                using var auth = new DeviceAuthenticationWithX509Certificate(
                     result.DeviceId,
                     deviceCert,
                     chainCerts);
@@ -226,13 +229,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
             };
         }
 
-        private SecurityProvider CreateSecurityProvider()
+        private SecurityProvider CreateSecurityProvider(X509Certificate2? authCert)
         {
             return _parameters.AuthType switch
             {
                 AuthenticationType.SymmetricKey => CreateSymmetricKeySecurityProvider(),
 
-                AuthenticationType.X509 => CreateX509SecurityProvider(),
+                AuthenticationType.X509 => new SecurityProviderX509Certificate(authCert!),
 
                 _ => throw new NotSupportedException($"Unsupported authentication type: {_parameters.AuthType}")
             };
@@ -279,26 +282,19 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
             return Convert.ToBase64String(derivedKeyBytes);
         }
 
-        private SecurityProviderX509Certificate CreateX509SecurityProvider()
+        private X509Certificate2 LoadX509Certificate()
         {
-            X509Certificate2 certificate;
-            if (!string.IsNullOrEmpty(_parameters.X509CertPassword))
-            {
-                certificate = new X509Certificate2(
+            return !string.IsNullOrEmpty(_parameters.X509CertPassword)
+                ? new X509Certificate2(
                     _parameters.X509CertPath!,
                     _parameters.X509CertPassword,
-                    X509KeyStorageFlags.Exportable);
-            }
-            else
-            {
-                certificate = new X509Certificate2(
+                    X509KeyStorageFlags.Exportable)
+                : new X509Certificate2(
                     _parameters.X509CertPath!,
                     (string?)null,
                     X509KeyStorageFlags.Exportable);
-            }
-
-            return new SecurityProviderX509Certificate(certificate);
         }
+
 
         private ProvisioningTransportHandler GetTransportHandler()
         {

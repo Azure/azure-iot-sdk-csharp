@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
-    /// Represents an error response from a certificate signing request operation.
+    /// Represents an error response from IoT hub about a certificate signing request.
     /// </summary>
     internal class CertificateSigningRequestErrorResponse
     {
