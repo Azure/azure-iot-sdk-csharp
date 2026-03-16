@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 #nullable enable
+using System;
 using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Client
@@ -21,6 +22,13 @@ namespace Microsoft.Azure.Devices.Client
             Id = id;
             CertificateSigningRequestData = csrData;
         }
+        
+        /// <summary>
+        /// Request id identifies specific certificate signing request. May be used as a value for <see cref="Replace"/>
+        /// property to replace an existing pending request.
+        /// </summary>
+        [JsonIgnore]
+        public readonly string RequestId = Guid.NewGuid().ToString();
         
         /// <summary>
         /// Required. The device ID the certificate will be issued for.
