@@ -730,8 +730,8 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="request">The certificate signing request containing the CSR.</param>
         /// <param name="cancellationToken">Cancellation token.</param>
         /// <returns>The response containing the issued certificate chain.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when request, request.Id, or request.Csr is null.</exception>
-        /// <exception cref="ArgumentException">Thrown when request.Id or request.Csr is empty, or Csr is not valid Base64.</exception>
+        /// <exception cref="ArgumentNullException">Thrown when request, request.DeviceId, or request.Csr is null.</exception>
+        /// <exception cref="ArgumentException">Thrown when request.DeviceId or request.Csr is empty, or Csr is not valid Base64.</exception>
         /// <exception cref="NotSupportedException">Thrown when using non-MQTT transport.</exception>
         /// <exception cref="IotHubException">Thrown when the request fails.</exception>
         /// <exception cref="TimeoutException">Thrown when the operation times out.</exception>
@@ -744,10 +744,10 @@ namespace Microsoft.Azure.Devices.Client
                 throw new ArgumentNullException(nameof(request));
             }
 
-            if (string.IsNullOrEmpty(request.Id))
+            if (string.IsNullOrEmpty(request.DeviceId))
             {
                 throw new ArgumentException(@"Value cannot be null or empty.",
-                    $"{nameof(request)}.{nameof(request.Id)}");
+                    $"{nameof(request)}.{nameof(request.DeviceId)}");
             }
 
             if (string.IsNullOrEmpty(request.CertificateSigningRequestData))

@@ -628,7 +628,10 @@ namespace Microsoft.Azure.Devices.Client
         /// </para>
         /// <para><b>Reconnection Behavior:</b></para>
         /// <para>
-        /// If the device disconnects at any point during the CSR operation, reconnect and call <see cref="SendCertificateSigningRequest"/> again.
+        /// If the device disconnects at any point during the CSR operation (which you can monitor via
+        /// <see cref="SetConnectionStatusChangesHandler"/>), the SDK will automatically restore the connection.
+        /// Once reconnected, re-submit the same certificate signing request (including the same request ID)
+        /// by calling <see cref="SendCertificateSigningRequest"/> again.
         /// If error 409005 (CredentialOperationActive) is received, set <see cref="CertificateSigningRequest.Replace"/> to "*"
         /// to replace any active operation, or to the specific request ID of your previous request if you saved it.
         /// </para>

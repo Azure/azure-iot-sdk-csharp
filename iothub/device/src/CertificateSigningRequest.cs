@@ -15,27 +15,40 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Initializes a new instance of the <see cref="CertificateSigningRequest"/> class.
         /// </summary>
-        /// <param name="id">The device ID the certificate will be issued for. Must match the currently authenticated device ID.</param>
+        /// <param name="deviceId">The device ID the certificate will be issued for. Must match the device ID of the currently authenticated device.</param>
         /// <param name="csrData">The Base64-encoded PKCS#10 CSR without PEM headers/footers or newlines.</param>
-        public CertificateSigningRequest(string id, string csrData)
+        /// <param name="requestId">Optional. The request ID to associate with this certificate signing request.
+        /// This value should be unique from any ongoing certificate signing request (for example, a GUID).
+        /// If null or empty, a new GUID will be generated.
+        /// The use case for providing a specific value here is for re-submitting a certificate signing request,
+        /// which should be done if the client loses connection at any point during the certificate signing process.</param>
+        /// <param name="replace">Optional. The request ID to replace, or "*" to replace any active request.
+        /// To not replace any pending certificate signing operation, this value should be null (the default).</param>
+        public CertificateSigningRequest(string deviceId, string csrData, string? requestId = null, string? replace = null)
         {
-            Id = id;
+            DeviceId = deviceId;
             CertificateSigningRequestData = csrData;
+            RequestId = string.IsNullOrEmpty(requestId) ? Guid.NewGuid().ToString() : requestId!;
+            Replace = replace;
         }
         
         /// <summary>
-        /// Request id identifies specific certificate signing request. May be used as a value for <see cref="Replace"/>
-        /// property to replace an existing pending request.
+        /// The request ID associated with this certificate signing request.
+        /// Users may assign this value via <see cref="CertificateSigningRequest(string, string, string?, string?)"/>;
+        /// if not provided, a random GUID is generated.
+        /// The use case for providing a specific value is for re-submitting a certificate signing request,
+        /// which should be done if the client loses connection at any point during the certificate signing process.
+        /// May be used as a value for <see cref="Replace"/> property to replace an existing pending request.
         /// </summary>
         [JsonIgnore]
-        public readonly string RequestId = Guid.NewGuid().ToString();
+        public readonly string RequestId;
         
         /// <summary>
         /// Required. The device ID the certificate will be issued for.
-        /// Must match the currently authenticated device ID.
+        /// Must match the device ID of the currently authenticated device.
         /// </summary>
         [JsonProperty("id")]
-        public string Id { get; set; }
+        public string DeviceId { get; set; }
 
         /// <summary>
         /// Required. The Base64-encoded PKCS#10 CSR without PEM headers/footers or newlines.
@@ -48,7 +61,7 @@ namespace Microsoft.Azure.Devices.Client
         /// Use when:
         /// - The CSR is known to be different from a previous incomplete request
         /// - Client received 409005 and doesn't know if CSR has changed (e.g., storage failure)
-        /// Default: null (will fail with 409005 if an active operation exists)
+        /// To not replace any pending certificate signing operation, this value should be null (the default).
         /// </summary>
         [JsonProperty("replace", NullValueHandling = NullValueHandling.Ignore)]
         public string? Replace { get; set; }
