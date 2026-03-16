@@ -5,7 +5,8 @@ using System;
 using System.Threading.Tasks;
 using System.Text;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
+using System.Text.Json;
 
 namespace Microsoft.Azure.Devices.Samples
 {
@@ -49,7 +50,7 @@ namespace Microsoft.Azure.Devices.Samples
             _logger.LogDebug($"Get the {_deviceId} device twin.");
 
             ClientTwin twin = await _serviceClient.Twins.GetAsync(_deviceId);
-            _logger.LogDebug($"{_deviceId} twin: \n{JsonConvert.SerializeObject(twin, Formatting.Indented)}");
+            _logger.LogDebug($"{_deviceId} twin: \n{JsonSerializer.Serialize(twin)}");
 
             return twin;
         }
@@ -63,7 +64,7 @@ namespace Microsoft.Azure.Devices.Samples
             var commandInvocation = new DirectMethodServiceRequest(commandName)
             { 
                 ResponseTimeout = TimeSpan.FromSeconds(30),
-                Payload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(DateTimeOffset.Now.Subtract(TimeSpan.FromMinutes(2)))),
+                Payload = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(DateTimeOffset.Now.Subtract(TimeSpan.FromMinutes(2)))),
             };
 
             _logger.LogDebug($"Invoke the {getMaxMinReportCommandName} command on component {Thermostat1Component} " +
@@ -89,7 +90,7 @@ namespace Microsoft.Azure.Devices.Samples
             var commandInvocation = new DirectMethodServiceRequest(commandName)
             {
                 ResponseTimeout = TimeSpan.FromSeconds(30),
-                Payload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(3)),
+                Payload = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(3)),
             };
 
             _logger.LogDebug($"Invoke the {commandName} command on the {_deviceId} device twin." +
@@ -138,7 +139,7 @@ namespace Microsoft.Azure.Devices.Samples
         {
             var twinPatch = new ClientTwin();
             twinPatch.Properties.Desired[componentName] = new { __t = "c" };
-            twinPatch.Properties.Desired[componentName][propertyName] = JsonConvert.SerializeObject(propertyValue);
+            twinPatch.Properties.Desired[componentName][propertyName] = JsonSerializer.Serialize(propertyValue);
             return twinPatch;
         }
     }

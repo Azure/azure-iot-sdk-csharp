@@ -5,8 +5,8 @@ using System;
 using System.Collections.Generic;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using System.Text.Json.Serialization;
+using System.Text.Json;
 
 namespace Microsoft.Azure.Devices.Tests.DirectMethod
 {
@@ -23,7 +23,7 @@ namespace Microsoft.Azure.Devices.Tests.DirectMethod
             var source = new DirectMethodClientResponse
             {
                 Status = expectedStatus,
-                JsonPayload = new JRaw(JsonConvert.SerializeObject(expectedPayload)),
+                JsonPayload = JsonDocument.Parse(JsonSerializer.Serialize(expectedPayload)),
             };
 
             // act
@@ -43,12 +43,12 @@ namespace Microsoft.Azure.Devices.Tests.DirectMethod
             var source = new DirectMethodClientResponse
             {
                 Status = expectedStatus,
-                JsonPayload = new JRaw(JsonConvert.SerializeObject(expectedPayload)),
+                JsonPayload = JsonDocument.Parse(JsonSerializer.Serialize(expectedPayload)),
             };
-            string body = JsonConvert.SerializeObject(source);
+            string body = JsonSerializer.Serialize(source);
 
             // act
-            DirectMethodClientResponse dmcr = JsonConvert.DeserializeObject<DirectMethodClientResponse>(body);
+            DirectMethodClientResponse dmcr = JsonSerializer.Deserialize<DirectMethodClientResponse>(body);
 
             // assert
             dmcr.Status.Should().Be(expectedStatus);
@@ -65,12 +65,12 @@ namespace Microsoft.Azure.Devices.Tests.DirectMethod
             var source = new DirectMethodClientResponse
             {
                 Status = expectedStatus,
-                JsonPayload = new JRaw(JsonConvert.SerializeObject(expectedPayload)),
+                JsonPayload = JsonDocument.Parse(JsonSerializer.Serialize(expectedPayload)),
             };
-            string body = JsonConvert.SerializeObject(source);
+            string body = JsonSerializer.Serialize(source);
 
             // act
-            DirectMethodClientResponse dmcr = JsonConvert.DeserializeObject<DirectMethodClientResponse>(body);
+            DirectMethodClientResponse dmcr = JsonSerializer.Deserialize<DirectMethodClientResponse>(body);
 
             // assert
             dmcr.Status.Should().Be(expectedStatus);
@@ -87,12 +87,12 @@ namespace Microsoft.Azure.Devices.Tests.DirectMethod
             var source = new DirectMethodClientResponse
             {
                 Status = expectedStatus,
-                JsonPayload = new JRaw(JsonConvert.SerializeObject(expectedPayload)),
+                JsonPayload = JsonDocument.Parse(JsonSerializer.Serialize(expectedPayload)),
             };
-            string body = JsonConvert.SerializeObject(source);
+            string body = JsonSerializer.Serialize(source);
 
             // act
-            DirectMethodClientResponse dmcr = JsonConvert.DeserializeObject<DirectMethodClientResponse>(body);
+            DirectMethodClientResponse dmcr = JsonSerializer.Deserialize<DirectMethodClientResponse>(body);
 
             // assert
             dmcr.Status.Should().Be(expectedStatus);
@@ -109,12 +109,12 @@ namespace Microsoft.Azure.Devices.Tests.DirectMethod
             var source = new DirectMethodClientResponse
             {
                 Status = expectedStatus,
-                JsonPayload = new JRaw(JsonConvert.SerializeObject(expectedPayload)),
+                JsonPayload = JsonDocument.Parse(JsonSerializer.Serialize(expectedPayload)),
             };
-            string body = JsonConvert.SerializeObject(source);
+            string body = JsonSerializer.Serialize(source);
 
             // act
-            DirectMethodClientResponse dmcr = JsonConvert.DeserializeObject<DirectMethodClientResponse>(body);
+            DirectMethodClientResponse dmcr = JsonSerializer.Deserialize<DirectMethodClientResponse>(body);
 
             // assert
             dmcr.Status.Should().Be(expectedStatus);
@@ -131,12 +131,12 @@ namespace Microsoft.Azure.Devices.Tests.DirectMethod
             var source = new DirectMethodClientResponse
             {
                 Status = expectedStatus,
-                JsonPayload = new JRaw(JsonConvert.SerializeObject(expectedPayload)),
+                JsonPayload = JsonDocument.Parse(JsonSerializer.Serialize(expectedPayload)),
             };
-            string body = JsonConvert.SerializeObject(source);
+            string body = JsonSerializer.Serialize(source);
 
             // act
-            DirectMethodClientResponse dmcr = JsonConvert.DeserializeObject<DirectMethodClientResponse>(body);
+            DirectMethodClientResponse dmcr = JsonSerializer.Deserialize<DirectMethodClientResponse>(body);
 
             // assert
             dmcr.Status.Should().Be(expectedStatus);
@@ -153,12 +153,12 @@ namespace Microsoft.Azure.Devices.Tests.DirectMethod
             var source = new DirectMethodClientResponse
             {
                 Status = expectedStatus,
-                JsonPayload = new JRaw(JsonConvert.SerializeObject(expectedPayload)),
+                JsonPayload = JsonDocument.Parse(JsonSerializer.Serialize(expectedPayload)),
             };
-            string body = JsonConvert.SerializeObject(source);
+            string body = JsonSerializer.Serialize(source);
 
             // act
-            DirectMethodClientResponse dmcr = JsonConvert.DeserializeObject<DirectMethodClientResponse>(body);
+            DirectMethodClientResponse dmcr = JsonSerializer.Deserialize<DirectMethodClientResponse>(body);
 
             // assert
             dmcr.Status.Should().Be(expectedStatus);
@@ -175,12 +175,12 @@ namespace Microsoft.Azure.Devices.Tests.DirectMethod
             var source = new DirectMethodClientResponse
             {
                 Status = expectedStatus,
-                JsonPayload = new JRaw(JsonConvert.SerializeObject(expectedPayload)),
+                JsonPayload = JsonDocument.Parse(JsonSerializer.Serialize(expectedPayload)),
             };
-            string body = JsonConvert.SerializeObject(source);
+            string body = JsonSerializer.Serialize(source);
 
             // act
-            DirectMethodClientResponse dmcr = JsonConvert.DeserializeObject<DirectMethodClientResponse>(body);
+            DirectMethodClientResponse dmcr = JsonSerializer.Deserialize<DirectMethodClientResponse>(body);
 
             // assert
             dmcr.Status.Should().Be(expectedStatus);
@@ -212,7 +212,7 @@ namespace Microsoft.Azure.Devices.Tests.DirectMethod
             var source = new DirectMethodClientResponse
             {
                 Status = expectedStatus,
-                JsonPayload = new JRaw(JsonConvert.SerializeObject(TimeSpan.FromSeconds(30)))
+                JsonPayload = JsonDocument.Parse(JsonSerializer.Serialize(TimeSpan.FromSeconds(30)))
             };
 
             // act and assert
@@ -222,10 +222,10 @@ namespace Microsoft.Azure.Devices.Tests.DirectMethod
 
         private class CustomType
         {
-            [JsonProperty("customInt")]
+            [JsonPropertyName("customInt")]
             public int CustomInt { get; set; }
 
-            [JsonProperty("customString")]
+            [JsonPropertyName("customString")]
             public string CustomString { get; set; }
         }
     }
