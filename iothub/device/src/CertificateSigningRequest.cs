@@ -18,6 +18,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="deviceId">The device ID the certificate will be issued for. Must match the device ID of the currently authenticated device.</param>
         /// <param name="csrData">The Base64-encoded PKCS#10 CSR without PEM headers/footers or newlines.</param>
         /// <param name="requestId">Optional. The request ID to associate with this certificate signing request.
+        /// Must be 4 to 36 characters, ASCII alphanumerics and dashes only, and must not begin or end with a dash.
         /// This value should be unique from any ongoing certificate signing request (for example, a GUID).
         /// If null or empty, a new GUID will be generated.
         /// The use case for providing a specific value here is for re-submitting a certificate signing request,
@@ -34,6 +35,7 @@ namespace Microsoft.Azure.Devices.Client
         
         /// <summary>
         /// The request ID associated with this certificate signing request.
+        /// Must be 4 to 36 characters, ASCII alphanumerics and dashes only, and must not begin or end with a dash.
         /// Users may assign this value via <see cref="CertificateSigningRequest(string, string, string?, string?)"/>;
         /// if not provided, a random GUID is generated.
         /// The use case for providing a specific value is for re-submitting a certificate signing request,
