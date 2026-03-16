@@ -6,7 +6,7 @@ using System.Net;
 using FluentAssertions;
 using FluentAssertions.Specialized;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
 {
@@ -55,7 +55,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
                 string json = MakeJson(SubjectName, Sha1Thumbprint, Sha256Thumbprint, IssuerName, failDateTime, NOtAfterUtcString, SerialNumber, Version);
 
                 // act - assert
-                Action act = () => JsonConvert.DeserializeObject<X509CertificateInfo>(json);
+                Action act = () => JsonSerializer.Deserialize<X509CertificateInfo>(json);
                 ExceptionAssertions<ProvisioningServiceException> error = act.Should().Throw<ProvisioningServiceException>();
                 error.And.StatusCode.Should().Be(HttpStatusCode.BadRequest);
                 error.And.IsTransient.Should().BeFalse();
@@ -71,7 +71,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
                 string json = MakeJson(SubjectName, Sha1Thumbprint, Sha256Thumbprint, IssuerName, NotBeforeUtcString, failDateTime, SerialNumber, Version);
 
                 // act - assert
-                Action act = () => JsonConvert.DeserializeObject<X509CertificateInfo>(json);
+                Action act = () => JsonSerializer.Deserialize<X509CertificateInfo>(json);
                 ExceptionAssertions<ProvisioningServiceException> error = act.Should().Throw<ProvisioningServiceException>();
                 error.And.StatusCode.Should().Be(HttpStatusCode.BadRequest);
                 error.And.IsTransient.Should().BeFalse();
@@ -94,7 +94,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
                 "}";
 
             // act - assert
-            Action act = () => JsonConvert.DeserializeObject<X509CertificateInfo>(json);
+            Action act = () => JsonSerializer.Deserialize<X509CertificateInfo>(json);
             ExceptionAssertions<ProvisioningServiceException> error = act.Should().Throw<ProvisioningServiceException>();
             error.And.StatusCode.Should().Be(HttpStatusCode.BadRequest);
             error.And.IsTransient.Should().BeFalse();
@@ -107,7 +107,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
             string json = MakeJson(SubjectName, Sha1Thumbprint, Sha256Thumbprint, IssuerName, NotBeforeUtcString, NOtAfterUtcString, SerialNumber, Version);
 
             // act
-            X509CertificateInfo x509CertificateInfo = JsonConvert.DeserializeObject<X509CertificateInfo>(json);
+            X509CertificateInfo x509CertificateInfo = JsonSerializer.Deserialize<X509CertificateInfo>(json);
 
             // assert
             Assert.AreEqual(SubjectName, x509CertificateInfo.SubjectName);

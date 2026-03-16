@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
@@ -24,13 +24,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <summary>
         /// Gets the primary key used for attestation.
         /// </summary>
-        [JsonProperty("primaryKey", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("primaryKey")]
         public string PrimaryKey { get; }
 
         /// <summary>
         /// Gets the secondary key used for attestation.
         /// </summary>
-        [JsonProperty("secondaryKey", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("secondaryKey")]
         public string SecondaryKey { get; }
     }
 }

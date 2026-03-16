@@ -14,7 +14,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
@@ -228,7 +228,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 try
                 {
                     string payload = await response.Content.ReadAsStringAsync();
-                    ErrorResponse responseBody = JsonConvert.DeserializeObject<ErrorResponse>(payload);
+                    ErrorResponse responseBody = JsonSerializer.Deserialize<ErrorResponse>(payload);
 
                     if (response.StatusCode >= HttpStatusCode.Ambiguous)
                     {

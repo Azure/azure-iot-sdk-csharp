@@ -2,7 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Collections.Generic;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
@@ -18,7 +18,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// </remarks>
     public class InitialTwin
     {
-        [JsonProperty("properties", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("properties")]
         private InitialTwinProperties _properties;
 
         /// <summary>
@@ -41,7 +41,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <summary>
         /// Getter and setter the for tags.
         /// </summary>
-        [JsonProperty("tags", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("tags")]
         public IDictionary<string, object> Tags { get; set; } = new Dictionary<string, object>();
 
         /// <summary>

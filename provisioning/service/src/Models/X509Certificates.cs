@@ -2,7 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Security.Cryptography.X509Certificates;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
@@ -48,13 +48,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <summary>
         /// Primary certificate.
         /// </summary>
-        [JsonProperty("primary")]
+        [JsonPropertyName("primary")]
         public X509CertificateWithInfo Primary { get; private set; }
 
         /// <summary>
         /// Secondary certificate.
         /// </summary>
-        [JsonProperty("secondary", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("secondary")]
         public X509CertificateWithInfo Secondary { get; private set; }
     }
 }

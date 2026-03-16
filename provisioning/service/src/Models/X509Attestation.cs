@@ -5,7 +5,7 @@ using System;
 using System.Net;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
@@ -100,19 +100,19 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <summary>
         /// Client certificates.
         /// </summary>
-        [JsonProperty("clientCertificates", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("clientCertificates")]
         public X509Certificates ClientCertificates { get; protected private set; }
 
         /// <summary>
         /// Signing certificates.
         /// </summary>
-        [JsonProperty("signingCertificates", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("signingCertificates")]
         public X509Certificates RootCertificates { get; protected private set; }
 
         /// <summary>
         /// Certificates Authority references.
         /// </summary>
-        [JsonProperty("caReferences", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("caReferences")]
         public X509CaReferences CaReferences { get; protected private set; }
 
         /// <summary>

@@ -4,7 +4,7 @@
 using System;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
 {
@@ -32,7 +32,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
                 "}";
 
             // act
-            BulkEnrollmentOperationResult bulkErrors = JsonConvert.DeserializeObject<BulkEnrollmentOperationResult>(validJson);
+            BulkEnrollmentOperationResult bulkErrors = JsonSerializer.Deserialize<BulkEnrollmentOperationResult>(validJson);
 
             // assert
             Assert.IsNotNull(bulkErrors);

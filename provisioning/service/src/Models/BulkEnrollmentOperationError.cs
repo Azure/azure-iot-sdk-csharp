@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
@@ -25,7 +25,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// A valid registration Id shall be alphanumeric, lowercase, and may contain hyphens. Max characters 128.
         /// </remarks>
         /// <exception cref="InvalidOperationException">If the provided registrationId does not fit the registration Id requirements</exception>
-        [JsonProperty("registrationId")]
+        [JsonPropertyName("registrationId")]
         public string RegistrationId { get; private set; }
 
         /// <summary>
@@ -34,7 +34,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <remarks>
         /// Report any error during the operation for the specific registrationId.
         /// </remarks>
-        [JsonProperty("errorCode", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("errorCode")]
         public int? ErrorCode { get; private set; }
 
         /// <summary>
@@ -43,7 +43,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <remarks>
         /// Describe any error during the operation for the specific registrationId.
         /// </remarks>
-        [JsonProperty("errorStatus", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("errorStatus")]
         public string ErrorStatus { get; private set; }
     }
 }

@@ -6,7 +6,7 @@ using Azure;
 using FluentAssertions;
 using FluentAssertions.Specialized;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
 {
@@ -187,7 +187,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
             "}";
 
             // act - assert
-            Action act = () => JsonConvert.DeserializeObject<IndividualEnrollment>(invalidJson);
+            Action act = () => JsonSerializer.Deserialize<IndividualEnrollment>(invalidJson);
             ExceptionAssertions<InvalidOperationException> error = act.Should().Throw<InvalidOperationException>();
         }
 
@@ -212,7 +212,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
             "}";
 
             // act
-            Action act = () => JsonConvert.DeserializeObject<IndividualEnrollment>(invalidJson);
+            Action act = () => JsonSerializer.Deserialize<IndividualEnrollment>(invalidJson);
 
             // assert
             act.Should().Throw<ArgumentNullException>();
@@ -257,7 +257,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
             "}";
 
             // act - assert
-            Action act = () => JsonConvert.DeserializeObject<IndividualEnrollment>(invalidJson);
+            Action act = () => JsonSerializer.Deserialize<IndividualEnrollment>(invalidJson);
             ExceptionAssertions<InvalidOperationException> error = act.Should().Throw<InvalidOperationException>();
         }
 
@@ -265,7 +265,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
         public void IndividualEnrollmentConstructorWithoutCapabilitiesJsonSucceed()
         {
             // arrange
-            IndividualEnrollment individualEnrollment = JsonConvert.DeserializeObject<IndividualEnrollment>(_sampleIndividualEnrollmentJsonWithoutCapabilities);
+            IndividualEnrollment individualEnrollment = JsonSerializer.Deserialize<IndividualEnrollment>(_sampleIndividualEnrollmentJsonWithoutCapabilities);
 
             // act - assert
             Assert.IsNotNull(individualEnrollment);
@@ -285,7 +285,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
         public void IndividualEnrollmentConstructorWithCapabilitiesTrueJsonSucceed()
         {
             // arrange
-            IndividualEnrollment individualEnrollment = JsonConvert.DeserializeObject<IndividualEnrollment>(_sampleIndividualEnrollmentJsonWithCapabilitiesTrue);
+            IndividualEnrollment individualEnrollment = JsonSerializer.Deserialize<IndividualEnrollment>(_sampleIndividualEnrollmentJsonWithCapabilitiesTrue);
 
             // act - assert
             Assert.IsNotNull(individualEnrollment);
@@ -305,7 +305,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
         public void IndividualEnrollmentConstructorWithCapabilitiesFalseJsonSucceed()
         {
             // arrange
-            IndividualEnrollment individualEnrollment = JsonConvert.DeserializeObject<IndividualEnrollment>(_sampleIndividualEnrollmentJsonWithCapabilitiesFalse);
+            IndividualEnrollment individualEnrollment = JsonSerializer.Deserialize<IndividualEnrollment>(_sampleIndividualEnrollmentJsonWithCapabilitiesFalse);
 
             // act - assert
             Assert.IsNotNull(individualEnrollment);
@@ -349,7 +349,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
                 "   },\n" +
                 "   \"etag\": \"" + s_sampleEtag + "\"\n" +
                 "}";
-            IndividualEnrollment individualEnrollment = JsonConvert.DeserializeObject<IndividualEnrollment>(minJson);
+            IndividualEnrollment individualEnrollment = JsonSerializer.Deserialize<IndividualEnrollment>(minJson);
 
             // act - assert
             Assert.IsNotNull(individualEnrollment);
