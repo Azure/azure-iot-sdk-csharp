@@ -20,10 +20,8 @@ namespace Microsoft.Azure.Devices
     /// <seealso href="https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-messages-c2d"/>.
     public class MessagesClient : IDisposable
     {
-        private const string SendingPath = "/messages/deviceBound";
         private const string PurgeMessageQueueFormat = "/devices/{0}/commands";
 
-        private readonly string _hostName;
         private readonly IotHubConnectionProperties _credentialProvider;
         private readonly AmqpConnectionHandler _amqpConnection;
         private readonly IotHubServiceClientOptions _clientOptions;
@@ -44,26 +42,22 @@ namespace Microsoft.Azure.Devices
         /// Creates an instance of this class. Provided for unit testing purposes only.
         /// </summary>
         internal MessagesClient(
-            string hostName,
             IotHubConnectionProperties credentialProvider,
             RetryHandler retryHandler,
             AmqpConnectionHandler amqpConnection)
         {
-            _hostName = hostName;
             _credentialProvider = credentialProvider;
             _internalRetryHandler = retryHandler;
             _amqpConnection = amqpConnection;
         }
 
         internal MessagesClient(
-            string hostName,
             IotHubConnectionProperties credentialProvider,
             HttpClient httpClient,
             HttpRequestMessageFactory httpRequestMessageFactory,
             IotHubServiceClientOptions options,
             RetryHandler retryHandler)
         {
-            _hostName = hostName;
             _credentialProvider = credentialProvider;
             _httpClient = httpClient;
             _httpRequestMessageFactory = httpRequestMessageFactory;

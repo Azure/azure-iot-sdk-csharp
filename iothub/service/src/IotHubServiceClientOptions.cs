@@ -7,6 +7,7 @@ using System.Net.Http;
 using System.Net.Security;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
+using Azure.Core;
 
 namespace Microsoft.Azure.Devices
 {
@@ -126,6 +127,15 @@ namespace Microsoft.Azure.Devices
         /// </remarks>
         public IIotHubServiceRetryPolicy RetryPolicy { get; set; } = new IotHubServiceExponentialBackoffRetryPolicy(0, TimeSpan.FromHours(12), true);
 
+        /// <summary>
+        /// The authentication scopes to use when using <see cref="TokenCredential"/> for generating authentication tokens. This is applicable for applications
+        /// connecting to IoT hubs deployed in private and/or sovreign clouds.
+        /// </summary>
+        /// <remarks>
+        /// By default, the only scope is "https://iothubs.azure.net/.default" which allows you to generate tokens for the public Azure cloud.
+        /// </remarks>
+        public string[] Scopes { get; set; } = new string[] { "https://iothubs.azure.net/.default" };
+
         internal IotHubServiceClientOptions Clone()
         {
             return new IotHubServiceClientOptions
@@ -139,6 +149,7 @@ namespace Microsoft.Azure.Devices
                 AmqpConnectionKeepAlive = AmqpConnectionKeepAlive,
                 RemoteCertificateValidationCallback = RemoteCertificateValidationCallback,
                 RetryPolicy = RetryPolicy,
+                Scopes = Scopes
             };
         }
     }

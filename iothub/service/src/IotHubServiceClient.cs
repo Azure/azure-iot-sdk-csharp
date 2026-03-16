@@ -101,7 +101,12 @@ namespace Microsoft.Azure.Devices
             Argument.AssertNotNullOrWhiteSpace(hostName, nameof(hostName));
             Argument.AssertNotNull(credential, nameof(credential));
 
-            _credentialProvider = new IotHubTokenCredentialProperties(hostName, credential);
+            if (options == default)
+            {
+                options = new IotHubServiceClientOptions();
+            }
+
+            _credentialProvider = new IotHubTokenCredentialProperties(hostName, credential, options.Scopes);
             _hostName = hostName;
             _httpClient = HttpClientFactory.Create(_hostName, _clientOptions);
             _httpRequestMessageFactory = new HttpRequestMessageFactory(
@@ -130,6 +135,11 @@ namespace Microsoft.Azure.Devices
         {
             Argument.AssertNotNullOrWhiteSpace(hostName, nameof(hostName));
             Argument.AssertNotNull(credential, nameof(credential));
+
+            if (options == default)
+            {
+                options = new IotHubServiceClientOptions();
+            }
 
             _credentialProvider = new IotHubSasCredentialProperties(hostName, credential);
             _hostName = hostName;
