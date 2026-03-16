@@ -3,7 +3,7 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices
 {
@@ -23,12 +23,12 @@ namespace Microsoft.Azure.Devices
     {
         [SuppressMessage("Usage", "CA1507: Use nameof in place of string literal 'Message'",
             Justification = "This JsonProperty annotation depends on service-defined contract (name) and is independent of the property name selected by the SDK.")]
-        [JsonProperty("Message")]
+        [JsonPropertyName("Message")]
         internal string Message { get; set; }
 
         [SuppressMessage("Usage", "CA1507: Use nameof in place of string literal 'ExceptionMessage'",
             Justification = "This JsonProperty annotation depends on service-defined contract (name) and is independent of the property name selected by the SDK.")]
-        [JsonProperty("ExceptionMessage")]
+        [JsonPropertyName("ExceptionMessage")]
         internal string ExceptionMessage { get; set; }
 
         public IotHubServiceErrorCode ErrorCode { get; set; }

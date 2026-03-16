@@ -4,8 +4,9 @@
 using System;
 using System.Globalization;
 using System.Net.Http;
+using System.Text.Json;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
+using Microsoft.Azure.Devices.Utilities;
 
 namespace Microsoft.Azure.Devices
 {
@@ -32,10 +33,10 @@ namespace Microsoft.Azure.Devices
 
             try
             {
-                IotHubExceptionResult result = JsonConvert.DeserializeObject<IotHubExceptionResult>(responseBody);
+                IotHubExceptionResult result = JsonSerializer.Deserialize<IotHubExceptionResult>(responseBody, JsonSerializerSettings.Options);
                 responseMessage = result.Message;
             }
-            catch (JsonException ex) when (ex is JsonSerializationException or JsonReaderException)
+            catch (JsonException ex) when (ex is JsonException)
             {
                 if (Logging.IsEnabled)
                     Logging.Error(
@@ -48,8 +49,8 @@ namespace Microsoft.Azure.Devices
                 try
                 {
                     // sometimes the message is escaped JSON :(
-                    ResponseMessageWrapper wrapped = JsonConvert.DeserializeObject<ResponseMessageWrapper>(responseBody);
-                    responseMessage = JsonConvert.DeserializeObject<ErrorPayload1>(wrapped.Message);
+                    ResponseMessageWrapper wrapped = JsonSerializer.Deserialize<ResponseMessageWrapper>(responseBody, JsonSerializerSettings.Options);
+                    responseMessage = JsonSerializer.Deserialize<ErrorPayload1>(wrapped.Message, JsonSerializerSettings.Options);
                 }
                 catch (JsonException ex)
                 {
@@ -79,13 +80,13 @@ namespace Microsoft.Azure.Devices
 
             try
             {
-                ErrorPayload2 rs2 = JsonConvert.DeserializeObject<ErrorPayload2>(responseBody);
+                ErrorPayload2 rs2 = JsonSerializer.Deserialize<ErrorPayload2>(responseBody, JsonSerializerSettings.Options);
                 if (rs2.TryParse())
                 {
                     return Tuple.Create(rs2.TrackingId, rs2.ErrorCode);
                 }
             }
-            catch (JsonReaderException ex)
+            catch (JsonException ex)
             {
                 if (Logging.IsEnabled)
                     Logging.Error(
@@ -96,9 +97,9 @@ namespace Microsoft.Azure.Devices
             IotHubExceptionResult2 exResult = null;
             try
             {
-                exResult = JsonConvert.DeserializeObject<IotHubExceptionResult2>(responseBody);
+                exResult = JsonSerializer.Deserialize<IotHubExceptionResult2>(responseBody, JsonSerializerSettings.Options);
             }
-            catch (JsonReaderException ex)
+            catch (JsonException ex)
             {
                 if (Logging.IsEnabled)
                     Logging.Error(

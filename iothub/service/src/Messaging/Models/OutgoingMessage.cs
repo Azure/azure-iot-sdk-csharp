@@ -4,7 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using Newtonsoft.Json;
+using System.Text.Json;
+using Microsoft.Azure.Devices.Utilities;
 
 namespace Microsoft.Azure.Devices
 {
@@ -240,7 +241,7 @@ namespace Microsoft.Azure.Devices
         {
             return Payload is byte[] payloadAsByteArray
                 ? payloadAsByteArray
-                : Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(Payload));
+                : Encoding.UTF8.GetBytes(JsonSerializer.Serialize(Payload, JsonSerializerSettings.Options));
         }
 
         private T GetSystemProperty<T>(string key)

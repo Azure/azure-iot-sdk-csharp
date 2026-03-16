@@ -2,8 +2,9 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Text;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using Microsoft.Azure.Devices.Utilities;
 
 namespace Microsoft.Azure.Devices
 {
@@ -29,7 +30,7 @@ namespace Microsoft.Azure.Devices
         /// Can be any status code value (int), but it is recommended to use
         /// HTTP status codes, which are well-known and documented.
         /// </remarks>
-        [JsonProperty("status")]
+        [JsonPropertyName("status")]
         public int Status { get; protected internal set; }
 
         /// <summary>
@@ -39,13 +40,13 @@ namespace Microsoft.Azure.Devices
         /// To get the payload as a specified type, use <see cref="TryGetPayload{T}(out T)"/>.
         /// </remarks>
         [JsonIgnore]
-        public string PayloadAsString => JsonPayload.Value<string>();
+        public string PayloadAsString => JsonPayload.RootElement.GetRawText();
 
         [JsonIgnore]
         internal byte[] PayloadAsBytes => Encoding.UTF8.GetBytes(PayloadAsString);
 
-        [JsonProperty("payload")]
-        internal JRaw JsonPayload { get; set; }
+        [JsonPropertyName("payload")]
+        internal JsonDocument JsonPayload { get; set; }
 
         /// <summary>
         /// Tries to deserialize the payload as the specified type.
@@ -75,10 +76,10 @@ namespace Microsoft.Azure.Devices
 
             try
             {
-                value = JsonConvert.DeserializeObject<T>(Encoding.UTF8.GetString(PayloadAsBytes));
+                value = JsonSerializer.Deserialize<T>(Encoding.UTF8.GetString(PayloadAsBytes), JsonSerializerSettings.Options);
                 return true;
             }
-            catch (JsonSerializationException)
+            catch (JsonException)
             {
                 return false;
             }
