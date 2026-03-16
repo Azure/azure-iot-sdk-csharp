@@ -42,9 +42,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             },
         };
 
-        // ISO 8601 date-formatted string with trailing zeros in the microseconds portion.
-        // This is to verify the Newtonsoft.Json known issue is worked around in the SDK.
-        // See https://github.com/JamesNK/Newtonsoft.Json/issues/1511 for more details about the known issue.
         private const string DateTimeValue = "2023-01-31T10:37:08.4599400";
 
         // This operation behaves the same irrespective of if the client is initialized over tcp or websocket.
