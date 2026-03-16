@@ -58,7 +58,6 @@
   <ItemGroup>
     <PackageReference Include="Azure.Core" Version="1.31.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-    <PackageReference Include="Azure.Core" Version="1.31.0" />
   </ItemGroup>
 
   <ItemGroup>
