@@ -13,7 +13,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Provisioning.Client.Transports.Mqtt;
 using MQTTnet;
-using MQTTnet.Client;
 using MQTTnet.Exceptions;
 using MQTTnet.Formatter;
 using MQTTnet.Protocol;
@@ -35,7 +34,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
         private static readonly TimeSpan s_defaultOperationPollingInterval = TimeSpan.FromSeconds(2);
 
-        private readonly MqttFactory _mqttFactory = new(new MqttLogger());
+        private readonly MqttClientFactory _mqttFactory = new(new MqttLogger());
 
         private TaskCompletionSource<RegistrationOperationStatus> _startProvisioningRequestStatusSource;
         private TaskCompletionSource<RegistrationOperationStatus> _checkRegistrationOperationStatusSource;
@@ -337,41 +336,64 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             if (_settings.Protocol == ProvisioningClientTransportProtocol.Tcp)
             {
                 // "ssl://" prefix is not needed here because the MQTT library adds it for us.
-                string uri = hostName;
-                mqttClientOptionsBuilder.WithTcpServer(uri, MqttTcpPort);
+                mqttClientOptionsBuilder.WithTcpServer(hostName, MqttTcpPort);
             }
             else
             {
-                string uri = $"wss://{hostName}";
-                mqttClientOptionsBuilder.WithWebSocketServer(uri);
-
-                if (_settings.Proxy != null)
+                string uriString = $"wss://{hostName}";
+                mqttClientOptionsBuilder.WithWebSocketServer(options =>
                 {
-                    Uri serviceUri = new(uri);
-                    Uri proxyUri = _settings.Proxy.GetProxy(serviceUri);
+                    options.WithUri(uriString);
 
-                    if (_settings.Proxy.Credentials == null)
+                    IWebProxy proxy = _settings.Proxy;
+                    if (proxy != null)
                     {
-                        mqttClientOptionsBuilder.WithProxy(proxyUri.AbsoluteUri);
+                        Uri serviceUri = new(uriString);
+                        Uri proxyUri = _settings.Proxy.GetProxy(serviceUri);
+
+                        options.WithProxyOptions(proxyOptions =>
+                        {
+                            if (proxy.Credentials != null)
+                            {
+                                NetworkCredential credentials = proxy.Credentials.GetCredential(serviceUri, BasicProxyAuthentication);
+                                string username = credentials.UserName;
+                                string password = credentials.Password;
+                                proxyOptions.WithUsername(username);
+                                proxyOptions.WithPassword(password);
+                            }
+
+                            proxyOptions.WithAddress(proxyUri.AbsoluteUri);
+                        });
                     }
-                    else
-                    {
-                        NetworkCredential proxyCreds = _settings.Proxy.Credentials.GetCredential(serviceUri, BasicProxyAuthentication);
-                        mqttClientOptionsBuilder.WithProxy(proxyUri.AbsoluteUri, proxyCreds.UserName, proxyCreds.Password);
-                    }
-                }
+                });
             }
 
-            var tlsParameters = new MqttClientOptionsBuilderTlsParameters();
-            string password = "";
-            if (provisioningRequest.Authentication is AuthenticationProviderX509 x509Auth)
+            mqttClientOptionsBuilder.WithTlsOptions(tlsOptions =>
             {
-                tlsParameters.Certificates = new List<X509Certificate>
+                if (provisioningRequest.Authentication is AuthenticationProviderX509 x509Auth)
                 {
-                    x509Auth.ClientCertificate,
-                };
-            }
-            else if (provisioningRequest.Authentication is AuthenticationProviderSymmetricKey keyAuth)
+                    tlsOptions.WithClientCertificates(new List<X509Certificate2>
+                    {
+                        x509Auth.ClientCertificate,
+                    });
+                }
+
+                if (_settings.RemoteCertificateValidationCallback != null)
+                {
+                    tlsOptions.WithCertificateValidationHandler((args) => _settings.RemoteCertificateValidationCallback.Invoke(
+                        mqttClient,
+                        args.Certificate,
+                        args.Chain,
+                        args.SslPolicyErrors));
+                }
+
+                tlsOptions.UseTls(true);
+                tlsOptions.WithSslProtocols(_settings.SslProtocols);
+                tlsOptions.WithIgnoreCertificateRevocationErrors(!_settings.CertificateRevocationCheck);
+            });
+
+            string password = "";
+            if (provisioningRequest.Authentication is AuthenticationProviderSymmetricKey keyAuth)
             {
                 password = ProvisioningSasBuilder.BuildSasSignature(
                     keyAuth.PrimaryKey,
@@ -394,20 +416,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 .WithClientId(provisioningRequest.Authentication.GetRegistrationId())
                 .WithCredentials(username, password);
 
-            if (_settings.RemoteCertificateValidationCallback != null)
-            {
-                tlsParameters.CertificateValidationHandler = (args) => _settings.RemoteCertificateValidationCallback.Invoke(
-                    mqttClient,
-                    args.Certificate,
-                    args.Chain,
-                    args.SslPolicyErrors);
-            }
-
-            tlsParameters.UseTls = true;
-            tlsParameters.SslProtocol = _settings.SslProtocols;
-            tlsParameters.IgnoreCertificateRevocationErrors = !_settings.CertificateRevocationCheck;
             mqttClientOptionsBuilder
-                .WithTls(tlsParameters)
                 .WithProtocolVersion(MqttProtocolVersion.V311)
                 .WithKeepAlivePeriod(_settings.IdleTimeout)
                 .WithTimeout(TimeSpan.FromMilliseconds(-1)); // MQTTNet will only time out if the cancellation token requests cancellation.
