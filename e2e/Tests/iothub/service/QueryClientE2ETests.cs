@@ -29,6 +29,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         private readonly TimeSpan _queryableDelayTimeout = TimeSpan.FromMinutes(1);
 
         [TestMethod]
+        [Ignore("The service sometimes takes a long time for a device to be query-able")]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task TwinQuery_Works()
         {
@@ -60,6 +61,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         }
 
         [TestMethod]
+        [Ignore("The service sometimes takes a long time for a device to be query-able")]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task TwinQuery_CustomPaginationWorks()
         {
@@ -114,6 +116,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         }
 
         [TestMethod]
+        [Ignore("The service sometimes takes a long time for a device to be query-able")]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task TwinQuery_IterateByItemAcrossPages()
         {
@@ -155,6 +158,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
         }
 
         [TestMethod]
+        [Ignore("The service sometimes takes a long time for a device to be query-able")]
         [Timeout(TestTimeoutMilliseconds)]
         public async Task TwinQuery_IterateByItemWorksWithinPage()
         {
