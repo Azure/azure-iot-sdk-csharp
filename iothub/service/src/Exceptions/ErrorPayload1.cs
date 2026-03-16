@@ -9,26 +9,44 @@ namespace Microsoft.Azure.Devices
     /// <summary>
     /// A class used as a model to deserialize one schema type of errors received from IoT hub.
     /// </summary>
-    internal sealed class ErrorPayload1
+    public sealed class ErrorPayload1
     {
+        /// <summary>
+        /// 
+        /// </summary>
         [JsonPropertyName("errorCode")]
-        internal string ErrorCode { get; set; }
+        public string ErrorCode { get; set; }
 
+        /// <summary>
+        /// 
+        /// </summary>
         [JsonPropertyName("trackingId")]
-        internal string TrackingId { get; set; }
+        public string TrackingId { get; set; }
 
+        /// <summary>
+        /// 
+        /// </summary>
         [JsonPropertyName("message")]
-        internal string Message { get; set; }
+        public string Message { get; set; }
 
+        /// <summary>
+        /// 
+        /// </summary>
         [JsonPropertyName("timestampUtc")]
-        internal string OccurredOnUtc { get; set; }
+        public string OccurredOnUtc { get; set; }
     }
 
-    internal sealed class ResponseMessageWrapper
+    /// <summary>
+    /// 
+    /// </summary>
+    public sealed class ResponseMessageWrapper
     {
+        /// <summary>
+        /// 
+        /// </summary>
         [SuppressMessage("Usage", "CA1507: Use nameof in place of string literal 'Message'",
             Justification = "This JsonProperty annotation depends on service-defined contract (name) and is independent of the property name selected by the SDK.")]
         [JsonPropertyName("Message")]
-        internal string Message { get; set; }
+        public string Message { get; set; }
     }
 }
