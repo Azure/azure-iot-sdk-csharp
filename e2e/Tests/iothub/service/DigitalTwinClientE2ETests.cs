@@ -11,7 +11,7 @@ using FluentAssertions;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Newtonsoft.Json;
+using System.Text.Json;
 
 namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 {
@@ -95,7 +95,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             DateTimeOffset since = DateTimeOffset.Now.Subtract(TimeSpan.FromMinutes(1));
             var requestOptions = new InvokeDigitalTwinCommandOptions
             {
-                Payload = JsonConvert.SerializeObject(since),
+                Payload = JsonSerializer.Serialize(since),
             };
             InvokeDigitalTwinCommandResponse commandResponse = await serviceClient.DigitalTwins
                 .InvokeCommandAsync(deviceId, commandName, requestOptions)
@@ -189,7 +189,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             int delay = 1;
             var requestOptions = new InvokeDigitalTwinCommandOptions()
             {
-                Payload = JsonConvert.SerializeObject(delay)
+                Payload = JsonSerializer.Serialize(delay)
             };
             InvokeDigitalTwinCommandResponse rootCommandResponse = await serviceClient.DigitalTwins
                 .InvokeCommandAsync(deviceId, rootCommandName, requestOptions)
@@ -202,7 +202,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             DateTimeOffset since = DateTimeOffset.Now.Subtract(TimeSpan.FromMinutes(1));
             requestOptions = new InvokeDigitalTwinCommandOptions()
             {
-                Payload = JsonConvert.SerializeObject(since)
+                Payload = JsonSerializer.Serialize(since)
             };
             InvokeDigitalTwinCommandResponse componentCommandResponse = await serviceClient.DigitalTwins
                 .InvokeComponentCommandAsync(deviceId, componentName, componentCommandName, requestOptions)

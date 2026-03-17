@@ -10,7 +10,7 @@ using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.Azure.Devices.E2ETests.Helpers.Templates;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Newtonsoft.Json;
+using System.Text.Json;
 
 namespace Microsoft.Azure.Devices.E2ETests.Methods
 {
@@ -58,7 +58,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             async Task InitOperationAsync(TestDevice testDevice, TestDeviceCallbackHandler testDeviceCallbackHandler, CancellationToken ct)
             {
                 VerboseTestLogger.WriteLine($"{nameof(MethodE2EPoolAmqpTests)}: Setting method for device {testDevice.Id}");
-                await testDeviceCallbackHandler.SetDeviceReceiveMethodAndRespondAsync<DirectMethodRequestPayload>(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(s_deviceResponsePayload)), ct).ConfigureAwait(false);
+                await testDeviceCallbackHandler.SetDeviceReceiveMethodAndRespondAsync<DirectMethodRequestPayload>(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(s_deviceResponsePayload)), ct).ConfigureAwait(false);
             }
 
             async Task TestOperationAsync(TestDevice testDevice, TestDeviceCallbackHandler testDeviceCallbackHandler, CancellationToken ct)
@@ -66,7 +66,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 VerboseTestLogger.WriteLine($"{nameof(MethodE2EPoolAmqpTests)}: Preparing to receive method for device {testDevice.Id}");
                 var directMethodRequest = new DirectMethodServiceRequest(MethodName)
                 {
-                    Payload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(s_serviceRequestPayload)),
+                    Payload = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(s_serviceRequestPayload)),
                     ResponseTimeout = s_defaultMethodResponseTimeout,
                 };
                 testDeviceCallbackHandler.ExpectedDirectMethodRequest = directMethodRequest;
@@ -112,7 +112,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             VerboseTestLogger.WriteLine($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Method status: {response.Status}.");
             response.Status.Should().Be(200);
             string jsonPayload = response.PayloadAsString;
-            jsonPayload.Should().Be(JsonConvert.SerializeObject(respJson));
+            jsonPayload.Should().Be(JsonSerializer.Serialize(respJson));
         }
     }
 }

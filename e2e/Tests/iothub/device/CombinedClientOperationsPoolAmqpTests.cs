@@ -12,7 +12,7 @@ using Microsoft.Azure.Devices.E2ETests.Helpers.Templates;
 using Microsoft.Azure.Devices.E2ETests.Methods;
 using Microsoft.Azure.Devices.E2ETests.Twins;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Newtonsoft.Json;
+using System.Text.Json;
 
 namespace Microsoft.Azure.Devices.E2ETests
 {
@@ -67,7 +67,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 // Set method handler
                 VerboseTestLogger.WriteLine($"{nameof(CombinedClientOperationsPoolAmqpTests)}: Set direct method {MethodName} for device={testDevice.Id}");
                 Task methodCallbackSet = testDeviceCallbackHandler.SetDeviceReceiveMethodAndRespondAsync<DirectMethodRequestPayload>(
-                    Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(s_deviceResponsePayload)), ct);
+                    Encoding.UTF8.GetBytes(JsonSerializer.Serialize(s_deviceResponsePayload)), ct);
                 initOperations.Add(methodCallbackSet);
 
                 // Set the twin desired properties callback
@@ -106,7 +106,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 VerboseTestLogger.WriteLine($"{nameof(CombinedClientOperationsPoolAmqpTests)}: Operation 3: Direct methods test for device={testDevice.Id}");
                 var directMethodRequest = new DirectMethodServiceRequest(MethodName)
                 {
-                    Payload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(s_serviceRequestPayload)),
+                    Payload = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(s_serviceRequestPayload)),
                     ResponseTimeout = s_defaultMethodResponseTimeout,
                 };
                 testDeviceCallbackHandler.ExpectedDirectMethodRequest = directMethodRequest;

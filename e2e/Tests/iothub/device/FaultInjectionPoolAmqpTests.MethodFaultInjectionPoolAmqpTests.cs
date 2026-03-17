@@ -11,7 +11,7 @@ using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.Azure.Devices.E2ETests.Helpers.Templates;
 using Microsoft.Azure.Devices.E2ETests.Methods;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Newtonsoft.Json;
+using System.Text.Json;
 
 namespace Microsoft.Azure.Devices.E2ETests
 {
@@ -105,7 +105,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             {
                 await testDeviceCallbackHandler
                     .SetDeviceReceiveMethodAndRespondAsync<DirectMethodRequestPayload>(
-                        Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(s_deviceResponsePayload)), ct)
+                        Encoding.UTF8.GetBytes(JsonSerializer.Serialize(s_deviceResponsePayload)), ct)
                     .ConfigureAwait(false);
             }
 
@@ -116,7 +116,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                 var directMethodRequest = new DirectMethodServiceRequest(MethodName)
                 {
-                    Payload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(s_serviceRequestPayload)),
+                    Payload = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(s_serviceRequestPayload)),
                     ResponseTimeout = s_defaultMethodResponseTimeout,
                 };
                 testDeviceCallbackHandler.ExpectedDirectMethodRequest = directMethodRequest;
@@ -160,7 +160,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             VerboseTestLogger.WriteLine($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Method response status: {methodResponse.Status} for device {deviceId}.");
             methodResponse.Status.Should().Be(200);
-            methodResponse.PayloadAsString.Should().BeEquivalentTo(JsonConvert.SerializeObject(expectedClientResponsePayload));
+            methodResponse.PayloadAsString.Should().BeEquivalentTo(JsonSerializer.Serialize(expectedClientResponsePayload));
         }
     }
 }

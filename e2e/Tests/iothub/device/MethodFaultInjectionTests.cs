@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Net;
 using System.Runtime.ExceptionServices;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -13,7 +14,6 @@ using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.Azure.Devices.E2ETests.Helpers.Templates;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.E2ETests.Methods
 {
@@ -185,7 +185,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
 
                     clientResponse.Status.Should().Be(200);
                     string jsonPayload = clientResponse.PayloadAsString;
-                    jsonPayload.Should().Be(JsonConvert.SerializeObject(expectedClientResponsePayload));
+                    jsonPayload.Should().Be(JsonSerializer.Serialize(expectedClientResponsePayload));
 
                     done = true;
                 }
@@ -214,7 +214,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             {
                 await testDevice.DeviceClient.OpenAsync(ct).ConfigureAwait(false);
                 await testDeviceCallbackHandler
-                    .SetDeviceReceiveMethodAndRespondAsync<DirectMethodRequestPayload>(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(s_deviceResponsePayload)), ct)
+                    .SetDeviceReceiveMethodAndRespondAsync<DirectMethodRequestPayload>(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(s_deviceResponsePayload)), ct)
                     .ConfigureAwait(false);
             }
 
@@ -223,7 +223,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             {
                 var directMethodRequest = new DirectMethodServiceRequest(MethodName)
                 {
-                    Payload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(s_serviceRequestPayload)),
+                    Payload = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(s_serviceRequestPayload)),
                     ResponseTimeout = s_defaultMethodResponseTimeout,
                 };
                 testDeviceCallbackHandler.ExpectedDirectMethodRequest = directMethodRequest;
