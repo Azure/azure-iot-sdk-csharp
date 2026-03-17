@@ -28,31 +28,31 @@ namespace Microsoft.Azure.Devices.Client
         /// The correlation id to use when notifying IoT hub later once this file upload has completed.
         /// </summary>
         [JsonPropertyName("correlationId")]
-        public string CorrelationId { get; protected internal set; }
+        public string CorrelationId { get; set; }
 
         /// <summary>
         /// The host name of the storage account that the file can be uploaded to.
         /// </summary>
         [JsonPropertyName("hostName")]
-        public string HostName { get; protected internal set; }
+        public string HostName { get; set; }
 
         /// <summary>
         /// The container in the storage account that the file can be uploaded to.
         /// </summary>
         [JsonPropertyName("containerName")]
-        public string ContainerName { get; protected internal set; }
+        public string ContainerName { get; set; }
 
         /// <summary>
         /// The name of the blob in the container that the file can be uploaded to.
         /// </summary>
         [JsonPropertyName("blobName")]
-        public string BlobName { get; protected internal set; }
+        public string BlobName { get; set; }
 
         /// <summary>
         /// The sas token to use for authentication while using the Azure Storage SDK to upload the file.
         /// </summary>
         [JsonPropertyName("sasToken")]
-        public string SasToken { get; protected internal set; }
+        public string SasToken { get; set; }
 
         /// <summary>
         /// Get the complete Uri for the blob that can be uploaded to from this device. This Uri includes credentials, too.

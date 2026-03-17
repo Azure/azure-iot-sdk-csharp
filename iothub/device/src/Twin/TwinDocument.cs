@@ -9,15 +9,21 @@ namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
     /// Type that is used to deserialize and represent the received client properties.
-    /// This class uses NewtonSoft.Json for the top-level property deserialization
+    /// This class uses System.Text.Json for the top-level property deserialization
     /// since the property names are known and defined by service contract.
     /// </summary>
-    internal sealed class TwinDocument
+    public sealed class TwinDocument
     {
+        /// <summary>
+        /// 
+        /// </summary>
         [JsonPropertyName("desired")]
-        internal Dictionary<string, object> Desired { get; set; }
+        public Dictionary<string, object> Desired { get; set; }
 
+        /// <summary>
+        /// 
+        /// </summary>
         [JsonPropertyName("reported")]
-        internal Dictionary<string, object> Reported { get; set; }
+        public Dictionary<string, object> Reported { get; set; }
     }
 }

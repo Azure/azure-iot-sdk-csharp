@@ -9,21 +9,36 @@ namespace Microsoft.Azure.Devices.Client
     /// <summary>
     /// A class used as a model to deserialize one schema type of errors received from IoT hub.
     /// </summary>
-    internal sealed class ErrorPayload
+    public sealed class ErrorPayload
     {
+        /// <summary>
+        /// 
+        /// </summary>
         [JsonPropertyName("errorCode")]
-        internal dynamic ErrorCode { get; set; }
+        public dynamic ErrorCode { get; set; }
 
+        /// <summary>
+        /// 
+        /// </summary>
         [JsonPropertyName("trackingId")]
-        internal string TrackingId { get; set; }
+        public string TrackingId { get; set; }
 
+        /// <summary>
+        /// 
+        /// </summary>
         [JsonPropertyName("message")]
-        internal string Message { get; set; }
+        public string Message { get; set; }
 
+        /// <summary>
+        /// 
+        /// </summary>
         [JsonPropertyName("timestampUtc")]
-        internal string OccurredOnUtc { get; set; }
+        public string OccurredOnUtc { get; set; }
 
+        /// <summary>
+        /// 
+        /// </summary>
         [JsonIgnore]
-        internal IotHubClientErrorCode IotHubClientErrorCode { get; set; }
+        public IotHubClientErrorCode IotHubClientErrorCode { get; set; }
     }
 }

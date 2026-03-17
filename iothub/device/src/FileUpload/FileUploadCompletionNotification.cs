@@ -32,13 +32,13 @@ namespace Microsoft.Azure.Devices.Client
         /// returned from IoT hub when first getting the SAS URI for this file upload.
         /// </summary>
         [JsonPropertyName("correlationId")]
-        public string CorrelationId { get; }
+        public string CorrelationId { get; set; }
 
         /// <summary>
         /// Whether the file upload was successful or not.
         /// </summary>
         [JsonPropertyName("isSuccess")]
-        public bool IsSuccess { get; }
+        public bool IsSuccess { get; set; }
 
         /// <summary>
         /// The status code for the file upload. This is user defined and will be presented to the service client listening

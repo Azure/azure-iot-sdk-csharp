@@ -25,13 +25,13 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The status of direct method response.
         /// </summary>
-        [JsonPropertyName("Status")]
+        [JsonPropertyName("status")]
         public int Status { get; set; }
 
         /// <summary>
         /// The optional direct method payload.
         /// </summary>
-        [JsonPropertyName("Payload")]
+        [JsonPropertyName("payload")]
         public byte[] Payload { get; set; }
 
         /// <summary>
@@ -48,8 +48,8 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The request Id for the transport layer.
         /// </summary>
-        [JsonPropertyName("RequestId")]
-        internal string RequestId { get; set; }
+        [JsonIgnore]
+        public string RequestId { get; set; }
 
         /// <summary>
         /// The convention to use with the direct method payload.

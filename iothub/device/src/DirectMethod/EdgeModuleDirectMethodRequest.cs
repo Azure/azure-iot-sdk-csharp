@@ -82,7 +82,7 @@ namespace Microsoft.Azure.Devices.Client
         /// The direct method payload.
         /// </summary>
         [JsonPropertyName("payload")]
-        internal byte[] Payload { get; set; }
+        public byte[] Payload { get; set; }
 
         /// <summary>
         /// An overloaded way of storing the direct method payload instead of as a byte array.
@@ -93,7 +93,7 @@ namespace Microsoft.Azure.Devices.Client
         /// Method timeout, in seconds.
         /// </summary>
         [JsonPropertyName("responseTimeoutInSeconds")]
-        internal int? ResponseTimeoutInSeconds => ResponseTimeout.HasValue && ResponseTimeout > TimeSpan.Zero
+        public int? ResponseTimeoutInSeconds => ResponseTimeout.HasValue && ResponseTimeout > TimeSpan.Zero
             ? (int)ResponseTimeout.Value.TotalSeconds
             : null;
 
@@ -101,7 +101,7 @@ namespace Microsoft.Azure.Devices.Client
         /// Connection timeout, in seconds.
         /// </summary>
         [JsonPropertyName("connectTimeoutInSeconds")]
-        internal int? ConnectionTimeoutInSeconds => ConnectionTimeout.HasValue && ConnectionTimeout > TimeSpan.Zero
+        public int? ConnectionTimeoutInSeconds => ConnectionTimeout.HasValue && ConnectionTimeout > TimeSpan.Zero
             ? (int)ConnectionTimeout.Value.TotalSeconds
             : null;
 
