@@ -27,7 +27,7 @@ namespace Microsoft.Azure.Devices.Tests.Exceptions
                 // A read-world message in the response content which includes the numeric error code returned by the hub service.
                 Message = new ErrorPayload1
                 {
-                    ErrorCode = "404103",
+                    ErrorCode = 404103,
                     TrackingId = "b575211ff5194d56b18721941e82c3d5",
                     Message = "The operation failed because the requested device isn't online or hasn't registered the direct method callback.",
                     OccurredOnUtc = "2022-09-12T21:59:47.99936Z",
@@ -57,7 +57,7 @@ namespace Microsoft.Azure.Devices.Tests.Exceptions
             {
                 Message = JsonSerializer.Serialize(new ErrorPayload1
                 {
-                    ErrorCode = ((int)expectedErrorCode).ToString(),
+                    ErrorCode = (int)expectedErrorCode,
                     TrackingId = expectedTrackingId,
                     Message = "The operation failed because the requested device isn't online or hasn't registered the direct method callback. To learn more, see https://aka.ms/iothub404103",
                     OccurredOnUtc = "2022-10-19T16:47:22.0203257Z",

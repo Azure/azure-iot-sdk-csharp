@@ -15,7 +15,7 @@ namespace Microsoft.Azure.Devices
         /// 
         /// </summary>
         [JsonPropertyName("errorCode")]
-        public string ErrorCode { get; set; }
+        public int ErrorCode { get; set; }
 
         /// <summary>
         /// 

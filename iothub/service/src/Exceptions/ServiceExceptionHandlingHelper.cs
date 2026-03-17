@@ -69,13 +69,7 @@ namespace Microsoft.Azure.Devices
                     trackingId = responseMessage.TrackingId;
                 }
 
-                if (responseMessage.ErrorCode != null)
-                {
-                    if (int.TryParse(responseMessage.ErrorCode, NumberStyles.Any, CultureInfo.InvariantCulture, out int errorCodeInt))
-                    {
-                        return Tuple.Create(trackingId, (IotHubServiceErrorCode)errorCodeInt);
-                    }
-                }
+                return Tuple.Create(trackingId, (IotHubServiceErrorCode)responseMessage.ErrorCode);
             }
 
             try
