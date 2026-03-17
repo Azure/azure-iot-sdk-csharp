@@ -61,7 +61,6 @@ namespace Microsoft.Azure.Devices.Client
                 IotHubConnectionCredentials = IotHubConnectionCredentials,
                 ProductInfo = _clientOptions.UserAgentInfo,
                 ModelId = _clientOptions.ModelId,
-                PayloadConvention = _clientOptions.PayloadConvention,
                 IotHubClientTransportSettings = _clientOptions.TransportSettings,
                 MethodCallback = OnMethodCalledAsync,
                 DesiredPropertyUpdateCallback = OnDesiredStatePatchReceived,
@@ -190,10 +189,6 @@ namespace Microsoft.Azure.Devices.Client
                 message.MessageId = Guid.NewGuid().ToString();
             }
 
-            message.PayloadConvention = _clientOptions.PayloadConvention;
-            message.ContentType ??= _clientOptions.PayloadConvention.ContentType;
-            message.ContentEncoding ??= _clientOptions.PayloadConvention.ContentEncoding;
-
             try
             {
                 await InnerHandler.SendTelemetryAsync(message, cancellationToken).ConfigureAwait(false);
@@ -253,10 +248,6 @@ namespace Microsoft.Azure.Devices.Client
 
             foreach (TelemetryMessage message in messages)
             {
-                message.PayloadConvention = _clientOptions.PayloadConvention;
-                message.ContentType ??= _clientOptions.PayloadConvention.ContentType;
-                message.ContentEncoding ??= _clientOptions.PayloadConvention.ContentEncoding;
-
                 if (_clientOptions?.SdkAssignsMessageId == SdkAssignsMessageId.WhenUnset)
                 {
                     message.MessageId ??= Guid.NewGuid().ToString();
@@ -488,7 +479,6 @@ namespace Microsoft.Azure.Devices.Client
             Argument.AssertNotNull(reportedProperties, nameof(reportedProperties));
             cancellationToken.ThrowIfCancellationRequested();
 
-            reportedProperties.PayloadConvention = _clientOptions.PayloadConvention;
             return await InnerHandler.UpdateReportedPropertiesAsync(reportedProperties, cancellationToken).ConfigureAwait(false);
         }
 
@@ -703,7 +693,6 @@ namespace Microsoft.Azure.Devices.Client
                     .ConfigureAwait(false);
 
                 directMethodResponse.RequestId = directMethodRequest.RequestId;
-                directMethodResponse.PayloadConvention = _clientOptions.PayloadConvention;
 
                 await SendDirectMethodResponseAsync(directMethodResponse).ConfigureAwait(false);
             }

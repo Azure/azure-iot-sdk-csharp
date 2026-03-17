@@ -27,8 +27,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
         // Timer to check if any expired messages exist. The timer is executed after each hour of execution.
         private readonly Timer _twinTimeoutTimer;
 
-        private readonly PayloadConvention _payloadConvention;
-
         internal IotHubConnectionCredentials _connectionCredentials;
 
         private bool _closed;

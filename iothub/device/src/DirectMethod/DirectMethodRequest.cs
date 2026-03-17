@@ -53,17 +53,8 @@ namespace Microsoft.Azure.Devices.Client
         public string RequestId { get; protected internal set; }
 
         /// <summary>
-        /// The convention to use with the direct method payload.
-        /// </summary>
-        protected internal PayloadConvention PayloadConvention { get; set; }
-
-        /// <summary>
         /// The direct method request payload, deserialized to the specified type.
         /// </summary>
-        /// <remarks>
-        /// Use this method when the payload type is known and it can be deserialized using the configured
-        /// <see cref="PayloadConvention"/>. If it is not JSON or the type is not known, use <see cref="GetPayload"/>.
-        /// </remarks>
         /// <typeparam name="T">The type to deserialize the direct method request payload to.</typeparam>
         /// <param name="payload">When this method returns true, this contains the value of the direct method request payload.
         /// When this method returns false, this contains the default value of the type <c>T</c> passed in.</param>
@@ -100,12 +91,12 @@ namespace Microsoft.Azure.Devices.Client
             {
                 if (typeof(T) == typeof(byte[]))
                 {
-                    payload = PayloadConvention.GetObject<T>(_payload);
+                    payload = JsonSerializer.Deserialize<T>(_payload);
                     return true;
                 }
 
                 // If not deserializing into byte[], an extra layer of decoding is needed
-                payload = JsonSerializer.Deserialize<T>(Encoding.UTF8.GetString(PayloadConvention.GetObject<byte[]>(_payload)), JsonSerializerSettings.Options);
+                payload = JsonSerializer.Deserialize<T>(Encoding.UTF8.GetString(JsonSerializer.Deserialize<byte[]>(_payload)), JsonSerializerSettings.Options);
                 return true;
             }
             catch (Exception ex)
@@ -141,7 +132,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </example>
         public byte[] GetPayload()
         {
-            return _payload == null || _payload.Length == 0 ? null : PayloadConvention.GetObject<byte[]>(_payload);
+            return _payload == null || _payload.Length == 0 ? null : JsonSerializer.Deserialize<byte[]>(_payload);
         }
     }
 }

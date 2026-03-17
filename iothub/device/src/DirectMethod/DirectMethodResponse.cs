@@ -52,19 +52,9 @@ namespace Microsoft.Azure.Devices.Client
         public string RequestId { get; set; }
 
         /// <summary>
-        /// The convention to use with the direct method payload.
-        /// </summary>
-        [JsonIgnore]
-        protected internal PayloadConvention PayloadConvention { get; set; }
-
-        /// <summary>
         /// The direct method response payload, deserialized to the specified type.
         /// </summary>
         /// <remarks>
-        /// <para>
-        /// Use this method when the payload type is known and it can be deserialized using the configured
-        /// <see cref="PayloadConvention"/>. If it is not JSON or the type is not known, use <see cref="Payload"/>.
-        /// </para>
         /// <para>
         /// One usage of this method is to deserialize the direct method response received by an edge module client
         /// after it invokes a direct method on an edge device or an edge module connected to the same edge hub.
@@ -96,7 +86,7 @@ namespace Microsoft.Azure.Devices.Client
 
             try
             {
-                payload = PayloadConvention.GetObject<T>(Payload);
+                payload = JsonSerializer.Deserialize<T>(Payload);
                 return true;
             }
             catch (Exception ex)

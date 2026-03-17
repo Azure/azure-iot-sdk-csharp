@@ -27,7 +27,7 @@ namespace Microsoft.Azure.Devices.Client
         /// a direct method on an edge device or an edge module connected to the same edge hub.
         /// </summary>
         /// <param name="methodName">The method name to invoke.</param>
-        /// <param name="payload">The direct method payload that will be serialized using <see cref="DefaultPayloadConvention"/>.</param>
+        /// <param name="payload">The direct method payload that will be serialized.</param>
         [JsonConstructor]
         public EdgeModuleDirectMethodRequest(string methodName, byte[] payload)
         {
@@ -73,12 +73,6 @@ namespace Microsoft.Azure.Devices.Client
         public TimeSpan? ResponseTimeout { get; set; }
 
         /// <summary>
-        /// The convention to use with the direct method payload.
-        /// </summary>
-        [JsonIgnore]
-        internal PayloadConvention PayloadConvention { get; set; }
-
-        /// <summary>
         /// The direct method payload.
         /// </summary>
         [JsonPropertyName("payload")]
@@ -108,10 +102,6 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The direct method request payload, deserialized to the specified type.
         /// </summary>
-        /// <remarks>
-        /// Use this method when the payload type is known and it can be deserialized using the configured
-        /// <see cref="PayloadConvention"/>. If it is not JSON or the type is not known, use <see cref="GetPayloadAsBytes"/>.
-        /// </remarks>
         /// <typeparam name="T">The type to deserialize the direct method request payload to.</typeparam>
         /// <param name="payload">When this method returns true, this contains the value of the direct method request payload.
         /// When this method returns false, this contains the default value of the type <c>T</c> passed in.</param>
@@ -146,7 +136,7 @@ namespace Microsoft.Azure.Devices.Client
 
             try
             {
-                payload = PayloadConvention.GetObject<T>(Payload);
+                payload = JsonSerializer.Deserialize<T>(Payload);
                 return true;
             }
             catch (Exception ex) when (Logging.IsEnabled)
@@ -160,10 +150,6 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Get the raw payload bytes.
         /// </summary>
-        /// <remarks>
-        /// Use this method when the payload is not JSON or the type is not known or the type cannot be deserialized
-        /// using the configured <see cref="PayloadConvention"/>. Otherwise, use <see cref="TryGetPayload{T}(out T)"/>.
-        /// </remarks>
         /// <returns>A copy of the raw payload as a byte array.</returns>
         /// <example>
         /// <code language="csharp">

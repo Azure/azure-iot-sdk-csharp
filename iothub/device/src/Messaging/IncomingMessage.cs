@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text.Json;
 
 namespace Microsoft.Azure.Devices.Client
 {
@@ -151,17 +152,8 @@ namespace Microsoft.Azure.Devices.Client
         protected internal IDictionary<string, object> SystemProperties { get; private set; } = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
-        /// The convention to use with this message payload.
-        /// </summary>
-        protected internal PayloadConvention PayloadConvention { get; set; } = DefaultPayloadConvention.Instance;
-
-        /// <summary>
         /// The message payload, deserialized to the specified type.
         /// </summary>
-        /// <remarks>
-        /// Use this method when the payload type is known and it can be deserialized using the configured
-        /// <see cref="PayloadConvention"/>. If it is not JSON or the type is not known, use <see cref="GetPayloadAsBytes"/>.
-        /// </remarks>
         /// <typeparam name="T">The type to deserialize <paramref name="payload"/> to.</typeparam>
         /// <param name="payload">The value of the message payload, or default if unsuccessful.</param>
         /// <returns><c>true</c> if the message payload can be deserialized to type <c>T</c>; otherwise, <c>false</c>.</returns>
@@ -188,7 +180,7 @@ namespace Microsoft.Azure.Devices.Client
 
             try
             {
-                payload = PayloadConvention.GetObject<T>(_payload);
+                payload = JsonSerializer.Deserialize<T>(_payload);
 
                 return true;
             }

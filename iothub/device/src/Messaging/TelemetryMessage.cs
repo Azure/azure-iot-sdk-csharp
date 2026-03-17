@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text.Json;
 
 namespace Microsoft.Azure.Devices.Client
 {
@@ -20,9 +21,6 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Creates an instance of this class with the specified payload.
         /// </summary>
-        /// <remarks>
-        /// The payload will be serialized and encoded per <see cref="IotHubClientOptions.PayloadConvention"/>.
-        /// </remarks>
         /// <param name="payload">The payload to send.</param>
         public TelemetryMessage(object payload)
         {
@@ -206,11 +204,6 @@ namespace Microsoft.Azure.Devices.Client
         protected internal IDictionary<string, object> SystemProperties { get; private set; } = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
-        /// The convention to use with this message payload.
-        /// </summary>
-        protected internal PayloadConvention PayloadConvention { get; set; } = DefaultPayloadConvention.Instance;
-
-        /// <summary>
         /// Clones an existing <see cref="TelemetryMessage"/> instance and sets content body defined by <paramref name="payload"/> on it.
         /// </summary>
         /// <remarks>
@@ -256,7 +249,7 @@ namespace Microsoft.Azure.Devices.Client
         {
             return Payload is byte[] payloadAsByteArray
                 ? payloadAsByteArray
-                : PayloadConvention.GetObjectBytes(Payload);
+                : JsonSerializer.SerializeToUtf8Bytes(Payload);
         }
 
         private T GetSystemProperty<T>(string key)
