@@ -3,8 +3,8 @@
 
 using System;
 using System.Text;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices.Client
 {
@@ -25,13 +25,13 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The status of direct method response.
         /// </summary>
-        [JsonProperty]
+        [JsonPropertyName("Status")]
         public int Status { get; set; }
 
         /// <summary>
         /// The optional direct method payload.
         /// </summary>
-        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("Payload")]
         public byte[] Payload { get; set; }
 
         /// <summary>
@@ -42,13 +42,13 @@ namespace Microsoft.Azure.Devices.Client
         /// </remarks>
         public object PayloadAsObject
         {
-            get => JsonConvert.DeserializeObject(Encoding.UTF8.GetString(Payload));
-            set => Payload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(value));
+            get => JsonSerializer.Deserialize<object>(Encoding.UTF8.GetString(Payload), JsonSerializerSettings.Options); //TODO hmmm
+            set => Payload = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(value, JsonSerializerSettings.Options));
         }
         /// <summary>
         /// The request Id for the transport layer.
         /// </summary>
-        [JsonProperty]
+        [JsonPropertyName("RequestId")]
         internal string RequestId { get; set; }
 
         /// <summary>

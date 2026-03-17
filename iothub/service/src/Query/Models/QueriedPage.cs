@@ -4,7 +4,6 @@
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Text.Json;
-using Microsoft.Azure.Devices.Utilities;
 
 namespace Microsoft.Azure.Devices
 {

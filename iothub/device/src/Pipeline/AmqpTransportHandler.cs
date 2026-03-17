@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Devices.Client.Transport.Amqp;
 using Microsoft.Azure.Devices.Client.Transport.AmqpIot;
-using Newtonsoft.Json;
+using System.Text.Json;
 
 namespace Microsoft.Azure.Devices.Client.Transport
 {
@@ -398,7 +398,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
                     return new TwinProperties(twinDesiredProperties, twinReportedProperties);
                 }
-                catch (JsonReaderException ex)
+                catch (JsonException ex)
                 {
                     if (Logging.IsEnabled)
                     {

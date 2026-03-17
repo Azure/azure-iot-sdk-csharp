@@ -4,7 +4,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.Azure.Devices
+namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
     /// The System.Text.Json serialization settings that this library will use when serializing/deserializing. May be updated.

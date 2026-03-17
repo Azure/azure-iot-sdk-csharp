@@ -9,7 +9,6 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Azure;
-using Microsoft.Azure.Devices.Utilities;
 
 namespace Microsoft.Azure.Devices
 {

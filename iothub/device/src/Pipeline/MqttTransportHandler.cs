@@ -21,7 +21,7 @@ using MQTTnet;
 using MQTTnet.Adapter;
 using MQTTnet.Exceptions;
 using MQTTnet.Protocol;
-using Newtonsoft.Json;
+using System.Text.Json;
 
 namespace Microsoft.Azure.Devices.Client.Transport
 {
@@ -1288,7 +1288,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
                                 twinOperation.TwinResponseTask.TrySetResult(getTwinResponse);
                             }
-                            catch (JsonReaderException ex)
+                            catch (JsonException ex)
                             {
                                 if (Logging.IsEnabled)
                                     Logging.Error(this, $"Failed to parse Twin JSON. Message body: '{Encoding.UTF8.GetString(payloadBytes)}'. Exception: {ex}.", nameof(HandleTwinResponse));

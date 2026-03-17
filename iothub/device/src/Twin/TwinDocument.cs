@@ -2,7 +2,8 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Collections.Generic;
-using Newtonsoft.Json;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices.Client
 {
@@ -13,10 +14,10 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     internal sealed class TwinDocument
     {
-        [JsonProperty("desired", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("desired")]
         internal Dictionary<string, object> Desired { get; set; }
 
-        [JsonProperty("reported", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("reported")]
         internal Dictionary<string, object> Reported { get; set; }
     }
 }

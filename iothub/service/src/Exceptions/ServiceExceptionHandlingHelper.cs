@@ -6,7 +6,6 @@ using System.Globalization;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Microsoft.Azure.Devices.Utilities;
 
 namespace Microsoft.Azure.Devices
 {

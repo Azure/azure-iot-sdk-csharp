@@ -7,7 +7,7 @@ using System.Globalization;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
+using System.Text.Json;
 
 namespace Microsoft.Azure.Devices.Client
 {
@@ -107,12 +107,12 @@ namespace Microsoft.Azure.Devices.Client
             try
             {
                 // Sometimes we get the full error payload at the root
-                responseMessage = JsonConvert.DeserializeObject<ErrorPayload>(responseBody);
+                responseMessage = JsonSerializer.Deserialize<ErrorPayload>(responseBody, JsonSerializerSettings.Options);
                 if (responseMessage.ErrorCode == null
                     && responseMessage.TrackingId == null)
                 {
                     // And sometimes it is a nested object with a single 'Message' property at the root
-                    responseMessage = JsonConvert.DeserializeObject<ErrorPayload>(responseMessage.Message);
+                    responseMessage = JsonSerializer.Deserialize<ErrorPayload>(responseMessage.Message, JsonSerializerSettings.Options);
                 }
             }
             catch (JsonException ex)

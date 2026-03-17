@@ -12,7 +12,7 @@ using System.Text;
 using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Amqp.Encoding;
 using Microsoft.Azure.Amqp.Framing;
-using Newtonsoft.Json;
+using System.Text.Json;
 
 namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 {

@@ -32,13 +32,13 @@ namespace Microsoft.Azure.Devices.Client
         /// <inheritdoc/>
         public override byte[] GetObjectBytes(object objectToSendWithConvention)
         {
-            return JsonSerializer.SerializeToUtf8Bytes(objectToSendWithConvention);
+            return JsonSerializer.SerializeToUtf8Bytes(objectToSendWithConvention, JsonSerializerSettings.Options);
         }
 
         /// <inheritdoc/>
         public override T GetObject<T>(byte[] objectToConvert)
         {
-            return JsonSerializer.Deserialize<T>(objectToConvert);
+            return JsonSerializer.Deserialize<T>(objectToConvert, JsonSerializerSettings.Options);
         }
     }
 }
