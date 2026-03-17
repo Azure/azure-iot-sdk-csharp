@@ -6,9 +6,15 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices
 {
-    internal sealed class QuerySpecification
+    /// <summary>
+    /// 
+    /// </summary>
+    public sealed class QuerySpecification
     {
+        /// <summary>
+        /// 
+        /// </summary>
         [JsonPropertyName("query")]
-        internal string Sql { get; set; }
+        public string Sql { get; set; }
     }
 }
