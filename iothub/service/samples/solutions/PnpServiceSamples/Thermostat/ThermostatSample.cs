@@ -78,7 +78,7 @@ namespace Microsoft.Azure.Devices.Samples
             // Create command name to invoke for component
             var commandInvocation = new DirectMethodServiceRequest(getMaxMinReportCommandName)
             {
-                ResponseTimeout = TimeSpan.FromSeconds(30),
+                ResponseTimeoutInSeconds = TimeSpan.FromSeconds(30),
                 Payload = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(DateTimeOffset.Now.Subtract(TimeSpan.FromMinutes(2)))),
             };
 

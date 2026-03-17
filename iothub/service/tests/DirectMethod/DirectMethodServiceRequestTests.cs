@@ -50,14 +50,14 @@ namespace Microsoft.Azure.Devices.Tests.DirectMethod
             var expectedTimeout = TimeSpan.FromSeconds(1);
             var dcmr = new DirectMethodServiceRequest("setTelemetryInterval")
             {
-                ConnectionTimeout = expectedTimeout,
-                ResponseTimeout = expectedTimeout,
+                ConnectTimeoutInSeconds = expectedTimeout,
+                ResponseTimeoutInSeconds = expectedTimeout,
                 Payload = Encoding.UTF8.GetBytes("test")
             };
 
             // act + assert
-            dcmr.ConnectionTimeout.Should().Be(expectedTimeout);
-            dcmr.ResponseTimeout.Should().Be(expectedTimeout);
+            dcmr.ConnectTimeoutInSeconds.Should().Be(expectedTimeout);
+            dcmr.ResponseTimeoutInSeconds.Should().Be(expectedTimeout);
             Encoding.UTF8.GetString(dcmr.Payload).Should().Be("test");
 
             dcmr.ResponseTimeoutInSeconds.Should().Be(1);

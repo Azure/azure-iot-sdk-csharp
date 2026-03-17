@@ -63,7 +63,7 @@ namespace Microsoft.Azure.Devices.Samples
             string commandName = $"{Thermostat1Component}*{getMaxMinReportCommandName}";
             var commandInvocation = new DirectMethodServiceRequest(commandName)
             { 
-                ResponseTimeout = TimeSpan.FromSeconds(30),
+                ResponseTimeoutInSeconds = TimeSpan.FromSeconds(30),
                 Payload = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(DateTimeOffset.Now.Subtract(TimeSpan.FromMinutes(2)))),
             };
 
@@ -89,7 +89,7 @@ namespace Microsoft.Azure.Devices.Samples
             const string commandName = "reboot";
             var commandInvocation = new DirectMethodServiceRequest(commandName)
             {
-                ResponseTimeout = TimeSpan.FromSeconds(30),
+                ResponseTimeoutInSeconds = TimeSpan.FromSeconds(30),
                 Payload = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(3)),
             };
 

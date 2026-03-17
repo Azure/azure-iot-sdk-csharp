@@ -126,7 +126,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
 
             var directMethodRequest = new DirectMethodServiceRequest(MethodName)
             {
-                ResponseTimeout = s_defaultMethodResponseTimeout,
+                ResponseTimeoutInSeconds = s_defaultMethodResponseTimeout,
                 Payload = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(requestPayload)),
             };
 
@@ -183,7 +183,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             
             var directMethodRequest = new DirectMethodServiceRequest(MethodName)
             {
-                ResponseTimeout = s_defaultMethodResponseTimeout,
+                ResponseTimeoutInSeconds = s_defaultMethodResponseTimeout,
                 Payload = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(payload)),
             };
 
@@ -240,7 +240,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
 
             var directMethodRequest = new DirectMethodServiceRequest(MethodName)
             {
-                ResponseTimeout = s_defaultMethodResponseTimeout,
+                ResponseTimeoutInSeconds = s_defaultMethodResponseTimeout,
                 PayloadAsObject = payload,
             };
 

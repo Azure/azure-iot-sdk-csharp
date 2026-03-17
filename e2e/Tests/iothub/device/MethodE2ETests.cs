@@ -133,8 +133,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
             var directMethodRequest = new DirectMethodServiceRequest(methodName)
             {
-                ConnectionTimeout = s_defaultMethodResponseTimeout,
-                ResponseTimeout = s_defaultMethodResponseTimeout,
+                ConnectTimeoutInSeconds = s_defaultMethodResponseTimeout,
+                ResponseTimeoutInSeconds = s_defaultMethodResponseTimeout,
             };
 
             // act
@@ -182,8 +182,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
                 var directMethodRequest = new DirectMethodServiceRequest(methodName)
                 {
-                    ConnectionTimeout = s_defaultMethodResponseTimeout,
-                    ResponseTimeout = s_defaultMethodResponseTimeout,
+                    ConnectTimeoutInSeconds = s_defaultMethodResponseTimeout,
+                    ResponseTimeoutInSeconds = s_defaultMethodResponseTimeout,
                 };
 
                 // act
@@ -240,7 +240,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
 
             var directMethodRequest = new DirectMethodServiceRequest(methodName)
             {
-                ResponseTimeout = s_defaultMethodResponseTimeout,
+                ResponseTimeoutInSeconds = s_defaultMethodResponseTimeout,
             };
 
             // act
@@ -333,7 +333,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             var directMethodRequest = new DirectMethodServiceRequest(MethodName)
             {
                 Payload = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(s_serviceRequestPayload)),
-                ResponseTimeout = s_defaultMethodResponseTimeout,
+                ResponseTimeoutInSeconds = s_defaultMethodResponseTimeout,
             };
             testDeviceCallbackHandler.ExpectedDirectMethodRequest = directMethodRequest;
 
@@ -365,7 +365,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             var directMethodRequest = new DirectMethodServiceRequest(MethodName)
             {
                 Payload = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(s_serviceRequestPayload)),
-                ResponseTimeout = s_defaultMethodResponseTimeout,
+                ResponseTimeoutInSeconds = s_defaultMethodResponseTimeout,
             };
             testDeviceCallbackHandler.ExpectedDirectMethodRequest = directMethodRequest;
 
@@ -407,7 +407,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             var directMethodRequest = new DirectMethodServiceRequest(MethodName)
             {
                 Payload = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(s_serviceRequestPayload)),
-                ResponseTimeout = s_defaultMethodResponseTimeout,
+                ResponseTimeoutInSeconds = s_defaultMethodResponseTimeout,
             };
             testModuleCallbackHandler.ExpectedDirectMethodRequest = directMethodRequest;
 

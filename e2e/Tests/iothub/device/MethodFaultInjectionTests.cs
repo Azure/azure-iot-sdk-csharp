@@ -224,7 +224,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 var directMethodRequest = new DirectMethodServiceRequest(MethodName)
                 {
                     Payload = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(s_serviceRequestPayload)),
-                    ResponseTimeout = s_defaultMethodResponseTimeout,
+                    ResponseTimeoutInSeconds = s_defaultMethodResponseTimeout,
                 };
                 testDeviceCallbackHandler.ExpectedDirectMethodRequest = directMethodRequest;
 

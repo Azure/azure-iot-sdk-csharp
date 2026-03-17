@@ -5,6 +5,7 @@ using System;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Microsoft.Azure.Devices
 {
@@ -24,7 +25,7 @@ namespace Microsoft.Azure.Devices
         {
             Argument.AssertNotNullOrWhiteSpace(methodName, nameof(methodName));
             MethodName = methodName;
-            Payload = Array.Empty<byte>();
+            Payload = null;
         }
 
         /// <summary>
@@ -37,20 +38,10 @@ namespace Microsoft.Azure.Devices
         /// The serialized and encoded payload bytes.
         /// </summary>
         [JsonPropertyName("payload")]
-        public byte[] Payload { get; set; }
+        public JsonElement? Payload { get; private set; }
 
         /// <summary>
-        /// The payload to have serialized and sent as JSON.
-        /// </summary>
-        [JsonIgnore]
-        public object PayloadAsObject
-        {
-            get => JsonSerializer.Deserialize<object>(Encoding.UTF8.GetString(Payload), JsonSerializerSettings.Options); // TODO hmmm
-            set => Payload = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(value, JsonSerializerSettings.Options));
-        }
-
-        /// <summary>
-        /// The amount of time given to the service to connect to the device.
+        /// The amount of time (in seconds) given to the service to connect to the device.
         /// </summary>
         /// <remarks>
         /// A timeout may occur if this value is set to zero and the target device is not connected to
@@ -63,11 +54,11 @@ namespace Microsoft.Azure.Devices
         /// interpreted as 0 seconds (using <c>ConnectTimeout.TotalSeconds</c>).
         /// </para>
         /// </remarks>
-        [JsonIgnore]
-        public TimeSpan? ConnectionTimeout { get; set; }
+        [JsonPropertyName("connectTimeoutInSeconds")]
+        public int? ConnectTimeoutInSeconds { get; set; }
 
         /// <summary>
-        /// The amount of time given to the device to process and respond to the command request.
+        /// The amount of time (in seconds) given to the device to process and respond to the command request.
         /// </summary>
         /// <remarks>
         /// This timeout may happen if the target device is slow in handling the direct method.
@@ -77,13 +68,61 @@ namespace Microsoft.Azure.Devices
         /// in this request having a timeout of 0 seconds.
         /// </para>
         /// </remarks>
-        [JsonIgnore]
-        public TimeSpan? ResponseTimeout { get; set; }
-
         [JsonPropertyName("responseTimeoutInSeconds")]
-        internal int? ResponseTimeoutInSeconds => (int?)ResponseTimeout?.TotalSeconds ?? null;
+        public int? ResponseTimeoutInSeconds { get; set; }
 
-        [JsonPropertyName("connectTimeoutInSeconds")]
-        internal int? ConnectionTimeoutInSeconds => (int?)ConnectionTimeout?.TotalSeconds ?? null;
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="value"></param>
+        public void SetPayload(int value)
+        {
+            Payload = JsonSerializer.SerializeToElement(value);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="value"></param>
+        public void SetPayload(string value)
+        {
+            Payload = JsonSerializer.SerializeToElement(value);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="value"></param>
+        public void SetPayload(bool value)
+        {
+            Payload = JsonSerializer.SerializeToElement(value);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="jsonString"></param>
+        public void SetPayloadJson(string jsonString)
+        {
+            Payload = JsonDocument.Parse(jsonString).RootElement;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="value"></param>
+        public void SetPayloadJson(JsonElement value)
+        {
+            Payload = value;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="value"></param>
+        public void SetPayload(object value)
+        {
+            SetPayloadJson(JsonSerializer.Serialize(value));
+        }
     }
 }
