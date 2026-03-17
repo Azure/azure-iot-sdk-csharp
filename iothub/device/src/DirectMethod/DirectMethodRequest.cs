@@ -132,7 +132,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </example>
         public byte[] GetPayload()
         {
-            return _payload == null || _payload.Length == 0 ? null : JsonSerializer.Deserialize<byte[]>(_payload, JsonSerializerSettings.Options);
+            return _payload;
         }
     }
 }

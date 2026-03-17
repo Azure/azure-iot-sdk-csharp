@@ -32,19 +32,8 @@ namespace Microsoft.Azure.Devices.Client
         /// The optional direct method payload.
         /// </summary>
         [JsonPropertyName("payload")]
-        public byte[] Payload { get; set; }
+        public JsonElement Payload { get; set; }
 
-        /// <summary>
-        /// An overload of the optional direct method payload to be used in place of a byte array.
-        /// </summary>
-        /// <remarks>
-        /// The payload can be null or primitive type (e.g., string, int/array/list/dictionary/custom type)
-        /// </remarks>
-        public object PayloadAsObject
-        {
-            get => JsonSerializer.Deserialize<object>(Encoding.UTF8.GetString(Payload), JsonSerializerSettings.Options); //TODO hmmm
-            set => Payload = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(value, JsonSerializerSettings.Options));
-        }
         /// <summary>
         /// The request Id for the transport layer.
         /// </summary>

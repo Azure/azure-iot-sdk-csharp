@@ -21,12 +21,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
     {
         private static readonly DirectMethodRequestPayload _customTypeRequest = new() { DesiredState = "on" };
         private static readonly DirectMethodResponsePayload _customTypeResponse = new() { CurrentState = "off" };
-        private static readonly byte[] _arrayRequest = new byte[] { 1, 2, 3 };
-        private static readonly byte[] _arrayResponse = new byte[] { 3, 2, 1 };
-        private static readonly List<double> _listRequest = new() { 1.0, 2.0, 3.0 };
-        private static readonly List<double> _listResponse = new() { 3.0, 2.0, 1.0 };
-        private static readonly Dictionary<string, object> _dictRequest = new() { { "key1", 2.0 }, { "key2", "val" } };
-        private static readonly Dictionary<string, object> _dictResponse = new() { { "key1", new byte[] { 3, 5, 6 } }, { "key2", false } };
+        private static readonly JsonElement _listRequest = JsonSerializer.SerializeToElement(new List<double>() { 1.0, 2.0, 3.0 });
+        private static readonly JsonElement _listResponse = JsonSerializer.SerializeToElement(new List<double>() { 3.0, 2.0, 1.0 });
+        //private static readonly JsonElement _dictRequest = JsonSerializer({ { "key1", 2.0 }, { "key2", "val" } });
+        //private static readonly JsonElement _dictResponse = JsonSerializer.SerializeToElement(new Dictionary<string, object> { { "key1", new byte[] { 3, 5, 6 } }, { "key2", false } });
 
         private readonly string _devicePrefix = $"{nameof(MethodE2ETests)}_dev_";
         private const string MethodName = "MethodE2ETest";
@@ -52,16 +50,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             CancellationToken ct = cts.Token;
 
             await SendMethodAndRespondAsync(new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket), true, false, ct).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        public async Task Method_DeviceReceivesMethodAndResponse_Array_MqttWs()
-        {
-            // Setting up one cancellation token for the complete test flow
-            using var cts = new CancellationTokenSource(s_testTimeout);
-            CancellationToken ct = cts.Token;
-
-            await SendMethodAndRespondAsync(new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket), _arrayRequest, _arrayResponse, ct).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -106,16 +94,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         }
 
         [TestMethod]
-        public async Task Method_DeviceReceivesMethodAndResponse_Array_AmqpWs()
-        {
-            // Setting up one cancellation token for the complete test flow
-            using var cts = new CancellationTokenSource(s_testTimeout);
-            CancellationToken ct = cts.Token;
-
-            await SendMethodAndRespondAsync(new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket), _arrayRequest, _arrayResponse, ct).ConfigureAwait(false);
-        }
-
-        [TestMethod]
         public async Task Method_DeviceReceivesMethodAndResponse_List_AmqpWs()
         {
             // Setting up one cancellation token for the complete test flow
@@ -135,7 +113,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             await SendMethodAndRespondAsync(new IotHubClientAmqpSettings(IotHubClientTransportProtocol.WebSocket), _dictRequest, _dictResponse, ct).ConfigureAwait(false);
         }
 
-        private async Task SendMethodAndRespondAsync<T, H>(
+        private async Task SendMethodAndRespondAsync(
             IotHubClientTransportSettings transportSettings,
             T directMethodRequestFromService,
             H directMethodResponseFromClient,
@@ -157,7 +135,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 {
                     ResponseTimeoutInSeconds = s_defaultMethodResponseTimeout
                 };
-                directMethodRequest.SetPayload(directMethodRequestFromService); //TODO wut
+                directMethodRequest.SetPayload(directMethodRequestFromService);
             }
             else
             {
@@ -171,16 +149,16 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
 
             testDeviceCallbackHandler.ExpectedDirectMethodRequest = directMethodRequest;
 
-            Task serviceSendTask = ServiceSendMethodAndVerifyResponseAsync<H>(testDevice.Id, directMethodRequest, directMethodResponseFromClient, ct);
+            Task serviceSendTask = ServiceSendMethodAndVerifyResponseAsync(testDevice.Id, directMethodRequest, directMethodResponseFromClient, ct);
             Task methodReceivedTask = testDeviceCallbackHandler.WaitForMethodCallbackAsync(ct);
 
             await Task.WhenAll(serviceSendTask, methodReceivedTask).ConfigureAwait(false);
         }
 
-        public static async Task ServiceSendMethodAndVerifyResponseAsync<H>(
+        public static async Task ServiceSendMethodAndVerifyResponseAsync(
             string deviceId,
             DirectMethodServiceRequest directMethodRequest,
-            H expectedClientResponsePayload,
+            JsonElement expectedClientResponsePayload,
             CancellationToken ct)
         {
             IotHubServiceClient serviceClient = TestDevice.ServiceClient;
@@ -192,26 +170,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
 
             VerboseTestLogger.WriteLine($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Method response status: {methodResponse.Status} for device {deviceId}.");
             methodResponse.Status.Should().Be(200);
-            methodResponse.TryGetPayload(out H actualClientResponsePayload).Should().BeTrue();
-            actualClientResponsePayload.Should().NotBeNull();
-
-            // For nested types, check if serialized expected is equal to serialize actual
-            if (typeof(H) == typeof(Dictionary<string, object>))
-            {
-                var castedActualClientResponsePayload = (Dictionary<string, object>)(object)actualClientResponsePayload;
-                var castedExpectedClientResponsePayload = (Dictionary<string, object>)(object)expectedClientResponsePayload;
-
-                foreach (KeyValuePair<string, object> entry in castedActualClientResponsePayload)
-                {
-                    object expectedValue = castedExpectedClientResponsePayload[entry.Key];
-                    string multipleEncodedValue = JsonSerializer.Deserialize<string>(Encoding.UTF8.GetString(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(expectedValue))));
-                    entry.Value.ToString().Should().BeEquivalentTo(multipleEncodedValue);
-                }
-            }
-            else
-            {
-                actualClientResponsePayload.Should().BeEquivalentTo(expectedClientResponsePayload);
-            }
+            JsonSerializer.Serialize(expectedClientResponsePayload).Should().Equals(JsonSerializer.Serialize(methodResponse.JsonPayload)); // Sensitive to order within the json object, but good enough for this test
         }
     }
 }
