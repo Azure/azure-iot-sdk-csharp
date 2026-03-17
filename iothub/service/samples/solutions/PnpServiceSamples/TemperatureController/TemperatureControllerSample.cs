@@ -63,9 +63,10 @@ namespace Microsoft.Azure.Devices.Samples
             string commandName = $"{Thermostat1Component}*{getMaxMinReportCommandName}";
             var commandInvocation = new DirectMethodServiceRequest(commandName)
             { 
-                ResponseTimeoutInSeconds = TimeSpan.FromSeconds(30),
-                Payload = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(DateTimeOffset.Now.Subtract(TimeSpan.FromMinutes(2)))),
+                ResponseTimeoutInSeconds = 30,
             };
+
+            commandInvocation.SetPayload(DateTimeOffset.Now.Subtract(TimeSpan.FromMinutes(2)));
 
             _logger.LogDebug($"Invoke the {getMaxMinReportCommandName} command on component {Thermostat1Component} " +
                 $"in the {_deviceId} device twin.");
@@ -89,9 +90,10 @@ namespace Microsoft.Azure.Devices.Samples
             const string commandName = "reboot";
             var commandInvocation = new DirectMethodServiceRequest(commandName)
             {
-                ResponseTimeoutInSeconds = TimeSpan.FromSeconds(30),
-                Payload = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(3)),
+                ResponseTimeoutInSeconds = 30,
             };
+
+            commandInvocation.SetPayload(3);
 
             _logger.LogDebug($"Invoke the {commandName} command on the {_deviceId} device twin." +
                 $"\nThis will set the \"targetTemperature\" on \"Thermostat\" component to 0.");

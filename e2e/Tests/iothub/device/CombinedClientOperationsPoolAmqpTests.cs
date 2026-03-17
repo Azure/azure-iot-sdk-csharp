@@ -27,7 +27,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         private static readonly DirectMethodResponsePayload s_deviceResponsePayload = new() { CurrentState = "on" };
         private static readonly DirectMethodRequestPayload s_serviceRequestPayload = new() { DesiredState = "off" };
 
-        private static readonly TimeSpan s_defaultMethodResponseTimeout = TimeSpan.FromSeconds(30);
+        private static readonly int s_defaultMethodResponseTimeout = 30;
 
         [DataTestMethod]
         [DataRow(IotHubClientTransportProtocol.Tcp)]
@@ -106,9 +106,10 @@ namespace Microsoft.Azure.Devices.E2ETests
                 VerboseTestLogger.WriteLine($"{nameof(CombinedClientOperationsPoolAmqpTests)}: Operation 3: Direct methods test for device={testDevice.Id}");
                 var directMethodRequest = new DirectMethodServiceRequest(MethodName)
                 {
-                    Payload = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(s_serviceRequestPayload)),
                     ResponseTimeoutInSeconds = s_defaultMethodResponseTimeout,
                 };
+                directMethodRequest.SetPayload(s_serviceRequestPayload);
+
                 testDeviceCallbackHandler.ExpectedDirectMethodRequest = directMethodRequest;
 
                 Task serviceInvokeMethod = MethodE2ETests.ServiceSendMethodAndVerifyResponseAsync(testDevice.Id, null, directMethodRequest, s_deviceResponsePayload, ct);

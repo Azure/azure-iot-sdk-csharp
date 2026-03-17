@@ -31,7 +31,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         private readonly string _devicePrefix = $"{nameof(MethodE2ETests)}_dev_";
         private const string MethodName = "MethodE2ETest";
 
-        private static readonly TimeSpan s_defaultMethodResponseTimeout = TimeSpan.FromSeconds(30);
+        private static readonly int s_defaultMethodResponseTimeout = 30;
 
         // The deserialization code is the same irrespective of if the client was initialized over TCP or WS.
         [TestMethod]
@@ -155,17 +155,18 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             {
                 directMethodRequest = new DirectMethodServiceRequest(MethodName)
                 {
-                    ResponseTimeoutInSeconds = s_defaultMethodResponseTimeout,
-                    Payload = (byte[])(object)directMethodRequestFromService,
+                    ResponseTimeoutInSeconds = s_defaultMethodResponseTimeout
                 };
+                directMethodRequest.SetPayload(directMethodRequestFromService); //TODO wut
             }
             else
             {
                 directMethodRequest = new DirectMethodServiceRequest(MethodName)
                 {
                     ResponseTimeoutInSeconds = s_defaultMethodResponseTimeout,
-                    Payload = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(directMethodRequestFromService)),
                 };
+
+                directMethodRequest.SetPayload(directMethodRequestFromService);
             }
 
             testDeviceCallbackHandler.ExpectedDirectMethodRequest = directMethodRequest;

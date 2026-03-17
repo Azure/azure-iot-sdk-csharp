@@ -91,12 +91,12 @@ namespace Microsoft.Azure.Devices.Client
             {
                 if (typeof(T) == typeof(byte[]))
                 {
-                    payload = JsonSerializer.Deserialize<T>(_payload);
+                    payload = JsonSerializer.Deserialize<T>(_payload, JsonSerializerSettings.Options);
                     return true;
                 }
 
                 // If not deserializing into byte[], an extra layer of decoding is needed
-                payload = JsonSerializer.Deserialize<T>(Encoding.UTF8.GetString(JsonSerializer.Deserialize<byte[]>(_payload)), JsonSerializerSettings.Options);
+                payload = JsonSerializer.Deserialize<T>(Encoding.UTF8.GetString(JsonSerializer.Deserialize<byte[]>(_payload, JsonSerializerSettings.Options)), JsonSerializerSettings.Options);
                 return true;
             }
             catch (Exception ex)
@@ -132,7 +132,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </example>
         public byte[] GetPayload()
         {
-            return _payload == null || _payload.Length == 0 ? null : JsonSerializer.Deserialize<byte[]>(_payload);
+            return _payload == null || _payload.Length == 0 ? null : JsonSerializer.Deserialize<byte[]>(_payload, JsonSerializerSettings.Options);
         }
     }
 }

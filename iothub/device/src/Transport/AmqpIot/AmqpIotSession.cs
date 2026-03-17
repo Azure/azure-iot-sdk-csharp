@@ -350,7 +350,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                 var receivingLink = new ReceivingAmqpLink(amqpLinkSettings);
                 receivingLink.AttachTo(amqpSession);
                 await receivingLink.OpenAsync(cancellationToken).ConfigureAwait(false);
-                return new AmqpIotReceivingLink(receivingLink, additionalClientInformation.PayloadConvention);
+                return new AmqpIotReceivingLink(receivingLink);
             }
             catch (Exception ex) when (!Fx.IsFatal(ex))
             {

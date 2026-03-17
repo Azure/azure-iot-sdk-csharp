@@ -47,21 +47,22 @@ namespace Microsoft.Azure.Devices.Tests.DirectMethod
         public void DirectMethodServiceRequest_ConnectionResponseTimeout()
         {
             // arrange
-            var expectedTimeout = TimeSpan.FromSeconds(1);
+            var expectedTimeout = 1;
             var dcmr = new DirectMethodServiceRequest("setTelemetryInterval")
             {
                 ConnectTimeoutInSeconds = expectedTimeout,
                 ResponseTimeoutInSeconds = expectedTimeout,
-                Payload = Encoding.UTF8.GetBytes("test")
             };
+
+            dcmr.SetPayload("test");
 
             // act + assert
             dcmr.ConnectTimeoutInSeconds.Should().Be(expectedTimeout);
             dcmr.ResponseTimeoutInSeconds.Should().Be(expectedTimeout);
-            Encoding.UTF8.GetString(dcmr.Payload).Should().Be("test");
+            dcmr.Payload!.Value.GetString().Should().Be("test");
 
             dcmr.ResponseTimeoutInSeconds.Should().Be(1);
-            dcmr.ConnectionTimeoutInSeconds.Should().Be(1);
+            dcmr.ConnectTimeoutInSeconds.Should().Be(1);
         }
 
         [TestMethod]
@@ -69,23 +70,19 @@ namespace Microsoft.Azure.Devices.Tests.DirectMethod
         {
             // arrange
             var expectedTimeout = TimeSpan.FromSeconds(1);
-            var dcmr = new DirectMethodServiceRequest("123")
-            {
-                Payload = Encoding.UTF8.GetBytes("test")
-            };
-
+            var dcmr = new DirectMethodServiceRequest("123");
+            dcmr.SetPayload("test");
             dcmr.ResponseTimeoutInSeconds.Should().Be(null);
-            dcmr.ConnectionTimeoutInSeconds.Should().Be(null);
+            dcmr.ConnectTimeoutInSeconds.Should().Be(null);
         }
 
         [TestMethod]
         public void DirectMethodServiceRequest_SerializesCorrectly()
         {
             // arrange
-            var directMethodServiceRequest = new DirectMethodServiceRequest(JsonSerializer.Serialize("testMethod"))
-            {
-                Payload = Encoding.UTF8.GetBytes(JsonSerializer.Serialize("testPayload"))
-            };
+            var directMethodServiceRequest = new DirectMethodServiceRequest(JsonSerializer.Serialize("testMethod"));
+
+            directMethodServiceRequest.SetPayload("testPayload");
 
             // act
             string serializedDirectMethodServiceRequest = JsonSerializer.Serialize(directMethodServiceRequest);

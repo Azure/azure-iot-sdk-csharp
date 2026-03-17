@@ -111,7 +111,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
         private readonly string _moduleId;
         private readonly string _hostName;
         private readonly string _modelId;
-        private readonly PayloadConvention _payloadConvention;
         private readonly ProductInfo _productInfo;
         private readonly IotHubClientMqttSettings _mqttTransportSettings;
         private readonly IotHubConnectionCredentials _connectionCredentials;
@@ -177,7 +176,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             _modelId = context.ModelId;
             _productInfo = context.ProductInfo;
-            _payloadConvention = context.PayloadConvention;
 
             var mqttFactory = new MqttClientFactory(new MqttLogger());
             _mqttClient = mqttFactory.CreateMqttClient();
@@ -1080,14 +1078,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return Task.CompletedTask;
         }
 
-        private IncomingMessage ProcessC2DMessage(MqttApplicationMessageReceivedEventArgs receivedEventArgs)
+        private static IncomingMessage ProcessC2DMessage(MqttApplicationMessageReceivedEventArgs receivedEventArgs)
         {
             byte[] payload = receivedEventArgs.ApplicationMessage.Payload.ToArray();
 
-            var receivedCloudToDeviceMessage = new IncomingMessage(payload)
-            {
-                PayloadConvention = _payloadConvention,
-            };
+            var receivedCloudToDeviceMessage = new IncomingMessage(payload);
 
             PopulateMessagePropertiesFromMqttMessage(receivedCloudToDeviceMessage, receivedEventArgs.ApplicationMessage);
 
@@ -1177,7 +1172,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             var methodRequest = new DirectMethodRequest(methodName, payload)
             {
-                PayloadConvention = _payloadConvention,
                 RequestId = requestId,
             };
 
@@ -1190,12 +1184,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             // This message is always QoS 0, so no ack will be sent.
             receivedEventArgs.AutoAcknowledge = true;
-
-            Dictionary<string, object> desiredPropertyPatchDictionary = DefaultPayloadConvention.Instance.GetObject<Dictionary<string, object>>(receivedEventArgs.ApplicationMessage.Payload.ToArray());
-            var desiredPropertyPatch = new DesiredProperties(desiredPropertyPatchDictionary)
-            {
-                PayloadConvention = _payloadConvention,
-            };
+            Dictionary<string, object> desiredPropertyPatchDictionary = JsonSerializer.Deserialize<Dictionary<string, object>>(receivedEventArgs.ApplicationMessage.Payload.ToArray(), JsonSerializerSettings.Options);
+            var desiredPropertyPatch = new DesiredProperties(desiredPropertyPatchDictionary);
 
             _onDesiredStatePatchListener.Invoke(desiredPropertyPatch);
         }
@@ -1225,7 +1215,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         string errorResponseString = Encoding.UTF8.GetString(payloadBytes);
                         try
                         {
-                            return DefaultPayloadConvention.Instance.GetObject<IotHubClientErrorResponseMessage>(errorResponseString);
+                            return JsonSerializer.Deserialize<IotHubClientErrorResponseMessage>(errorResponseString, JsonSerializerSettings.Options);
                         }
                         catch (JsonException ex)
                         {
@@ -1274,17 +1264,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
                                 // Use the encoder that has been agreed to between the client and service to decode the byte[] response
                                 // The response is deserialized into an SDK-defined type based on service-defined NewtonSoft.Json-based json property name.
                                 // For this reason, we use Newtonsoft.Json serializer for this deserialization.
-                                TwinDocument clientTwinProperties = DefaultPayloadConvention.Instance.GetObject<TwinDocument>(payloadBytes);
+                                TwinDocument clientTwinProperties = JsonSerializer.Deserialize<TwinDocument>(payloadBytes, JsonSerializerSettings.Options);
 
                                 getTwinResponse.Twin = new TwinProperties(
-                                    new DesiredProperties(clientTwinProperties.Desired)
-                                    {
-                                        PayloadConvention = _payloadConvention,
-                                    },
-                                    new ReportedProperties(clientTwinProperties.Reported, true)
-                                    {
-                                        PayloadConvention = _payloadConvention,
-                                    });
+                                    new DesiredProperties(clientTwinProperties.Desired),
+                                    new ReportedProperties(clientTwinProperties.Reported, true));
 
                                 twinOperation.TwinResponseTask.TrySetResult(getTwinResponse);
                             }
@@ -1309,10 +1293,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             receivedEventArgs.AutoAcknowledge = true;
 
-            var iotHubMessage = new IncomingMessage(receivedEventArgs.ApplicationMessage.Payload.ToArray())
-            {
-                PayloadConvention = _payloadConvention,
-            };
+            var iotHubMessage = new IncomingMessage(receivedEventArgs.ApplicationMessage.Payload.ToArray());
 
             // The MqttTopic is in the format - devices/deviceId/modules/moduleId/inputs/inputName
             // We try to get the endpoint from the topic, if the topic is in the above format.

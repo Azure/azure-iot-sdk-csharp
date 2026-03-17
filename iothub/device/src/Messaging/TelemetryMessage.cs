@@ -249,7 +249,7 @@ namespace Microsoft.Azure.Devices.Client
         {
             return Payload is byte[] payloadAsByteArray
                 ? payloadAsByteArray
-                : JsonSerializer.SerializeToUtf8Bytes(Payload);
+                : JsonSerializer.SerializeToUtf8Bytes(Payload, JsonSerializerSettings.Options);
         }
 
         private T GetSystemProperty<T>(string key)

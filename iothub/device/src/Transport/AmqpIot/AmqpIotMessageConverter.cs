@@ -29,7 +29,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
         #region AmqpMessage <--> Message
 
-        internal static IncomingMessage AmqpMessageToIncomingMessage(AmqpMessage amqpMessage, PayloadConvention payloadConvention)
+        internal static IncomingMessage AmqpMessageToIncomingMessage(AmqpMessage amqpMessage)
         {
             Argument.AssertNotNull(amqpMessage, nameof(amqpMessage));
 
@@ -38,10 +38,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             {
                 amqpMessage.BodyStream.CopyTo(ms);
 
-                var message = new IncomingMessage(ms.ToArray())
-                {
-                    PayloadConvention = payloadConvention,
-                };
+                var message = new IncomingMessage(ms.ToArray());
 
                 UpdateMessageHeaderAndProperties(amqpMessage, message);
 
@@ -240,7 +237,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
         /// <summary>
         /// Copies the properties from the AMQP message to the MethodRequest instance.
         /// </summary>
-        internal static DirectMethodRequest ConstructMethodRequestFromAmqpMessage(AmqpMessage amqpMessage, PayloadConvention payloadConvention)
+        internal static DirectMethodRequest ConstructMethodRequestFromAmqpMessage(AmqpMessage amqpMessage)
         {
             Argument.AssertNotNull(amqpMessage, nameof(amqpMessage));
 
@@ -262,7 +259,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                 amqpMessage.BodyStream.CopyTo(ms);
                 return new DirectMethodRequest(methodName, ms.ToArray())
                 {
-                    PayloadConvention = payloadConvention,
                     RequestId = methodRequestId,
                 };
             }

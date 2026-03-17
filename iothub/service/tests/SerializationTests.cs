@@ -218,11 +218,11 @@ namespace Microsoft.Azure.Devices.Tests
         public void CloudToDeviceMethodScheduledJob_JsonParse_Ok()
         {
             // arrange - act
+            var directMethod = new DirectMethodServiceRequest("testMethod");
+            directMethod.SetPayload("testPayload");
+
             var cloudToDeviceMethodScheduledJob = new CloudToDeviceMethodScheduledJob(
-                new DirectMethodServiceRequest("testMethod")
-                {
-                    Payload = Encoding.UTF8.GetBytes(JsonSerializer.Serialize("testPayload"))
-                }
+                
             );
 
             string cloudToDeviceMethodScheduledJobSerialized = JsonSerializer.Serialize(cloudToDeviceMethodScheduledJob);

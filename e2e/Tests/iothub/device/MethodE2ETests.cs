@@ -29,7 +29,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         private readonly string _modulePrefix = $"{nameof(MethodE2ETests)}_mod_";
         private const string MethodName = "MethodE2ETest";
 
-        private static readonly TimeSpan s_defaultMethodResponseTimeout = TimeSpan.FromSeconds(30);
+        private static readonly int s_defaultMethodResponseTimeout = 30;
 
         [DataTestMethod]
         [DataRow(IotHubClientTransportProtocol.Tcp)]
@@ -332,9 +332,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
 
             var directMethodRequest = new DirectMethodServiceRequest(MethodName)
             {
-                Payload = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(s_serviceRequestPayload)),
                 ResponseTimeoutInSeconds = s_defaultMethodResponseTimeout,
             };
+            directMethodRequest.SetPayload(s_serviceRequestPayload);
+
             testDeviceCallbackHandler.ExpectedDirectMethodRequest = directMethodRequest;
 
             Task methodReceivedTask = testDeviceCallbackHandler.WaitForMethodCallbackAsync(ct);
@@ -364,9 +365,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
 
             var directMethodRequest = new DirectMethodServiceRequest(MethodName)
             {
-                Payload = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(s_serviceRequestPayload)),
                 ResponseTimeoutInSeconds = s_defaultMethodResponseTimeout,
             };
+
+            directMethodRequest.SetPayload(s_serviceRequestPayload);
+
             testDeviceCallbackHandler.ExpectedDirectMethodRequest = directMethodRequest;
 
             Task methodReceivedTask = testDeviceCallbackHandler.WaitForMethodCallbackAsync(ct);
@@ -406,9 +409,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
 
             var directMethodRequest = new DirectMethodServiceRequest(MethodName)
             {
-                Payload = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(s_serviceRequestPayload)),
                 ResponseTimeoutInSeconds = s_defaultMethodResponseTimeout,
             };
+
+            directMethodRequest.SetPayload(s_serviceRequestPayload);
+
             testModuleCallbackHandler.ExpectedDirectMethodRequest = directMethodRequest;
 
             Task methodReceivedTask = testModuleCallbackHandler.WaitForMethodCallbackAsync(ct);

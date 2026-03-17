@@ -61,11 +61,6 @@ namespace Microsoft.Azure.Devices.Client
         public long Version { get; private protected set; }
 
         /// <summary>
-        /// The payload convention that defines a specific serializer as well as a specific content encoding for the payload.
-        /// </summary>
-        protected internal PayloadConvention PayloadConvention { get; set; }
-
-        /// <summary>
         /// Gets the value associated with the <paramref name="propertyKey"/> in the reported property collection.
         /// </summary>
         /// <typeparam name="T">The type to cast the object to.</typeparam>
@@ -79,7 +74,7 @@ namespace Microsoft.Azure.Devices.Client
 
             if (_properties.TryGetValue(propertyKey, out object value))
             {
-                if (ObjectConversionHelper.TryCastOrConvert<T>(value, PayloadConvention, out propertyValue))
+                if (ObjectConversionHelper.TryCastOrConvert<T>(value, out propertyValue))
                 {
                     return true;
                 }
@@ -93,7 +88,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         public string GetSerializedString()
         {
-            return DefaultPayloadConvention.Serialize(_properties);
+            return JsonSerializer.Serialize(_properties, JsonSerializerSettings.Options);
         }
 
         /// <inheritdoc/>

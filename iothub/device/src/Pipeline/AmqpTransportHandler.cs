@@ -54,9 +54,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 ProductInfo = context.ProductInfo,
                 ModelId = context.ModelId,
-                PayloadConvention = context.PayloadConvention,
             };
-            _payloadConvention = context.PayloadConvention;
 
             _connectionCredentials = context.IotHubConnectionCredentials;
             _amqpUnit = AmqpUnitManager.GetInstance().CreateAmqpUnit(
@@ -382,17 +380,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 {
                     // The response here is deserialized into an SDK-defined type based on service-defined NewtonSoft.Json-based json property name.
                     // For this reason, we use NewtonSoft Json serializer for this deserialization.
-                    TwinDocument clientTwinProperties = DefaultPayloadConvention.Instance.GetObject<TwinDocument>(responseFromService.BodyStream);
+                    TwinDocument clientTwinProperties = JsonSerializer.Deserialize<TwinDocument>(responseFromService.BodyStream, JsonSerializerSettings.Options);
 
-                    var twinDesiredProperties = new DesiredProperties(clientTwinProperties.Desired)
-                    {
-                        PayloadConvention = _payloadConvention,
-                    };
+                    var twinDesiredProperties = new DesiredProperties(clientTwinProperties.Desired);
 
-                    var twinReportedProperties = new ReportedProperties(clientTwinProperties.Reported, true)
-                    {
-                        PayloadConvention = _payloadConvention,
-                    };
+                    var twinReportedProperties = new ReportedProperties(clientTwinProperties.Reported, true);
 
                     return new TwinProperties(twinDesiredProperties, twinReportedProperties);
                 }
@@ -483,11 +475,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
             if (correlationId == null)
             {
                 // This is desired property updates, so call the callback with DesiredPropertyCollection.
-                Dictionary<string, object> desiredPropertyPatchDictionary = DefaultPayloadConvention.Instance.GetObject<Dictionary<string, object>>(responseFromService.BodyStream);
-                var desiredPropertyPatch = new DesiredProperties(desiredPropertyPatchDictionary)
-                {
-                    PayloadConvention = _payloadConvention,
-                };
+                Dictionary<string, object> desiredPropertyPatchDictionary = JsonSerializer.Deserialize<Dictionary<string, object>>(responseFromService.BodyStream, JsonSerializerSettings.Options);
+                var desiredPropertyPatch = new DesiredProperties(desiredPropertyPatchDictionary);
 
                 _onDesiredStatePatchListener.Invoke(desiredPropertyPatch);
             }

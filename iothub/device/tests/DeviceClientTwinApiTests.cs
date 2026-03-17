@@ -100,10 +100,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
         public void IotHubDeviceClient_Verify_GetTwinResponse()
         {
             // arrange
-            var reported = new ReportedProperties()
-            {
-                PayloadConvention = DefaultPayloadConvention.Instance,
-            };
+            var reported = new ReportedProperties();
             reported["$version"] = "1";
             reported.Add("key", "value");
             var desired = new DesiredProperties(new Dictionary<string, object>() { { "$version", "1" }, { "id", "1234" } });
@@ -176,10 +173,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
             var innerHandler = new Mock<IDelegatingHandler>();
             await using var client = new IotHubDeviceClient(s_fakeConnectionString);
             client.InnerHandler = innerHandler.Object;
-            var myPatch = new DesiredProperties(new Dictionary<string, object> { { "key", "value" }, { "$version", 1 } })
-            {
-                PayloadConvention = DefaultPayloadConvention.Instance,
-            };
+            var myPatch = new DesiredProperties(new Dictionary<string, object> { { "key", "value" }, { "$version", 1 } });
 
             int callCount = 0;
             DesiredProperties receivedPatch = null;
@@ -206,10 +200,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
             var innerHandler = new Mock<IDelegatingHandler>();
             await using var client = new IotHubDeviceClient(s_fakeConnectionString);
             client.InnerHandler = innerHandler.Object;
-            var myPatch = new DesiredProperties(new Dictionary<string, object> { { "key", "value" }, { "$version", 1 } })
-            {
-                PayloadConvention = DefaultPayloadConvention.Instance,
-            };
+            var myPatch = new DesiredProperties(new Dictionary<string, object> { { "key", "value" }, { "$version", 1 } });
 
             int callCount = 0;
             await client.SetDesiredPropertyUpdateCallbackAsync(null).ConfigureAwait(false);

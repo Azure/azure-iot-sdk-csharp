@@ -101,6 +101,15 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="value"></param>
+        public void SetPayload(DateTimeOffset value)
+        { 
+            Payload = JsonSerializer.SerializeToElement(value);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="jsonString"></param>
         public void SetPayloadJson(string jsonString)
         {

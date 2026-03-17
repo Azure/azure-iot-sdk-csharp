@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text.Json;
 
 namespace Microsoft.Azure.Devices.Client
 {
@@ -57,7 +58,7 @@ namespace Microsoft.Azure.Devices.Client
 
         internal byte[] GetObjectBytes()
         {
-            return PayloadConvention.GetObjectBytes(_properties);
+            return JsonSerializer.SerializeToUtf8Bytes(_properties, JsonSerializerSettings.Options);
         }
     }
 }

@@ -48,9 +48,10 @@ namespace Microsoft.Azure.Devices.Samples.InvokeDeviceMethod
         {
             var methodInvocation = new DirectMethodServiceRequest("SetTelemetryInterval")
             {
-                Payload = Encoding.UTF8.GetBytes("10"),
-                ResponseTimeoutInSeconds = TimeSpan.FromSeconds(30),
+                ResponseTimeoutInSeconds = 30,
             };
+
+            methodInvocation.SetPayload(10);
 
             Console.WriteLine($"Invoking direct method for device: {deviceId}");
 

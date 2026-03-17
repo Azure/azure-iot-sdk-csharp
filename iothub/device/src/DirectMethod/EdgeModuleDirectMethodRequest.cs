@@ -136,7 +136,7 @@ namespace Microsoft.Azure.Devices.Client
 
             try
             {
-                payload = JsonSerializer.Deserialize<T>(Payload);
+                payload = JsonSerializer.Deserialize<T>(Payload, JsonSerializerSettings.Options);
                 return true;
             }
             catch (Exception ex) when (Logging.IsEnabled)

@@ -101,7 +101,6 @@ namespace Microsoft.Azure.Devices.Client.Tests
                 MessageSchema = "schema",
                 ContentType = "type",
                 ContentEncoding = "encoding",
-                PayloadConvention = DefaultPayloadConvention.Instance,
             };
 
             // assert
@@ -118,7 +117,6 @@ namespace Microsoft.Azure.Devices.Client.Tests
             testMessage.ContentType.Should().Be("type");
             testMessage.ContentEncoding.Should().Be("encoding");
             testMessage.Properties.Should().NotBeNull();
-            testMessage.PayloadConvention.Should().Be(DefaultPayloadConvention.Instance);
         }
     }
 }

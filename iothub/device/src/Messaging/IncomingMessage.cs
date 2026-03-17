@@ -180,7 +180,7 @@ namespace Microsoft.Azure.Devices.Client
 
             try
             {
-                payload = JsonSerializer.Deserialize<T>(_payload);
+                payload = JsonSerializer.Deserialize<T>(_payload, JsonSerializerSettings.Options);
 
                 return true;
             }
