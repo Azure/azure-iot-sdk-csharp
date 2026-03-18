@@ -10,52 +10,24 @@ namespace Microsoft.Azure.Devices
     /// </summary>
     public sealed class AuthenticationMechanism
     {
-        private SymmetricKey _symmetricKey;
-        private X509Thumbprint _x509Thumbprint;
-
         /// <summary>
         /// Default constructor.
         /// </summary>
         public AuthenticationMechanism()
         {
-            SymmetricKey = new SymmetricKey();
-            X509Thumbprint = new X509Thumbprint();
-            Type = ClientAuthenticationType.Sas;
         }
 
         /// <summary>
         /// Gets or sets the symmetric key used for authentication.
         /// </summary>
         [JsonPropertyName("symmetricKey")]
-        public SymmetricKey SymmetricKey
-        {
-            get => _symmetricKey;
-            set
-            {
-                _symmetricKey = value;
-                if (value != null)
-                {
-                    Type = ClientAuthenticationType.Sas;
-                }
-            }
-        }
+        public SymmetricKey SymmetricKey { get; set; }
 
         /// <summary>
         /// Gets or sets the X509 client certificate thumbprint.
         /// </summary>
         [JsonPropertyName("x509Thumbprint")]
-        public X509Thumbprint X509Thumbprint
-        {
-            get => _x509Thumbprint;
-            set
-            {
-                _x509Thumbprint = value;
-                if (value != null)
-                {
-                    Type = ClientAuthenticationType.SelfSigned;
-                }
-            }
-        }
+        public X509Thumbprint X509Thumbprint { get; set; }
 
         /// <summary>
         /// Gets or sets the authentication type.
