@@ -114,7 +114,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                     async (methodRequest) =>
                     {
                         // force a timeout
-                        await Task.Delay(responseTimeout + responseTimeout).ConfigureAwait(false);
+                        await Task.Delay(TimeSpan.FromSeconds(responseTimeout + responseTimeout)).ConfigureAwait(false);
                         var response = new DirectMethodResponse(200);
                         return response;
                     })

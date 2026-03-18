@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -40,7 +41,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             twin.DeviceId.Should().Be(twinUpd.DeviceId, "Device ID changed");
             twinUpd.Tags.Should().NotBeNull("Twin.Tags is null");
             twinUpd.Tags.ContainsKey(tagName).Should().BeTrue("Twin doesn't contain the tag");
-            twin.Tags[tagName].Should().Be(twinUpd.Tags[tagName], "Tag value changed");
+            twin.Tags[tagName].Should().Be(((JsonElement)twinUpd.Tags[tagName]).GetString(), "Tag value changed");
         }
 
         [TestMethod]
@@ -64,7 +65,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             twin.DeviceId.Should().Be(twinUpd.DeviceId, "Device ID changed");
             twinUpd.Tags.Should().NotBeNull("Twin.Tags is null");
             twinUpd.Tags.ContainsKey(tagName).Should().BeTrue("Twin doesn't contain the tag");
-            twin.Tags[tagName].Should().Be(twinUpd.Tags[tagName], "Tag value changed");
+            twin.Tags[tagName].Should().Be(((JsonElement)twinUpd.Tags[tagName]).GetString(), "Tag value changed");
         }
 
         [TestMethod]
@@ -93,7 +94,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             twin.ModuleId.Should().Be(twinUpd.ModuleId, "Module ID changed");
             twinUpd.Tags.Should().NotBeNull("Twin.Tags is null");
             twinUpd.Tags.ContainsKey(tagName).Should().BeTrue("Twin doesn't contain the tag");
-            twin.Tags[tagName].Should().Be(twinUpd.Tags[tagName], "Tag value changed");
+            twin.Tags[tagName].Should().Be(((JsonElement)twinUpd.Tags[tagName]).GetString(), "Tag value changed");
         }
 
         [TestMethod]
@@ -125,7 +126,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             twin.ModuleId.Should().Be(twinUpd.ModuleId, "Module ID changed");
             twinUpd.Tags.Should().NotBeNull("Twin.Tags is null");
             twinUpd.Tags.ContainsKey(tagName).Should().BeTrue("Twin doesn't contain the tag");
-            twin.Tags[tagName].Should().Be(twinUpd.Tags[tagName], "Tag value changed");
+            twin.Tags[tagName].Should().Be(((JsonElement)twinUpd.Tags[tagName]).GetString(), "Tag value changed");
         }
 
         private static string ResultErrorsToString(BulkRegistryOperationResult result)
