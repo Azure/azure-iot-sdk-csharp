@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -267,7 +268,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 deviceTwin.Reported.TryGetValue(propName, out string actualValue).Should().BeTrue();
                 actualValue.Should().Be(propValue);
                 deviceTwin.Reported[propName].Should().NotBeNull();
-                deviceTwin.Reported[propName].Should().BeEquivalentTo(propValue);
+                ((JsonElement)deviceTwin.Reported[propName]).GetString().Should().BeEquivalentTo(propValue);
             }
 
             await FaultInjection
