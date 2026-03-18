@@ -54,7 +54,11 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString);
 
-            var twin = new ClientTwin(testDevice.Id);
+            var twin = new ClientTwin(testDevice.Id)
+            {
+                AuthenticationType = testDevice.Device.Authentication.Type,
+            };
+
             twin.Tags[tagName] = tagValue;
 
             BulkRegistryOperationResult result = await serviceClient.Twins.UpdateAsync(new List<ClientTwin> { twin }, false).ConfigureAwait(false);
