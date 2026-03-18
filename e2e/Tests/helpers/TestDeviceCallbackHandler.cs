@@ -68,7 +68,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
         }
 
         // Set a direct method callback that expects a request with payload of type T.
-        internal async Task SetDeviceReceiveMethodAndRespondAsync<T>(byte[] deviceResponsePayload, CancellationToken ct = default)
+        internal async Task SetDeviceReceiveMethodAndRespondAsync(byte[] deviceResponsePayload, CancellationToken ct = default)
         {
             await _deviceClient.SetDirectMethodCallbackAsync(
                 (request) =>

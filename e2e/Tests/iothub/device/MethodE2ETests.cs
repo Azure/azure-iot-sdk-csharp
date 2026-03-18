@@ -328,7 +328,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             await deviceClient.OpenAsync(ct).ConfigureAwait(false);
 
             using var testDeviceCallbackHandler = new TestDeviceCallbackHandler(deviceClient, testDevice.Id);
-            await testDeviceCallbackHandler.SetDeviceReceiveMethodAndRespondAsync<DirectMethodRequestPayload>(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(s_deviceResponsePayload)), ct);
+            await testDeviceCallbackHandler.SetDeviceReceiveMethodAndRespondAsync(JsonSerializer.SerializeToUtf8Bytes(s_deviceResponsePayload), ct);
 
             var directMethodRequest = new DirectMethodServiceRequest(MethodName)
             {
@@ -361,7 +361,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             await deviceClient.OpenAsync(ct).ConfigureAwait(false);
 
             using var testDeviceCallbackHandler = new TestDeviceCallbackHandler(deviceClient, testDevice.Id);
-            await testDeviceCallbackHandler.SetDeviceReceiveMethodAndRespondAsync<DirectMethodRequestPayload>(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(s_deviceResponsePayload)), ct);
+            await testDeviceCallbackHandler.SetDeviceReceiveMethodAndRespondAsync(JsonSerializer.SerializeToUtf8Bytes(s_deviceResponsePayload), ct);
 
             var directMethodRequest = new DirectMethodServiceRequest(MethodName)
             {

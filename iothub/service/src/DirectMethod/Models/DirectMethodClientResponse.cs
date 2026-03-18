@@ -31,9 +31,6 @@ namespace Microsoft.Azure.Devices
         [JsonIgnore]
         public string PayloadAsString => JsonPayload.GetRawText();
 
-        [JsonIgnore]
-        internal byte[] PayloadAsBytes => Encoding.UTF8.GetBytes(PayloadAsString);
-
         /// <summary>
         /// 
         /// </summary>
@@ -63,7 +60,7 @@ namespace Microsoft.Azure.Devices
 
             try
             {
-                value = JsonSerializer.Deserialize<T>(Encoding.UTF8.GetString(PayloadAsBytes), JsonSerializerSettings.Options);
+                value = JsonSerializer.Deserialize<T>(JsonPayload.GetRawText(), JsonSerializerSettings.Options);
                 return true;
             }
             catch (JsonException)

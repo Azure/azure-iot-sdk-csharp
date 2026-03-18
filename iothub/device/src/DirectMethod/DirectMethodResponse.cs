@@ -16,7 +16,6 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Initializes an instance of this class.
         /// </summary>
-        [JsonConstructor]
         public DirectMethodResponse(int status)
         {
             Status = status;
@@ -25,20 +24,70 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The status of direct method response.
         /// </summary>
-        [JsonPropertyName("status")]
         public int Status { get; set; }
 
         /// <summary>
         /// The optional direct method payload.
         /// </summary>
-        [JsonPropertyName("payload")]
-        public JsonElement Payload { get; set; }
+        public byte[] Payload { get; set; }
 
         /// <summary>
         /// The request Id for the transport layer.
         /// </summary>
-        [JsonIgnore]
         public string RequestId { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="value"></param>
+        public void SetPayload(int value)
+        {
+            Payload = JsonSerializer.SerializeToUtf8Bytes(value);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="value"></param>
+        public void SetPayload(bool value)
+        {
+            Payload = JsonSerializer.SerializeToUtf8Bytes(value);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="value"></param>
+        public void SetPayload(string value)
+        {
+            Payload = JsonSerializer.SerializeToUtf8Bytes(value);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public void SetPayloadJson(string jsonString)
+        {
+            Payload = Encoding.UTF8.GetBytes(jsonString);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="jsonElement"></param>
+        public void SetPayload(JsonElement jsonElement)
+        {
+            Payload = Encoding.UTF8.GetBytes(jsonElement.GetRawText());
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="serializableObject"></param>
+        public void SetPayload(object serializableObject)
+        {
+            Payload = JsonSerializer.SerializeToUtf8Bytes(serializableObject);
+        }
 
         /// <summary>
         /// The direct method response payload, deserialized to the specified type.

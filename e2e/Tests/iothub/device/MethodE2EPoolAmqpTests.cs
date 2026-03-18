@@ -58,7 +58,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             async Task InitOperationAsync(TestDevice testDevice, TestDeviceCallbackHandler testDeviceCallbackHandler, CancellationToken ct)
             {
                 VerboseTestLogger.WriteLine($"{nameof(MethodE2EPoolAmqpTests)}: Setting method for device {testDevice.Id}");
-                await testDeviceCallbackHandler.SetDeviceReceiveMethodAndRespondAsync<DirectMethodRequestPayload>(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(s_deviceResponsePayload)), ct).ConfigureAwait(false);
+                await testDeviceCallbackHandler.SetDeviceReceiveMethodAndRespondAsync(JsonSerializer.SerializeToUtf8Bytes(s_deviceResponsePayload), ct).ConfigureAwait(false);
             }
 
             async Task TestOperationAsync(TestDevice testDevice, TestDeviceCallbackHandler testDeviceCallbackHandler, CancellationToken ct)

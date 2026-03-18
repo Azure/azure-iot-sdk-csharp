@@ -104,7 +104,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             async Task InitOperationAsync(TestDevice _, TestDeviceCallbackHandler testDeviceCallbackHandler, CancellationToken ct)
             {
                 await testDeviceCallbackHandler
-                    .SetDeviceReceiveMethodAndRespondAsync<DirectMethodRequestPayload>(
+                    .SetDeviceReceiveMethodAndRespondAsync(
                         Encoding.UTF8.GetBytes(JsonSerializer.Serialize(s_deviceResponsePayload)), ct)
                     .ConfigureAwait(false);
             }

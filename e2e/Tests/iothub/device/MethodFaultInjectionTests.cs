@@ -214,7 +214,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             {
                 await testDevice.DeviceClient.OpenAsync(ct).ConfigureAwait(false);
                 await testDeviceCallbackHandler
-                    .SetDeviceReceiveMethodAndRespondAsync<DirectMethodRequestPayload>(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(s_deviceResponsePayload)), ct)
+                    .SetDeviceReceiveMethodAndRespondAsync(JsonSerializer.SerializeToUtf8Bytes(s_deviceResponsePayload), ct)
                     .ConfigureAwait(false);
             }
 

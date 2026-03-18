@@ -66,7 +66,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                 // Set method handler
                 VerboseTestLogger.WriteLine($"{nameof(CombinedClientOperationsPoolAmqpTests)}: Set direct method {MethodName} for device={testDevice.Id}");
-                Task methodCallbackSet = testDeviceCallbackHandler.SetDeviceReceiveMethodAndRespondAsync<DirectMethodRequestPayload>(
+                Task methodCallbackSet = testDeviceCallbackHandler.SetDeviceReceiveMethodAndRespondAsync(
                     Encoding.UTF8.GetBytes(JsonSerializer.Serialize(s_deviceResponsePayload)), ct);
                 initOperations.Add(methodCallbackSet);
 
