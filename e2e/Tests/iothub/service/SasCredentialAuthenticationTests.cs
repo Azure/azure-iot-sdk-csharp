@@ -63,7 +63,13 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 TestConfiguration.IotHub.GetIotHubHostName(),
                 sasCredential);
 
-            var device = new Device(Guid.NewGuid().ToString());
+            var device = new Device(Guid.NewGuid().ToString())
+            {
+                Authentication = new()
+                {
+                    Type = ClientAuthenticationType.Sas,
+                }
+            };
 
             // act
             try

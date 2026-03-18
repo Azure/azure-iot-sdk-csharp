@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using Azure;
 
@@ -53,7 +54,7 @@ namespace Microsoft.Azure.Devices
         /// Gets and sets the twin tags.
         /// </summary>
         [JsonPropertyName("tags")]
-        public IDictionary<string, object> Tags { get; set; } = new Dictionary<string, object>();
+        public JsonDictionary Tags { get; set; } = new();
 
         /// <summary>
         /// Gets and sets the twin properties.

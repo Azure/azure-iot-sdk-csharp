@@ -25,8 +25,8 @@ namespace Microsoft.Azure.Devices.Client.Tests
                 { "$version", 1 }
             };
 
-            var desired = new DesiredProperties(properties);
-            var reported = new ReportedProperties(properties, false);
+            var desired = new PropertyCollection(properties);
+            var reported = new PropertyCollection(properties, false);
             var twinProperties = new TwinProperties(desired, reported);
 
             // act

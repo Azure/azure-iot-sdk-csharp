@@ -20,7 +20,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 #pragma warning restore CA1852
     {
         protected AmqpUnit _amqpUnit;
-        private readonly Action<DesiredProperties> _onDesiredStatePatchListener;
+        private readonly Action<PropertyCollection> _onDesiredStatePatchListener;
         private readonly object _lock = new();
         private readonly ConcurrentDictionary<string, PendingAmqpTwinOperation> _pendingTwinOperations = new();
 
@@ -382,9 +382,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     // For this reason, we use NewtonSoft Json serializer for this deserialization.
                     TwinDocument clientTwinProperties = JsonSerializer.Deserialize<TwinDocument>(responseFromService.BodyStream, JsonSerializerSettings.Options);
 
-                    var twinDesiredProperties = new DesiredProperties(clientTwinProperties.Desired);
+                    var twinDesiredProperties = new PropertyCollection(clientTwinProperties.Desired);
 
-                    var twinReportedProperties = new ReportedProperties(clientTwinProperties.Reported, true);
+                    var twinReportedProperties = new PropertyCollection(clientTwinProperties.Reported, true);
 
                     return new TwinProperties(twinDesiredProperties, twinReportedProperties);
                 }
@@ -407,7 +407,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
-        public override async Task<long> UpdateReportedPropertiesAsync(ReportedProperties reportedProperties, CancellationToken cancellationToken)
+        public override async Task<long> UpdateReportedPropertiesAsync(PropertyCollection reportedProperties, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, reportedProperties, cancellationToken, nameof(UpdateReportedPropertiesAsync));
@@ -431,7 +431,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         private async Task<AmqpMessage> RoundTripTwinMessageAsync(
             AmqpTwinMessageType amqpTwinMessageType,
-            ReportedProperties reportedProperties,
+            PropertyCollection reportedProperties,
             CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
@@ -476,7 +476,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 // This is desired property updates, so call the callback with DesiredPropertyCollection.
                 Dictionary<string, object> desiredPropertyPatchDictionary = JsonSerializer.Deserialize<Dictionary<string, object>>(responseFromService.BodyStream, JsonSerializerSettings.Options);
-                var desiredPropertyPatch = new DesiredProperties(desiredPropertyPatchDictionary);
+                var desiredPropertyPatch = new PropertyCollection(desiredPropertyPatchDictionary);
 
                 _onDesiredStatePatchListener.Invoke(desiredPropertyPatch);
             }

@@ -236,7 +236,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             TwinProperties twin = await s_deviceClient.GetTwinPropertiesAsync(s_appCancellation.Token);
             _logger.LogInformation($"Device retrieving twin values: {twin.Desired.GetSerializedString()}");
 
-            DesiredProperties desiredProperties = twin.Desired;
+            PropertyCollection desiredProperties = twin.Desired;
             long serverDesiredPropertyVersion = desiredProperties.Version;
 
             // Check if the desired property version is outdated on the local side.
@@ -247,13 +247,13 @@ namespace Microsoft.Azure.Devices.Client.Samples
             }
         }
 
-        private async Task HandleTwinUpdateNotificationsAsync(DesiredProperties twinUpdateRequest)
+        private async Task HandleTwinUpdateNotificationsAsync(PropertyCollection twinUpdateRequest)
         {
             CancellationToken cancellationToken = s_appCancellation.Token;
 
             if (!cancellationToken.IsCancellationRequested)
             {
-                var reportedProperties = new ReportedProperties();
+                var reportedProperties = new PropertyCollection();
 
                 _logger.LogInformation($"Twin property update requested: \n{twinUpdateRequest.GetSerializedString()}");
 

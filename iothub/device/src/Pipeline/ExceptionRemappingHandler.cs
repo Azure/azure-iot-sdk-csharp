@@ -87,7 +87,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return RunWithExceptionRemappingAsync(() => base.RefreshSasTokenAsync(cancellationToken));
         }
 
-        public override Task<long> UpdateReportedPropertiesAsync(ReportedProperties reportedProperties, CancellationToken cancellationToken)
+        public override Task<long> UpdateReportedPropertiesAsync(PropertyCollection reportedProperties, CancellationToken cancellationToken)
         {
             return RunWithExceptionRemappingAsync(() => base.UpdateReportedPropertiesAsync(reportedProperties, cancellationToken));
         }

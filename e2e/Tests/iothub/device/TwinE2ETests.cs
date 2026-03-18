@@ -494,7 +494,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
 
             VerboseTestLogger.WriteLine($"{nameof(Twin_DeviceSetsReportedPropertyAndGetsItBackAsync)}: name={propName}, value={propValue}");
 
-            var props = new ReportedProperties
+            var props = new PropertyCollection
             {
                 [propName] = propValue
             };
@@ -548,7 +548,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
 
             VerboseTestLogger.WriteLine($"{nameof(Twin_DeviceSetsReportedPropertyAndGetsItBackAsync)}: name={propName}, value={propValue}");
 
-            var props = new ReportedProperties
+            var props = new PropertyCollection
             {
                 [propName] = propValue
             };
@@ -731,7 +731,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             await using var deviceClient = new IotHubDeviceClient(testDevice.ConnectionString, options);
             await deviceClient.OpenAsync(ct).ConfigureAwait(false);
 
-            var patch = new ReportedProperties
+            var patch = new PropertyCollection
             {
                 [propName] = propValue
             };
@@ -758,7 +758,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
 
             await deviceClient
                 .UpdateReportedPropertiesAsync(
-                    new ReportedProperties
+                    new PropertyCollection
                     {
                         [propName1] = null
                     },
@@ -770,7 +770,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
 
             await deviceClient
                 .UpdateReportedPropertiesAsync(
-                    new ReportedProperties
+                    new PropertyCollection
                     {
                         [propName1] = new Dictionary<string, object>
                         {

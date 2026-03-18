@@ -124,7 +124,7 @@ namespace Microsoft.Azure.Devices
         /// The JSON document read and written by the solution back end. The tags are not visible to device apps.
         /// </summary>
         [JsonPropertyName("tags")]
-        public IDictionary<string, object> Tags { get; internal set; } = new Dictionary<string, object>();
+        public JsonDictionary Tags { get; internal set; } = new();
 
         /// <summary>
         /// The desired and reported properties for the device or module.

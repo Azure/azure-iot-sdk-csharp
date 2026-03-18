@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <remarks>
         /// This class can be inherited from and set by unit tests for mocking purposes.
         /// </remarks>
-        protected internal TwinProperties(DesiredProperties requestsFromService, ReportedProperties reportedByClient)
+        protected internal TwinProperties(PropertyCollection requestsFromService, PropertyCollection reportedByClient)
         {
             Desired = requestsFromService;
             Reported = reportedByClient;
@@ -26,12 +26,12 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The collection of desired property update requests received from service.
         /// </summary>
-        public DesiredProperties Desired { get; }
+        public PropertyCollection Desired { get; }
 
         /// <summary>
         /// The collection of twin properties reported by the client.
         /// </summary>
-        public ReportedProperties Reported { get; }
+        public PropertyCollection Reported { get; }
 
         /// <summary>
         /// Gets the Twin as a JSON string

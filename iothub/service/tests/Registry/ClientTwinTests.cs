@@ -74,7 +74,7 @@ namespace Microsoft.Azure.Devices.Tests
             const string deviceId = nameof(deviceId);
             const string modelId = nameof(modelId);
             const string moduleId = nameof(moduleId);
-            var tags = new Dictionary<string, object>
+            var tags = new JsonDictionary()
             {
                 { "key1", "value1" },
                 { "key2", 2 },

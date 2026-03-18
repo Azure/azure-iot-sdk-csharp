@@ -95,7 +95,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         private readonly MqttQualityOfServiceLevel _receivingQualityOfService;
 
         private readonly Func<DirectMethodRequest, Task> _methodListener;
-        private readonly Action<DesiredProperties> _onDesiredStatePatchListener;
+        private readonly Action<PropertyCollection> _onDesiredStatePatchListener;
         private readonly Func<IncomingMessage, Task<MessageAcknowledgement>> _messageReceivedListener;
 
         private readonly ConcurrentDictionary<string, PendingMqttTwinOperation> _pendingTwinOperations = new();
@@ -807,7 +807,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
-        public override async Task<long> UpdateReportedPropertiesAsync(ReportedProperties reportedProperties, CancellationToken cancellationToken)
+        public override async Task<long> UpdateReportedPropertiesAsync(PropertyCollection reportedProperties, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, reportedProperties, cancellationToken, nameof(UpdateReportedPropertiesAsync));
@@ -1185,7 +1185,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             // This message is always QoS 0, so no ack will be sent.
             receivedEventArgs.AutoAcknowledge = true;
             Dictionary<string, object> desiredPropertyPatchDictionary = JsonSerializer.Deserialize<Dictionary<string, object>>(receivedEventArgs.ApplicationMessage.Payload.ToArray(), JsonSerializerSettings.Options);
-            var desiredPropertyPatch = new DesiredProperties(desiredPropertyPatchDictionary);
+            var desiredPropertyPatch = new PropertyCollection(desiredPropertyPatchDictionary);
 
             _onDesiredStatePatchListener.Invoke(desiredPropertyPatch);
         }
@@ -1267,8 +1267,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
                                 TwinDocument clientTwinProperties = JsonSerializer.Deserialize<TwinDocument>(payloadBytes, JsonSerializerSettings.Options);
 
                                 getTwinResponse.Twin = new TwinProperties(
-                                    new DesiredProperties(clientTwinProperties.Desired),
-                                    new ReportedProperties(clientTwinProperties.Reported, true));
+                                    new PropertyCollection(clientTwinProperties.Desired),
+                                    new PropertyCollection(clientTwinProperties.Reported, true));
 
                                 twinOperation.TwinResponseTask.TrySetResult(getTwinResponse);
                             }

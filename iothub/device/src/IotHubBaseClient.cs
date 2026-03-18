@@ -36,7 +36,7 @@ namespace Microsoft.Azure.Devices.Client
         // Twin property update request callback information
         private bool _twinPatchSubscribedWithService;
 
-        private Func<DesiredProperties, Task> _desiredPropertyUpdateCallback;
+        private Func<PropertyCollection, Task> _desiredPropertyUpdateCallback;
 
         private protected readonly IotHubClientOptions _clientOptions;
 
@@ -474,7 +474,7 @@ namespace Microsoft.Azure.Devices.Client
         ///     });
         /// </code>
         /// </example>
-        public async Task<long> UpdateReportedPropertiesAsync(ReportedProperties reportedProperties, CancellationToken cancellationToken = default)
+        public async Task<long> UpdateReportedPropertiesAsync(PropertyCollection reportedProperties, CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNull(reportedProperties, nameof(reportedProperties));
             cancellationToken.ThrowIfCancellationRequested();
@@ -519,7 +519,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </code>
         /// </example>
         public async Task SetDesiredPropertyUpdateCallbackAsync(
-            Func<DesiredProperties, Task> callback,
+            Func<PropertyCollection, Task> callback,
             CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
@@ -707,7 +707,7 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-        internal void OnDesiredStatePatchReceived(DesiredProperties patch)
+        internal void OnDesiredStatePatchReceived(PropertyCollection patch)
         {
             if (_desiredPropertyUpdateCallback == null)
             {

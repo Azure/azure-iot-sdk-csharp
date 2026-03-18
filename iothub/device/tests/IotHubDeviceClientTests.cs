@@ -1450,7 +1450,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
 
             // act
             var ct = new CancellationToken(true);
-            Func<Task> act = async () => await deviceClient.UpdateReportedPropertiesAsync(new ReportedProperties(), ct);
+            Func<Task> act = async () => await deviceClient.UpdateReportedPropertiesAsync(new PropertyCollection(), ct);
 
             // assert
             await act.Should().ThrowAsync<OperationCanceledException>();

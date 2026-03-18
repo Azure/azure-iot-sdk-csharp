@@ -119,7 +119,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             TwinProperties twin = await _deviceClient.GetTwinPropertiesAsync();
             _logger.LogInformation($"Device retrieving twin values on CONNECT: {twin.Desired.GetSerializedString()}");
 
-            DesiredProperties desiredProperties = twin.Desired;
+            PropertyCollection desiredProperties = twin.Desired;
             long serverWritablePropertiesVersion = desiredProperties.Version;
 
             // Check if the writable property version is outdated on the local side.
@@ -150,7 +150,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
         // The desired property update callback, which receives the target temperature as a desired property update,
         // and updates the current temperature value over telemetry and reported property update.
-        private async Task TargetTemperatureUpdateCallbackAsync(DesiredProperties desiredProperties)
+        private async Task TargetTemperatureUpdateCallbackAsync(PropertyCollection desiredProperties)
         {
             bool targetTempUpdateReceived = desiredProperties.TryGetValue(TargetTemperatureProperty, out double targetTemperature);
             if (targetTempUpdateReceived)
@@ -159,7 +159,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
                 s_localWritablePropertiesVersion = desiredProperties.Version;
 
-                var reportedPropertyPending = new ReportedProperties
+                var reportedPropertyPending = new PropertyCollection
                 {
                     {
                         TargetTemperatureProperty,
@@ -183,7 +183,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                     await Task.Delay(6 * 1000);
                 }
 
-                var reportedProperty = new ReportedProperties
+                var reportedProperty = new PropertyCollection
                 {
                     {
                         TargetTemperatureProperty,
@@ -284,7 +284,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
         {
             const string propertyName = "maxTempSinceLastReboot";
 
-            var reportedProperties = new ReportedProperties
+            var reportedProperties = new PropertyCollection
             {
                 [propertyName] = _maxTemp
             };
@@ -296,8 +296,8 @@ namespace Microsoft.Azure.Devices.Client.Samples
         private async Task CheckEmptyPropertiesAsync(CancellationToken cancellationToken)
         {
             TwinProperties twin = await _deviceClient.GetTwinPropertiesAsync(cancellationToken);
-            DesiredProperties desiredProperties = twin.Desired;
-            ReportedProperties reportedProperties = twin.Reported;
+            PropertyCollection desiredProperties = twin.Desired;
+            PropertyCollection reportedProperties = twin.Reported;
 
             // Check if the device properties (both writable and reported) are empty.
             if (!desiredProperties.TryGetValue(TargetTemperatureProperty, out object _) && !reportedProperties.TryGetValue(TargetTemperatureProperty, out object _))
@@ -310,7 +310,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
         {
             // If the device properties are empty, report the default value with ACK(ac=203, av=0) as part of the PnP convention.
             // "DefaultPropertyValue" is set from the device when the desired property is not set via the hub.
-            var reportedProperty = new ReportedProperties
+            var reportedProperty = new PropertyCollection
             {
                 {
                     propertyName,
