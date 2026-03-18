@@ -20,12 +20,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
     [TestCategory("IoTHub-Client")]
     public class DirectMethodE2eCustomPayloadTests : E2EMsTestBase
     {
-        private static readonly DirectMethodRequestPayload _customTypeRequest = new() { DesiredState = "on" };
-        private static readonly DirectMethodResponsePayload _customTypeResponse = new() { CurrentState = "off" };
-        //private static readonly JsonElement _listRequest = JsonSerializer.SerializeToElement(new List<double>() { 1.0, 2.0, 3.0 });
-        //private static readonly JsonElement _listResponse = JsonSerializer.SerializeToElement(new List<double>() { 3.0, 2.0, 1.0 });
-        //private static readonly JsonElement _dictRequest = JsonSerializer({ { "key1", 2.0 }, { "key2", "val" } });
-        //private static readonly JsonElement _dictResponse = JsonSerializer.SerializeToElement(new Dictionary<string, object> { { "key1", new byte[] { 3, 5, 6 } }, { "key2", false } });
 
         private readonly string _devicePrefix = $"{nameof(MethodE2ETests)}_dev_";
         private const string MethodName = "MethodE2ETest";
@@ -35,27 +29,137 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         [DataTestMethod]
         [DataRow(Protocol.Amqp)]
         [DataRow(Protocol.Mqtt)]
-        public async Task Method_DeviceReceivesMethodAndResponse(Protocol protocol)
+        public async Task Method_DeviceReceivesMethodAndResponse_CustomStronglyTypedObject(Protocol protocol)
         {
-            // Setting up one cancellation token for the complete test flow
-            using var cts = new CancellationTokenSource(s_testTimeout);
-            CancellationToken ct = cts.Token;
-            DirectMethodServiceRequest request = new(MethodName)
+            DirectMethodRequestPayload _customTypeRequest = new() { DesiredState = "on" };
+            DirectMethodResponsePayload _customTypeResponse = new() { CurrentState = "off" };
+
+        DirectMethodServiceRequest request = new(MethodName)
             { 
                 ResponseTimeoutInSeconds = s_defaultMethodResponseTimeout
             };
             request.SetPayload(_customTypeRequest);
+
             DirectMethodResponse response = new(200);
             response.SetPayload(_customTypeResponse);
-            await SendMethodAndRespondAsync(protocol, request, response, ct).ConfigureAwait(false);
+            
+            await SendMethodAndRespondAsync(protocol, request, response).ConfigureAwait(false);
+        }
+
+        [DataTestMethod]
+        [DataRow(Protocol.Amqp)]
+        [DataRow(Protocol.Mqtt)]
+        public async Task Method_DeviceReceivesMethodAndResponse_IntPayload(Protocol protocol)
+        {
+            DirectMethodServiceRequest request = new(MethodName)
+            {
+                ResponseTimeoutInSeconds = s_defaultMethodResponseTimeout
+            };
+            request.SetPayload(1);
+
+            DirectMethodResponse response = new(200);
+            response.SetPayload(2);
+
+            await SendMethodAndRespondAsync(protocol, request, response).ConfigureAwait(false);
+        }
+
+        [DataTestMethod]
+        [DataRow(Protocol.Amqp)]
+        [DataRow(Protocol.Mqtt)]
+        public async Task Method_DeviceReceivesMethodAndResponse_StringPayload(Protocol protocol)
+        {
+            DirectMethodServiceRequest request = new(MethodName)
+            {
+                ResponseTimeoutInSeconds = s_defaultMethodResponseTimeout
+            };
+            request.SetPayload("someString");
+
+            DirectMethodResponse response = new(200);
+            response.SetPayload("someOtherString");
+
+            await SendMethodAndRespondAsync(protocol, request, response).ConfigureAwait(false);
+        }
+
+        [DataTestMethod]
+        [DataRow(Protocol.Amqp)]
+        [DataRow(Protocol.Mqtt)]
+        public async Task Method_DeviceReceivesMethodAndResponse_BoolPayload(Protocol protocol)
+        {
+            DirectMethodServiceRequest request = new(MethodName)
+            {
+                ResponseTimeoutInSeconds = s_defaultMethodResponseTimeout
+            };
+            request.SetPayload(true);
+
+            DirectMethodResponse response = new(200);
+            response.SetPayload(false);
+
+            await SendMethodAndRespondAsync(protocol, request, response).ConfigureAwait(false);
+        }
+
+        [DataTestMethod]
+        [DataRow(Protocol.Amqp)]
+        [DataRow(Protocol.Mqtt)]
+        public async Task Method_DeviceReceivesMethodAndResponse_ArrayPayload(Protocol protocol)
+        {
+            DirectMethodServiceRequest request = new(MethodName)
+            {
+                ResponseTimeoutInSeconds = s_defaultMethodResponseTimeout
+            };
+            request.SetPayload(new List<int>() { 1, 2, 3 });
+
+            DirectMethodResponse response = new(200);
+            response.SetPayload(new List<int>() { 3, 2, 1 });
+
+            await SendMethodAndRespondAsync(protocol, request, response).ConfigureAwait(false);
+        }
+
+
+        [DataTestMethod]
+        [DataRow(Protocol.Amqp)]
+        [DataRow(Protocol.Mqtt)]
+        public async Task Method_DeviceReceivesMethodAndResponse_ComplexPayload(Protocol protocol)
+        {
+            // Combine all the above cases into one complex payload type
+            DirectMethodServiceRequest request = new(MethodName)
+            {
+                ResponseTimeoutInSeconds = s_defaultMethodResponseTimeout
+            };
+            request.SetPayload(new List<object>() { 1, false, "someString", new List<object>() { "nestedString", true, new DirectMethodRequestPayload() { DesiredState = "on"} } });
+
+            DirectMethodResponse response = new(200);
+            response.SetPayload(new List<object>() { 1, true, "someOtherString", new List<object>() { "anotherNestedString", true, new DirectMethodRequestPayload() { DesiredState = "off" } } });
+
+            await SendMethodAndRespondAsync(protocol, request, response).ConfigureAwait(false);
+        }
+
+        [DataTestMethod]
+        [DataRow(Protocol.Amqp)]
+        [DataRow(Protocol.Mqtt)]
+        public async Task Method_DeviceReceivesMethodAndResponse_RawJsonStrings(Protocol protocol)
+        {
+            // Combine all the above cases into one complex payload type
+            DirectMethodServiceRequest request = new(MethodName)
+            {
+                ResponseTimeoutInSeconds = s_defaultMethodResponseTimeout
+            };
+            request.SetPayloadJson("{\"someKey1\":\"someValue1\"}");
+
+            DirectMethodResponse response = new(200);
+            response.SetPayloadJson("{\"someKey2\":\"someValue2\"}");
+
+            await SendMethodAndRespondAsync(protocol, request, response).ConfigureAwait(false);
         }
 
         private async Task SendMethodAndRespondAsync(
             Protocol protocol,
             DirectMethodServiceRequest directMethodRequestFromService,
-            DirectMethodResponse directMethodResponseFromClient,
-            CancellationToken ct)
+            DirectMethodResponse directMethodResponseFromClient)
         {
+            // Setting up one cancellation token for the complete test flow
+            using var cts = new CancellationTokenSource(s_testTimeout);
+            CancellationToken ct = cts.Token;
+
             await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix, ct: ct).ConfigureAwait(false);
 
             IotHubClientTransportSettings transportSettings;
