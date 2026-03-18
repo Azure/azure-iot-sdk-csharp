@@ -240,8 +240,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             token.ThrowIfCancellationRequested();
 
-            using Stream stream = await content.ReadAsStreamAsync(token).ConfigureAwait(false);
-            return JsonSerializer.Deserialize<T>(stream, JsonSerializerSettings.Options);
+            return JsonSerializer.Deserialize<T>(await content.ReadAsStringAsync(token), JsonSerializerSettings.Options);
         }
 
         public void Dispose()
