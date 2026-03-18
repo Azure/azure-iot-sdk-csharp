@@ -109,7 +109,8 @@ namespace Microsoft.Azure.Devices.Client
                 // Sometimes we get the full error payload at the root
                 responseMessage = JsonSerializer.Deserialize<ErrorPayload>(responseBody, JsonSerializerSettings.Options);
                 if (responseMessage.ErrorCode == null
-                    && responseMessage.TrackingId == null)
+                    && responseMessage.TrackingId == null
+                    && !string.IsNullOrEmpty(responseMessage.Message))
                 {
                     // And sometimes it is a nested object with a single 'Message' property at the root
                     responseMessage = JsonSerializer.Deserialize<ErrorPayload>(responseMessage.Message, JsonSerializerSettings.Options);
@@ -125,17 +126,17 @@ namespace Microsoft.Azure.Devices.Client
 
             if (responseMessage != null)
             {
-                if (Enum.TryParse<IotHubClientErrorCode>(responseMessage.ErrorCode?.ToString(), out IotHubClientErrorCode errorCode))
+                if (responseMessage.ErrorCode == null)
+                { 
+                    responseMessage.IotHubClientErrorCode = IotHubClientErrorCode.Unknown;
+                }
+                else if (Enum.TryParse<IotHubClientErrorCode>(responseMessage.ErrorCode.ToString(), out IotHubClientErrorCode errorCode))
                 {
                     responseMessage.IotHubClientErrorCode = errorCode;
                 }
-                else if (int.TryParse(responseMessage.ErrorCode?.ToString(), NumberStyles.Any, CultureInfo.InvariantCulture, out int errorCodeInt))
+                else if (int.TryParse(responseMessage.ErrorCode.ToString(), NumberStyles.Any, CultureInfo.InvariantCulture, out int errorCodeInt))
                 {
                     responseMessage.IotHubClientErrorCode = (IotHubClientErrorCode)errorCodeInt;
-                }
-                else
-                {
-                    responseMessage.IotHubClientErrorCode = IotHubClientErrorCode.Unknown;
                 }
 
                 return responseMessage;
