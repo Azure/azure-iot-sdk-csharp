@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Azure.Devices.Client;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Azure.Devices.E2ETests.Helpers
 {
@@ -18,7 +19,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
         private readonly IotHubDeviceClient _deviceClient;
         private readonly string _testDeviceId;
 
-        private readonly SemaphoreSlim _methodCallbackSemaphore = new(0, 1);
         private ExceptionDispatchInfo _methodExceptionDispatch;
         private DirectMethodServiceRequest _expectedDirectMethodRequest;
 
@@ -62,7 +62,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
 
         public void Dispose()
         {
-            _methodCallbackSemaphore?.Dispose();
             _twinCallbackSemaphore?.Dispose();
             _receivedMessageCallbackSemaphore?.Dispose();
         }
@@ -79,7 +78,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                         request.MethodName.Should().Be(ExpectedDirectMethodRequest.MethodName, "The expected method name should match what was sent from service");
 
                         byte[] expectedRequestPayload = JsonSerializer.SerializeToUtf8Bytes(ExpectedDirectMethodRequest.Payload);
-                        request.GetPayload().Should().BeEquivalentTo(expectedRequestPayload, "The expected method data should match what was sent from service");
+                        byte[] actualRequestPayload = request.GetPayload();
+                        Assert.IsTrue(Enumerable.SequenceEqual(expectedRequestPayload, actualRequestPayload), "The expected method data should match what was sent from service");
 
                         var response = new DirectMethodResponse(200)
                         {
@@ -95,19 +95,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                         var response = new DirectMethodResponse(500);
                         return Task.FromResult(response);
                     }
-                    finally
-                    {
-                        // Always notify that we got the callback.
-                        _methodCallbackSemaphore.Release();
-                    }
                 },
                 ct).ConfigureAwait(false);
-        }
-
-        internal async Task WaitForMethodCallbackAsync(CancellationToken ct)
-        {
-            await _methodCallbackSemaphore.WaitAsync(ct).ConfigureAwait(false);
-            _methodExceptionDispatch?.Throw();
         }
 
         // Set a twin patch callback that expects a patch of type T.

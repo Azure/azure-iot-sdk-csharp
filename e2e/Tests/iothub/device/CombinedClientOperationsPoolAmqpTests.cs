@@ -113,9 +113,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 testDeviceCallbackHandler.ExpectedDirectMethodRequest = directMethodRequest;
 
                 Task serviceInvokeMethod = MethodE2ETests.ServiceSendMethodAndVerifyResponseAsync(testDevice.Id, null, directMethodRequest, s_deviceResponsePayload, ct);
-                Task methodReceivedTask = testDeviceCallbackHandler.WaitForMethodCallbackAsync(ct);
                 clientOperations.Add(serviceInvokeMethod);
-                clientOperations.Add(methodReceivedTask);
 
                 // Set reported twin properties
                 VerboseTestLogger.WriteLine($"{nameof(CombinedClientOperationsPoolAmqpTests)}: Operation 4: Set reported property for device={testDevice.Id}");

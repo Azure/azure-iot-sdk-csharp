@@ -229,10 +229,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
 
                 testDeviceCallbackHandler.ExpectedDirectMethodRequest = directMethodRequest;
 
-                Task serviceSendTask = ServiceSendMethodAndVerifyResponseAsync(testDevice.Id, directMethodRequest, s_deviceResponsePayload, ct);
-                Task methodReceivedTask = testDeviceCallbackHandler.WaitForMethodCallbackAsync(ct);
-
-                await Task.WhenAll(serviceSendTask, methodReceivedTask).ConfigureAwait(false);
+                await ServiceSendMethodAndVerifyResponseAsync(testDevice.Id, directMethodRequest, s_deviceResponsePayload, ct);
             }
 
             await FaultInjection

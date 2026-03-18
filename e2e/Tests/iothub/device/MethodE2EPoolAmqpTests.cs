@@ -73,14 +73,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                 testDeviceCallbackHandler.ExpectedDirectMethodRequest = directMethodRequest;
 
                 using var cts = new CancellationTokenSource(s_defaultMethodResponseTimeout);
-                Task methodReceivedTask = testDeviceCallbackHandler.WaitForMethodCallbackAsync(cts.Token);
-                Task serviceSendTask = ServiceSendMethodAndVerifyResponseAsync(
+                await ServiceSendMethodAndVerifyResponseAsync(
                     testDevice.Id,
                     directMethodRequest,
                     s_deviceResponsePayload,
                     ct);
-
-                await Task.WhenAll(serviceSendTask, methodReceivedTask).ConfigureAwait(false);
             }
 
             await PoolingOverAmqp

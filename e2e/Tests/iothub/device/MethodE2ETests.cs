@@ -338,15 +338,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
 
             testDeviceCallbackHandler.ExpectedDirectMethodRequest = directMethodRequest;
 
-            Task methodReceivedTask = testDeviceCallbackHandler.WaitForMethodCallbackAsync(ct);
-            Task serviceSendTask = ServiceSendMethodAndVerifyResponseAsync(
+            await ServiceSendMethodAndVerifyResponseAsync(
                 testDevice.Id,
                 null,
                 directMethodRequest,
                 s_deviceResponsePayload,
                 ct);
-
-            await Task.WhenAll(serviceSendTask, methodReceivedTask).ConfigureAwait(false);
         }
 
         private async Task OpenCloseOpenThenSendMethodAndRespondAsync(IotHubClientTransportSettings transportSettings, CancellationToken ct)
@@ -372,8 +369,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
 
             testDeviceCallbackHandler.ExpectedDirectMethodRequest = directMethodRequest;
 
-            Task methodReceivedTask = testDeviceCallbackHandler.WaitForMethodCallbackAsync(ct);
-            Task serviceSendTask = ServiceSendMethodAndVerifyResponseAsync(
+            var testTask = ServiceSendMethodAndVerifyResponseAsync(
                 testDevice.Id,
                 null,
                 directMethodRequest,
@@ -382,17 +378,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
 
             var testTimeoutTask = Task.Delay(TimeSpan.FromSeconds(20), ct);
 
-            // The device should still be able to receive direct methods even though it was re-opened.
-            var testTask = Task.WhenAll(serviceSendTask, methodReceivedTask);
-
             Task completedTask = await Task.WhenAny(testTask, testTimeoutTask).ConfigureAwait(false);
 
             if (completedTask == testTimeoutTask)
             {
                 using (new AssertionScope())
                 {
-                    serviceSendTask.IsCompleted.Should().BeTrue("Time out waiting for the service client to get the direct method response.");
-                    methodReceivedTask.IsCompleted.Should().BeTrue("Timed out waiting on the device to receive the expected direct method.");
+                    testTask.IsCompleted.Should().BeTrue("Time out waiting for the service client to get the direct method response.");
                 }
             }
         }
