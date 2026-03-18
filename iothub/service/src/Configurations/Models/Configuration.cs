@@ -21,13 +21,13 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Initializes an instance of this class.
         /// </summary>
-        /// <param name="configurationId">
+        /// <param name="id">
         /// The configuration Id.
         /// Lowercase and the following special characters are allowed: [-+%_*!'].
         /// </param>
-        public Configuration(string configurationId)
+        public Configuration(string id)
         {
-            Id = configurationId;
+            Id = id;
         }
 
         /// <summary>
@@ -103,7 +103,6 @@ namespace Microsoft.Azure.Devices
         /// The ETag of the configuration.
         /// </summary>
         [JsonPropertyName("etag")]
-        // NewtonsoftJsonETagConverter is used here because otherwise the ETag isn't serialized properly.
         public ETag ETag { get; set; }
     }
 }
