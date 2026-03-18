@@ -54,7 +54,7 @@ namespace Microsoft.Azure.Devices.Tests.Jobs
                 UpdateTwin = s_updateTwin,
                 QueryCondition = "TestQuery",
                 StartOn = s_startOn,
-                MaxExecutionTime = new TimeSpan()
+                MaxExecutionTimeInSeconds = 7
             };
 
             // act
@@ -68,8 +68,7 @@ namespace Microsoft.Azure.Devices.Tests.Jobs
             deserializedRequest.UpdateTwin.Should().BeEquivalentTo(s_updateTwin);
             deserializedRequest.QueryCondition.Should().Be("TestQuery");
             deserializedRequest.StartOn.Should().Be(s_startOn);
-            deserializedRequest.MaxExecutionTime.Should().Be(new TimeSpan());
-            deserializedRequest.MaxExecutionTimeInSeconds.Should().Be(new TimeSpan().Seconds);
+            deserializedRequest.MaxExecutionTimeInSeconds.Should().Be(7);
         }
     }
 }

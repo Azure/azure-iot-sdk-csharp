@@ -14,7 +14,7 @@ namespace Microsoft.Azure.Devices
         /// Creates an instance of this class for twin scheduled job.
         /// </summary>
         /// <param name="updateTwin">The update twin tags and desired properties.</param>
-        protected internal TwinScheduledJob(ClientTwin updateTwin)
+        public TwinScheduledJob(ClientTwin updateTwin)
         {
             JobType = JobType.ScheduleUpdateTwin;
             UpdateTwin = updateTwin;

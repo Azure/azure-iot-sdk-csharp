@@ -9,19 +9,19 @@ namespace Microsoft.Azure.Devices
     /// <summary>
     /// Job input.
     /// </summary>
-    internal sealed class JobRequest
+    public sealed class JobRequest
     {
         /// <summary>
         /// Job identifier.
         /// </summary>
         [JsonPropertyName("jobId")]
-        internal string JobId { get; set; }
+        public string JobId { get; set; }
 
         /// <summary>
         /// [Required] The type of job to execute.
         /// </summary>
         [JsonPropertyName("type")]
-        internal JobType JobType { get; set; }
+        public JobType JobType { get; set; }
 
         /// <summary>
         /// The method type and parameters.
@@ -30,7 +30,7 @@ namespace Microsoft.Azure.Devices
         /// Required if jobType is cloud-to-device method.
         /// </remarks>
         [JsonPropertyName("cloudToDeviceMethod")]
-        internal DirectMethodServiceRequest DirectMethodRequest { get; set; }
+        public DirectMethodServiceRequest DirectMethodRequest { get; set; }
 
         /// <summary>
         /// The Update twin tags and desired properties.
@@ -39,7 +39,7 @@ namespace Microsoft.Azure.Devices
         /// Required if the job type is update twin.
         /// </remarks>
         [JsonPropertyName("updateTwin")]
-        internal ClientTwin UpdateTwin { get; set; }
+        public ClientTwin UpdateTwin { get; set; }
 
         /// <summary>
         /// Condition for device query to get devices to execute the job on.
@@ -48,25 +48,18 @@ namespace Microsoft.Azure.Devices
         /// Required if job type is update twin or cloud-to-device method.
         /// </remarks>
         [JsonPropertyName("queryCondition")]
-        internal string QueryCondition { get; set; }
+        public string QueryCondition { get; set; }
 
         /// <summary>
         /// ISO 8601 date time to start the job.
         /// </summary>
         [JsonPropertyName("startTime")]
-        internal DateTimeOffset StartOn { get; set; }
+        public DateTimeOffset StartOn { get; set; }
 
         /// <summary>
         /// Max execution time in seconds (TTL duration).
         /// </summary>
-        [JsonIgnore]
-        internal TimeSpan? MaxExecutionTime { get; set; }
-
         [JsonPropertyName("maxExecutionTimeInSeconds")]
-        internal long? MaxExecutionTimeInSeconds
-        {
-            get => MaxExecutionTime != null ? (long)MaxExecutionTime?.TotalSeconds : null;
-            set => MaxExecutionTime = value != null ? TimeSpan.FromSeconds((int)value) : null;
-        }
+        public long? MaxExecutionTimeInSeconds { get; set; }
     }
 }

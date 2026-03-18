@@ -27,7 +27,7 @@ namespace Microsoft.Azure.Devices.Tests.Jobs
             var options = new ScheduledJobsOptions();
 
             // act
-            options.MaxExecutionTime = TimeSpan.FromSeconds(MaxExecutionTime);
+            options.MaxExecutionTimeInSeconds = MaxExecutionTime;
 
             // assert
             options.MaxExecutionTimeInSeconds.Should().Be(MaxExecutionTime);
@@ -40,7 +40,7 @@ namespace Microsoft.Azure.Devices.Tests.Jobs
             var options = new ScheduledJobsOptions
             {
                 JobId = "TestJob",
-                MaxExecutionTime = TimeSpan.FromSeconds(MaxExecutionTime),
+                MaxExecutionTimeInSeconds = MaxExecutionTime,
             };
 
             // act
@@ -49,7 +49,7 @@ namespace Microsoft.Azure.Devices.Tests.Jobs
             // assert
             deserializedRequest.Should().NotBeNull();
             deserializedRequest.JobId.Should().Be("TestJob");
-            deserializedRequest.MaxExecutionTime.Should().Be(TimeSpan.FromSeconds(MaxExecutionTime));
+            deserializedRequest.MaxExecutionTimeInSeconds.Should().Be(MaxExecutionTime);
         }
     }
 }

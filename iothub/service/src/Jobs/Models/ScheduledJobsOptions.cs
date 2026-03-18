@@ -21,14 +21,7 @@ namespace Microsoft.Azure.Devices
         /// Max execution time (TTL duration).
         /// </summary>
         /// <remarks>The precision on this is in seconds.</remarks>
-        [JsonIgnore]
-        public TimeSpan MaxExecutionTime { get; set; }
-
         [JsonPropertyName("maxExecutionTimeInSeconds")]
-        internal long MaxExecutionTimeInSeconds
-        {
-            get => (long)MaxExecutionTime.TotalSeconds;
-            set => MaxExecutionTime = TimeSpan.FromSeconds(value);
-        }
+        public long MaxExecutionTimeInSeconds { get; set; }
     }
 }

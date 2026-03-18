@@ -89,7 +89,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                             new ScheduledJobsOptions
                             {
                                 JobId = "JOBSAMPLE" + Guid.NewGuid().ToString(),
-                                MaxExecutionTime = TimeSpan.FromMinutes(1),
+                                MaxExecutionTimeInSeconds = 60,
                             })
                         .ConfigureAwait(false);
                     break;
