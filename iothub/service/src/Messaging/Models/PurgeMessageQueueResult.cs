@@ -11,16 +11,6 @@ namespace Microsoft.Azure.Devices
     public class PurgeMessageQueueResult
     {
         /// <summary>
-        /// This constructor is for deserialization and unit test mocking purposes.
-        /// </summary>
-        /// <remarks>
-        /// To unit test methods that use this type as a response, inherit from this class and give it a constructor
-        /// that can set the properties you want.
-        /// </remarks>
-        protected internal PurgeMessageQueueResult()
-        { }
-
-        /// <summary>
         /// The Id of the device whose messages are being purged.
         /// </summary>
         [JsonPropertyName("deviceId")]
