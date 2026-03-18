@@ -136,7 +136,7 @@ namespace Microsoft.Azure.Devices
         /// Corresponding device's authentication type.
         /// </summary>
         [JsonPropertyName("authenticationType")]
-        public ClientAuthenticationType? AuthenticationType { get; set; }
+        public ClientAuthenticationType AuthenticationType { get; set; }
 
         /// <summary>
         /// Corresponding device's X509 thumbprint.
