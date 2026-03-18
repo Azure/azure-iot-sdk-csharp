@@ -113,7 +113,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             IotHubServiceClient serviceClient = TestDevice.ServiceClient;
             var twin = new ClientTwin(testModule.DeviceId)
             {
-                ModuleId = testModule.Id
+                ModuleId = testModule.Id,
+                AuthenticationType = testModule.Module.Authentication.Type
             };
             twin.Tags[tagName] = tagValue;
 
