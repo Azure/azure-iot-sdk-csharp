@@ -12,15 +12,6 @@ namespace Microsoft.Azure.Devices
     public abstract class JobProperties : IotHubJobResponse
     {
         /// <summary>
-        /// Creates an instance of this class. Provided for unit testing purposes only.
-        /// </summary>
-        /// <remarks>
-        /// This class can be inherited from and set by unit tests for mocking purposes.
-        /// </remarks>
-        protected internal JobProperties()
-        { }
-
-        /// <summary>
         /// The type of job to execute.
         /// </summary>
         /// <remarks>

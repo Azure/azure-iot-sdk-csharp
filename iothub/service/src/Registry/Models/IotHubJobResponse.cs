@@ -20,15 +20,6 @@ namespace Microsoft.Azure.Devices
         };
 
         /// <summary>
-        /// Creates an instance of this class. Provided for unit testing purposes and serialization.
-        /// </summary>
-        /// <remarks>
-        /// This class can be inherited from and set by unit tests for mocking purposes.
-        /// </remarks>
-        protected internal IotHubJobResponse()
-        { }
-
-        /// <summary>
         /// The unique Id of the job.
         /// </summary>
         /// <remarks>
