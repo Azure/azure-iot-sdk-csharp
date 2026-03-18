@@ -172,7 +172,13 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         throw new InvalidOperationException(
                             $"The response message was null when executing operation {HttpMethod.Post}.");
                     }
-                    if (responseMsg.IsSuccessStatusCode)
+                    if (responseMsg.StatusCode == HttpStatusCode.NoContent)
+                    {
+                        // If the service response has no content (only applicable for completing file upload API), then the response doesn't need to have
+                        // its contents deserialized
+                        return result;
+                    }
+                    else if (responseMsg.IsSuccessStatusCode)
                     {
                         result = await ReadResponseMessageAsync<T2>(responseMsg, cancellationToken).ConfigureAwait(false);
                     }
