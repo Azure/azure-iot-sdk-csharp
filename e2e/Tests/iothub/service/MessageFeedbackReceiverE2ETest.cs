@@ -54,11 +54,12 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 await deviceClient.SetIncomingMessageCallbackAsync(OnC2DMessageReceived).ConfigureAwait(false);
 
                 // Configure the service client to send the message.
-                var message = new OutgoingMessage("some payload")
+                var message = new OutgoingMessage()
                 {
                     Ack = DeliveryAcknowledgement.Full,
                     MessageId = Guid.NewGuid().ToString(),
                 };
+                message.SetPayload("some payload");
                 var feedbackMessageReceived = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
                 serviceClient.MessageFeedback.MessageFeedbackProcessor = (FeedbackBatch feedback) =>
                 {

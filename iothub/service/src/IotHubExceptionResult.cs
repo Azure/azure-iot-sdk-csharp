@@ -12,7 +12,7 @@ namespace Microsoft.Azure.Devices
     public sealed class IotHubExceptionResult
     {
         /// <summary>
-        /// 
+        /// The error message
         /// </summary>
         [SuppressMessage("Usage", "CA1507: Use nameof in place of string literal 'Message'",
             Justification = "This JsonProperty annotation depends on service-defined contract (name) and is independent of the property name selected by the SDK.")]
@@ -26,7 +26,7 @@ namespace Microsoft.Azure.Devices
     public sealed class IotHubExceptionResult2
     {
         /// <summary>
-        /// 
+        /// The error message
         /// </summary>
         [SuppressMessage("Usage", "CA1507: Use nameof in place of string literal 'Message'",
             Justification = "This JsonProperty annotation depends on service-defined contract (name) and is independent of the property name selected by the SDK.")]

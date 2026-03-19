@@ -137,7 +137,8 @@ namespace Microsoft.Azure.Devices.Client.Samples
                     humidity = currentHumidity,
                     pointInfo = infoString
                 };
-                var message = new TelemetryMessage(telemetryDataPoint);
+                var message = new TelemetryMessage();
+                message.SetPayload(telemetryDataPoint);
 
                 // Add one property to the message.
                 message.Properties.Add("level", levelValue);

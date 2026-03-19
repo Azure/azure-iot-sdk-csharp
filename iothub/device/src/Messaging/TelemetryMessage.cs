@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text;
 using System.Text.Json;
 
 namespace Microsoft.Azure.Devices.Client
@@ -19,15 +20,6 @@ namespace Microsoft.Azure.Devices.Client
         { }
 
         /// <summary>
-        /// Creates an instance of this class with the specified payload.
-        /// </summary>
-        /// <param name="payload">The payload to send.</param>
-        public TelemetryMessage(object payload)
-        {
-            Payload = payload;
-        }
-
-        /// <summary>
         /// Creates an instance of this class with the specified binary payload.
         /// </summary>
         /// <param name="binaryPayload">The binary payload to send.</param>
@@ -39,7 +31,13 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The message payload.
         /// </summary>
-        public object Payload { get; }
+        /// <remarks>
+        ///  Use functions like <see cref="SetPayload(bool)"/> to set this payload equal to primitive types. Use functions 
+        ///  like <see cref="SetPayload(JsonElement)"/> or <see cref="SetPayloadJson(string)"/> to set this payload as an 
+        ///  unmodeled complex json object. Use <see cref="SetPayload(object)"/> to set this payload as a strongly typed object 
+        ///  (that is serializable by System.Text.Json)
+        /// </remarks>
+        public byte[] Payload { get; set; }
 
         /// <summary>
         /// An identifier for the message useful for avoiding reprocessing the same message again.
@@ -199,36 +197,67 @@ namespace Microsoft.Azure.Devices.Client
         public IDictionary<string, string> Properties { get; private set; } = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
+        /// Set this payload as an integer (a simple JSON value).
+        /// </summary>
+        /// <param name="value">The JSON value integer</param>
+        public void SetPayload(int value)
+        {
+            Payload = JsonSerializer.SerializeToUtf8Bytes(value);
+        }
+
+        /// <summary>
+        /// Set this payload as a boolean (a JSON value).
+        /// </summary>
+        /// <param name="value">The JSON value boolean</param>
+        public void SetPayload(bool value)
+        {
+            Payload = JsonSerializer.SerializeToUtf8Bytes(value);
+        }
+
+        /// <summary>
+        /// Set this payload as a string (a simple JSON value).
+        /// </summary>
+        /// <param name="value">The JSON value string. For instance, "someValue".</param>
+        public void SetPayload(string value)
+        {
+            Payload = JsonSerializer.SerializeToUtf8Bytes(value);
+        }
+
+        /// <summary>
+        /// Set this payload as an arbitrary JSON document.
+        /// </summary>
+        /// <param name="jsonString">The JSON value string. For instance "{\"someKey\":\"someValue\"}"</param>
+        /// <remarks>This function just UTF-8 encodes the provided string. It does not further validation.</remarks>
+        public void SetPayloadJson(string jsonString)
+        {
+            Payload = Encoding.UTF8.GetBytes(jsonString);
+        }
+
+        /// <summary>
+        /// Set the payload equal to a <see cref="JsonElement"/>.
+        /// </summary>
+        /// <param name="jsonElement">The JsonElement value to assign.</param>
+        public void SetPayload(JsonElement jsonElement)
+        {
+            Payload = Encoding.UTF8.GetBytes(jsonElement.GetRawText());
+        }
+
+        /// <summary>
+        /// Use a serializable object as the payload.
+        /// </summary>
+        /// <param name="serializableObject">Any custom payload object that is serializable by System.Text.Json</param>
+        /// <remarks>
+        /// This object must be serializable by System.Text.Json
+        /// </remarks>
+        public void SetPayload(object serializableObject)
+        {
+            Payload = JsonSerializer.SerializeToUtf8Bytes(serializableObject);
+        }
+
+        /// <summary>
         /// Gets the dictionary of system properties which are managed internally.
         /// </summary>
         protected internal IDictionary<string, object> SystemProperties { get; private set; } = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
-
-        /// <summary>
-        /// Clones an existing <see cref="TelemetryMessage"/> instance and sets content body defined by <paramref name="payload"/> on it.
-        /// </summary>
-        /// <remarks>
-        /// The cloned message has the message <see cref="MessageId" /> as the original message.
-        /// </remarks>
-        /// <param name="payload">Message content to be set after clone.</param>
-        /// <returns>A new instance of <see cref="TelemetryMessage"/> with body content defined by <paramref name="payload"/>,
-        /// and user/system properties of the cloned <see cref="TelemetryMessage"/> instance.
-        /// </returns>
-        public TelemetryMessage CloneWithBody(object payload)
-        {
-            var result = new TelemetryMessage(payload);
-
-            foreach (string key in Properties.Keys)
-            {
-                result.Properties.Add(key, Properties[key]);
-            }
-
-            foreach (string key in SystemProperties.Keys)
-            {
-                result.SystemProperties.Add(key, SystemProperties[key]);
-            }
-
-            return result;
-        }
 
         /// <summary>
         /// Sets the message as an security message
@@ -236,20 +265,6 @@ namespace Microsoft.Azure.Devices.Client
         public void SetAsSecurityMessage()
         {
             SystemProperties[MessageSystemPropertyNames.InterfaceId] = CommonConstants.SecurityMessageInterfaceId;
-        }
-
-        /// <summary>
-        /// Gets the payload as a byte array, serialized and encoded if necessary.
-        /// </summary>
-        /// <remarks>
-        /// If needed, serialization uses Newtonsoft.Json and encoding is UTF8.
-        /// </remarks>
-        /// <returns>A payload as a byte array.</returns>
-        internal byte[] GetPayloadAsBytes()
-        {
-            return Payload is byte[] payloadAsByteArray
-                ? payloadAsByteArray
-                : JsonSerializer.SerializeToUtf8Bytes(Payload, JsonSerializerSettings.Options);
         }
 
         private T GetSystemProperty<T>(string key)

@@ -112,11 +112,12 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             string p1Value = Guid.NewGuid().ToString();
 
             VerboseTestLogger.WriteLine($"{nameof(ComposeTelemetryMessage)}: messageId='{messageId}' payload='{payload}' p1Value='{p1Value}'");
-            var message = new OutgoingMessage(payload)
+            var message = new OutgoingMessage()
             {
                 MessageId = messageId,
                 Properties = { ["property1"] = p1Value }
             };
+            message.SetPayload(payload);
 
             return (message, messageId, payload, p1Value);
         }

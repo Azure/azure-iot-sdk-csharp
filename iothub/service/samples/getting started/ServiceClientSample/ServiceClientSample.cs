@@ -93,11 +93,12 @@ namespace Microsoft.Azure.Devices.Samples
             while (!cancellationToken.IsCancellationRequested)
             {
                 string str = $"Hello, Cloud! - Message {++messageCount }";
-                var message = new OutgoingMessage(str)
+                var message = new OutgoingMessage()
                 {
                     // An acknowledgment is sent on delivery success or failure.
                     Ack = DeliveryAcknowledgement.Full
                 };
+                message.SetPayload(str);
 
                 _logger.LogInformation($"Sending C2D message {messageCount} with Id {message.MessageId} to {_deviceId}.");
                 await s_serviceClient.Messages.OpenAsync(cancellationToken);

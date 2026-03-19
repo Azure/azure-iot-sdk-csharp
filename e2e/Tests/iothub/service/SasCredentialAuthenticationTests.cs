@@ -186,7 +186,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             // act
 
             await serviceClient.Messages.OpenAsync().ConfigureAwait(false);
-            var message = new OutgoingMessage("Hello, Cloud!");
+            var message = new OutgoingMessage();
+            message.SetPayload("Hello, Cloud!");
 
             await serviceClient.Messages.SendAsync(testDevice.Id, message);
 
@@ -229,7 +230,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             sasCredential.Update(signature);
 
             await serviceClient.Messages.OpenAsync().ConfigureAwait(false);
-            var message = new OutgoingMessage("Hello, Cloud!");
+            var message = new OutgoingMessage();
+            message.SetPayload("Hello, Cloud!");
             await serviceClient.Messages.SendAsync(testDevice.Id, message);
             await serviceClient.Messages.CloseAsync().ConfigureAwait(false);
         }

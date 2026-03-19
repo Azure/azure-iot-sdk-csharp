@@ -12,31 +12,31 @@ namespace Microsoft.Azure.Devices.Client
     public sealed class ErrorPayload
     {
         /// <summary>
-        /// 
+        /// The error code sent by IoT hub
         /// </summary>
         [JsonPropertyName("errorCode")]
         public dynamic ErrorCode { get; set; }
 
         /// <summary>
-        /// 
+        /// The tracking Id associated with this error. Provide this when contacting customer support.
         /// </summary>
         [JsonPropertyName("trackingId")]
         public string TrackingId { get; set; }
 
         /// <summary>
-        /// 
+        /// The human-readable error message sent by IoT hub.
         /// </summary>
         [JsonPropertyName("message")]
         public string Message { get; set; }
 
         /// <summary>
-        /// 
+        /// The datetime when the error occurred.
         /// </summary>
         [JsonPropertyName("timestampUtc")]
         public string OccurredOnUtc { get; set; }
 
         /// <summary>
-        /// 
+        /// The enum of the error code sent by IoT hub.
         /// </summary>
         [JsonIgnore]
         public IotHubClientErrorCode IotHubClientErrorCode { get; set; }

@@ -13,8 +13,6 @@ namespace Microsoft.Azure.Devices.Client
     /// <seealso href="https://learn.microsoft.com/azure/iot-hub/iot-hub-devguide-messages-c2d"/>
     public class IncomingMessage
     {
-        private readonly byte[] _payload;
-
         /// <summary>
         /// Creates an instance of this class.
         /// </summary>
@@ -24,8 +22,13 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="payload">The payload to be set to the incoming message.</param>
         protected internal IncomingMessage(byte[] payload)
         {
-            _payload = payload;
+            Payload = payload;
         }
+
+        /// <summary>
+        /// The message payload
+        /// </summary>
+        public byte[] Payload { get; set; }
 
         /// <summary>
         /// An identifier for the message useful for avoiding reprocessing the same message again.
@@ -180,7 +183,7 @@ namespace Microsoft.Azure.Devices.Client
 
             try
             {
-                payload = JsonSerializer.Deserialize<T>(_payload, JsonSerializerSettings.Options);
+                payload = JsonSerializer.Deserialize<T>(Payload, JsonSerializerSettings.Options);
 
                 return true;
             }
@@ -193,33 +196,6 @@ namespace Microsoft.Azure.Devices.Client
             }
 
             return false;
-        }
-
-        /// <summary>
-        /// Get the raw payload bytes.
-        /// </summary>
-        /// <remarks>
-        /// Use this method when to fully control deserialization of the payload.
-        /// <para>
-        /// For JSON payloads with a known type, see <see cref="TryGetPayload{T}(out T)"/>.
-        /// </para>
-        /// </remarks>
-        /// <returns>A copy of the raw payload as a byte array.</returns>
-        /// <example>
-        /// <code language="csharp">
-        /// await client.SetIncomingMessageCallbackAsync((incomingMessage) =>
-        /// {
-        ///     byte[] arr = incomingMessage.GetPayloadAsBytes();
-        ///     // deserialize as needed and do work...
-        ///     
-        ///     return Task.FromResult(MessageAcknowledgement.Complete);
-        /// },
-        /// cancellationToken);
-        /// </code>
-        /// </example>
-        public byte[] GetPayloadAsBytes()
-        {
-            return (byte[])_payload.Clone();
         }
 
         private T GetSystemProperty<T>(string key)

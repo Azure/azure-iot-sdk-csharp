@@ -39,7 +39,8 @@ namespace Microsoft.Azure.Devices.Samples
             {
                 while (!cancellationToken.IsCancellationRequested)
                 {
-                    var message = new OutgoingMessage("My cloud to device message");
+                    var message = new OutgoingMessage();
+                    message.SetPayload("My cloud to device message");
                     string correlationId = Guid.NewGuid().ToString();
                     message.CorrelationId = correlationId;
 

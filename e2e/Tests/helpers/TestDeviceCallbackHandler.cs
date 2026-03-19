@@ -154,9 +154,18 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                     receivedMessage.To.Should().Be(receivedMessageDestination, "Received message destination is not what was sent by service");
 
                     receivedMessage.TryGetPayload(out T actualPayload).Should().BeTrue();
-                    ExpectedOutgoingMessage.Payload.Should().BeOfType<T>();
-                    var expectedPayload = (T)ExpectedOutgoingMessage.Payload;
-                    actualPayload.Should().BeEquivalentTo(expectedPayload);
+
+                    T expectedPayloadDeserialized = default;
+                    try
+                    {
+                        expectedPayloadDeserialized = JsonSerializer.Deserialize<T>(ExpectedOutgoingMessage.Payload);
+                    }
+                    catch (JsonException)
+                    {
+                        Assert.Fail("expected payload did not deserialize into expected type");
+                    }
+
+                    actualPayload.Should().BeEquivalentTo(expectedPayloadDeserialized);
 
                     receivedMessage.Properties.Count.Should().Be(ExpectedOutgoingMessage.Properties.Count, $"The count of received properties did not match for device {_testDeviceId}");
                     if (ExpectedOutgoingMessage.Properties.Count > 0)

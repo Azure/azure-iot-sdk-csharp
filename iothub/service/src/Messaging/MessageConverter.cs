@@ -187,7 +187,7 @@ namespace Microsoft.Azure.Devices
             Argument.AssertNotNull(message, nameof(message));
 
             AmqpMessage amqpMessage = message.HasPayload
-                ? AmqpMessage.Create(new MemoryStream(message.GetPayloadObjectBytes()), true)
+                ? AmqpMessage.Create(new MemoryStream(message.Payload), true)
                 : AmqpMessage.Create();
 
             UpdateAmqpMessageHeadersAndProperties(amqpMessage, message);

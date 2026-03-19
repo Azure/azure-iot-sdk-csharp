@@ -51,7 +51,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             Argument.AssertNotNull(message, nameof(message));
 
             AmqpMessage amqpMessage = message.Payload != null
-                ? AmqpMessage.Create(new MemoryStream(message.GetPayloadAsBytes()), true)
+                ? AmqpMessage.Create(new MemoryStream(message.Payload), true)
                 : AmqpMessage.Create();
 
             UpdateAmqpMessageHeadersAndProperties(message, amqpMessage);

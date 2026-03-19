@@ -271,7 +271,8 @@ namespace Microsoft.Azure.Devices.Client.Samples
             const string telemetryName = "temperature";
 
             string telemetryPayload = $"{{ \"{telemetryName}\": {_temperature} }}";
-            var message = new TelemetryMessage(telemetryPayload);
+            var message = new TelemetryMessage();
+            message.SetPayload(telemetryPayload);
 
             await _deviceClient.SendTelemetryAsync(message, cancellationToken);
             _logger.LogDebug($"Telemetry: Sent - {{ \"{telemetryName}\": {_temperature}°C }}.");

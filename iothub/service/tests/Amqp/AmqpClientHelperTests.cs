@@ -213,7 +213,8 @@ namespace Microsoft.Azure.Devices.Tests.Amqp
                 },
             };
 
-            var message = new OutgoingMessage(dataList);
+            var message = new OutgoingMessage();
+            message.SetPayload(dataList);
 
             using AmqpMessage amqpMessage = MessageConverter.MessageToAmqpMessage(message);
             amqpMessage.Properties.ContentType = AmqpsConstants.BatchedFeedbackContentType;

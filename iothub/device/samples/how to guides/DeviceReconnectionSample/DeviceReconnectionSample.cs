@@ -320,10 +320,12 @@ namespace Microsoft.Azure.Devices.Client.Samples
             int humidity = s_randomGenerator.Next(60, 80);
             string messagePayload = $"{{\"temperature\":{temperature},\"humidity\":{humidity}}}";
 
-            var eventMessage = new TelemetryMessage(messagePayload)
+            var eventMessage = new TelemetryMessage()
             {
                 MessageId = messageId.ToString(),
             };
+
+            eventMessage.SetPayload(messagePayload);
             eventMessage.Properties.Add("temperatureAlert", (temperature > temperatureThreshold) ? "true" : "false");
 
             return eventMessage;

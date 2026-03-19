@@ -376,7 +376,8 @@ namespace Microsoft.Azure.Devices.Client.Samples
             const string workingSetName = "workingSet";
             long workingSet = Process.GetCurrentProcess().PrivateMemorySize64 / 1024;
 
-            var message = new TelemetryMessage(new JsonDictionary { { workingSetName, workingSet } });
+            var message = new TelemetryMessage();
+            message.SetPayload(new JsonDictionary { { workingSetName, workingSet } });
 
             await _deviceClient.SendTelemetryAsync(message, cancellationToken);
             _logger.LogDebug($"Telemetry: Sent - {{ \"{workingSetName}\": {workingSet} }} in KB.");
@@ -412,10 +413,12 @@ namespace Microsoft.Azure.Devices.Client.Samples
             const string telemetryName = "temperature";
             double currentTemperature = _temperature[componentName];
 
-            var message = new TelemetryMessage(new JsonDictionary { { telemetryName, currentTemperature } })
+            var message = new TelemetryMessage()
             {
                 ComponentName = componentName,
             };
+
+            message.SetPayload(new JsonDictionary { { telemetryName, currentTemperature } });
 
             await _deviceClient.SendTelemetryAsync(message, cancellationToken);
             _logger.LogDebug($"Telemetry: Sent - component=\"{componentName}\", {{ \"{telemetryName}\": {currentTemperature} }} in °C.");
