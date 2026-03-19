@@ -36,6 +36,6 @@ namespace Microsoft.Azure.Devices
         /// This field will contain any properties of the digital twin that are not already defined by the other strong types of this class.
         /// </remarks>
         [JsonExtensionData]
-        public IDictionary<string, object> CustomProperties { get; set; } = new Dictionary<string, object>();
+        public JsonDictionary CustomProperties { get; set; } = new();
     }
 }

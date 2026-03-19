@@ -21,6 +21,13 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// 
         /// </summary>
+        public JsonDictionary()
+        {
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="properties"></param>
         public JsonDictionary(Dictionary<string, object> properties)
         {

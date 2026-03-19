@@ -301,7 +301,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
             var pendingReportedProperty = new PropertyCollection
             {
-                { componentName, new Dictionary<string, object>
+                { componentName, new JsonDictionary
                     {
                         { ComponentIdentifierKey, ComponentIdentifierValue },
                         { TargetTemperatureProperty, new PropertyAcknowledgement
@@ -327,7 +327,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
             var completedReportedProperty = new PropertyCollection
             {
-                { componentName, new Dictionary<string, object>
+                { componentName, new JsonDictionary
                     {
                         { ComponentIdentifierKey, ComponentIdentifierValue },
                         { TargetTemperatureProperty, new PropertyAcknowledgement
@@ -348,7 +348,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
         private async Task UpdateDeviceInformationAsync(CancellationToken cancellationToken)
         {
             const string componentName = "deviceInformation";
-            var deviceInformationProperties = new Dictionary<string, object>
+            var deviceInformationProperties = new JsonDictionary
             {
                 { ComponentIdentifierKey, ComponentIdentifierValue },
                 { "manufacturer", "element15" },
@@ -376,7 +376,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             const string workingSetName = "workingSet";
             long workingSet = Process.GetCurrentProcess().PrivateMemorySize64 / 1024;
 
-            var message = new TelemetryMessage(new Dictionary<string, object> { { workingSetName, workingSet } });
+            var message = new TelemetryMessage(new JsonDictionary { { workingSetName, workingSet } });
 
             await _deviceClient.SendTelemetryAsync(message, cancellationToken);
             _logger.LogDebug($"Telemetry: Sent - {{ \"{workingSetName}\": {workingSet} }} in KB.");
@@ -412,7 +412,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             const string telemetryName = "temperature";
             double currentTemperature = _temperature[componentName];
 
-            var message = new TelemetryMessage(new Dictionary<string, object> { { telemetryName, currentTemperature } })
+            var message = new TelemetryMessage(new JsonDictionary { { telemetryName, currentTemperature } })
             {
                 ComponentName = componentName,
             };
@@ -442,7 +442,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
             var reportedProperties = new PropertyCollection
             {
-                { componentName, new Dictionary<string, object>{
+                { componentName, new JsonDictionary{
                     { ComponentIdentifierKey, ComponentIdentifierValue },
                     { propertyName, maxTemp },
                 } },
@@ -471,7 +471,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             // "DefaultPropertyValue" is set from the device when the desired property is not set via the hub.
             var reportedProperty = new PropertyCollection
             {
-                { componentName, new Dictionary<string, object>
+                { componentName, new JsonDictionary
                     {
                         { ComponentIdentifierKey, ComponentIdentifierValue },
                         { propertyName, new PropertyAcknowledgement

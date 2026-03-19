@@ -30,7 +30,7 @@ namespace Microsoft.Azure.Devices
         /// 
         /// </summary>
         [JsonExtensionData]
-        public IDictionary<string, object> Properties { get; set; } = new Dictionary<string, object>();
+        public JsonDictionary Properties { get; set; } = new();
 
         /// <summary>
         /// 
@@ -87,7 +87,7 @@ namespace Microsoft.Azure.Devices
                     return arrayWithElements;
                 
                 case JsonValueKind.Object:
-                    Dictionary<string, object> objectFields = new Dictionary<string, object>();
+                    JsonDictionary objectFields = new();
                     foreach (JsonProperty key in jsonElement.EnumerateObject())
                     { 
                         objectFields.TryAdd(key.Name, FromJsonElement(key.Value));
