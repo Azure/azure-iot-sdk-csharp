@@ -5,18 +5,16 @@ using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.Azure.Amqp;
-using Microsoft.Azure.Devices.Shared;
 
 namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 {
-    internal class AmqpIotCbsTokenProvider : ICbsTokenProvider, IDisposable
+    internal sealed class AmqpIotCbsTokenProvider : ICbsTokenProvider
     {
-        private readonly IotHubConnectionString _connectionString;
-        private bool _isDisposed;
+        private readonly IConnectionCredentials _connectionCredentials;
 
-        public AmqpIotCbsTokenProvider(IotHubConnectionString connectionString)
+        internal AmqpIotCbsTokenProvider(IConnectionCredentials connectionCredentials)
         {
-            _connectionString = connectionString;
+            _connectionCredentials = connectionCredentials;
         }
 
         public async Task<CbsToken> GetTokenAsync(Uri namespaceAddress, string appliesTo, string[] requiredClaims)
@@ -28,27 +26,29 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                         this,
                         namespaceAddress,
                         appliesTo,
-                        $"{nameof(IotHubConnectionString)}.{nameof(AmqpIotCbsTokenProvider.GetTokenAsync)}");
+                        $"{nameof(IotHubConnectionCredentials)}.{nameof(AmqpIotCbsTokenProvider.GetTokenAsync)}");
 
                 string tokenValue;
-                DateTime expiresOn;
+                DateTimeOffset expiresOn;
 
-                if (!string.IsNullOrWhiteSpace(_connectionString.SharedAccessSignature))
+                if (!string.IsNullOrWhiteSpace(_connectionCredentials.SharedAccessSignature))
                 {
-                    tokenValue = _connectionString.SharedAccessSignature;
-                    expiresOn = DateTime.MaxValue;
+                    tokenValue = _connectionCredentials.SharedAccessSignature;
+                    expiresOn = DateTimeOffset.MaxValue;
                 }
                 else
                 {
-                    if (Logging.IsEnabled && _connectionString.TokenRefresher == null)
+                    if (Logging.IsEnabled && _connectionCredentials.SasTokenRefresher == null)
                         Logging.Fail(this, $"Cannot create SAS Token: no provider.", nameof(AmqpIotCbsTokenProvider.GetTokenAsync));
 
-                    Debug.Assert(_connectionString.TokenRefresher != null);
-                    tokenValue = await _connectionString.TokenRefresher.GetTokenAsync(_connectionString.Audience).ConfigureAwait(false);
-                    expiresOn = _connectionString.TokenRefresher.RefreshesOn;
+                    Debug.Assert(_connectionCredentials.SasTokenRefresher != null);
+                    tokenValue = await _connectionCredentials.SasTokenRefresher
+                        .GetTokenAsync(_connectionCredentials.IotHubHostName)
+                        .ConfigureAwait(false);
+                    expiresOn = _connectionCredentials.SasTokenRefresher.RefreshesOnUtc;
                 }
 
-                return new CbsToken(tokenValue, AmqpIotConstants.IotHubSasTokenType, expiresOn);
+                return new CbsToken(tokenValue, AmqpIotConstants.IotHubSasTokenType, expiresOn.UtcDateTime);
             }
             finally
             {
@@ -57,46 +57,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                         this,
                         namespaceAddress,
                         appliesTo,
-                        $"{nameof(IotHubConnectionString)}.{nameof(AmqpIotCbsTokenProvider.GetTokenAsync)}");
-            }
-        }
-
-        public void Dispose()
-        {
-            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            try
-            {
-                if (Logging.IsEnabled)
-                {
-                    Logging.Enter(this, $"Disposal with client={_connectionString?.TokenRefresher?.DisposalWithClient}; disposed={_isDisposed}" , $"{nameof(AmqpIotCbsTokenProvider)}.{nameof(Dispose)}");
-                }
-
-                if (!_isDisposed)
-                {
-                    if (disposing)
-                    {
-                        if (_connectionString?.TokenRefresher != null
-                            && _connectionString.TokenRefresher.DisposalWithClient)
-                        {
-                            _connectionString.TokenRefresher.Dispose();
-                        }
-                    }
-
-                    _isDisposed = true;
-                }
-            }
-            finally
-            {
-                if (Logging.IsEnabled)
-                {
-                    Logging.Exit(this, $"Disposal with client={_connectionString?.TokenRefresher?.DisposalWithClient}; disposed={_isDisposed}", $"{nameof(AmqpIotCbsTokenProvider)}.{nameof(Dispose)}");
-                }
+                        $"{nameof(IotHubConnectionCredentials)}.{nameof(AmqpIotCbsTokenProvider.GetTokenAsync)}");
             }
         }
     }

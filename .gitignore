@@ -236,3 +236,5 @@ NVChip
 /tools/diffscripts/*
 !/tools/diffscripts/*.ps1
 !/tools/diffscripts/README.md
+/releaselog_short.txt
+/releaselog_detailed.txt

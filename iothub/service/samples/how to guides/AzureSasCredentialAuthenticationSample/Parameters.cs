@@ -37,13 +37,12 @@ namespace AzureSasCredentialAuthenticationSample
         public string DeviceId { get; set; }
 
         [Option(
-            't',
-            "TransportType",
-            Default = TransportType.Amqp,
+            "Protocol",
+            Default = IotHubTransportProtocol.Tcp,
             Required = false,
-            HelpText = "The transport to use to communicate with the IoT hub. Possible values include Amqp and Amqp_WebSocket_Only.")]
+            HelpText = "The protocol to use to communicate with the IoT hub.")]
         
-        public TransportType TransportType { get; set; }
+        public IotHubTransportProtocol Protocol { get; set; }
 
         [Option(
             's',

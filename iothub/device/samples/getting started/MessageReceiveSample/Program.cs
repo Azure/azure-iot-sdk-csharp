@@ -10,7 +10,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
     public class Program
     {
         /// <summary>
-        /// A sample to illustrate how to send telemetry messages.
+        /// A sample to illustrate how to receive cloud-to-device messages sent to a device client instance.
         /// </summary>
         /// <param name="args">
         /// Run with `--help` to see a list of required and optional parameters.
@@ -36,10 +36,11 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 appRunTime = TimeSpan.FromSeconds(parameters.ApplicationRunningTime.Value);
             }
 
-            using var deviceClient = DeviceClient.CreateFromConnectionString(
+            var options = new IotHubClientOptions(parameters.GetHubTransportSettings());
+            await using var deviceClient = new IotHubDeviceClient(
                 parameters.PrimaryConnectionString,
-                parameters.TransportType);
-            var sample = new MessageReceiveSample(deviceClient, parameters.TransportType, appRunTime);
+                options);
+            var sample = new MessageReceiveSample(deviceClient, appRunTime);
             await sample.RunSampleAsync();
             await deviceClient.CloseAsync();
 

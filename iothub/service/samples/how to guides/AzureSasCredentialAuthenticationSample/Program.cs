@@ -1,15 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
-using Azure;
-using Azure.Core;
-using CommandLine;
-using Microsoft.Azure.Devices;
+
 using System;
 using System.Globalization;
 using System.Net;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using Azure;
+using CommandLine;
+using Microsoft.Azure.Devices;
 
 namespace AzureSasCredentialAuthenticationSample
 {
@@ -52,7 +52,12 @@ namespace AzureSasCredentialAuthenticationSample
 
             // There are constructors for all the other clients where you can pass SAS credentials - JobClient, RegistryManager, DigitalTwinClient
             var hostName = parameters.ResourceUri.Split('/')[0];
-            using var serviceClient = ServiceClient.Create(hostName, sasCredential, parameters.TransportType);
+
+            var options = new IotHubServiceClientOptions
+            {
+                Protocol = parameters.Protocol,
+            };
+            using var serviceClient = new IotHubServiceClient(hostName, sasCredential, options);
 
             var sample = new AzureSasCredentialAuthenticationSample();
             await AzureSasCredentialAuthenticationSample.RunSampleAsync(serviceClient, parameters.DeviceId);

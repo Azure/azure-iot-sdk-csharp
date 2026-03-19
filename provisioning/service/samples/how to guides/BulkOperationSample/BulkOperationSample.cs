@@ -4,33 +4,24 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
 {
     public class BulkOperationSample
     {
         private readonly ProvisioningServiceClient _provisioningServiceClient;
+        private readonly ILogger _logger;
         private const string SampleRegistrationId1 = "myvalid-registratioid-csharp-1";
         private const string SampleRegistrationId2 = "myvalid-registratioid-csharp-2";
-        private const string SampleTpmEndorsementKey =
-            "AToAAQALAAMAsgAgg3GXZ0SEs/gakMyNRqXXJP1S124GUgtk8qHaGzMUaaoABgCAAEMAEAgAAAAAAAEAxsj2gUS" +
-            "cTk1UjuioeTlfGYZrrimExB+bScH75adUMRIi2UOMxG1kw4y+9RW/IVoMl4e620VxZad0ARX2gUqVjYO7KPVt3d" +
-            "yKhZS3dkcvfBisBhP1XH9B33VqHG9SHnbnQXdBUaCgKAfxome8UmBKfe+naTsE5fkvjb/do3/dD6l4sGBwFCnKR" +
-            "dln4XpM03zLpoHFao8zOwt8l/uP3qUIxmCYv9A7m69Ms+5/pCkTu/rK4mRDsfhZ0QLfbzVI6zQFOKF/rwsfBtFe" +
-            "WlWtcuJMKlXdD8TXWElTzgh7JS4qhFzreL0c1mI0GCj+Aws0usZh7dLIVPnlgZcBhgy1SSDQMQ==";
-        
-        // Maximum number of elements per query.
-        private const int QueryPageSize = 100;
 
-        private static readonly IDictionary<string, string> s_registrationIds = new Dictionary<string, string>
-        {
-            { SampleRegistrationId1, SampleTpmEndorsementKey },
-            { SampleRegistrationId2, SampleTpmEndorsementKey }
-        };
-        
-        public BulkOperationSample(ProvisioningServiceClient provisioningServiceClient)
+        private static readonly List<string> s_registrationIds = new() { SampleRegistrationId1, SampleRegistrationId2 };
+
+        public BulkOperationSample(ProvisioningServiceClient provisioningServiceClient, ILogger logger)
         {
             _provisioningServiceClient = provisioningServiceClient;
+            _logger = logger;
         }
 
         public async Task RunSampleAsync()
@@ -44,19 +35,22 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
 
         public async Task<List<IndividualEnrollment>> CreateBulkIndividualEnrollmentsAsync()
         {
-            Console.WriteLine("\nCreating a new set of individualEnrollments...");
+            _logger.LogInformation("\nCreating a new set of individualEnrollments...");
             var individualEnrollments = new List<IndividualEnrollment>();
-            foreach (KeyValuePair<string, string> item in s_registrationIds)
+            foreach (string item in s_registrationIds)
             {
-                Attestation attestation = new TpmAttestation(item.Value);
-                individualEnrollments.Add(new IndividualEnrollment(item.Key, attestation));
+                Attestation attestation = new SymmetricKeyAttestation(
+                    CryptoKeyGenerator.GenerateKey(32),
+                    CryptoKeyGenerator.GenerateKey(32));
+                individualEnrollments.Add(new IndividualEnrollment(item, attestation));
             }
 
-            Console.WriteLine("\nRunning the bulk operation to create the individualEnrollments...");
-            BulkEnrollmentOperationResult bulkEnrollmentOperationResult =
-                await _provisioningServiceClient.RunBulkEnrollmentOperationAsync(BulkOperationMode.Create, individualEnrollments);
-            Console.WriteLine("\nResult of the Create bulk enrollment.");
-            Console.WriteLine(bulkEnrollmentOperationResult);
+            _logger.LogInformation("\nRunning the bulk operation to create the individualEnrollments...");
+            BulkEnrollmentOperationResult bulkEnrollmentOperationResult = await _provisioningServiceClient
+                .IndividualEnrollments
+                .RunBulkOperationAsync(BulkOperationMode.Create, individualEnrollments);
+            _logger.LogInformation("\nResult of the create bulk enrollment.");
+            _logger.LogInformation(JsonConvert.SerializeObject(bulkEnrollmentOperationResult));
 
             return individualEnrollments;
         }
@@ -66,32 +60,32 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
             foreach (IndividualEnrollment individualEnrollment in individualEnrollments)
             {
                 string registrationId = individualEnrollment.RegistrationId;
-                Console.WriteLine($"\nGetting the {nameof(individualEnrollment)} information for {registrationId}...");
+                _logger.LogInformation($"\nGetting the {nameof(individualEnrollment)} information for {registrationId}...");
                 IndividualEnrollment getResult = await _provisioningServiceClient
-                    .GetIndividualEnrollmentAsync(registrationId);
-                Console.WriteLine(getResult);
+                    .IndividualEnrollments
+                    .GetAsync(registrationId);
+                _logger.LogInformation($"Current provisioning status: {getResult.ProvisioningStatus}");
             }
         }
-        
+
         public async Task DeleteIndividualEnrollmentsAsync(List<IndividualEnrollment> individualEnrollments)
         {
-            Console.WriteLine("\nDeleting the set of individualEnrollments...");
+            _logger.LogInformation("\nDeleting the set of individualEnrollments...");
             BulkEnrollmentOperationResult bulkEnrollmentOperationResult = await _provisioningServiceClient
-                .RunBulkEnrollmentOperationAsync(BulkOperationMode.Delete, individualEnrollments);
-            Console.WriteLine(bulkEnrollmentOperationResult);
+                .IndividualEnrollments
+                .RunBulkOperationAsync(BulkOperationMode.Delete, individualEnrollments);
+            _logger.LogInformation(JsonConvert.SerializeObject(bulkEnrollmentOperationResult));
         }
 
         public async Task QueryIndividualEnrollmentsAsync()
         {
-            Console.WriteLine("\nCreating a query for enrollments...");
-            var querySpecification = new QuerySpecification("SELECT * FROM enrollments");
+            _logger.LogInformation("\nCreating a query for enrollments...");
 
-            using Query query = _provisioningServiceClient.CreateIndividualEnrollmentQuery(querySpecification, QueryPageSize);
-            while (query.HasNext())
+            IAsyncEnumerable<IndividualEnrollment> query = _provisioningServiceClient.IndividualEnrollments.CreateQuery("SELECT * FROM enrollments");
+            await foreach (IndividualEnrollment enrollment in query)
             {
-                Console.WriteLine("\nQuerying the next enrollments...");
-                QueryResult queryResult = await query.NextAsync();
-                Console.WriteLine(queryResult);
+                _logger.LogInformation("\nQuerying the next enrollments...");
+                _logger.LogInformation($"Current provisioning status: {enrollment.ProvisioningStatus}");
             }
         }
     }

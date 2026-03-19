@@ -1,42 +1,41 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using Newtonsoft.Json;
+
 namespace Microsoft.Azure.Devices
 {
-    using Newtonsoft.Json;
-    using System.ComponentModel;
-
     /// <summary>
     /// Used to specify the authentication mechanism used by a device.
     /// </summary>
     public sealed class AuthenticationMechanism
     {
-        private SymmetricKey symmetricKey;
-        private X509Thumbprint x509Thumbprint;
+        private SymmetricKey _symmetricKey;
+        private X509Thumbprint _x509Thumbprint;
 
         /// <summary>
-        /// default ctor
+        /// Default constructor.
         /// </summary>
         public AuthenticationMechanism()
         {
-            this.SymmetricKey = new SymmetricKey();
-            this.X509Thumbprint = new X509Thumbprint();
-            this.Type = AuthenticationType.Sas;
+            SymmetricKey = new SymmetricKey();
+            X509Thumbprint = new X509Thumbprint();
+            Type = ClientAuthenticationType.Sas;
         }
 
         /// <summary>
-        /// Gets or sets the <see cref="SymmetricKey"/> used for Authentication
+        /// Gets or sets the symmetric key used for authentication.
         /// </summary>
-        [JsonProperty(PropertyName = "symmetricKey")]
+        [JsonProperty("symmetricKey")]
         public SymmetricKey SymmetricKey
         {
-            get { return this.symmetricKey; }
+            get => _symmetricKey;
             set
             {
-                this.symmetricKey = value;
+                _symmetricKey = value;
                 if (value != null)
                 {
-                    this.Type = AuthenticationType.Sas;
+                    Type = ClientAuthenticationType.Sas;
                 }
             }
         }
@@ -44,16 +43,16 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Gets or sets the X509 client certificate thumbprint.
         /// </summary>
-        [JsonProperty(PropertyName = "x509Thumbprint")]
+        [JsonProperty("x509Thumbprint")]
         public X509Thumbprint X509Thumbprint
         {
-            get { return this.x509Thumbprint; }
+            get => _x509Thumbprint;
             set
             {
-                this.x509Thumbprint = value;
+                _x509Thumbprint = value;
                 if (value != null)
                 {
-                    this.Type = AuthenticationType.SelfSigned;
+                    Type = ClientAuthenticationType.SelfSigned;
                 }
             }
         }
@@ -61,8 +60,7 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Gets or sets the authentication type.
         /// </summary>
-        [DefaultValue(AuthenticationType.Sas)]
-        [JsonProperty(PropertyName = "type", DefaultValueHandling = DefaultValueHandling.Populate)]
-        public AuthenticationType Type { get; set; }
+        [JsonProperty("type")]
+        public ClientAuthenticationType Type { get; set; }
     }
 }

@@ -8,6 +8,7 @@ namespace Microsoft.Azure.Devices.Samples
     /// <summary>
     /// Parameters for the application.
     /// </summary>
+
     internal class Parameters
     {
         [Option(
@@ -16,14 +17,6 @@ namespace Microsoft.Azure.Devices.Samples
             Required = true,
             HelpText = "The connection string of the IoT hub instance to connect to.")]
         public string IoTHubConnectionString { get; set; }
-
-        [Option(
-            't',
-            "TransportType",
-            Default = TransportType.Amqp,
-            Required = false,
-            HelpText = "The transport to use to communicate with the IoT hub. Possible values include Amqp and Amqp_WebSocket_Only.")]
-        public TransportType TransportType { get; set; }
 
         [Option(
             'r',

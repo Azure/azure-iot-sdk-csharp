@@ -1,88 +1,91 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information
 
+using System;
 using System.Globalization;
 using System.Net;
 using System.Threading.Tasks;
+using FluentAssertions;
 using Microsoft.Azure.Devices.Client.HsmAuthentication;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 
-namespace Microsoft.Azure.Devices.Client.Test.HsmAuthentication
+namespace Microsoft.Azure.Devices.Client.Tests.HsmAuthentication
 {
     [TestClass]
     [TestCategory("Unit")]
     public class ModuleAuthenticationWithHsmTest
     {
-        string signature = "signature";
-        string deviceId = "device1";
-        string moduleId = "module1";
-        string generationId = "1";
-        string iotHub = "iothub.test";
+        private const string Signature = "signature";
+        private const string DeviceId = "device1";
+        private const string ModuleId = "module1";
+        private const string GenerationId = "1";
+        private const string IotHub = "iothub.test";
 
         [TestMethod]
         public async Task TestSafeCreateNewToken_ShouldReturnSasToken()
         {
-            // Arrange
+            // arrange
             var httpClient = new Mock<ISignatureProvider>();
-            httpClient.Setup(p => p.SignAsync(this.moduleId, this.generationId, It.IsAny<string>())).Returns(Task.FromResult(this.signature));
+            httpClient.Setup(p => p.SignAsync(ModuleId, GenerationId, It.IsAny<string>())).Returns(Task.FromResult(Signature));
 
-            var moduleAuthenticationWithHsm = new ModuleAuthenticationWithHsm(httpClient.Object, this.deviceId, this.moduleId, this.generationId);
+            var moduleAuthenticationWithHsm = new EdgeModuleAuthenticationWithHsm(httpClient.Object, DeviceId, ModuleId, GenerationId);
 
-            // Act
-            string sasToken = await moduleAuthenticationWithHsm.GetTokenAsync(this.iotHub);
-            SharedAccessSignature token = SharedAccessSignature.Parse(iotHub, sasToken);
+            // act
+            string sasToken = await moduleAuthenticationWithHsm.GetTokenAsync(IotHub);
+            SharedAccessSignature token = SharedAccessSignatureParser.Parse(sasToken);
 
             string audience = string.Format(CultureInfo.InvariantCulture, "{0}/devices/{1}/modules/{2}",
-                this.iotHub,
-                WebUtility.UrlEncode(this.deviceId),
-                WebUtility.UrlEncode(this.moduleId));
+                IotHub,
+                WebUtility.UrlEncode(DeviceId),
+                WebUtility.UrlEncode(ModuleId));
 
-            // Assert
+            // assert
             httpClient.Verify();
-            Assert.IsNotNull(sasToken);
-            Assert.AreEqual(this.signature, token.Signature);
-            Assert.AreEqual(audience, token.Audience);
-            Assert.AreEqual(string.Empty, token.KeyName);
+            sasToken.Should().NotBeNull();
+            Signature.Should().Be(token.Signature);
+            audience.Should().Be(token.Audience);
+            token.KeyName.Should().Be(string.Empty);
         }
 
         [TestMethod]
         public async Task TestSafeCreateNewToken_ShouldReturnSasToken_DeviceIdWithChars()
         {
-            // Arrange
-            string deviceId = "n@m.et#st";
-            string moduleId = "$edgeAgent";
+            // arrange
+            const string deviceId = "n@m.et#st";
+            const string moduleId = "$edgeAgent";
             var httpClient = new Mock<ISignatureProvider>();
-            httpClient.Setup(p => p.SignAsync(moduleId, this.generationId, It.IsAny<string>())).Returns(Task.FromResult(this.signature));
+            httpClient.Setup(p => p.SignAsync(moduleId, GenerationId, It.IsAny<string>())).Returns(Task.FromResult(Signature));
 
-            var moduleAuthenticationWithHsm = new ModuleAuthenticationWithHsm(httpClient.Object, deviceId, moduleId, this.generationId);
+            var moduleAuthenticationWithHsm = new EdgeModuleAuthenticationWithHsm(httpClient.Object, deviceId, moduleId, GenerationId);
 
-            // Act
-            string sasToken = await moduleAuthenticationWithHsm.GetTokenAsync(this.iotHub);
-            SharedAccessSignature token = SharedAccessSignature.Parse(iotHub, sasToken);
+            // act
+            string sasToken = await moduleAuthenticationWithHsm.GetTokenAsync(IotHub);
+            SharedAccessSignature token = SharedAccessSignatureParser.Parse(sasToken);
 
             string audience = string.Format(CultureInfo.InvariantCulture, "{0}/devices/{1}/modules/{2}",
-                this.iotHub,
+                IotHub,
                 WebUtility.UrlEncode(deviceId),
                 WebUtility.UrlEncode(moduleId));
 
-            // Assert
+            // assert
             httpClient.Verify();
-            Assert.IsNotNull(sasToken);
-            Assert.AreEqual(this.signature, token.Signature);
-            Assert.AreEqual(audience, token.Audience);
-            Assert.AreEqual(string.Empty, token.KeyName);
+            sasToken.Should().NotBeNull();
+            Signature.Should().Be(token.Signature);
+            audience.Should().Be(token.Audience);
+            token.KeyName.Should().Be(string.Empty);
         }
 
         [TestMethod]
         public async Task TestSafeCreateNewToken_WhenIotEdgedThrows_ShouldThrow()
         {
             var httpClient = new Mock<ISignatureProvider>();
-            httpClient.Setup(p => p.SignAsync(this.moduleId, this.generationId, It.IsAny<string>())).Throws(new HttpHsmComunicationException(It.IsAny<string>(), It.IsAny<int>()));
+            httpClient.Setup(p => p.SignAsync(ModuleId, GenerationId, It.IsAny<string>())).Throws(new HttpHsmComunicationException(It.IsAny<string>(), It.IsAny<int>()));
 
-            var authenticationWithHsm = new ModuleAuthenticationWithHsm(httpClient.Object, this.deviceId, this.moduleId, this.generationId);
+            var authenticationWithHsm = new EdgeModuleAuthenticationWithHsm(httpClient.Object, DeviceId, ModuleId, GenerationId);
 
-            await TestAssert.ThrowsAsync<HttpHsmComunicationException>(async () => await authenticationWithHsm.GetTokenAsync(this.iotHub));
+            Func<Task> act = async () => await authenticationWithHsm.GetTokenAsync(IotHub);
+            await act.Should().ThrowAsync<HttpHsmComunicationException>();
         }
     }
 }

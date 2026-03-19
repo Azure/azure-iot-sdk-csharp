@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Text;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
 
 namespace Microsoft.Azure.Devices.Tests
 {
@@ -25,6 +26,33 @@ namespace Microsoft.Azure.Devices.Tests
 
             // assert
             hubName.Should().Be(expectedHubName);
+        }
+
+        [TestMethod]
+        public void IotHubConnectionStringProperties_InvalidHostnameFormat()
+        {
+            // arrange
+            // invalid hostname format
+            string hostname = "5acme";
+
+            //act
+            Action act = () => _ = IotHubConnectionProperties.GetIotHubName(hostname);
+            
+            // assert
+            act.Should().Throw<ArgumentException>();
+        }
+
+        [TestMethod]
+        public void IotHubConnectionPropertiesPropertiesAreSet()
+        {
+            // arrange - act
+            string hostName = "acme.azure-devices.net";
+            var connectionProperties = new Mock<IotHubConnectionProperties>(hostName);
+
+            // assert
+            connectionProperties.Object.HostName.Should().NotBeNull();
+            connectionProperties.Object.IotHubName.Should().NotBeNull();
+            connectionProperties.Object.AmqpAudience.Should().NotBeNull();
         }
     }
 }

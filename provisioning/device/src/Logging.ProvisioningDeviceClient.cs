@@ -3,7 +3,7 @@
 
 using System.Diagnostics.Tracing;
 
-namespace Microsoft.Azure.Devices.Shared
+namespace Microsoft.Azure.Devices.Provisioning.Client
 {
     // e927240b-7198-5cc8-72f1-7ddcf31bb8cb
     [EventSource(Name = "Microsoft-Azure-Devices-Provisioning-Client")]
@@ -12,35 +12,35 @@ namespace Microsoft.Azure.Devices.Shared
         private const int RegisterAsyncId = 11;
 
         [NonEvent]
-        public static void RegisterAsync(
+        public static void LogRegister(
             object thisOrContextObject,
             string globalDeviceEndpoint,
             string idScope,
-            object transport,
+            object options,
             object security)
         {
             DebugValidateArg(thisOrContextObject);
             DebugValidateArg(security);
-            DebugValidateArg(transport);
+            DebugValidateArg(options);
 
             if (IsEnabled)
             {
-                Log.RegisterAsync(
-                IdOf(thisOrContextObject),
-                globalDeviceEndpoint,
-                idScope,
-                IdOf(transport),
-                IdOf(security));
+                Log.LogRegister(
+                    IdOf(thisOrContextObject),
+                    globalDeviceEndpoint,
+                    idScope,
+                    IdOf(options),
+                    IdOf(security));
             }
         }
 
         [Event(RegisterAsyncId, Keywords = Keywords.Default, Level = EventLevel.Informational)]
-        private void RegisterAsync(
+        private void LogRegister(
             string thisOrContextObject,
             string globalDeviceEndpoint,
             string idScope,
-            string transport,
+            string options,
             string security) =>
-            WriteEvent(RegisterAsyncId, thisOrContextObject, globalDeviceEndpoint, idScope, transport, security);
+            WriteEvent(RegisterAsyncId, thisOrContextObject, globalDeviceEndpoint, idScope, options, security);
     }
 }

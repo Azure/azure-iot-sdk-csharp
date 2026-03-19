@@ -5,13 +5,17 @@ using System;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
 
-namespace Microsoft.Azure.Devices.Client.Edge
+namespace Microsoft.Azure.Devices.Client
 {
-    internal class NullCertificateValidator : ICertificateValidator
+    internal sealed class NullCertificateValidator : ICertificateValidator
     {
         public static NullCertificateValidator Instance { get; } = new NullCertificateValidator();
 
-        public Func<object, X509Certificate, X509Chain, SslPolicyErrors, bool> GetCustomCertificateValidation()
+        public void Dispose()
+        {
+        }
+
+        Func<object, X509Certificate, X509Chain, SslPolicyErrors, bool> ICertificateValidator.GetCustomCertificateValidation()
         {
             return null;
         }

@@ -3,142 +3,153 @@
 
 using System;
 using System.IO;
+using System.Net;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Amqp.Framing;
-using Microsoft.Azure.Devices.Common;
-using Microsoft.Azure.Devices.Common.Exceptions;
-using Microsoft.Azure.Devices.Common.Extensions;
-using Microsoft.Azure.Devices.Shared;
 using Newtonsoft.Json;
 
-namespace Microsoft.Azure.Devices
+namespace Microsoft.Azure.Devices.Amqp
 {
-    internal class AmqpClientHelper
+    /// <summary>
+    /// Miscellaneous helpers for AMQP operations.
+    /// </summary>
+    internal static class AmqpClientHelper
     {
-        public delegate object ParseFunc<in T>(AmqpMessage amqpMessage, T data);
+        internal delegate object ParseFunc<in T>(AmqpMessage amqpMessage, T data);
 
-        public static Exception ToIotHubClientContract(Exception exception)
+        internal static Exception ToIotHubClientContract(Exception exception)
         {
-            if (exception is TimeoutException)
+            return exception switch
             {
-                return new IotHubCommunicationException(exception.Message);
-            }
-            else if (exception is UnauthorizedAccessException)
-            {
-                return new UnauthorizedException(exception.Message);
-            }
-            else
-            {
-                if (exception is AmqpException amqpException)
-                {
-                    return AmqpErrorMapper.ToIotHubClientContract(amqpException.Error);
-                }
-
-                return exception;
-            }
+                TimeoutException => new IotHubServiceException(
+                    exception.Message,
+                    HttpStatusCode.RequestTimeout,
+                    IotHubServiceErrorCode.RequestTimeout),
+                UnauthorizedAccessException => new IotHubServiceException(
+                    exception.Message,
+                    HttpStatusCode.Unauthorized,
+                    IotHubServiceErrorCode.IotHubUnauthorizedAccess),
+                AmqpException amqpException => ToIotHubClientContract(amqpException.Error, amqpException),
+                _ => exception,
+            };
         }
 
-        internal static string GetReceivingPath(EndpointKind endpointKind)
-        {
-            string path;
-            switch (endpointKind)
-            {
-                case EndpointKind.Feedback:
-                    path = "/messages/serviceBound/feedback";
-                    break;
-
-                case EndpointKind.FileNotification:
-                    path = "/messages/serviceBound/filenotifications";
-                    break;
-
-                default:
-                    throw new ArgumentException("Invalid endpoint kind to receive messages from Service endpoints", nameof(endpointKind));
-            }
-
-            Logging.Info(endpointKind, path, nameof(GetReceivingPath));
-
-            return path;
-        }
-
-        internal static async Task DisposeMessageAsync(
-            FaultTolerantAmqpObject<ReceivingAmqpLink> faultTolerantReceivingLink,
-            string lockToken,
-            Outcome outcome,
-            bool batchable)
-        {
-            using var cts = new CancellationTokenSource(IotHubConnection.DefaultOperationTimeout);
-            await DisposeMessageAsync(faultTolerantReceivingLink, lockToken, outcome, batchable, cts.Token).ConfigureAwait(false);
-        }
-
-        internal static async Task DisposeMessageAsync(
-            FaultTolerantAmqpObject<ReceivingAmqpLink> faultTolerantReceivingLink,
-            string lockToken,
-            Outcome outcome,
-            bool batchable,
-            CancellationToken cancellationToken)
-        {
-            Logging.Enter(faultTolerantReceivingLink, lockToken, outcome.DescriptorCode, batchable, nameof(DisposeMessageAsync));
-
-            try
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                ArraySegment<byte> deliveryTag = IotHubConnection.ConvertToDeliveryTag(lockToken);
-
-                Outcome disposeOutcome;
-                try
-                {
-                    ReceivingAmqpLink deviceBoundReceivingLink = await faultTolerantReceivingLink.GetReceivingLinkAsync().ConfigureAwait(false);
-                    disposeOutcome = await deviceBoundReceivingLink
-                        .DisposeMessageAsync(
-                            deliveryTag,
-                            outcome,
-                            batchable,
-                            cancellationToken)
-                        .ConfigureAwait(false);
-                }
-                catch (Exception exception)
-                {
-                    Logging.Error(faultTolerantReceivingLink, exception, nameof(DisposeMessageAsync));
-
-                    if (exception.IsFatal())
-                    {
-                        throw;
-                    }
-
-                    throw ToIotHubClientContract(exception);
-                }
-
-                Logging.Info(faultTolerantReceivingLink, disposeOutcome.DescriptorCode, nameof(DisposeMessageAsync));
-
-                if (disposeOutcome.DescriptorCode != Accepted.Code)
-                {
-                    throw AmqpErrorMapper.GetExceptionFromOutcome(disposeOutcome);
-                }
-            }
-            finally
-            {
-                Logging.Exit(faultTolerantReceivingLink, lockToken, outcome.DescriptorCode, batchable, nameof(DisposeMessageAsync));
-            }
-        }
-
-        public static void ValidateContentType(AmqpMessage amqpMessage, string expectedContentType)
+        internal static void ValidateContentType(AmqpMessage amqpMessage, string expectedContentType)
         {
             string contentType = amqpMessage.Properties.ContentType.ToString();
             if (!string.Equals(contentType, expectedContentType, StringComparison.OrdinalIgnoreCase))
             {
-                throw new InvalidOperationException("Unsupported content type: {0}".FormatInvariant(contentType));
+                throw new InvalidOperationException($"Unsupported content type: {contentType}.");
             }
         }
 
-        public static async Task<T> GetObjectFromAmqpMessageAsync<T>(AmqpMessage amqpMessage)
+        internal static async Task<T> GetObjectFromAmqpMessageAsync<T>(AmqpMessage amqpMessage)
         {
             using var reader = new StreamReader(amqpMessage.BodyStream, Encoding.UTF8);
             string jsonString = await reader.ReadToEndAsync().ConfigureAwait(false);
             return JsonConvert.DeserializeObject<T>(jsonString, JsonSerializerSettingsInitializer.GetJsonSerializerSettings());
+        }
+
+        internal static Exception GetExceptionFromOutcome(Outcome outcome)
+        {
+            if (outcome == null)
+            {
+                return new IotHubServiceException("Unknown error.");
+            }
+
+            Exception retException;
+            if (outcome.DescriptorCode == Rejected.Code)
+            {
+                var rejected = (Rejected)outcome;
+                retException = ToIotHubClientContract(rejected.Error);
+            }
+            else if (outcome.DescriptorCode == Released.Code)
+            {
+                retException = new OperationCanceledException("AMQP link released.");
+            }
+            else
+            {
+                retException = new IotHubServiceException("Unknown error.");
+            }
+
+            return retException;
+        }
+
+        internal static IotHubServiceException ToIotHubClientContract(Error error, Exception innerException = null)
+        {
+            if (error == null)
+            {
+                return new IotHubServiceException("Unknown error.");
+            }
+
+            IotHubServiceException retException;
+            string message = error.Description;
+            string trackingId = null;
+
+            if (error.Info != null
+                && error.Info.TryGetValue(AmqpsConstants.TrackingId, out trackingId))
+            {
+                message = $"{message}\r\nTracking Id:{trackingId}";
+            }
+
+            if (error.Condition.Equals(IotHubAmqpErrorCode.TimeoutError))
+            {
+                retException = new IotHubServiceException(message, HttpStatusCode.RequestTimeout, IotHubServiceErrorCode.RequestTimeout, null, innerException);
+            }
+            else if (error.Condition.Equals(AmqpErrorCode.NotFound))
+            {
+                retException = new IotHubServiceException(message, HttpStatusCode.NotFound, IotHubServiceErrorCode.DeviceNotFound, null, innerException);
+            }
+            else if (error.Condition.Equals(AmqpErrorCode.UnauthorizedAccess))
+            {
+                retException = new IotHubServiceException(message, HttpStatusCode.Unauthorized, IotHubServiceErrorCode.IotHubUnauthorizedAccess, null, innerException);
+            }
+            else if (error.Condition.Equals(AmqpErrorCode.MessageSizeExceeded))
+            {
+                retException = new IotHubServiceException(message, HttpStatusCode.RequestEntityTooLarge, IotHubServiceErrorCode.MessageTooLarge, null, innerException);
+            }
+            else if (error.Condition.Equals(AmqpErrorCode.ResourceLimitExceeded))
+            {
+                retException = new IotHubServiceException(message, HttpStatusCode.Forbidden, IotHubServiceErrorCode.DeviceMaximumQueueDepthExceeded, null, innerException);
+            }
+            else if (error.Condition.Equals(IotHubAmqpErrorCode.DeviceAlreadyExists))
+            {
+                retException = new IotHubServiceException(message, HttpStatusCode.Conflict, IotHubServiceErrorCode.DeviceAlreadyExists, null, innerException);
+            }
+            else if (error.Condition.Equals(IotHubAmqpErrorCode.DeviceContainerThrottled))
+            {
+                retException = new IotHubServiceException(message, (HttpStatusCode)429, IotHubServiceErrorCode.ThrottlingException, null, innerException);
+            }
+            else if (error.Condition.Equals(IotHubAmqpErrorCode.QuotaExceeded))
+            {
+                retException = new IotHubServiceException(message, HttpStatusCode.Forbidden, IotHubServiceErrorCode.IotHubQuotaExceeded, null, innerException);
+            }
+            else if (error.Condition.Equals(IotHubAmqpErrorCode.PreconditionFailed))
+            {
+                retException = new IotHubServiceException(message, HttpStatusCode.PreconditionFailed, IotHubServiceErrorCode.PreconditionFailed, null, innerException);
+            }
+            else if (error.Condition.Equals(IotHubAmqpErrorCode.IotHubSuspended))
+            {
+                retException = new IotHubServiceException(message, HttpStatusCode.BadRequest, IotHubServiceErrorCode.IotHubSuspended, null, innerException);
+            }
+            else
+            {
+                retException = new IotHubServiceException(message, innerException);
+            }
+
+            if (trackingId != null)
+            {
+                retException.TrackingId = trackingId;
+            }
+
+            return retException;
+        }
+
+        internal static IotHubServiceException GetIotHubExceptionFromAmqpException(AmqpException exception)
+        {
+            return new IotHubServiceException(exception.Error.ToString(), exception);
         }
     }
 }
