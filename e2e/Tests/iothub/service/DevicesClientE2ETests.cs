@@ -233,8 +233,20 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             // arrange
 
             IotHubServiceClient serviceClient = TestDevice.ServiceClient;
-            var device1 = new Device(_idPrefix + Guid.NewGuid());
-            var device2 = new Device(_idPrefix + Guid.NewGuid());
+            var device1 = new Device(_idPrefix + Guid.NewGuid())
+            { 
+                Authentication = new()
+                { 
+                    Type = ClientAuthenticationType.Sas,
+                }
+            };
+            var device2 = new Device(_idPrefix + Guid.NewGuid())
+            {
+                Authentication = new()
+                {
+                    Type = ClientAuthenticationType.Sas,
+                }
+            };
 
             device1 = await serviceClient.Devices.CreateAsync(device1).ConfigureAwait(false);
             device2 = await serviceClient.Devices.CreateAsync(device2).ConfigureAwait(false);
@@ -350,7 +362,13 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             // arrange
 
             IotHubServiceClient serviceClient = TestDevice.ServiceClient;
-            var device = new Device(_idPrefix);
+            var device = new Device(_idPrefix)
+            { 
+                Authentication = new()
+                { 
+                    Type = ClientAuthenticationType.Sas,
+                }
+            };
             device = await serviceClient.Devices.CreateAsync(device).ConfigureAwait(false);
 
             try
