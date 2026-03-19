@@ -89,17 +89,10 @@ namespace Microsoft.Azure.Devices.Client
 
             try
             {
-                if (typeof(T) == typeof(byte[]))
-                {
-                    payload = JsonSerializer.Deserialize<T>(_payload, JsonSerializerSettings.Options);
-                    return true;
-                }
-
-                // If not deserializing into byte[], an extra layer of decoding is needed
-                payload = JsonSerializer.Deserialize<T>(Encoding.UTF8.GetString(JsonSerializer.Deserialize<byte[]>(_payload, JsonSerializerSettings.Options)), JsonSerializerSettings.Options);
+                payload = JsonSerializer.Deserialize<T>(_payload, JsonSerializerSettings.Options);
                 return true;
             }
-            catch (Exception ex)
+            catch (JsonException ex)
             {
                 // In case the value cannot be converted using the serializer,
                 // then return false with the default value of the type <T> passed in.
