@@ -51,7 +51,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             string deviceName = s_devicePrefix + Guid.NewGuid();
 
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString, options);
-            await serviceClient.Devices.CreateAsync(new Device(deviceName)).ConfigureAwait(false);
+            await serviceClient.Devices.CreateAsync(new Device(deviceName) { Authentication = new() { Type = ClientAuthenticationType.Sas } }).ConfigureAwait(false);
             await serviceClient.Devices.DeleteAsync(deviceName).ConfigureAwait(false);
         }
 
