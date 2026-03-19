@@ -4,7 +4,6 @@
 using System;
 using System.Text;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices.Client
 {
@@ -29,6 +28,13 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The optional direct method payload.
         /// </summary>
+        /// <remarks>
+        ///  The value of this payload must be the UTF-8 encodeded bytes of a valid Json value (string, int, bool, etc),
+        ///  a valid Json array, or a valid Json object. Use functions like <see cref="SetPayload(bool)"/>
+        ///  to set this payload equal to primitive types. Use functions like <see cref="SetPayload(JsonElement)"/>
+        ///  or <see cref="SetPayloadJson(string)"/> to set this payload as an unmodeled complex json object. Use 
+        ///  <see cref="SetPayload(object)"/> to set this payload as a strongly typed object (that is serializable by System.Text.Json)
+        /// </remarks>
         public byte[] Payload { get; set; }
 
         /// <summary>
@@ -37,53 +43,58 @@ namespace Microsoft.Azure.Devices.Client
         public string RequestId { get; set; }
 
         /// <summary>
-        /// 
+        /// Set this payload as an integer (a simple JSON value).
         /// </summary>
-        /// <param name="value"></param>
+        /// <param name="value">The JSON value integer</param>
         public void SetPayload(int value)
         {
             Payload = JsonSerializer.SerializeToUtf8Bytes(value);
         }
 
         /// <summary>
-        /// 
+        /// Set this payload as a boolean (a JSON value).
         /// </summary>
-        /// <param name="value"></param>
+        /// <param name="value">The JSON value boolean</param>
         public void SetPayload(bool value)
         {
             Payload = JsonSerializer.SerializeToUtf8Bytes(value);
         }
 
         /// <summary>
-        /// 
+        /// Set this payload as a string (a simple JSON value).
         /// </summary>
-        /// <param name="value"></param>
+        /// <param name="value">The JSON value string. For instance, "someValue".</param>
         public void SetPayload(string value)
         {
             Payload = JsonSerializer.SerializeToUtf8Bytes(value);
         }
 
         /// <summary>
-        /// 
+        /// Set this payload as an arbitrary JSON document.
         /// </summary>
+        /// <param name="jsonString">The JSON value string. For instance "{\"someKey\":\"someValue\"}"</param>
+        /// <remarks>This function just UTF-8 encodes the provided string. It does not further validation.</remarks>
         public void SetPayloadJson(string jsonString)
         {
             Payload = Encoding.UTF8.GetBytes(jsonString);
         }
 
         /// <summary>
-        /// 
+        /// Set the payload equal to a <see cref="JsonElement"/>.
         /// </summary>
-        /// <param name="jsonElement"></param>
+        /// <param name="jsonElement">The JsonElement value to assign.</param>
         public void SetPayload(JsonElement jsonElement)
         {
             Payload = Encoding.UTF8.GetBytes(jsonElement.GetRawText());
         }
 
         /// <summary>
-        /// 
+        /// Use a serializable object as the payload.
         /// </summary>
-        /// <param name="serializableObject"></param>
+        /// <param name="serializableObject">Any custom payload object that is serializable by System.Text.Json</param>
+        /// <remarks>
+        /// This object must be serializable by System.Text.Json
+        /// </remarks>
         public void SetPayload(object serializableObject)
         {
             Payload = JsonSerializer.SerializeToUtf8Bytes(serializableObject);

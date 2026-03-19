@@ -5,7 +5,7 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices.E2ETests
 {
-    internal class NjCustomPayload
+    internal class CustomPayload
     {
         [JsonPropertyName("string")]
         public string StringProperty { get; set; }

@@ -55,8 +55,8 @@ namespace Microsoft.Azure.Devices.Client
         /// interpreted as 0 seconds (using <c>ConnectTimeout.TotalSeconds</c>).
         /// </para>
         /// </remarks>
-        [JsonIgnore]
-        public TimeSpan? ConnectionTimeout { get; set; }
+        [JsonPropertyName("connectTimeoutInSeconds")]
+        public int? ConnectTimeoutInSeconds { get; set; }
 
         /// <summary>
         /// The amount of time given to the device to process and respond to the command request.
@@ -69,35 +69,14 @@ namespace Microsoft.Azure.Devices.Client
         /// in this request having a timeout of 0 seconds.
         /// </para>
         /// </remarks>
-        [JsonIgnore]
-        public TimeSpan? ResponseTimeout { get; set; }
+        [JsonPropertyName("responseTimeoutInSeconds")]
+        public int? ResponseTimeoutInSeconds { get; set; }
 
         /// <summary>
         /// The direct method payload.
         /// </summary>
         [JsonPropertyName("payload")]
         public byte[] Payload { get; set; }
-
-        /// <summary>
-        /// An overloaded way of storing the direct method payload instead of as a byte array.
-        /// </summary>
-        internal object PayloadAsObject { get; set; }
-
-        /// <summary>
-        /// Method timeout, in seconds.
-        /// </summary>
-        [JsonPropertyName("responseTimeoutInSeconds")]
-        public int? ResponseTimeoutInSeconds => ResponseTimeout.HasValue && ResponseTimeout > TimeSpan.Zero
-            ? (int)ResponseTimeout.Value.TotalSeconds
-            : null;
-
-        /// <summary>
-        /// Connection timeout, in seconds.
-        /// </summary>
-        [JsonPropertyName("connectTimeoutInSeconds")]
-        public int? ConnectionTimeoutInSeconds => ConnectionTimeout.HasValue && ConnectionTimeout > TimeSpan.Zero
-            ? (int)ConnectionTimeout.Value.TotalSeconds
-            : null;
 
         /// <summary>
         /// The direct method request payload, deserialized to the specified type.
@@ -145,28 +124,6 @@ namespace Microsoft.Azure.Devices.Client
             }
 
             return false;
-        }
-
-        /// <summary>
-        /// Get the raw payload bytes.
-        /// </summary>
-        /// <returns>A copy of the raw payload as a byte array.</returns>
-        /// <example>
-        /// <code language="csharp">
-        /// await client.SetDirectMethodCallbackAsync((edgeModuleDirectMethodRequest) =>
-        /// {
-        ///     byte[] arr = edgeModuleDirectMethodRequest.GetPayloadAsBytes();
-        ///     // deserialize as needed and do work...
-        ///     
-        ///     // Acknowlege the direct method call with the status code 200. 
-        ///     return Task.FromResult(new DirectMethodResponse(200));
-        /// },
-        /// cancellationToken);
-        /// </code>
-        /// </example>
-        public byte[] GetPayloadAsBytes()
-        {
-            return Payload == null || Payload.Length == 0 ? null : (byte[])Payload.Clone();
         }
     }
 }
