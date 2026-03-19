@@ -46,7 +46,11 @@ namespace Microsoft.Azure.Devices
             {
                 if (TryGetMemberInternal(propertyName, out dynamic value))
                 {
-                    if (value is JsonElement jsonElementValue)
+                    if (value is JsonDictionary jsonDictionary)
+                    {
+                        return jsonDictionary;
+                    }
+                    else if (value is JsonElement jsonElementValue)
                     {
                         return FromJsonElement(jsonElementValue);
                     }
@@ -57,9 +61,23 @@ namespace Microsoft.Azure.Devices
                     throw new InvalidOperationException($"Unexpected property name '{propertyName}'.");
                 }
             }
-            set => Properties[propertyName] = value is null || value is JsonElement
-                ? value
-                : JsonSerializer.SerializeToElement(value);
+            set
+            {
+                if (value is null)
+                {
+                    // This creates a JsonElement with ValueType "null"
+                    Properties[propertyName] = JsonDocument.Parse("null").RootElement;
+                }
+                else if (value is JsonElement jsonElement)
+                {
+                    Properties[propertyName] = jsonElement;
+                }
+                else
+                {
+                    Properties[propertyName] = JsonSerializer.SerializeToElement(value);
+                }
+            }
+            
         }
 
         private static object FromJsonElement(JsonElement jsonElement)
@@ -83,7 +101,7 @@ namespace Microsoft.Azure.Devices
                     return arrayWithElements;
                 
                 case JsonValueKind.Object:
-                    Dictionary<string, object> objectFields = new Dictionary<string, object>();
+                    JsonDictionary objectFields = new();
                     foreach (JsonProperty key in jsonElement.EnumerateObject())
                     { 
                         objectFields.TryAdd(key.Name, FromJsonElement(key.Value));

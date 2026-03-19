@@ -10,7 +10,7 @@ using System.Text.Json.Serialization;
 using Microsoft.Azure.Amqp.Framing;
 using Microsoft.Azure.Devices.Client;
 
-namespace Microsoft.Azure.Devices
+namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
     /// </summary>
@@ -67,7 +67,11 @@ namespace Microsoft.Azure.Devices
             {
                 if (TryGetMemberInternal(propertyName, out dynamic value))
                 {
-                    if (value is JsonElement jsonElementValue)
+                    if (value is JsonDictionary jsonDictionary)
+                    {
+                        return jsonDictionary;
+                    }
+                    else if (value is JsonElement jsonElementValue)
                     {
                         return FromJsonElement(jsonElementValue);
                     }
@@ -117,7 +121,7 @@ namespace Microsoft.Azure.Devices
                     return arrayWithElements;
                 
                 case JsonValueKind.Object:
-                    Dictionary<string, object> objectFields = new Dictionary<string, object>();
+                    JsonDictionary objectFields = new();
                     foreach (JsonProperty key in jsonElement.EnumerateObject())
                     { 
                         objectFields.TryAdd(key.Name, FromJsonElement(key.Value));

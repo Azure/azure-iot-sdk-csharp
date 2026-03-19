@@ -192,7 +192,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
 
         // This operation behaves the same irrespective of if the client is initialized over tcp or websocket.
         [TestMethod]
-        public async Task Twin_ServiceSetsDesiredPropertyArrayAndDeviceReceivesEvent_Mqtt()
+        public async Task Twin_ServiceSetsComplexDesiredPropertyAndDeviceReceivesEvent_Mqtt()
         {
             // Setting up one cancellation token for the complete test flow
             using var cts = new CancellationTokenSource(s_testTimeout);
@@ -207,7 +207,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
 
         // This operation behaves the same irrespective of if the client is initialized over tcp or websocket.
         [TestMethod]
-        public async Task Twin_ServiceSetsDesiredPropertyArrayAndDeviceReceivesEvent_Amqp()
+        public async Task Twin_ServiceSetsComplexDesiredPropertyAndDeviceReceivesEvent_Amqp()
         {
             // Setting up one cancellation token for the complete test flow
             using var cts = new CancellationTokenSource(s_testTimeout);
@@ -772,7 +772,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 .UpdateReportedPropertiesAsync(
                     new PropertyCollection
                     {
-                        [propName1] = new Dictionary<string, object>
+                        [propName1] = new JsonDictionary
                         {
                             [propName2] = null
                         }
@@ -782,8 +782,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
 
             serviceTwin = await s_serviceClient.Twins.GetAsync(testDevice.Id, ct).ConfigureAwait(false);
             serviceTwin.Properties.Reported.Contains(propName1).Should().BeTrue();
-            serviceTwin.Properties.Reported.TryGetValue(propName1, out Dictionary<string, object> value1).Should().BeTrue();
-            value1.Count.Should().Be(0);
+            JsonDictionary jsonDictionary = serviceTwin.Properties.Reported[propName1];
+            jsonDictionary.Count.Should().Be(0);
         }
     }
 
