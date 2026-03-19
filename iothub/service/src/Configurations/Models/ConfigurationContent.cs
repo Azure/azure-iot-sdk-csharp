@@ -22,18 +22,18 @@ namespace Microsoft.Azure.Devices
         /// </para>
         /// </remarks>
         [JsonPropertyName("modulesContent")]
-        public IDictionary<string, IDictionary<string, object>> ModulesContent { get; set; } = new Dictionary<string, IDictionary<string, object>>();
+        public IDictionary<string, JsonDictionary> ModulesContent { get; set; } = new Dictionary<string, JsonDictionary>();
 
         /// <summary>
         /// The device module configuration content.
         /// </summary>
         [JsonPropertyName("moduleContent")]
-        public IDictionary<string, object> ModuleContent { get; set; } = new Dictionary<string, object>();
+        public JsonDictionary ModuleContent { get; set; } = new();
 
         /// <summary>
         /// The device configuration content.
         /// </summary>
         [JsonPropertyName("deviceContent")]
-        public IDictionary<string, object> DeviceContent { get; set; } = new Dictionary<string, object>();
+        public JsonDictionary DeviceContent { get; set; } = new();
     }
 }

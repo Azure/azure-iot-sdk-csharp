@@ -50,7 +50,7 @@ namespace Microsoft.Azure.Devices.Tests
                     ModulesContent =
                     {
                         {
-                            "edgeAgent", new Dictionary<string, object> { { "properties.desired", "test" } }
+                            "edgeAgent", new JsonDictionary { { "properties.desired", "test" } }
                         }
                     }
                 }

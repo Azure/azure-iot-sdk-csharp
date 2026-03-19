@@ -77,7 +77,7 @@ namespace Microsoft.Azure.Devices.Samples
         {
             configuration.Content = new ConfigurationContent
             {
-                DeviceContent = new Dictionary<string, object>()
+                DeviceContent = new()
             };
             configuration.Content.DeviceContent["properties.desired.deviceContent_key"] = "deviceContent_value-" + configurationId;
         }
