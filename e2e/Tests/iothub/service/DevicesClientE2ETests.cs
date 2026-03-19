@@ -120,7 +120,11 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
             var iotEdgeDevice = new Device(deviceId)
             {
-                Capabilities = new ClientCapabilities { IsIotEdge = true }
+                Capabilities = new ClientCapabilities { IsIotEdge = true },
+                Authentication = new()
+                { 
+                    Type = ClientAuthenticationType.Sas,
+                }
             };
 
             await serviceClient.Devices.CreateWithTwinAsync(iotEdgeDevice, twin).ConfigureAwait(false);
@@ -152,10 +156,18 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             var edge = new Device(_idPrefix + Guid.NewGuid())
             {
                 Scope = "someScope" + Guid.NewGuid(),
+                Authentication = new()
+                { 
+                    Type = ClientAuthenticationType.Sas,
+                }
             };
             var device = new Device(_idPrefix + Guid.NewGuid())
             {
                 Scope = edge.Scope,
+                Authentication = new()
+                {
+                    Type = ClientAuthenticationType.Sas,
+                }
             };
 
             IotHubServiceClient serviceClient = TestDevice.ServiceClient;

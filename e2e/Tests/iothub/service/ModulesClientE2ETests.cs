@@ -93,7 +93,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             IotHubServiceClient serviceClient = TestDevice.ServiceClient;
 
             // Create a device to house the module
-            Device device = await serviceClient.Devices.CreateAsync(new Device(testDeviceId)).ConfigureAwait(false);
+            Device device = await serviceClient.Devices.CreateAsync(new Device(testDeviceId) { Authentication = new() { Type = ClientAuthenticationType.Sas } }).ConfigureAwait(false);
 
             try
             {
@@ -197,7 +197,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             string deviceId = _idPrefix + Guid.NewGuid();
             string moduleId = _idPrefix + Guid.NewGuid();
             var module = new Module(deviceId, moduleId);
-            Device device = await serviceClient.Devices.CreateAsync(new Device(deviceId)).ConfigureAwait(false);
+            Device device = await serviceClient.Devices.CreateAsync(new Device(deviceId) { Authentication = new() { Type = ClientAuthenticationType.Sas } }).ConfigureAwait(false);
 
             try
             {
