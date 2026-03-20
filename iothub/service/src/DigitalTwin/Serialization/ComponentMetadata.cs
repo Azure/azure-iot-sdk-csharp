@@ -17,6 +17,6 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         /// <remarks>For convenience, the value of each dictionary object can be turned into an instance of <see cref="WritableProperty"/>.</remarks>
         [JsonExtensionData]
-        public JsonDictionary WritableProperties { get; } = new();
+        public JsonDictionary WritableProperties { get; set; } = new();
     }
 }

@@ -133,6 +133,11 @@ namespace Microsoft.Azure.Devices.Client
         {
             payload = default;
 
+            if (Payload == null || Payload.Length == 0)
+            {
+                return false;
+            }
+
             try
             {
                 payload = JsonSerializer.Deserialize<T>(Payload, JsonSerializerSettings.Options);

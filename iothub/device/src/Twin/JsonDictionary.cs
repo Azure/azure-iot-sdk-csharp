@@ -105,13 +105,34 @@ namespace Microsoft.Azure.Devices.Client
             switch (jsonElement.ValueKind)
             {
                 case JsonValueKind.String:
-                    return jsonElement.GetString();
+                    string s = jsonElement.GetString();
+
+                    // String values may be a date time, so check before returning them
+                    // as strings.
+                    if (DateTimeOffset.TryParse(s, out DateTimeOffset dateTimeOffset))
+                    {
+                        return dateTimeOffset;
+                    }
+
+                    return s;
                 case JsonValueKind.True:
                     return true;
                 case JsonValueKind.False:
                     return false;
                 case JsonValueKind.Number:
-                    return jsonElement.GetInt64();
+                    if (jsonElement.TryGetInt32(out int integerValue))
+                    {
+                        return integerValue;
+                    }
+                    else if (jsonElement.TryGetInt64(out long longValue))
+                    {
+                        return longValue;
+                    }
+                    else if (jsonElement.TryGetDouble(out double doubleValue))
+                    {
+                        return doubleValue;
+                    }
+                    throw new FormatException("Could not convert JsonElement number to integer, long, or double");
                 case JsonValueKind.Array:
                     List<object> arrayWithElements = new List<object>();
                     foreach (JsonElement jsonArrayElement in jsonElement.EnumerateArray())
@@ -165,7 +186,6 @@ namespace Microsoft.Azure.Devices.Client
             return true;
         }
 
-
         /// <summary>
         /// 
         /// </summary>
@@ -173,7 +193,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="propertyName"></param>
         /// <param name="propertyValue"></param>
         /// <returns></returns>
-        public bool TryGetValue<T>(string propertyName, out T propertyValue)
+        public bool TryGetAndDeserializeValue<T>(string propertyName, out T propertyValue)
         {
             propertyValue = default;
 

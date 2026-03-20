@@ -192,7 +192,12 @@ namespace Microsoft.Azure.Devices.Tests
             WritableProperty wp = JsonSerializer.Deserialize<WritableProperty>(writablePropertySerialized);
 
             // assert
-            writableProperty.Should().BeEquivalentTo(wp);
+            Assert.AreEqual(((JsonElement) wp.DesiredValue).GetString(), writableProperty.DesiredValue);
+            Assert.AreEqual(wp.DesiredVersion, writableProperty.DesiredVersion);
+            Assert.AreEqual(wp.AckVersion, writableProperty.AckVersion);
+            Assert.AreEqual(wp.AckCode, writableProperty.AckCode);
+            Assert.AreEqual(wp.AckDescription, writableProperty.AckDescription);
+            Assert.AreEqual(wp.LastUpdatedOnUtc, writableProperty.LastUpdatedOnUtc);
         }
 
         [TestMethod]

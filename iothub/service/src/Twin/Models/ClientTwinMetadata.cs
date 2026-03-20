@@ -28,8 +28,11 @@ namespace Microsoft.Azure.Devices
         [JsonPropertyName("$lastUpdatedVersion")]
         public long? LastUpdatedVersion { get; set; }
 
+        /// <summary>
+        /// 
+        /// </summary>
         [JsonExtensionData]
-        internal IDictionary<string, JsonElement> Properties { get; set; } = new Dictionary<string, JsonElement>();
+        public JsonDictionary Properties { get; set; } = new();
 
         /// <summary>
         /// Gets the specified property's metadata by name as another metadata object.
@@ -41,7 +44,7 @@ namespace Microsoft.Azure.Devices
         {
             propertyValue = default;
 
-            if (!Properties.TryGetValue(propertyName, out JsonElement jTokenValue))
+            if (!Properties.TryGetAndDeserializeValue(propertyName, out JsonElement jTokenValue))
             {
                 return false;
             }

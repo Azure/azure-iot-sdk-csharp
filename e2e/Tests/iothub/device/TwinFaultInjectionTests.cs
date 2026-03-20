@@ -265,7 +265,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 TwinProperties deviceTwin = await testDevice.DeviceClient.GetTwinPropertiesAsync(ct).ConfigureAwait(false);
                 deviceTwin.Should().NotBeNull();
                 Assert.IsNotNull(deviceTwin.Reported);
-                deviceTwin.Reported.TryGetValue(propName, out string actualValue).Should().BeTrue();
+                deviceTwin.Reported.TryGetAndDeserializeValue(propName, out string actualValue).Should().BeTrue();
                 actualValue.Should().Be(propValue);
                 Assert.IsNotNull(deviceTwin.Reported[propName]);
                 Assert.AreEqual(propValue, deviceTwin.Reported[propName]);

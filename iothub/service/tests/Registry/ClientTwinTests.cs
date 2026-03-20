@@ -178,29 +178,6 @@ namespace Microsoft.Azure.Devices.Tests
 
             // assert
 
-            // Using TryGetValue
-
-            actual.Properties.Reported.TryGetValue(reportedStringKey, out string actualStringValue).Should().BeTrue();
-            actualStringValue.Should().Be(reportedStringValue);
-
-            actual.Properties.Reported.TryGetValue(reportedIntKey, out int actualIntValue).Should().BeTrue();
-            actualIntValue.Should().Be(reportedIntValue);
-
-            actual.Properties.Reported.TryGetValue(reportedDateTimeOffsetKey, out DateTimeOffset actualDateTimeOffsetValue).Should().BeTrue();
-            actualDateTimeOffsetValue.Should().Be(reportedDateTimeOffsetValue);
-
-            actual.Properties.Reported.TryGetValue(reportedBoolKey, out bool actualBoolValue).Should().BeTrue();
-            actualBoolValue.Should().Be(reportedBoolValue);
-
-            actual.Properties.Reported.TryGetValue(reportedCustomKey, out CustomType actualCustomValue).Should().BeTrue();
-            actualCustomValue.CustomInt.Should().Be(reportedCustomValue.CustomInt);
-            actualCustomValue.CustomString.Should().Be(reportedCustomValue.CustomString);
-
-            actual.Properties.Desired.TryGetValue(desiredKey, out string actualDesiredValue).Should().BeTrue();
-            actualDesiredValue.Should().Be(desiredValue);
-
-            // Using cast from indexer
-
             ((string)actual.Properties.Reported[reportedStringKey]).Should().Be(reportedStringValue);
             ((int)actual.Properties.Reported[reportedIntKey]).Should().Be(reportedIntValue);
             ((DateTimeOffset)actual.Properties.Reported[reportedDateTimeOffsetKey]).Should().Be(reportedDateTimeOffsetValue);
@@ -267,7 +244,7 @@ namespace Microsoft.Azure.Devices.Tests
             // Reported root complex property
 
             twin.Properties.Reported
-                .TryGetValue("thermostat1", out ThermostatReported thermostat1Reported)
+                .TryGetAndDeserializeValue("thermostat1", out ThermostatReported thermostat1Reported)
                 .Should().BeTrue();
             thermostat1Reported.Component.Should().Be("c");
             thermostat1Reported.TargetTemperature.Value.Should().Be(70);
@@ -314,7 +291,7 @@ namespace Microsoft.Azure.Devices.Tests
             };
 
             ClientTwinProperties twinPropertiesReported = twin.Properties.Reported;
-            bool contains = twinPropertiesReported.Contains(nameof(reportedStringKey));
+            bool contains = twinPropertiesReported.ContainsKey(nameof(reportedStringKey));
             contains.Should().BeTrue();
         }
 
@@ -332,6 +309,7 @@ namespace Microsoft.Azure.Devices.Tests
             [JsonPropertyName("__t")]
             public string Component { get; set; }
 
+            [JsonPropertyName("targetTemperature")]
             public WritablePropertyResponse<int> TargetTemperature { get; set; }
 
             [JsonPropertyName("maxTempSinceLastReboot")]

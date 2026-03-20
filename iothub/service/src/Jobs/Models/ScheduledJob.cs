@@ -18,7 +18,7 @@ namespace Microsoft.Azure.Devices
         /// To unit test methods that use this type as a response, inherit from this class and give it a constructor
         /// that can set the properties you want.
         /// </remarks>
-        protected internal ScheduledJob()
+        public ScheduledJob()
         { }
 
         /// <summary>
@@ -27,11 +27,18 @@ namespace Microsoft.Azure.Devices
         [JsonPropertyName("jobType")]
         public JobType JobType { get; set; }
 
-        // Some service Jobs APIs use "type" as the key for this value and some others use "jobType".
-        // This private field is a workaround that allows us to deserialize either "type" or "jobType"
-        // as the created time value for this class and expose it either way as JobType.
+
+        /// <summary>
+        /// This field is the same as <see cref="JobType"/>. It only exists for serialization/deserialization differences in some
+        /// some service APIs.
+        /// </summary>
+        /// <remarks>
+        /// Some service Jobs APIs use "type" as the key for this value and some others use "jobType".
+        /// This private field is a workaround that allows us to deserialize either "type" or "jobType"
+        /// as the created time value for this class and expose it either way as JobType.
+        /// </remarks>
         [JsonPropertyName("type")]
-        internal JobType AlternateJobType
+        public JobType AlternateJobType
         {
             get => JobType;
             set => JobType = value;
@@ -44,18 +51,10 @@ namespace Microsoft.Azure.Devices
         public string QueryCondition { get; set; }
 
         /// <summary>
-        /// Max execution time.
+        /// Max execution time for this job.
         /// </summary>
-        /// <remarks>The precision on this is in seconds.</remarks>
-        [JsonIgnore]
-        public TimeSpan MaxExecutionTime { get; set; }
-
         [JsonPropertyName("maxExecutionTimeInSeconds")]
-        internal long MaxExecutionTimeInSeconds
-        {
-            get => (long)MaxExecutionTime.TotalSeconds;
-            set => MaxExecutionTime = TimeSpan.FromSeconds(value);
-        }
+        public int MaxExecutionTimeInSeconds { get; set; }
 
         /// <summary>
         /// Different number of devices in the job.

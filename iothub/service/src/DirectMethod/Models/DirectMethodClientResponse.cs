@@ -23,15 +23,6 @@ namespace Microsoft.Azure.Devices
         public int Status { get; set; }
 
         /// <summary>
-        /// Get the payload as a JSON string.
-        /// </summary>
-        /// <remarks>
-        /// To get the payload as a specified type, use <see cref="TryGetPayload{T}(out T)"/>.
-        /// </remarks>
-        [JsonIgnore]
-        public string PayloadAsString => JsonPayload.GetRawText();
-
-        /// <summary>
         /// 
         /// </summary>
         [JsonPropertyName("payload")]
@@ -57,6 +48,12 @@ namespace Microsoft.Azure.Devices
         public bool TryGetPayload<T>(out T value)
         {
             value = default;
+
+            if (JsonPayload.ValueKind == JsonValueKind.Null
+                || JsonPayload.ValueKind == JsonValueKind.Undefined)
+            {
+                return false;
+            }
 
             try
             {

@@ -44,7 +44,7 @@ namespace Microsoft.Azure.Devices
         {
             get
             {
-                if (TryGetMemberInternal(propertyName, out dynamic value))
+                if (TryGetValue(propertyName, out dynamic value))
                 {
                     if (value is JsonDictionary jsonDictionary)
                     {
@@ -58,7 +58,7 @@ namespace Microsoft.Azure.Devices
                 }
                 else
                 {
-                    throw new InvalidOperationException($"Unexpected property name '{propertyName}'.");
+                    throw new InvalidOperationException($"Property name '{propertyName}' not found.");
                 }
             }
             set
@@ -77,7 +77,6 @@ namespace Microsoft.Azure.Devices
                     Properties[propertyName] = JsonSerializer.SerializeToElement(value);
                 }
             }
-            
         }
 
         private static object FromJsonElement(JsonElement jsonElement)
@@ -85,13 +84,34 @@ namespace Microsoft.Azure.Devices
             switch (jsonElement.ValueKind)
             {
                 case JsonValueKind.String:
-                    return jsonElement.GetString();
+                    string s = jsonElement.GetString();
+
+                    // String values may be a date time value, so check before returning them
+                    // as strings.
+                    if (DateTimeOffset.TryParse(s, out DateTimeOffset dateTimeOffset))
+                    {
+                        return dateTimeOffset;
+                    }
+
+                    return s;
                 case JsonValueKind.True:
                     return true;
                 case JsonValueKind.False:
                     return false;
                 case JsonValueKind.Number:
-                    return jsonElement.GetInt64();
+                    if (jsonElement.TryGetInt32(out int integerValue))
+                    {
+                        return integerValue;
+                    }
+                    else if (jsonElement.TryGetInt64(out long longValue))
+                    {
+                        return longValue;
+                    }
+                    else if (jsonElement.TryGetDouble(out double doubleValue))
+                    {
+                        return doubleValue;
+                    }
+                    throw new FormatException("Could not convert JsonElement number to integer, long, or double");
                 case JsonValueKind.Array:
                     List<object> arrayWithElements = new List<object>();
                     foreach (JsonElement jsonArrayElement in jsonElement.EnumerateArray())
@@ -133,7 +153,7 @@ namespace Microsoft.Azure.Devices
         /// <param name="propertyName"></param>
         /// <param name="propertyValue"></param>
         /// <returns></returns>
-        public bool TryGetValue<T>(string propertyName, out T propertyValue)
+        public bool TryGetAndDeserializeValue<T>(string propertyName, out T propertyValue)
         {
             propertyValue = default;
 
@@ -151,20 +171,6 @@ namespace Microsoft.Azure.Devices
             { }
 
             return false;
-        }
-
-        private bool TryGetMemberInternal(string propertyName, out object result)
-        {
-            result = default;
-
-            if (!Properties.TryGetValue(propertyName, out JsonElement jsonElement))
-            {
-                return false;
-            }
-
-            result = jsonElement;
-
-            return true;
         }
 
         /// <inheritdoc/>
@@ -193,6 +199,23 @@ namespace Microsoft.Azure.Devices
             {
                 value = FromJsonElement(jsonValue);
                 return true;
+            }
+
+            return false;
+        }
+
+        /// <inheritdoc/>
+        public bool TryGetValue<T>(string key, [MaybeNullWhen(false)] out T value)
+        {
+            value = default;
+            if (Properties.TryGetValue(key, out JsonElement jsonValue))
+            {
+                dynamic dynamicValue = FromJsonElement(jsonValue);
+                if (dynamicValue is T castType)
+                {
+                    value = castType;
+                    return true;
+                }
             }
 
             return false;

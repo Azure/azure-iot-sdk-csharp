@@ -40,7 +40,7 @@ namespace Microsoft.Azure.Devices.Client
                 {
                     // The version information should not be a part of the enumerable ProperyCollection, but rather should be
                     // accessible through its dedicated accessor.
-                    bool versionPresent = base.TryGetValue(VersionName, out long? version);
+                    bool versionPresent = base.TryGetAndDeserializeValue(VersionName, out long? version);
 
                     Version = versionPresent
                         ? version.Value

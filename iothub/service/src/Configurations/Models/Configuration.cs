@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
-using Azure;
 
 namespace Microsoft.Azure.Devices
 {
@@ -40,7 +39,7 @@ namespace Microsoft.Azure.Devices
         /// The schema version of the configuration.
         /// </summary>
         [JsonPropertyName("schemaVersion")]
-        public string SchemaVersion { get; } = "1.0";
+        public string SchemaVersion { get; set; } = "1.0";
 
         /// <summary>
         /// The key-value pairs used to describe the configuration.
@@ -58,7 +57,7 @@ namespace Microsoft.Azure.Devices
         /// Gets the content type for configuration.
         /// </summary>
         [JsonPropertyName("contentType")]
-        public string ContentType { get; } = "assignment";
+        public string ContentType { get; set; } = "assignment";
 
         /// <summary>
         /// The query used to define the targeted devices or modules.

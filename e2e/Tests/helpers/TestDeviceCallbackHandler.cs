@@ -111,7 +111,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                     {
                         string expectedPropertyName = ExpectedTwinPatchKeyValuePair.Item1;
                         var expectedTwinPropertyValue = (T)ExpectedTwinPatchKeyValuePair.Item2;
-                        bool containsProperty = patch.TryGetValue(expectedPropertyName, out T actualPropertyValue);
+                        bool containsProperty = patch.TryGetAndDeserializeValue(expectedPropertyName, out T actualPropertyValue);
                         containsProperty.Should().BeTrue($"Expecting property update patch received for {_testDeviceId} for {expectedPropertyName} to be {expectedTwinPropertyValue} but was: {patch.GetSerializedString()}");
 
                         // We don't support nested deserialization yet, so we'll need to serialize the response and compare them.

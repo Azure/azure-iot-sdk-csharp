@@ -49,7 +49,10 @@ namespace Microsoft.Azure.Devices
                 {
                     // sometimes the message is escaped JSON :(
                     ResponseMessageWrapper wrapped = JsonSerializer.Deserialize<ResponseMessageWrapper>(responseBody, JsonSerializerSettings.Options);
-                    responseMessage = JsonSerializer.Deserialize<ErrorPayload1>(wrapped.Message, JsonSerializerSettings.Options);
+                    if (!string.IsNullOrWhiteSpace(wrapped.Message))
+                    { 
+                        responseMessage = JsonSerializer.Deserialize<ErrorPayload1>(wrapped.Message, JsonSerializerSettings.Options);
+                    }
                 }
                 catch (JsonException ex)
                 {

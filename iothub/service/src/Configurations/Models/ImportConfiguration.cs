@@ -13,8 +13,8 @@ namespace Microsoft.Azure.Devices
     public class ImportConfiguration : Configuration
     {
         /// <inheritdoc/>
-        public ImportConfiguration(string configurationId)
-            : base(configurationId)
+        public ImportConfiguration(string id)
+            : base(id)
         {
         }
 

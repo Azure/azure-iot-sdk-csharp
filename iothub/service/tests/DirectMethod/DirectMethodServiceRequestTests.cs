@@ -89,8 +89,10 @@ namespace Microsoft.Azure.Devices.Tests.DirectMethod
             DirectMethodServiceRequest deserializedRequest = JsonSerializer.Deserialize<DirectMethodServiceRequest>(serializedDirectMethodServiceRequest);
 
             // assert
-            deserializedRequest.Should().BeEquivalentTo(directMethodServiceRequest);
-            deserializedRequest.Payload.Should().BeEquivalentTo(Encoding.UTF8.GetBytes(JsonSerializer.Serialize("testPayload")));
+            Assert.AreEqual(((JsonElement)directMethodServiceRequest.Payload).GetString(), ((JsonElement)deserializedRequest.Payload).GetString());
+            Assert.AreEqual(directMethodServiceRequest.MethodName, deserializedRequest.MethodName);
+
+            Assert.AreEqual(((JsonElement)deserializedRequest.Payload).GetRawText(), JsonSerializer.Serialize("testPayload"));
         }
     }
 }

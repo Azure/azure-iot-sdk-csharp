@@ -46,61 +46,8 @@ namespace Microsoft.Azure.Devices
         /// <exception cref="InvalidOperationException"></exception>
         public dynamic this[string propertyName]
         {
-            get
-            {
-                if (TryGetMemberInternal(propertyName, out dynamic value))
-                {
-                    if (value is JsonElement jsonElementValue)
-                    {
-                        return FromJsonElement(jsonElementValue);
-                    }
-                    return value;
-                }
-                else
-                {
-                    throw new InvalidOperationException($"Unexpected property name '{propertyName}'.");
-                }
-            }
-            set => Properties[propertyName] = value is null || value is JsonElement
-                ? value
-                : JsonSerializer.SerializeToElement(value);
-        }
-
-        private static object FromJsonElement(JsonElement jsonElement)
-        {
-            switch (jsonElement.ValueKind)
-            {
-                case JsonValueKind.String:
-                    return jsonElement.GetString();
-                case JsonValueKind.True:
-                    return true;
-                case JsonValueKind.False:
-                    return false;
-                case JsonValueKind.Number:
-                    return jsonElement.GetInt64();
-                case JsonValueKind.Array:
-                    List<object> arrayWithElements = new List<object>();
-                    foreach (JsonElement jsonArrayElement in jsonElement.EnumerateArray())
-                    {
-                        arrayWithElements.Add(FromJsonElement(jsonArrayElement));
-                    }
-                    return arrayWithElements;
-                
-                case JsonValueKind.Object:
-                    JsonDictionary objectFields = new();
-                    foreach (JsonProperty key in jsonElement.EnumerateObject())
-                    { 
-                        objectFields.TryAdd(key.Name, FromJsonElement(key.Value));
-                    }
-                    return objectFields;
-                case JsonValueKind.Null:
-                    return null;
-                case JsonValueKind.Undefined:
-                    return null;
-            }
-
-            // Should never happen
-            throw new ArgumentException("Unrecognized Json element type");
+            get => Properties[propertyName];
+            set => Properties[propertyName] = value;
         }
 
         /// <summary>
@@ -108,9 +55,20 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         /// <param name="propertyName"></param>
         /// <returns></returns>
-        public bool Contains(string propertyName)
+        public bool ContainsKey(string propertyName)
         {
             return Properties.ContainsKey(propertyName);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="propertyName"></param>
+        /// <param name="propertyValue"></param>
+        /// <returns></returns>
+        public bool TryGetValue<T>(string propertyName, out T propertyValue)
+        {
+            return Properties.TryGetValue<T>(propertyName, out propertyValue);
         }
 
         /// <summary>
@@ -135,48 +93,9 @@ namespace Microsoft.Azure.Devices
         /// <param name="propertyName"></param>
         /// <param name="propertyValue"></param>
         /// <returns></returns>
-        public bool TryGetValue<T>(string propertyName, out T propertyValue)
+        public bool TryGetAndDeserializeValue<T>(string propertyName, out T propertyValue)
         {
-            propertyValue = default;
-
-            if (!Properties.TryGetValue(propertyName, out object jTokenValue))
-            {
-                return false;
-            }
-
-            try
-            {
-                if (jTokenValue == null)
-                {
-                    return false;
-                }
-                else if (jTokenValue is JsonElement jsonElement)
-                {
-                    propertyValue = JsonSerializer.Deserialize<T>(jsonElement, JsonSerializerSettings.Options);
-                    return true;
-                }
-
-                // All elements in the dictionary should be null or a Json element, but TODO to check this
-            }
-            catch (InvalidCastException)
-            { }
-
-            return false;
+            return Properties.TryGetAndDeserializeValue<T>(propertyName, out propertyValue);
         }
-
-        private bool TryGetMemberInternal(string propertyName, out object result)
-        {
-            result = default;
-
-            if (!Properties.TryGetValue(propertyName, out object jTokenValue))
-            {
-                return false;
-            }
-
-            result = jTokenValue;
-
-            return true;
-        }
-
     }
 }

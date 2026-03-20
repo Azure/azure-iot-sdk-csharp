@@ -19,19 +19,32 @@ namespace Microsoft.Azure.Devices
     /// }
     /// </code>
     /// </remarks>
-    internal sealed class ErrorPayload2
+    public sealed class ErrorPayload2
     {
+        /// <summary>
+        /// 
+        /// </summary>
         [SuppressMessage("Usage", "CA1507: Use nameof in place of string literal 'Message'",
             Justification = "This JsonProperty annotation depends on service-defined contract (name) and is independent of the property name selected by the SDK.")]
         [JsonPropertyName("Message")]
-        internal string Message { get; set; }
+        public string Message { get; set; }
 
+        /// <summary>
+        /// 
+        /// </summary>
         [SuppressMessage("Usage", "CA1507: Use nameof in place of string literal 'ExceptionMessage'",
             Justification = "This JsonProperty annotation depends on service-defined contract (name) and is independent of the property name selected by the SDK.")]
         [JsonPropertyName("ExceptionMessage")]
-        internal string ExceptionMessage { get; set; }
+        public string ExceptionMessage { get; set; }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public IotHubServiceErrorCode ErrorCode { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
         public string TrackingId { get; set; }
 
         internal bool TryParse()

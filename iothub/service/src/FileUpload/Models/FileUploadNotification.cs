@@ -18,7 +18,7 @@ namespace Microsoft.Azure.Devices
         /// To unit test methods that use this type as a response, inherit from this class and give it a constructor
         /// that can set the properties you want.
         /// </remarks>
-        protected internal FileUploadNotification()
+        public FileUploadNotification()
         { }
 
         /// <summary>

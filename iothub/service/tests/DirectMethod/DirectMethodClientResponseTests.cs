@@ -15,26 +15,6 @@ namespace Microsoft.Azure.Devices.Tests.DirectMethod
     public class DirectMethodClientResponseTests
     {
         [TestMethod]
-        public void DirectMethodClientResponse_Get_PayloadAsString()
-        {
-            // arrage
-            const int expectedStatus = 200;
-            DateTimeOffset expectedPayload = DateTimeOffset.UtcNow;
-            var source = new DirectMethodClientResponse
-            {
-                Status = expectedStatus,
-                JsonPayload = JsonDocument.Parse(JsonSerializer.Serialize(expectedPayload)).RootElement,
-            };
-
-            // act
-            string payloadAsStringDmcr = source.PayloadAsString;
-            string payloadAsStringManualConvert = source.JsonPayload.ToString();
-
-            // assert
-            payloadAsStringDmcr.Should().Be(payloadAsStringManualConvert);
-        }
-
-        [TestMethod]
         public void DirectMethodClientResponse_Payload_DateTimeOffset()
         {
             // arrange

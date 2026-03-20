@@ -288,7 +288,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
         {
             string componentName = (string)userContext;
 
-            bool targetTempUpdateReceived = desiredProperties.TryGetValue(TargetTemperatureProperty, out double targetTemperature);
+            bool targetTempUpdateReceived = desiredProperties.TryGetAndDeserializeValue(TargetTemperatureProperty, out double targetTemperature);
             if (!targetTempUpdateReceived)
             {
                 _logger.LogDebug($"Property: Update - component=\"{componentName}\", received an update which is not associated with a valid property.\n{desiredProperties.GetSerializedString()}");

@@ -15,8 +15,6 @@ namespace Microsoft.Azure.Devices.Client
     /// </remarks>
     public class DirectMethodRequest
     {
-        private readonly byte[] _payload;
-
         /// <summary>
         /// For serialization.
         /// </summary>
@@ -35,7 +33,7 @@ namespace Microsoft.Azure.Devices.Client
         protected internal DirectMethodRequest(string methodName, byte[] payload = default)
         {
             MethodName = methodName;
-            _payload = payload;
+            Payload = payload;
         }
 
         /// <summary>
@@ -86,10 +84,15 @@ namespace Microsoft.Azure.Devices.Client
         public bool TryGetPayload<T>(out T payload)
         {
             payload = default;
+            
+            if (Payload == null || Payload.Length == 0)
+            {
+                return false;
+            }
 
             try
             {
-                payload = JsonSerializer.Deserialize<T>(_payload, JsonSerializerSettings.Options);
+                payload = JsonSerializer.Deserialize<T>(Payload, JsonSerializerSettings.Options);
                 return true;
             }
             catch (JsonException ex)
@@ -104,7 +107,7 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Get the payload of the direct method.
+        /// The payload of the direct method.
         /// </summary>
         /// <remarks>
         /// This method returns the payload decoded into a byte array to then be further deserialized.
@@ -123,9 +126,6 @@ namespace Microsoft.Azure.Devices.Client
         /// cancellationToken);
         /// </code>
         /// </example>
-        public byte[] GetPayload()
-        {
-            return _payload;
-        }
+        public byte[] Payload { get; set; }
     }
 }

@@ -32,13 +32,13 @@ namespace Microsoft.Azure.Devices
         /// The method name to run.
         /// </summary>
         [JsonPropertyName("methodName")]
-        public string MethodName { get; }
+        public string MethodName { get; set; }
 
         /// <summary>
         /// The serialized and encoded payload bytes.
         /// </summary>
         [JsonPropertyName("payload")]
-        public JsonElement? Payload { get; private set; }
+        public JsonElement? Payload { get; set; }
 
         /// <summary>
         /// The amount of time (in seconds) given to the service to connect to the device.

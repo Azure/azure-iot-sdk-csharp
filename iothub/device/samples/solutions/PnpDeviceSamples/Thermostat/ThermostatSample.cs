@@ -152,7 +152,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
         // and updates the current temperature value over telemetry and reported property update.
         private async Task TargetTemperatureUpdateCallbackAsync(PropertyCollection desiredProperties)
         {
-            bool targetTempUpdateReceived = desiredProperties.TryGetValue(TargetTemperatureProperty, out double targetTemperature);
+            bool targetTempUpdateReceived = desiredProperties.TryGetAndDeserializeValue(TargetTemperatureProperty, out double targetTemperature);
             if (targetTempUpdateReceived)
             {
                 _logger.LogDebug($"Property: Received - {{ \"{TargetTemperatureProperty}\": {targetTemperature}°C }}.");
