@@ -453,9 +453,9 @@ namespace Microsoft.Azure.Devices.Client.Tests
                     (payload) =>
                     {
                         isMethodHandlerCalled = true;
-                        if(payload.GetPayload() != null)
+                        if(payload.Payload != null)
                         {
-                            string methodReceived = Encoding.UTF8.GetString(payload.GetPayload());
+                            string methodReceived = Encoding.UTF8.GetString(payload.Payload);
                         }
                         return Task.FromResult(_directMethodResponseWithPayload);
                     })
@@ -538,7 +538,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
                 x => x.SendMethodResponseAsync(It.IsAny<DirectMethodResponse>(), It.IsAny<CancellationToken>()),
                 Times.AtLeastOnce);
             isMethodHandlerCalled.Should().BeTrue();
-            DirectMethodRequest.GetPayload().Should().BeEquivalentTo(payload);
+            DirectMethodRequest.Payload.Should().BeEquivalentTo(payload);
         }
 
         [TestMethod]
