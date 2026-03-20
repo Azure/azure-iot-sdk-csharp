@@ -191,7 +191,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
         // The callback to handle "reboot" command. This method will send a temperature update (of 0°C) over telemetry for both associated components.
         private async Task<DirectMethodResponse> HandleRebootCommandAsync(DirectMethodRequest request)
         {
-            bool delayReceived = request.TryGetPayload(out int delay);
+            bool delayReceived = request.TryDeserializePayload(out int delay);
 
             if (delayReceived)
             {
@@ -217,7 +217,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
         private Task<DirectMethodResponse> HandleMaxMinReportCommand(DirectMethodRequest request, object userContext)
         {
             string componentName = (string)userContext;
-            bool sinceInUtcReceived = request.TryGetPayload(out DateTime sinceInUtc);
+            bool sinceInUtcReceived = request.TryDeserializePayload(out DateTime sinceInUtc);
 
             if (sinceInUtcReceived)
             {

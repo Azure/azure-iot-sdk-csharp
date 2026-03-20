@@ -4,10 +4,10 @@
 using System.Net.Http;
 using System.Net;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Newtonsoft.Json;
 using FluentAssertions;
 using System;
 using System.Threading.Tasks;
+using System.Text.Json;
 
 namespace Microsoft.Azure.Devices.Client.Tests
 {
@@ -26,16 +26,17 @@ namespace Microsoft.Azure.Devices.Client.Tests
             using var httpResponseMessage = new HttpResponseMessage(HttpStatusCode.BadRequest);
             var exceptionResult = new IotHubExceptionResult
             {
-                Message = JsonConvert.SerializeObject(
+                Message = JsonSerializer.Serialize(
                     new ErrorPayload
                     {
                         ErrorCode = ((int)expectedErrorCode).ToString(),
                         TrackingId = expectedTrackingId,
                         Message = "Cannot decode correlation_id",
                         OccurredOnUtc = "2023-03-14T16:57:54.324613222+00:00",
-                    }),
+                    },
+                    JsonSerializerSettings.Options),
             };
-            httpResponseMessage.Content = new StringContent(JsonConvert.SerializeObject(exceptionResult));
+            httpResponseMessage.Content = new StringContent(JsonSerializer.Serialize(exceptionResult, JsonSerializerSettings.Options));
 
             // act
 
@@ -60,16 +61,16 @@ namespace Microsoft.Azure.Devices.Client.Tests
             using var httpResponseMessage = new HttpResponseMessage(HttpStatusCode.BadRequest);
             var exceptionResult = new IotHubExceptionResult
             {
-                Message = JsonConvert.SerializeObject(
+                Message = JsonSerializer.Serialize(
                     new ErrorPayload
                     {
                         ErrorCode = (int)expectedErrorCode,
                         TrackingId = expectedTrackingId,
                         Message = "Cannot decode correlation_id",
                         OccurredOnUtc = "2023-03-14T16:57:54.324613222+00:00",
-                    }),
+                    }, JsonSerializerSettings.Options),
             };
-            httpResponseMessage.Content = new StringContent(JsonConvert.SerializeObject(exceptionResult));
+            httpResponseMessage.Content = new StringContent(JsonSerializer.Serialize(exceptionResult, JsonSerializerSettings.Options));
 
             // act
 
@@ -93,7 +94,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
             {
                 Message = "",
             };
-            httpResponseMessage.Content = new StringContent(JsonConvert.SerializeObject(exceptionResult));
+            httpResponseMessage.Content = new StringContent(JsonSerializer.Serialize(exceptionResult, JsonSerializerSettings.Options));
 
             // act
 

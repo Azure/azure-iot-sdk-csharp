@@ -45,7 +45,7 @@ namespace Microsoft.Azure.Devices
         /// // deserialize as needed and do work...
         /// </code>
         /// </example>
-        public bool TryGetPayload<T>(out T value)
+        public bool TryDeserializePayload<T>(out T value)
         {
             value = default;
 

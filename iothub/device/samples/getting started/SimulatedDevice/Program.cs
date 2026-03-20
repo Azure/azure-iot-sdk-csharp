@@ -64,14 +64,14 @@ namespace Microsoft.Azure.Devices.Client.Samples
         }
         private static Task<DirectMethodResponse> DirectMethodCallback(DirectMethodRequest methodRequest)
         {
-            Console.WriteLine($"Received direct method [{methodRequest.MethodName}] with payload [{Encoding.UTF8.GetString(methodRequest.GetPayload())}].");
+            Console.WriteLine($"Received direct method [{methodRequest.MethodName}] with payload [{Encoding.UTF8.GetString(methodRequest.Payload)}].");
 
             switch (methodRequest.MethodName)
             {
                 case "SetTelemetryInterval":
                     try
                     {
-                        if (methodRequest.TryGetPayload(out int telemetryIntervalSeconds))
+                        if (methodRequest.TryDeserializePayload(out int telemetryIntervalSeconds))
                         {
                             s_telemetryInterval = TimeSpan.FromSeconds(telemetryIntervalSeconds);
                             Console.WriteLine($"Setting the telemetry interval to {s_telemetryInterval}.");

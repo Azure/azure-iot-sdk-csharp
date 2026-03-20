@@ -89,7 +89,7 @@ namespace Microsoft.Azure.Devices.Samples
                 DirectMethodClientResponse result = await _serviceClient.DirectMethods.InvokeAsync(_deviceId, commandInvocation);
 
                 _logger.LogDebug($"Command {getMaxMinReportCommandName} was invoked on device twin {_deviceId}." +
-                    $"\nDevice returned status: {result.Status}. \nReport: {result.PayloadAsString}");
+                    $"\nDevice returned status: {result.Status}. \nReport: {result.JsonPayload.GetRawText() }");
             }
             catch (IotHubServiceException ex) when (ex.ErrorCode == IotHubServiceErrorCode.DeviceNotFound)
             {

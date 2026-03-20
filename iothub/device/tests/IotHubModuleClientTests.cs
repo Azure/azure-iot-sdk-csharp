@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Sockets;
 using System.Net.WebSockets;
 using System.Security.Cryptography.X509Certificates;
@@ -341,19 +342,19 @@ namespace Microsoft.Azure.Devices.Client.Tests
 
             bool methodCallbackCalled = false;
             string actualMethodName = string.Empty;
-            CustomDirectMethodPayload actualMethodBody = null;
+            byte[] actualMethodBody = null;
             Func<DirectMethodRequest, Task<DirectMethodResponse>> methodCallback = (methodRequest) =>
             {
                 actualMethodName = methodRequest.MethodName;
-                bool methodReceived = methodRequest.TryGetPayload(out actualMethodBody);
+                actualMethodBody = methodRequest.Payload;
                 methodCallbackCalled = true;
                 return Task.FromResult(_directMethodResponseWithEmptyByteArrayPayload);
             };
 
             const string methodName = "TestMethodName";
-            byte[] methodBody = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new CustomDirectMethodPayload { Grade = "good" }));
+            byte[] methodBody = JsonSerializer.SerializeToUtf8Bytes(new CustomDirectMethodPayload { Grade = "good" });
             await moduleClient.SetDirectMethodCallbackAsync(methodCallback).ConfigureAwait(false);
-            var directMethodRequest = new DirectMethodRequest(methodName, Encoding.UTF8.GetBytes(JsonSerializer.Serialize(methodBody)));
+            var directMethodRequest = new DirectMethodRequest(methodName, methodBody);
 
             // act
             await moduleClient.OnMethodCalledAsync(directMethodRequest).ConfigureAwait(false);
@@ -365,7 +366,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
 
             methodCallbackCalled.Should().BeTrue();
             methodName.Should().Be(actualMethodName);
-            Encoding.UTF8.GetBytes(JsonSerializer.Serialize(actualMethodBody)).Should().BeEquivalentTo(methodBody);
+            Assert.IsTrue(Enumerable.SequenceEqual(methodBody, actualMethodBody));
 
             // arrange
             methodCallbackCalled = false;

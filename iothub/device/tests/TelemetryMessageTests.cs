@@ -19,7 +19,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
             const string payloadString = "Hello, World!";
             var msg = new TelemetryMessage();
             msg.SetPayload(payloadString);
-            msg.Payload.Should().BeEquivalentTo(payloadString);
+            Assert.AreEqual(Encoding.UTF8.GetString(msg.Payload), payloadString);
         }
 
         [TestMethod]

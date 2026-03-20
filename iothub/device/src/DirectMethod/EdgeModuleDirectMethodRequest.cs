@@ -109,7 +109,7 @@ namespace Microsoft.Azure.Devices.Client
         /// cancellationToken);
         /// </code>
         /// </example>
-        public bool TryGetPayload<T>(out T payload)
+        public bool TryDeserializePayload<T>(out T payload)
         {
             payload = default;
 
@@ -125,7 +125,7 @@ namespace Microsoft.Azure.Devices.Client
             }
             catch (Exception ex) when (Logging.IsEnabled)
             {
-                Logging.Error(this, $"Unable to convert payload to {typeof(T)} due to {ex}", nameof(TryGetPayload));
+                Logging.Error(this, $"Unable to convert payload to {typeof(T)} due to {ex}", nameof(TryDeserializePayload));
             }
 
             return false;

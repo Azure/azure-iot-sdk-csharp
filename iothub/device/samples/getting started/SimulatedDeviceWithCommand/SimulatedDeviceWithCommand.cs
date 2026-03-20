@@ -49,7 +49,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
         private Task<DirectMethodResponse> SetTelemetryInterval(DirectMethodRequest methodRequest)
         {
             // Check the payload is a single integer value.
-            if (methodRequest.TryGetPayload<int>(out int telemetryIntervalInSeconds))
+            if (methodRequest.TryDeserializePayload<int>(out int telemetryIntervalInSeconds))
             {
                 s_telemetryInterval = TimeSpan.FromSeconds(telemetryIntervalInSeconds);
 

@@ -109,7 +109,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
 
             VerboseTestLogger.WriteLine($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Method status: {response.Status}.");
             response.Status.Should().Be(200);
-            string jsonPayload = response.PayloadAsString;
+            string jsonPayload = response.JsonPayload.GetRawText();
             jsonPayload.Should().Be(JsonSerializer.Serialize(respJson));
         }
     }

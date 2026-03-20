@@ -211,7 +211,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
         {
             try
             {
-                bool sinceInUtcReceived = request.TryGetPayload(out DateTime sinceInUtc);
+                bool sinceInUtcReceived = request.TryDeserializePayload(out DateTime sinceInUtc);
 
                 if (sinceInUtcReceived)
                 {

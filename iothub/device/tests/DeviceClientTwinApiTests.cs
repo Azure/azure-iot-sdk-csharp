@@ -126,7 +126,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
             twinResponse.ErrorResponseMessage.Message.Should().Be(twinResponse.ErrorResponseMessage?.Message);
             twinResponse.ErrorResponseMessage.OccurredOnUtc.Should().Be(twinResponse.ErrorResponseMessage?.OccurredOnUtc);
             twinResponse.Twin.Desired.Should().Equal(desired);
-            twinResponse.Twin.Reported["$version"].Should().Be("1");
+            Assert.AreEqual("1", twinResponse.Twin.Reported["$version"]);
             twinResponse.Twin.Reported.GetObjectBytes().Should().NotBeNull();
         }
 

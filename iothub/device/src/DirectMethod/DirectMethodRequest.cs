@@ -57,31 +57,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="payload">When this method returns true, this contains the value of the direct method request payload.
         /// When this method returns false, this contains the default value of the type <c>T</c> passed in.</param>
         /// <returns><c>true</c> if the direct method request payload can be deserialized to type <c>T</c>; otherwise, <c>false</c>.</returns>
-        /// <example>
-        /// <code language="csharp">
-        /// await client.SetDirectMethodCallbackAsync((directMethodRequest) =>
-        /// {
-        ///     if (directMethodRequest.TryGetPayload(out MyCustomType customTypePayload))
-        ///     {
-        ///         // do work
-        ///         // ...
-        ///         
-        ///         // Acknowlege the direct method call with the status code 200.  
-        ///         return Task.FromResult(new DirectMethodResponse(200));
-        ///     }
-        ///     else
-        ///     {
-        ///         // Acknowlege the direct method call the status code 400.
-        ///         return Task.FromResult(new DirectMethodResponse(400));
-        ///     }
-        ///     
-        ///     
-        ///     // ...
-        /// },
-        /// cancellationToken);
-        /// </code>
-        /// </example>
-        public bool TryGetPayload<T>(out T payload)
+        public bool TryDeserializePayload<T>(out T payload)
         {
             payload = default;
             
@@ -89,6 +65,8 @@ namespace Microsoft.Azure.Devices.Client
             {
                 return false;
             }
+
+            string s = Encoding.UTF8.GetString(Payload);
 
             try
             {
@@ -100,7 +78,7 @@ namespace Microsoft.Azure.Devices.Client
                 // In case the value cannot be converted using the serializer,
                 // then return false with the default value of the type <T> passed in.
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"Unable to convert payload to {typeof(T)} due to {ex}", nameof(TryGetPayload));
+                    Logging.Error(this, $"Unable to convert payload to {typeof(T)} due to {ex}", nameof(TryDeserializePayload));
             }
 
             return false;
