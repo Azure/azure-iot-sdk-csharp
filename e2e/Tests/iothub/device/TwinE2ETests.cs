@@ -42,7 +42,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             },
         };
 
-        private const string DateTimeValue = "2023-01-31T10:37:08.4599400";
+        private DateTimeOffset DateTimeValue = DateTimeOffset.Now;
 
         // This operation behaves the same irrespective of if the client is initialized over tcp or websocket.
         [TestMethod]
@@ -717,6 +717,24 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
 
             TwinProperties deviceTwin = await deviceClient.GetTwinPropertiesAsync(ct).ConfigureAwait(false);
             bool propertyFound = deviceTwin.Desired.TryGetAndDeserializeValue(propName, out string actual);
+            propertyFound.Should().BeTrue();
+            actual.Should().Be(propValue);
+        }
+
+        private async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGetAsync(IotHubClientTransportSettings transportSettings, string propName, DateTimeOffset propValue, CancellationToken ct)
+        {
+            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix, ct: ct).ConfigureAwait(false);
+            var options = new IotHubClientOptions(transportSettings);
+            await using var deviceClient = new IotHubDeviceClient(testDevice.ConnectionString, options);
+
+            var twinPatch = new ClientTwin();
+            twinPatch.Properties.Desired[propName] = propValue;
+            await s_serviceClient.Twins.UpdateAsync(testDevice.Id, twinPatch, cancellationToken: ct).ConfigureAwait(false);
+
+            await TestDevice.OpenWithRetryAsync(deviceClient, ct).ConfigureAwait(false);
+
+            TwinProperties deviceTwin = await deviceClient.GetTwinPropertiesAsync(ct).ConfigureAwait(false);
+            bool propertyFound = deviceTwin.Desired.TryGetAndDeserializeValue(propName, out DateTimeOffset actual);
             propertyFound.Should().BeTrue();
             actual.Should().Be(propValue);
         }
