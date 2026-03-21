@@ -15,7 +15,7 @@ namespace Microsoft.Azure.Devices.Client
         /// The error code sent by IoT hub
         /// </summary>
         [JsonPropertyName("errorCode")]
-        public dynamic ErrorCode { get; set; }
+        public object ErrorCode { get; set; }
 
         /// <summary>
         /// The tracking Id associated with this error. Provide this when contacting customer support.
