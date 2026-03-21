@@ -30,6 +30,17 @@ namespace Microsoft.Azure.Devices.Client
         public string Message { get; set; }
 
         /// <summary>
+        /// The same json field as <see cref="Message"/>, but this allows for the json property name to be capitalized
+        /// as some error messages sent from IoT hub are.
+        /// </summary>
+        [JsonPropertyName("Message")]
+        public string AlternateMessage 
+        {
+            get => Message; 
+            set => Message = value;
+        }
+
+        /// <summary>
         /// The datetime when the error occurred.
         /// </summary>
         [JsonPropertyName("timestampUtc")]

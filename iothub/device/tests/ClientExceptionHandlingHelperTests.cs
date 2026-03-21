@@ -104,7 +104,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
 
             // assert
 
-            trackingId.Should().BeEmpty();
+            trackingId.Should().BeNull();
             errorCode.Should().Be(IotHubClientErrorCode.Unknown);
         }
     }
