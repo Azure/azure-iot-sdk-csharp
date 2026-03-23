@@ -8,9 +8,7 @@ using System.IO;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
-using Microsoft.Azure.Storage.Blob;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Net;
 
 namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 {
@@ -165,15 +163,15 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
         private static async Task UploadFileAndConfirmAsync(StorageContainer storageContainer, Stream fileContents, string fileName)
         {
-            CloudBlockBlob cloudBlob = storageContainer.CloudBlobContainer.GetBlockBlobReference(fileName);
-            await cloudBlob.UploadFromStreamAsync(fileContents).ConfigureAwait(false);
+            var blobClient = storageContainer.CloudBlobContainer.GetBlobClient(fileName);
+            await blobClient.UploadAsync(fileContents).ConfigureAwait(false);
 
             // wait for blob to be written
             bool foundBlob = false;
             for (int i = 0; i < MaxIterationWait; ++i)
             {
                 await Task.Delay(s_waitDuration).ConfigureAwait(false);
-                if (await cloudBlob.ExistsAsync().ConfigureAwait(false))
+                if (await blobClient.ExistsAsync().ConfigureAwait(false))
                 {
                     foundBlob = true;
                     break;

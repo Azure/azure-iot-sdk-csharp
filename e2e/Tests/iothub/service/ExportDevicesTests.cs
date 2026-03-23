@@ -4,6 +4,7 @@
 using System;
 using System.Diagnostics;
 using System.Net;
+using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
@@ -297,8 +298,10 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
         private static async Task<string> DownloadFileAsync(StorageContainer storageContainer, string fileName)
         {
-            Storage.Blob.CloudBlockBlob exportFile = storageContainer.CloudBlobContainer.GetBlockBlobReference(fileName);
-            return await exportFile.DownloadTextAsync().ConfigureAwait(false);
+
+            var exportFile = storageContainer.CloudBlobContainer.GetBlobClient(fileName);
+            var download = await exportFile.DownloadContentAsync();
+            return download.Value.Content.ToString();
         }
 
         private static async Task CleanUpDevicesAsync(

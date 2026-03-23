@@ -8,11 +8,11 @@ using System.Net.Http;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure.Storage.Blobs.Specialized;
 using FluentAssertions;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Microsoft.WindowsAzure.Storage.Blob;
 
 namespace Microsoft.Azure.Devices.E2ETests
 {
@@ -182,8 +182,8 @@ namespace Microsoft.Azure.Devices.E2ETests
             {
                 FileUploadSasUriResponse fileUploadSasUriResponse = await deviceClient.GetFileUploadSasUriAsync(fileUploadSasUriRequest, ct).ConfigureAwait(false);
 
-                var blob = new CloudBlockBlob(fileUploadSasUriResponse.GetBlobUri());
-                Task uploadTask = blob.UploadFromStreamAsync(source, null, null, null, null, ct);
+                var blockBlobClient = new BlockBlobClient(fileUploadSasUriResponse.GetBlobUri());
+                Task uploadTask = blockBlobClient.UploadAsync(source, cancellationToken:ct);
                 await uploadTask.ConfigureAwait(false);
 
                 if (isCorrelationIdValid)
