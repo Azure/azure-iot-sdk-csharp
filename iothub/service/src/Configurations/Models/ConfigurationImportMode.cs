@@ -15,7 +15,6 @@ namespace Microsoft.Azure.Devices
         /// If the configuration already exists, existing information is overwritten with the provided input data only if there is an ETag match.
         /// If there is an ETag mismatch, an error is written to the log file.
         /// </summary>
-        [JsonPropertyName("createOrUpdateIfMatchETag")] //TODO hmmmmm
         CreateOrUpdateIfMatchETag,
     }
 }
