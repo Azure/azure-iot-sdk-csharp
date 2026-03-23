@@ -58,22 +58,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             Attestation = attestation;
         }
 
-        // This JsonConstructor is used for serialization instead of the usual empty constructor
-        // because one of this object's fields (attestation) doesn't map 1:1 with where that field
-        // is in the JSON the service sends.
         /// <summary>
-        /// 
+        /// The constructor used for Json serialization purposes.
         /// </summary>
-        /// <param name="registrationId"></param>
-        /// <param name="attestation"></param>
-        /// <param name="deviceId"></param>
-        /// <param name="iotHubHostName"></param>
-        /// <param name="initialTwin"></param>
-        /// <param name="provisioningStatus"></param>
-        /// <param name="createdOnUtc"></param>
-        /// <param name="lastUpdatedOnUtc"></param>
-        /// <param name="eTag"></param>
-        /// <param name="capabilities"></param>
         [JsonConstructor]
         public IndividualEnrollment(
             string registrationId,
@@ -224,15 +211,5 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// </remarks>
         [JsonPropertyName("iotHubs")]
         public IList<string> IotHubs { get; set; } = new List<string>();
-
-        /// <summary>
-        /// For use in serialization.
-        /// </summary>
-        /// <seealso href="https://www.newtonsoft.com/json/help/html/ConditionalProperties.htm#ShouldSerialize"/>
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        public bool ShouldSerializeIotHubs()
-        {
-            return IotHubs != null && IotHubs.Any();
-        }
     }
 }

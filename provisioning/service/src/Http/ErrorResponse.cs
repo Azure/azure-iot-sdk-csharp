@@ -9,14 +9,17 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     public sealed class ErrorResponse
     {
         /// <summary>
-        /// 
+        /// The error code sent by the Device Provisioning Service.
         /// </summary>
         [JsonPropertyName("errorCode")]
         public int ErrorCode { get; set; }
 
         /// <summary>
-        /// 
+        /// The error code sent by the Device Provisioning Service
         /// </summary>
+        /// <remarks>
+        /// This field is a duplicate of <see cref="ErrorCode"/> for serialization purposes.
+        /// </remarks>
         [JsonPropertyName("code")]
         public int Code
         {
@@ -25,19 +28,19 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         }
 
         /// <summary>
-        /// 
+        /// The tracking Id to include in any communications with customer support.
         /// </summary>
         [JsonPropertyName("trackingId")]
         public string TrackingId { get; set; }
 
         /// <summary>
-        /// 
+        /// The human-readable error message
         /// </summary>
         [JsonPropertyName("message")]
         public string Message { get; set; }
 
         /// <summary>
-        /// 
+        /// The date when the error occurred.
         /// </summary>
         [JsonPropertyName("timestampUtc")]
         public string OccurredOnUtc { get; set; }

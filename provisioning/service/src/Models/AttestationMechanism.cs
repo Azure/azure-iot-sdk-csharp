@@ -20,10 +20,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         private static readonly NoneAttestation s_none = new();
 
         /// <summary>
-        /// 
+        /// Constructor for a given attestation.
         /// </summary>
-        /// <param name="attestation"></param>
-        /// <exception cref="ArgumentException"></exception>
+        /// <param name="attestation">The attestation to use. Should be of type <see cref="X509Attestation"/>, <see cref="SymmetricKeyAttestation"/>, or <see cref="TpmAttestation"/></param>
         public AttestationMechanism(Attestation attestation)
         {
             ArgumentNullException.ThrowIfNull(attestation);
@@ -48,13 +47,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         }
 
         /// <summary>
-        /// 
+        /// The Json constructor used for serialization purposes.
         /// </summary>
-        /// <param name="type"></param>
-        /// <param name="x509"></param>
-        /// <param name="tpm"></param>
-        /// <param name="symmetricKey"></param>
-        /// <exception cref="ProvisioningServiceException"></exception>
+        /// <param name="type">The type of attestation mechanism</param>
+        /// <param name="x509">The x509 attestation, if any is present.</param>
+        /// <param name="tpm">The TPM attestation, if any is present.</param>
+        /// <param name="symmetricKey">The symmetric key attestation, if any is present.</param>
         [JsonConstructor]
         public AttestationMechanism(AttestationMechanismType type, X509Attestation x509, TpmAttestation tpm, SymmetricKeyAttestation symmetricKey)
         {

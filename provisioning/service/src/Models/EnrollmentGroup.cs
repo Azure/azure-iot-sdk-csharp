@@ -61,8 +61,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         // This JsonConstructor is used for serialization instead of the usual empty constructor
         // because one of this object's fields (attestation) doesn't map 1:1 with where that field
         // is in the JSON the service sends.
+        /// <summary>
+        /// The constructor used for Json serialization purposes.
+        /// </summary>
         [JsonConstructor]
-        internal EnrollmentGroup(
+        public EnrollmentGroup(
             string enrollmentGroupId,
             AttestationMechanism attestation,
             string iotHubHostName,
@@ -210,15 +213,5 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// </summary>
         [JsonPropertyName("customAllocationDefinition")]
         public CustomAllocationDefinition CustomAllocationDefinition { get; set; }
-
-        /// <summary>
-        /// For use in serialization.
-        /// </summary>
-        /// <seealso href="https://www.newtonsoft.com/json/help/html/ConditionalProperties.htm#ShouldSerialize"/>
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        public bool ShouldSerializeIotHubs()
-        {
-            return IotHubs != null && IotHubs.Any();
-        }
     }
 }

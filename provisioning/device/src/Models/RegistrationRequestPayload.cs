@@ -35,9 +35,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         }
 
         /// <summary>
-        /// 
+        /// Set the payload as a strongly typed object that can be serialized using System.Text.Json.
         /// </summary>
-        /// <param name="serializableObject"></param>
+        /// <param name="serializableObject">The object to be serialized and used as the payload.</param>
         public void SetPayload(object serializableObject)
         {
             Argument.AssertNotNull(serializableObject, nameof(serializableObject));
