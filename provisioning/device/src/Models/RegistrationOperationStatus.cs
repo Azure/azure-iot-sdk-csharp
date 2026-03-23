@@ -10,29 +10,30 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
     /// <summary>
     /// Registration operation status.
     /// </summary>
-    internal sealed class RegistrationOperationStatus
+    public sealed class RegistrationOperationStatus
     {
         /// <summary>
         /// Gets or sets operation Id.
         /// </summary>
         [JsonPropertyName("operationId")]
-        internal string OperationId { get; set; }
+        public string OperationId { get; set; }
 
         /// <summary>
         /// Gets or sets device enrollment status.
         /// </summary>
         [JsonPropertyName("status")]
-        internal ProvisioningRegistrationStatus Status { get; set; }
+        public ProvisioningRegistrationStatus Status { get; set; }
 
         /// <summary>
         /// Gets or sets device registration status.
         /// </summary>
         [JsonPropertyName("registrationState")]
-        internal DeviceRegistrationResult RegistrationState { get; set; }
+        public DeviceRegistrationResult RegistrationState { get; set; }
 
         /// <summary>
         /// Gets or sets the Retry-After header.
         /// </summary>
-        internal TimeSpan? RetryAfter { get; set; }
+        [JsonPropertyName("retryAfter")]
+        public TimeSpan? RetryAfter { get; set; }
     }
 }

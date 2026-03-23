@@ -110,7 +110,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// </remarks>
         /// <exception cref="InvalidOperationException">If the provided string does not fit the registration Id requirements</exception>
         [JsonPropertyName("registrationId")]
-        public string RegistrationId { get; internal set; }
+        public string RegistrationId { get; set; }
 
         /// <summary>
         /// Desired IoT hub device Id (optional).
@@ -122,7 +122,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// Current registration state.
         /// </summary>
         [JsonPropertyName("registrationState")]
-        public DeviceRegistrationState RegistrationState { get; internal set; }
+        public DeviceRegistrationState RegistrationState { get; set; }
 
         /// <summary>
         /// Attestation mechanism.
@@ -178,13 +178,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// The DateTime this resource was created.
         /// </summary>
         [JsonPropertyName("createdDateTimeUtc")]
-        public DateTimeOffset? CreatedOnUtc { get; internal set; }
+        public DateTimeOffset? CreatedOnUtc { get; set; }
 
         /// <summary>
         /// The DateTime this resource was last updated.
         /// </summary>
         [JsonPropertyName("lastUpdatedDateTimeUtc")]
-        public DateTimeOffset? LastUpdatedOnUtc { get; internal set; }
+        public DateTimeOffset? LastUpdatedOnUtc { get; set; }
 
         /// <summary>
         /// Enrollment's ETag.

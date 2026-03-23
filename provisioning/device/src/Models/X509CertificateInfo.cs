@@ -16,48 +16,48 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// The certificate subject name.
         /// </summary>
         [JsonPropertyName("subjectName")]
-        public string SubjectName { get; protected internal set; }
+        public string SubjectName { get; set; }
 
         /// <summary>
         /// The certificate SHA1 thumbprint.
         /// </summary>
         [JsonPropertyName("sha1Thumbprint")]
-        public string Sha1Thumbprint { get; protected internal set; }
+        public string Sha1Thumbprint { get; set; }
 
         /// <summary>
         /// The certificate SHA256 thumbprint.
         /// </summary>
         [JsonPropertyName("sha256Thumbprint")]
-        public string Sha256Thumbprint { get; protected internal set; }
+        public string Sha256Thumbprint { get; set; }
 
         /// <summary>
         /// The certificate issuer name.
         /// </summary>
         [JsonPropertyName("issuerName")]
-        public string IssuerName { get; protected internal set; }
+        public string IssuerName { get; set; }
 
         /// <summary>
         /// The certificate invalidity before date in UTC.
         /// </summary>
         [JsonPropertyName("notBeforeUtc")]
-        public DateTimeOffset? NotBeforeUtc { get; protected internal set; }
+        public DateTimeOffset? NotBeforeUtc { get; set; }
 
         /// <summary>
         /// The certificate invalidity after date in UTC.
         /// </summary>
         [JsonPropertyName("notAfterUtc")]
-        public DateTimeOffset? NotAfterUtc { get; protected internal set; }
+        public DateTimeOffset? NotAfterUtc { get; set; }
 
         /// <summary>
         /// The certificate serial number.
         /// </summary>
         [JsonPropertyName("serialNumber")]
-        public string SerialNumber { get; protected internal set; }
+        public string SerialNumber { get; set; }
 
         /// <summary>
         /// The certficiate version.
         /// </summary>
         [JsonPropertyName("version")]
-        public int? Version { get; protected internal set; }
+        public int? Version { get; set; }
     }
 }

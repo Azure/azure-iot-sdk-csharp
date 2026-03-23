@@ -12,15 +12,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
     public class SymmetricKeyRegistrationResult
     {
         /// <summary>
-        /// For deserialization.
-        /// </summary>
-        protected internal SymmetricKeyRegistrationResult()
-        { }
-
-        /// <summary>
         /// The Id of the enrollment group.
         /// </summary>
         [JsonPropertyName("enrollmentGroupId")]
-        public string EnrollmentGroupId { get; protected internal set; }
+        public string EnrollmentGroupId { get; set; }
     }
 }

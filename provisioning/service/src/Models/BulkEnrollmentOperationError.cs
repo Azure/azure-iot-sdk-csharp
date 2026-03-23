@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
-using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
@@ -27,7 +26,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// </remarks>
         /// <exception cref="InvalidOperationException">If the provided registrationId does not fit the registration Id requirements</exception>
         [JsonPropertyName("registrationId")]
-        public string RegistrationId { get; private set; }
+        public string RegistrationId { get; set; }
 
         /// <summary>
         /// Error code.
@@ -36,7 +35,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// Report any error during the operation for the specific registrationId.
         /// </remarks>
         [JsonPropertyName("errorCode")]
-        public int? ErrorCode { get; private set; }
+        public int? ErrorCode { get; set; }
 
         /// <summary>
         /// Error status.
@@ -45,6 +44,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// Describe any error during the operation for the specific registrationId.
         /// </remarks>
         [JsonPropertyName("errorStatus")]
-        public string ErrorStatus { get; private set; }
+        public string ErrorStatus { get; set; }
     }
 }

@@ -3,7 +3,6 @@
 
 using System;
 using Azure;
-using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
@@ -26,54 +25,54 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// Registration Id.
         /// </summary>
         [JsonPropertyName("registrationId")]
-        public string RegistrationId { get; protected internal set; }
+        public string RegistrationId { get; set; }
 
         /// <summary>
         /// Registration create date time (in UTC).
         /// </summary>
         [JsonPropertyName("createdDateTimeUtc")]
-        public DateTimeOffset? CreatedOnUtc { get; protected internal set; }
+        public DateTimeOffset? CreatedOnUtc { get; set; }
 
         /// <summary>
         /// Last updated date time (in UTC).
         /// </summary>
         [JsonPropertyName("lastUpdatedDateTimeUtc")]
-        public DateTimeOffset? LastUpdatedOnUtc { get; protected internal set; }
+        public DateTimeOffset? LastUpdatedOnUtc { get; set; }
 
         /// <summary>
         /// Assigned IoT hub.
         /// </summary>
         [JsonPropertyName("assignedHub")]
-        public string AssignedHub { get; protected internal set; }
+        public string AssignedHub { get; set; }
 
         /// <summary>
         /// Device Id.
         /// </summary>
         [JsonPropertyName("deviceId")]
-        public string DeviceId { get; protected internal set; }
+        public string DeviceId { get; set; }
 
         /// <summary>
         /// Status.
         /// </summary>
         [JsonPropertyName("status")]
-        public EnrollmentStatus Status { get; protected internal set; }
+        public EnrollmentStatus Status { get; set; }
 
         /// <summary>
         /// Error code.
         /// </summary>
         [JsonPropertyName("errorCode")]
-        public int? ErrorCode { get; protected internal set; }
+        public int? ErrorCode { get; set; }
 
         /// <summary>
         /// Error message.
         /// </summary>
         [JsonPropertyName("errorMessage")]
-        public string ErrorMessage { get; protected internal set; }
+        public string ErrorMessage { get; set; }
 
         /// <summary>
         /// Registration status ETag.
         /// </summary>
         [JsonPropertyName("etag")]
-        public ETag ETag { get; protected internal set; }
+        public ETag ETag { get; set; }
     }
 }

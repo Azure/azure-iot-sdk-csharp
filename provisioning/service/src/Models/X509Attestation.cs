@@ -61,7 +61,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="caReferences">Certificate authority references.</param>
         /// <exception cref="InvalidOperationException"></exception>
         [JsonConstructor]
-        private protected X509Attestation(
+        public X509Attestation(
             X509Certificates clientCertificates,
             X509Certificates rootCertificates,
             X509CaReferences caReferences)
@@ -102,19 +102,19 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// Client certificates.
         /// </summary>
         [JsonPropertyName("clientCertificates")]
-        public X509Certificates ClientCertificates { get; protected private set; }
+        public X509Certificates ClientCertificates { get; set; }
 
         /// <summary>
         /// Signing certificates.
         /// </summary>
         [JsonPropertyName("signingCertificates")]
-        public X509Certificates RootCertificates { get; protected private set; }
+        public X509Certificates RootCertificates { get; set; }
 
         /// <summary>
         /// Certificates Authority references.
         /// </summary>
         [JsonPropertyName("caReferences")]
-        public X509CaReferences CaReferences { get; protected private set; }
+        public X509CaReferences CaReferences { get; set; }
 
         /// <summary>
         /// Factory from ClientCertificates with primary certificate.

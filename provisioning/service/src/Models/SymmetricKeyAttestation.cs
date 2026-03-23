@@ -11,26 +11,15 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     public sealed class SymmetricKeyAttestation : Attestation
     {
         /// <summary>
-        /// Creates an instance of this class with the specified keys.
-        /// </summary>
-        /// <param name="primaryKey">The primary key to use for attestation; if null, the service will generate one.</param>
-        /// <param name="secondaryKey">The secondary key to use for attestation; if null, the service will generate one.</param>
-        public SymmetricKeyAttestation(string primaryKey = default, string secondaryKey = default)
-        {
-            PrimaryKey = primaryKey;
-            SecondaryKey = secondaryKey;
-        }
-
-        /// <summary>
         /// Gets the primary key used for attestation.
         /// </summary>
         [JsonPropertyName("primaryKey")]
-        public string PrimaryKey { get; }
+        public string PrimaryKey { get; set; }
 
         /// <summary>
         /// Gets the secondary key used for attestation.
         /// </summary>
         [JsonPropertyName("secondaryKey")]
-        public string SecondaryKey { get; }
+        public string SecondaryKey { get; set; }
     }
 }
