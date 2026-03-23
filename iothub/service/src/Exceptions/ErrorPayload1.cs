@@ -12,37 +12,37 @@ namespace Microsoft.Azure.Devices
     public sealed class ErrorPayload1
     {
         /// <summary>
-        /// 
+        /// The error code
         /// </summary>
         [JsonPropertyName("errorCode")]
         public int ErrorCode { get; set; }
 
         /// <summary>
-        /// 
+        /// The tracking Id to include in any communications with customer support.
         /// </summary>
         [JsonPropertyName("trackingId")]
         public string TrackingId { get; set; }
 
         /// <summary>
-        /// 
+        /// The human readable error message
         /// </summary>
         [JsonPropertyName("message")]
         public string Message { get; set; }
 
         /// <summary>
-        /// 
+        /// When the error occurred.
         /// </summary>
         [JsonPropertyName("timestampUtc")]
         public string OccurredOnUtc { get; set; }
     }
 
     /// <summary>
-    /// 
+    /// Modeling class for deserializing error messages sent from the service
     /// </summary>
     public sealed class ResponseMessageWrapper
     {
         /// <summary>
-        /// 
+        /// The message
         /// </summary>
         [SuppressMessage("Usage", "CA1507: Use nameof in place of string literal 'Message'",
             Justification = "This JsonProperty annotation depends on service-defined contract (name) and is independent of the property name selected by the SDK.")]

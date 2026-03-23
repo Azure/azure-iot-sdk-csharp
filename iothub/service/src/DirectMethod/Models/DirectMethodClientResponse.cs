@@ -23,7 +23,7 @@ namespace Microsoft.Azure.Devices
         public int Status { get; set; }
 
         /// <summary>
-        /// 
+        /// The response payload as a Json object. This may be deserialized using System.Text.Json by calling <see cref="TryDeserializePayload{T}(out T)"/>.
         /// </summary>
         [JsonPropertyName("payload")]
         public JsonElement JsonPayload { get; set; }
