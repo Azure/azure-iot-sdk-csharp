@@ -19,7 +19,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// </remarks>
     public class InitialTwin
     {
-        [JsonPropertyName("properties")]
+        [JsonIgnore]
         private InitialTwinProperties _properties;
 
         /// <summary>
@@ -30,10 +30,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             _properties ??= new InitialTwinProperties();
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="tags"></param>
+        /// <param name="properties"></param>
         [JsonConstructor]
-#pragma warning disable IDE0051 // Used for deserialization
-        private InitialTwin(IDictionary<string, object> tags, InitialTwinProperties properties)
-#pragma warning restore IDE0051
+        public InitialTwin(IDictionary<string, object> tags, InitialTwinProperties properties)
         {
             Tags = tags;
             DesiredProperties = properties?.Desired;
@@ -48,7 +51,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <summary>
         /// Getter and setter the desired properties.
         /// </summary>
-        [JsonIgnore]
+        [JsonPropertyName("properties")]
         public InitialTwinPropertyCollection DesiredProperties
         {
             get => _properties?.Desired;

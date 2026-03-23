@@ -6,7 +6,6 @@ using System.Net;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
-using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
@@ -20,7 +19,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// </remarks>
     public class X509CertificateWithInfo
     {
-        internal X509CertificateWithInfo(X509Certificate2 certificate)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="certificate"></param>
+        /// <exception cref="ProvisioningServiceException"></exception>
+        public X509CertificateWithInfo(X509Certificate2 certificate)
         {
             try
             {
@@ -34,7 +38,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             }
         }
 
-        internal X509CertificateWithInfo(string certificate)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="certificate"></param>
+        /// <exception cref="ProvisioningServiceException"></exception>
+        public X509CertificateWithInfo(string certificate)
         {
             try
             {
@@ -48,10 +57,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="certificate"></param>
+        /// <param name="info"></param>
         [JsonConstructor]
-#pragma warning disable IDE0051 // Used for deserialization
-        private X509CertificateWithInfo(string certificate, X509CertificateInfo info)
-#pragma warning restore IDE0051
+        public X509CertificateWithInfo(string certificate, X509CertificateInfo info)
         {
             Certificate = certificate;
             Info = info;

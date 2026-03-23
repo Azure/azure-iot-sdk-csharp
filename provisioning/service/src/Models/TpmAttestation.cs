@@ -17,6 +17,34 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     public class TpmAttestation : Attestation
     {
         /// <summary>
+        /// 
+        /// </summary>
+        public TpmAttestation()
+        { 
+        
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="endorsementKey"></param>
+        public TpmAttestation(string endorsementKey)
+        {
+            EndorsementKey = endorsementKey;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="endorsementKey"></param>
+        /// <param name="storageRootKey"></param>
+        public TpmAttestation(string endorsementKey, string storageRootKey)
+        {
+            EndorsementKey = endorsementKey;
+            StorageRootKey = storageRootKey;
+        }
+
+        /// <summary>
         /// Gets the endorsement key used for attestation.
         /// </summary>
         [JsonPropertyName("endorsementKey")]

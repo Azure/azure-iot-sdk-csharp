@@ -19,7 +19,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
         private static readonly NoneAttestation s_none = new();
 
-        internal AttestationMechanism(Attestation attestation)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="attestation"></param>
+        /// <exception cref="ArgumentException"></exception>
+        public AttestationMechanism(Attestation attestation)
         {
             ArgumentNullException.ThrowIfNull(attestation);
 
@@ -42,10 +47,16 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="x509"></param>
+        /// <param name="tpm"></param>
+        /// <param name="symmetricKey"></param>
+        /// <exception cref="ProvisioningServiceException"></exception>
         [JsonConstructor]
-#pragma warning disable IDE0051 // Used for serialization
-        private AttestationMechanism(AttestationMechanismType type, X509Attestation x509, TpmAttestation tpm, SymmetricKeyAttestation symmetricKey)
-#pragma warning restore IDE0051
+        public AttestationMechanism(AttestationMechanismType type, X509Attestation x509, TpmAttestation tpm, SymmetricKeyAttestation symmetricKey)
         {
             switch (type)
             {
@@ -63,7 +74,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
                 case AttestationMechanismType.SymmetricKey:
                     // In some cases symmetric keys are nulled out by the service
-                    SymmetricKey = symmetricKey ?? new SymmetricKeyAttestation(string.Empty, string.Empty);
+                    SymmetricKey = symmetricKey ?? new SymmetricKeyAttestation();
                     break;
 
                 case AttestationMechanismType.Tpm:
@@ -91,11 +102,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// Gets or sets the instance used for attestation.
         /// </summary>
         [JsonPropertyName("x509")]
-#pragma warning disable IDE0052 // Used for serialization
         private X509Attestation X509
         {
             get => _x509;
-#pragma warning restore IDE0052
 
             set
             {
@@ -106,13 +115,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         [JsonPropertyName("symmetricKey")]
-#pragma warning disable IDE0052 // Used for serialization
-        private SymmetricKeyAttestation SymmetricKey
+        public SymmetricKeyAttestation SymmetricKey
         {
             get => _symmetricKey;
-#pragma warning restore IDE0052
-
             set
             {
                 _symmetricKey = value;
@@ -126,12 +135,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// Gets or sets the instance used for attestation.
         /// </summary>
         [JsonPropertyName("tpm")]
-#pragma warning disable IDE0052 // Used for serialization
-        private TpmAttestation Tpm
+        public TpmAttestation Tpm
         {
             get => _tpm;
-#pragma warning restore IDE0052
-
             set
             {
                 _tpm = value;

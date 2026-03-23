@@ -16,7 +16,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// </remarks>
     public class X509Certificates
     {
-        internal X509Certificates(X509Certificate2 primary, X509Certificate2 secondary = null)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="primary"></param>
+        /// <param name="secondary"></param>
+        public X509Certificates(X509Certificate2 primary, X509Certificate2 secondary = null)
         {
             Argument.AssertNotNull(primary, nameof(primary));
             Primary = new X509CertificateWithInfo(primary);
@@ -26,7 +31,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 : new X509CertificateWithInfo(secondary);
         }
 
-        internal X509Certificates(string primary, string secondary = null)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="primary"></param>
+        /// <param name="secondary"></param>
+        public X509Certificates(string primary, string secondary = null)
         {
             Argument.AssertNotNullOrWhiteSpace(primary, nameof(primary));
             Primary = new X509CertificateWithInfo(primary);
@@ -36,10 +46,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 : new X509CertificateWithInfo(secondary);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="primary"></param>
+        /// <param name="secondary"></param>
         [JsonConstructor]
-#pragma warning disable IDE0051 // Used for deserialization
-        private X509Certificates(X509CertificateWithInfo primary, X509CertificateWithInfo secondary = null)
-#pragma warning restore IDE0051
+        public X509Certificates(X509CertificateWithInfo primary, X509CertificateWithInfo secondary = null)
         {
             Argument.AssertNotNull(primary, nameof(primary));
             Primary = primary;
