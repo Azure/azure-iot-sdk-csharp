@@ -4,8 +4,8 @@ using System;
 using System.Globalization;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Azure.Storage;
-using Microsoft.Azure.Storage.Blob;
+using Azure.Storage.Blobs;
+using Azure.Storage.Sas;
 
 namespace Microsoft.Azure.Devices.E2ETests.Helpers
 {
@@ -20,7 +20,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
         public string ContainerName { get; }
         public Uri Uri { get; private set; }
         public Uri SasUri { get; private set; }
-        public CloudBlobContainer CloudBlobContainer { get; private set; }
+        public BlobContainerClient CloudBlobContainer { get; private set; }
 
         private StorageContainer(string containerName, bool deleteOnDispose)
         {
@@ -41,20 +41,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
 
         public void UpdateSasUri(DateTimeOffset? expiresOn = null)
         {
-            var constraints = new SharedAccessBlobPolicy
-            {
-                SharedAccessExpiryTime = expiresOn ?? DateTimeOffset.UtcNow.AddHours(1),
-                Permissions = SharedAccessBlobPermissions.Read
-                    | SharedAccessBlobPermissions.Write
-                    | SharedAccessBlobPermissions.Create
-                    | SharedAccessBlobPermissions.List
-                    | SharedAccessBlobPermissions.Add
-                    | SharedAccessBlobPermissions.Delete,
-                SharedAccessStartTime = DateTimeOffset.UtcNow,
-            };
+            var sharedAccessExpiryTime = expiresOn ?? DateTimeOffset.UtcNow.AddHours(1);
+            var permissions = BlobContainerSasPermissions.Write
+                            | BlobContainerSasPermissions.Read
+                            | BlobContainerSasPermissions.Delete;
+            var SharedAccessStartTime = DateTimeOffset.UtcNow;
 
-            string sasContainerToken = CloudBlobContainer.GetSharedAccessSignature(constraints);
-            SasUri = new Uri($"{Uri}{sasContainerToken}");
+            SasUri = CloudBlobContainer.GenerateSasUri(permissions, sharedAccessExpiryTime);
         }
 
         public void Dispose()
@@ -139,9 +132,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
 
         private async Task InitializeAsync()
         {
-            var storageAccount = CloudStorageAccount.Parse(TestConfiguration.Storage.ConnectionString);
-            CloudBlobClient cloudBlobClient = storageAccount.CreateCloudBlobClient();
-            CloudBlobContainer = cloudBlobClient.GetContainerReference(ContainerName);
+            var blobServiceClient = new BlobServiceClient(TestConfiguration.Storage.ConnectionString);
+            CloudBlobContainer = blobServiceClient.GetBlobContainerClient(ContainerName);
             await CloudBlobContainer.CreateIfNotExistsAsync().ConfigureAwait(false);
 
             Uri = CloudBlobContainer.Uri;
