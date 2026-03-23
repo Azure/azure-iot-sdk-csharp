@@ -74,7 +74,7 @@ namespace Microsoft.Azure.Devices
                 }
                 else
                 {
-                    Properties[propertyName] = JsonSerializer.SerializeToElement(value);
+                    Properties[propertyName] = JsonSerializer.SerializeToElement(value, JsonSerializerSettings.Options);
                 }
             }
         }
@@ -176,7 +176,7 @@ namespace Microsoft.Azure.Devices
         /// <inheritdoc/>
         public void Add(string key, object value)
         {
-            Properties.Add(key, JsonSerializer.SerializeToElement(value));
+            Properties.Add(key, JsonSerializer.SerializeToElement(value, JsonSerializerSettings.Options));
         }
 
         /// <inheritdoc/>
@@ -224,7 +224,7 @@ namespace Microsoft.Azure.Devices
         /// <inheritdoc/>
         public void Add(KeyValuePair<string, object> item)
         {
-            Properties.Add(item.Key, JsonSerializer.SerializeToElement(item.Value));
+            Properties.Add(item.Key, JsonSerializer.SerializeToElement(item.Value, JsonSerializerSettings.Options));
         }
 
         /// <inheritdoc/>
@@ -259,7 +259,7 @@ namespace Microsoft.Azure.Devices
         /// <inheritdoc/>
         public bool Remove(KeyValuePair<string, object> item)
         {
-            KeyValuePair<string, JsonElement> converted = new(item.Key, JsonSerializer.SerializeToElement(item));
+            KeyValuePair<string, JsonElement> converted = new(item.Key, JsonSerializer.SerializeToElement(item, JsonSerializerSettings.Options));
             return Properties.Remove(converted);
         }
 
