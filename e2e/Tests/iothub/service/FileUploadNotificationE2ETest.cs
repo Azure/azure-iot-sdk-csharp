@@ -9,10 +9,10 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure.Storage.Blobs.Specialized;
 using FluentAssertions;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
-using Microsoft.Azure.Storage.Blob;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
@@ -73,9 +73,9 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                     if (files[fileName] = !value)
                     {
                         files[fileName] = true;
-                        CloudBlob blob = storage.CloudBlobContainer.GetBlobReference(fileUploadNotification.BlobName);
+                        var blobClient = storage.CloudBlobContainer.GetBlobClient(fileUploadNotification.BlobName);
                         VerboseTestLogger.WriteLine($"Deleting blob {fileUploadNotification.BlobName}...");
-                        await blob.DeleteIfExistsAsync(cts.Token).ConfigureAwait(false);
+                        await blobClient.DeleteIfExistsAsync(cancellationToken: cts.Token).ConfigureAwait(false);
                     }
 
                     if (files.All(x => x.Value))
@@ -164,8 +164,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             FileUploadSasUriResponse sasUri = await deviceClient.GetFileUploadSasUriAsync(fileUploadSasUriRequest, ct).ConfigureAwait(false);
             Uri uploadUri = sasUri.GetBlobUri();
 
-            var blob = new CloudBlockBlob(uploadUri);
-            await blob.UploadFromStreamAsync(ms, ct).ConfigureAwait(false);
+            var blockBlobClient = new BlockBlobClient(uploadUri);
+            await blockBlobClient.UploadAsync(ms, cancellationToken:ct).ConfigureAwait(false);
 
             var successfulFileUploadCompletionNotification = new FileUploadCompletionNotification(sasUri.CorrelationId, true)
             {
