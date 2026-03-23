@@ -127,13 +127,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <summary>
         /// Attestation mechanism.
         /// </summary>
-        [JsonPropertyName("attestation")]
+        [JsonIgnore]
         private AttestationMechanism _attestation;
 
         /// <summary>
         /// Attestation.
         /// </summary>
-        [JsonIgnore]
+        [JsonPropertyName("attestation")]
         public Attestation Attestation
         {
             get => _attestation?.GetAttestation();
