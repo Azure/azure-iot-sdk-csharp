@@ -1,20 +1,21 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Newtonsoft.Json;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
     /// <summary>
     /// Representation of a single Device Provisioning Service query specification with a JSON serializer.
     /// </summary>
-    internal sealed class QuerySpecification
+    public sealed class QuerySpecification
     {
         /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="query">The query to issue.</param>
-        internal QuerySpecification(string query)
+        public QuerySpecification(string query)
         {
             Query = query;
         }
@@ -22,7 +23,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <summary>
         /// The query to issue.
         /// </summary>
-        [JsonProperty("query")]
-        internal string Query { get; set; }
+        [JsonPropertyName("query")]
+        public string Query { get; set; }
     }
 }

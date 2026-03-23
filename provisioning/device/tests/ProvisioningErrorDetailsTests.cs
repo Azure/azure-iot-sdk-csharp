@@ -3,7 +3,7 @@
 
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Newtonsoft.Json;
+using System.Text.Json;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -31,10 +31,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
                 Message = FakeMessage,
                 Info = s_info,
             };
-            string body = JsonConvert.SerializeObject(source);
+            string body = JsonSerializer.Serialize(source);
 
             // act
-            ProvisioningErrorDetails provisioningErrorDetails = JsonConvert.DeserializeObject<ProvisioningErrorDetails>(body);
+            ProvisioningErrorDetails provisioningErrorDetails = JsonSerializer.Deserialize<ProvisioningErrorDetails>(body);
 
             // assert
 

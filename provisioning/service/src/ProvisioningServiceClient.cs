@@ -2,7 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using Newtonsoft.Json;
+using System.Text.Json;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
@@ -40,9 +40,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             ProvisioningServiceClientOptions clientOptions = options?.Clone() ?? new();
 
             Argument.AssertNotNullOrWhiteSpace(connectionString, nameof(connectionString));
-
-            // Specify the JsonSerializerSettings. Check JsonSerializerSettingsInitializer for more details.
-            JsonConvert.DefaultSettings = JsonSerializerSettingsInitializer.GetJsonSerializerSettings;
 
             _provisioningConnectionString = ServiceConnectionStringParser.Parse(connectionString);
             _contractApiHttp = new ContractApiHttp(
