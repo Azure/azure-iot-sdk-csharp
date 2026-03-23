@@ -100,7 +100,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// Gets or sets the instance used for attestation.
         /// </summary>
         [JsonPropertyName("x509")]
-        private X509Attestation X509
+        public X509Attestation X509
         {
             get => _x509;
 
