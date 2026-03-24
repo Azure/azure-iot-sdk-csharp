@@ -20,6 +20,14 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         private static readonly NoneAttestation s_none = new();
 
         /// <summary>
+        /// For Json serialization purposes
+        /// </summary>
+        public AttestationMechanism()
+        { 
+            
+        }
+
+        /// <summary>
         /// Constructor for a given attestation.
         /// </summary>
         /// <param name="attestation">The attestation to use. Should be of type <see cref="X509Attestation"/>, <see cref="SymmetricKeyAttestation"/>, or <see cref="TpmAttestation"/></param>
@@ -53,7 +61,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="x509">The x509 attestation, if any is present.</param>
         /// <param name="tpm">The TPM attestation, if any is present.</param>
         /// <param name="symmetricKey">The symmetric key attestation, if any is present.</param>
-        [JsonConstructor]
         public AttestationMechanism(AttestationMechanismType type, X509Attestation x509, TpmAttestation tpm, SymmetricKeyAttestation symmetricKey)
         {
             switch (type)

@@ -4,6 +4,7 @@
 using System;
 using System.Net;
 using System.Security.Cryptography.X509Certificates;
+using System.Text.Json;
 using FluentAssertions;
 using FluentAssertions.Specialized;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -153,7 +154,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
             string json = X509CertificateWithInfoTests.MakeJson(SubjectName, Sha1Thumbprint, Sha256Thumbprint, IssuerName, NotBeforeUtcString, NotAfterUtcString, SerialNumber, Version);
 
             // act
-            X509CertificateWithInfo x509CertificateWithInfo = Newtonsoft.Json.JsonConvert.DeserializeObject<X509CertificateWithInfo>(json);
+            X509CertificateWithInfo x509CertificateWithInfo = JsonSerializer.Deserialize<X509CertificateWithInfo>(json, JsonSerializerSettings.Options);
 
             // assert
             Assert.IsNotNull(x509CertificateWithInfo.Info);

@@ -56,11 +56,18 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <summary>
         /// Provided for deserialization and unit testing.
         /// </summary>
+        public X509Attestation()
+        {
+
+        }
+
+        /// <summary>
+        /// Provided for deserialization and unit testing.
+        /// </summary>
         /// <param name="clientCertificates">Client certificates.</param>
         /// <param name="rootCertificates">Root certificates.</param>
         /// <param name="caReferences">Certificate authority references.</param>
         /// <exception cref="InvalidOperationException"></exception>
-        [JsonConstructor]
         public X509Attestation(
             X509Certificates clientCertificates,
             X509Certificates rootCertificates,

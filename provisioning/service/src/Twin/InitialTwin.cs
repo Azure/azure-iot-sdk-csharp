@@ -36,6 +36,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// Getter and setter the desired properties.
         /// </summary>
         [JsonPropertyName("properties")]
-        public InitialTwinPropertyCollection DesiredProperties { get; set; }
+        public InitialTwinProperties Properties { get; set; }
     }
 }

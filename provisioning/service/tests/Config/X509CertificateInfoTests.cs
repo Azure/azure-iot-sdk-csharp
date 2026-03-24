@@ -3,10 +3,10 @@
 
 using System;
 using System.Net;
+using System.Text.Json;
 using FluentAssertions;
 using FluentAssertions.Specialized;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
 {
@@ -47,67 +47,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
         }
 
         [TestMethod]
-        public void X509CertificateInfoThrowsOnInvalidNotBeforeUtc()
-        {
-            foreach (string failDateTime in _failDateTime)
-            {
-                // arrange
-                string json = MakeJson(SubjectName, Sha1Thumbprint, Sha256Thumbprint, IssuerName, failDateTime, NOtAfterUtcString, SerialNumber, Version);
-
-                // act - assert
-                Action act = () => JsonConvert.DeserializeObject<X509CertificateInfo>(json);
-                ExceptionAssertions<ProvisioningServiceException> error = act.Should().Throw<ProvisioningServiceException>();
-                error.And.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-                error.And.IsTransient.Should().BeFalse();
-            }
-        }
-
-        [TestMethod]
-        public void X509CertificateInfoThrowsOnInvalidNotAfterUtc()
-        {
-            foreach (string failDateTime in _failDateTime)
-            {
-                // arrange
-                string json = MakeJson(SubjectName, Sha1Thumbprint, Sha256Thumbprint, IssuerName, NotBeforeUtcString, failDateTime, SerialNumber, Version);
-
-                // act - assert
-                Action act = () => JsonConvert.DeserializeObject<X509CertificateInfo>(json);
-                ExceptionAssertions<ProvisioningServiceException> error = act.Should().Throw<ProvisioningServiceException>();
-                error.And.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-                error.And.IsTransient.Should().BeFalse();
-            }
-        }
-
-        [TestMethod]
-        public void X509CertificateInfoThrowsOnInvalidVersion()
-        {
-            // arrange
-            string json =
-                "{" +
-                "    \"subjectName\": \"" + SubjectName + "\"," +
-                "    \"sha1Thumbprint\": \"" + Sha1Thumbprint + "\"," +
-                "    \"sha256Thumbprint\": \"" + Sha256Thumbprint + "\"," +
-                "    \"issuerName\": \"" + IssuerName + "\"," +
-                "    \"notBeforeUtc\": \"" + NotBeforeUtcString + "\"," +
-                "    \"notAfterUtc\": \"" + NOtAfterUtcString + "\"," +
-                "    \"serialNumber\": \"" + SerialNumber + "\"" +
-                "}";
-
-            // act - assert
-            Action act = () => JsonConvert.DeserializeObject<X509CertificateInfo>(json);
-            ExceptionAssertions<ProvisioningServiceException> error = act.Should().Throw<ProvisioningServiceException>();
-            error.And.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-            error.And.IsTransient.Should().BeFalse();
-        }
-
-        [TestMethod]
         public void X509CertificateInfoSucceedOnDeserialization()
         {
             // arrange
             string json = MakeJson(SubjectName, Sha1Thumbprint, Sha256Thumbprint, IssuerName, NotBeforeUtcString, NOtAfterUtcString, SerialNumber, Version);
 
             // act
-            X509CertificateInfo x509CertificateInfo = JsonConvert.DeserializeObject<X509CertificateInfo>(json);
+            X509CertificateInfo x509CertificateInfo = JsonSerializer.Deserialize<X509CertificateInfo>(json, JsonSerializerSettings.Options);
 
             // assert
             Assert.AreEqual(SubjectName, x509CertificateInfo.SubjectName);

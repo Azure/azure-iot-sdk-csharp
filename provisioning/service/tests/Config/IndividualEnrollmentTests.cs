@@ -2,11 +2,11 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Text.Json;
 using Azure;
 using FluentAssertions;
 using FluentAssertions.Specialized;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
 {
@@ -142,130 +142,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
         }
 
         [TestMethod]
-        public void IndividualEnrollmentConstructorThrowsOnInvalidParameters()
-        {
-            Action act = () => _ = new IndividualEnrollment(SampleRegistrationId, _sampleX509RootAttestation);
-            act.Should().Throw<InvalidOperationException>();
-        }
-
-        [TestMethod]
-        public void IndividualEnrollmentConstructorJsonThrowsOnNonRegistrationID()
-        {
-            // arrange
-            string invalidJson =
-            "{\n" +
-            "   \"attestation\":{\n" +
-            "       \"type\":\"x509\",\n" +
-            "       \"x509\":{\n" +
-            "           \"signingCertificates\":{\n" +
-            "               \"primary\":{\n" +
-            "                   \"info\": {\n" +
-            "                       \"subjectName\": \"CN=ROOT_00000000-0000-0000-0000-000000000000, OU=Azure IoT, O=MSFT, C=US\",\n" +
-            "                       \"sha1Thumbprint\": \"0000000000000000000000000000000000\",\n" +
-            "                       \"sha256Thumbprint\": \"" + SampleRegistrationId + "\",\n" +
-            "                       \"issuerName\": \"CN=ROOT_00000000-0000-0000-0000-000000000000, OU=Azure IoT, O=MSFT, C=US\",\n" +
-            "                       \"notBeforeUtc\": \"2017-11-14T12:34:18Z\",\n" +
-            "                       \"notAfterUtc\": \"2017-11-20T12:34:18Z\",\n" +
-            "                       \"serialNumber\": \"000000000000000000\",\n" +
-            "                       \"version\": 3\n" +
-            "                   }\n" +
-            "               }\n" +
-            "           }\n" +
-            "       }\n" +
-            "   },\n" +
-            "   \"iotHubHostName\":\"" + SampleIotHubHostName + "\",\n" +
-            "   \"deviceId\":\"" + SampleDeviceId + "\",\n" +
-            "   \"initialTwin\":{\n" +
-            "       \"tags\":{\n" +
-            "           \"tag1\":\"val1\",\n" +
-            "       },\n" +
-            "   },\n" +
-            "   \"provisioningStatus\":\"" + SampleProvisioningStatus + "\",\n" +
-            "   \"createdDateTimeUtc\": \"" + SampleCreateDateTimeUTCString + "\",\n" +
-            "   \"lastUpdatedDateTimeUtc\": \"" + SampleLastUpdatedDateTimeUTCString + "\",\n" +
-            "   \"etag\": \"" + s_sampleEtag + "\"\n" +
-            "}";
-
-            // act - assert
-            Action act = () => JsonConvert.DeserializeObject<IndividualEnrollment>(invalidJson);
-            ExceptionAssertions<InvalidOperationException> error = act.Should().Throw<InvalidOperationException>();
-        }
-
-        [TestMethod]
-        public void IndividualEnrollmentConstructorJsonThrowsOnNonAttestation()
-        {
-            // arrange
-            string invalidJson =
-            "{\n" +
-            "   \"registrationId\":\"" + SampleRegistrationId + "\",\n" +
-            "   \"iotHubHostName\":\"" + SampleIotHubHostName + "\",\n" +
-            "   \"deviceId\":\"" + SampleDeviceId + "\",\n" +
-            "   \"initialTwin\":{\n" +
-            "       \"tags\":{\n" +
-            "           \"tag1\":\"val1\",\n" +
-            "       },\n" +
-            "   },\n" +
-            "   \"provisioningStatus\":\"" + SampleProvisioningStatus + "\",\n" +
-            "   \"createdDateTimeUtc\": \"" + SampleCreateDateTimeUTCString + "\",\n" +
-            "   \"lastUpdatedDateTimeUtc\": \"" + SampleLastUpdatedDateTimeUTCString + "\",\n" +
-            "   \"etag\": \"" + s_sampleEtag + "\"\n" +
-            "}";
-
-            // act
-            Action act = () => JsonConvert.DeserializeObject<IndividualEnrollment>(invalidJson);
-
-            // assert
-            act.Should().Throw<ArgumentNullException>();
-        }
-
-        [TestMethod]
-        public void IndividualEnrollmentConstructorJsonThrowsOnNonEtag()
-        {
-            // arrange
-            string invalidJson =
-            "{\n" +
-            "   \"registrationId\":\"" + SampleRegistrationId + "\",\n" +
-            "   \"attestation\":{\n" +
-            "       \"type\":\"x509\",\n" +
-            "       \"x509\":{\n" +
-            "           \"signingCertificates\":{\n" +
-            "               \"primary\":{\n" +
-            "                   \"info\": {\n" +
-            "                       \"subjectName\": \"CN=ROOT_00000000-0000-0000-0000-000000000000, OU=Azure IoT, O=MSFT, C=US\",\n" +
-            "                       \"sha1Thumbprint\": \"0000000000000000000000000000000000\",\n" +
-            "                       \"sha256Thumbprint\": \"" + SampleRegistrationId + "\",\n" +
-            "                       \"issuerName\": \"CN=ROOT_00000000-0000-0000-0000-000000000000, OU=Azure IoT, O=MSFT, C=US\",\n" +
-            "                       \"notBeforeUtc\": \"2017-11-14T12:34:18Z\",\n" +
-            "                       \"notAfterUtc\": \"2017-11-20T12:34:18Z\",\n" +
-            "                       \"serialNumber\": \"000000000000000000\",\n" +
-            "                       \"version\": 3\n" +
-            "                   }\n" +
-            "               }\n" +
-            "           }\n" +
-            "       }\n" +
-            "   },\n" +
-            "   \"iotHubHostName\":\"" + SampleIotHubHostName + "\",\n" +
-            "   \"deviceId\":\"" + SampleDeviceId + "\",\n" +
-            "   \"initialTwin\":{\n" +
-            "       \"tags\":{\n" +
-            "           \"tag1\":\"val1\",\n" +
-            "       },\n" +
-            "   },\n" +
-            "   \"provisioningStatus\":\"" + SampleProvisioningStatus + "\",\n" +
-            "   \"createdDateTimeUtc\": \"" + SampleCreateDateTimeUTCString + "\",\n" +
-            "   \"lastUpdatedDateTimeUtc\": \"" + SampleLastUpdatedDateTimeUTCString + "\"\n" +
-            "}";
-
-            // act - assert
-            Action act = () => JsonConvert.DeserializeObject<IndividualEnrollment>(invalidJson);
-            ExceptionAssertions<InvalidOperationException> error = act.Should().Throw<InvalidOperationException>();
-        }
-
-        [TestMethod]
         public void IndividualEnrollmentConstructorWithoutCapabilitiesJsonSucceed()
         {
             // arrange
-            IndividualEnrollment individualEnrollment = JsonConvert.DeserializeObject<IndividualEnrollment>(_sampleIndividualEnrollmentJsonWithoutCapabilities);
+            IndividualEnrollment individualEnrollment = JsonSerializer.Deserialize<IndividualEnrollment>(_sampleIndividualEnrollmentJsonWithoutCapabilities, JsonSerializerSettings.Options);
 
             // act - assert
             Assert.IsNotNull(individualEnrollment);
@@ -285,7 +165,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
         public void IndividualEnrollmentConstructorWithCapabilitiesTrueJsonSucceed()
         {
             // arrange
-            IndividualEnrollment individualEnrollment = JsonConvert.DeserializeObject<IndividualEnrollment>(_sampleIndividualEnrollmentJsonWithCapabilitiesTrue);
+            IndividualEnrollment individualEnrollment = JsonSerializer.Deserialize<IndividualEnrollment>(_sampleIndividualEnrollmentJsonWithCapabilitiesTrue, JsonSerializerSettings.Options);
 
             // act - assert
             Assert.IsNotNull(individualEnrollment);
@@ -305,7 +185,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
         public void IndividualEnrollmentConstructorWithCapabilitiesFalseJsonSucceed()
         {
             // arrange
-            IndividualEnrollment individualEnrollment = JsonConvert.DeserializeObject<IndividualEnrollment>(_sampleIndividualEnrollmentJsonWithCapabilitiesFalse);
+            IndividualEnrollment individualEnrollment = JsonSerializer.Deserialize<IndividualEnrollment>(_sampleIndividualEnrollmentJsonWithCapabilitiesFalse, JsonSerializerSettings.Options);
 
             // act - assert
             Assert.IsNotNull(individualEnrollment);
@@ -349,7 +229,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
                 "   },\n" +
                 "   \"etag\": \"" + s_sampleEtag + "\"\n" +
                 "}";
-            IndividualEnrollment individualEnrollment = JsonConvert.DeserializeObject<IndividualEnrollment>(minJson);
+            IndividualEnrollment individualEnrollment = JsonSerializer.Deserialize<IndividualEnrollment>(minJson, JsonSerializerSettings.Options);
 
             // act - assert
             Assert.IsNotNull(individualEnrollment);

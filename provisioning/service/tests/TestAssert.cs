@@ -2,13 +2,13 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Collections.Generic;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
 {
     using System;
     using System.Globalization;
-
+    using System.Text.Json;
+    using System.Text.Json.Nodes;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     public static class TestAssert
@@ -46,69 +46,20 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
 
         public static void AreEqualJson(string expectedJson, string actualJson)
         {
-            if(expectedJson == null)
+            if (expectedJson == null)
             {
                 Assert.IsNull(actualJson, FormatExpectedActual("null", actualJson));
             }
 
-            if(expectedJson.Length == 0)
+            if (expectedJson.Length == 0)
             {
                 Assert.AreEqual(actualJson.Length, 0, FormatExpectedActual("empty string", actualJson));
             }
 
-            JObject expectedJObject = Newtonsoft.Json.JsonConvert.DeserializeObject<JObject>(expectedJson);
-            JObject actualJObject = Newtonsoft.Json.JsonConvert.DeserializeObject<JObject>(actualJson);
+            JsonNode expectedJObject = JsonNode.Parse(expectedJson);
+            JsonNode actualJObject = JsonNode.Parse(actualJson);
 
-            AreEqual(expectedJObject, actualJObject);
-        }
-
-        public static void AreEqual(JObject expectedJObject, JObject actualJObject)
-        {
-            if(expectedJObject == null)
-            {
-                Assert.IsNull(actualJObject, FormatExpectedActual("null", actualJObject.ToString()));
-            }
-            foreach (KeyValuePair<string, JToken> expectedPair in expectedJObject)
-            {
-                Object acturalValue = actualJObject.GetValue(expectedPair.Key);
-                Assert.IsNotNull(acturalValue, FormatExpectedActual(expectedPair.Key + ":" + expectedPair.Value, "null"));
-                if (expectedPair.Value.Type == JTokenType.Object)
-                {
-                    AreEqual((JObject)expectedPair.Value, (JObject)acturalValue);
-                }
-                else if (expectedPair.Value.Type == JTokenType.Array)
-                {
-                    AreEqual((JArray)expectedPair.Value, (JArray)acturalValue);
-                }
-                else
-                {
-                    Assert.AreEqual(expectedPair.Value, acturalValue, 
-                        FormatExpectedActual(expectedPair.Key + ":" + expectedPair.Value, expectedPair.Key + ":" + acturalValue));
-                }
-            }
-        }
-
-        public static void AreEqual(JArray expectedJObject, JArray actualJObject)
-        {
-            Assert.AreEqual(expectedJObject.Count, actualJObject.Count);
-
-            for (int index = 0; index < expectedJObject.Count; index++)
-            {
-                JToken expectedItem = expectedJObject[index];
-                JToken actualItem = actualJObject[index];
-                if (expectedItem.Type == JTokenType.Object)
-                {
-                    AreEqual((JObject)expectedItem, (JObject)actualItem);
-                }
-                else if (expectedItem.Type == JTokenType.Array)
-                {
-                    AreEqual((JArray)expectedItem, (JArray)actualItem);
-                }
-                else
-                {
-                    Assert.AreEqual(expectedItem, actualItem);
-                }
-            }
+            Assert.IsTrue(JsonNode.DeepEquals(expectedJObject, actualJObject), $"The provided json strings are not equivalent. \n {expectedJson} \nvs \n{actualJson}");
         }
     }
 }

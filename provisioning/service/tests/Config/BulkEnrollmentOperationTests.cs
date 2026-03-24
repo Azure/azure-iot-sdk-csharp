@@ -2,10 +2,9 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Collections.Generic;
+using System.Text.Json;
 using System.Text.RegularExpressions;
-using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
 {
@@ -59,10 +58,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
                 Enrollments = s_individualEnrollments,
             };
 
-            string actual = JsonConvert.SerializeObject(operation);
+            string actual = JsonSerializer.Serialize(operation, JsonSerializerSettings.Options);
 
             // assert
-            actual.Should().Be(expected);
+            TestAssert.AreEqualJson(expected, actual);
         }
     }
 }

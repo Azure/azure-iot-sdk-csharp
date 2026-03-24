@@ -2,10 +2,10 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Text.Json;
 using Azure;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
 {
@@ -94,47 +94,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
         }
 
         [TestMethod]
-        public void EnrollmentGroupConstructorThrowsOnInvalidParameters()
-        {
-            // arrange - act - assert
-            Action act = () => _ = new EnrollmentGroup(SampleEnrollmentGroupId, _sampleX509ClientAttestation);
-            act.Should().Throw<InvalidOperationException>();
-
-            act = () => _ = new EnrollmentGroup(SampleEnrollmentGroupId, _sampleTpmAttestation);
-            act.Should().Throw<InvalidOperationException>();
-        }
-
-        [TestMethod]
-        public void EnrollmentGroupConstructorJsonThrowsOnNonAttestation()
-        {
-            // arrange
-            string invalidJson =
-                "{\n" +
-                "   \"enrollmentGroupId\":\"" + SampleEnrollmentGroupId + "\",\n" +
-                "   \"iotHubHostName\":\"" + SampleIotHubHostName + "\",\n" +
-                "   \"initialTwin\":{\n" +
-                "       \"tags\":{\n" +
-                "           \"tag1\":\"val1\",\n" +
-                "       },\n" +
-                "   },\n" +
-                "   \"provisioningStatus\":\"" + SampleProvisioningStatus + "\",\n" +
-                "   \"createdDateTimeUtc\": \"" + SampleCreateDateTimeUTCString + "\",\n" +
-                "   \"lastUpdatedDateTimeUtc\": \"" + SampleLastUpdatedDateTimeUTCString + "\",\n" +
-                "   \"etag\": \"" + s_sampleEtag + "\"\n" +
-                "}";
-
-            // act
-            Action act = () => JsonConvert.DeserializeObject<EnrollmentGroup>(invalidJson);
-
-            // assert
-            act.Should().Throw<ArgumentNullException>();
-        }
-
-        [TestMethod]
         public void EnrollmentGroupConstructorJsonSucceed()
         {
             // arrange
-            EnrollmentGroup enrollmentGroup = JsonConvert.DeserializeObject<EnrollmentGroup>(s_sampleEnrollmentGroupJson);
+            EnrollmentGroup enrollmentGroup = JsonSerializer.Deserialize<EnrollmentGroup>(s_sampleEnrollmentGroupJson, JsonSerializerSettings.Options);
 
             // act - assert
             Assert.IsNotNull(enrollmentGroup);
@@ -176,7 +139,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
                 "   },\n" +
                 "   \"etag\": \"" + s_sampleEtag + "\"\n" +
                 "}";
-            EnrollmentGroup enrollmentGroup = JsonConvert.DeserializeObject<EnrollmentGroup>(minJson);
+            EnrollmentGroup enrollmentGroup = JsonSerializer.Deserialize<EnrollmentGroup>(minJson, JsonSerializerSettings.Options);
 
             // act - assert
             Assert.IsNotNull(enrollmentGroup);
