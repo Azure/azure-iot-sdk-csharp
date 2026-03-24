@@ -55,39 +55,15 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         {
             Argument.AssertNotNullOrWhiteSpace(enrollmentGroupId, nameof(enrollmentGroupId));
             Id = enrollmentGroupId;
-            Attestation = attestation;
+            Attestation = new(attestation);
         }
 
-        // This JsonConstructor is used for serialization instead of the usual empty constructor
-        // because one of this object's fields (attestation) doesn't map 1:1 with where that field
-        // is in the JSON the service sends.
         /// <summary>
         /// The constructor used for Json serialization purposes.
         /// </summary>
         [JsonConstructor]
-        public EnrollmentGroup(
-            string enrollmentGroupId,
-            AttestationMechanism attestation,
-            string iotHubHostName,
-            InitialTwin initialTwinState,
-            ProvisioningStatus? provisioningStatus,
-            DateTimeOffset createdOnUtc,
-            DateTimeOffset lastUpdatedOnUtc,
-            ETag eTag,
-            InitialTwinCapabilities capabilities)
+        public EnrollmentGroup()
         {
-            Argument.AssertNotNull(attestation, nameof(attestation));
-
-            Id = enrollmentGroupId;
-            // This is the one reason why we can't use an empty constructor here.
-            Attestation = attestation.GetAttestation();
-            IotHubHostName = iotHubHostName;
-            InitialTwinState = initialTwinState;
-            ProvisioningStatus = provisioningStatus;
-            CreatedOnUtc = createdOnUtc;
-            LastUpdatedOnUtc = lastUpdatedOnUtc;
-            ETag = eTag;
-            Capabilities = capabilities;
         }
 
         /// <summary>
@@ -110,40 +86,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// Attestation mechanism.
         /// </summary>
         [JsonPropertyName("attestation")]
-        private AttestationMechanism _attestation;
-
-        /// <summary>
-        /// Getter and setter for Attestation.
-        /// </summary>
-        [JsonIgnore]
-        public Attestation Attestation
-        {
-            get => _attestation.GetAttestation();
-            set
-            {
-                if (value == null)
-                {
-                    throw new InvalidOperationException($"Value for {nameof(Attestation)} cannot be null.");
-                }
-                else if (value is not X509Attestation && value is not SymmetricKeyAttestation)
-                {
-                    throw new InvalidOperationException("Attestation for enrollmentGroup shall be X509 or symmetric key.");
-                }
-
-                if (value is X509Attestation attestation)
-                {
-                    if (attestation.RootCertificates == null && attestation.CaReferences == null)
-                    {
-                        throw new InvalidOperationException("Attestation mechanism does not contain a valid certificate,");
-                    }
-                }
-
-                if (value != null)
-                {
-                    _attestation = new AttestationMechanism(value);
-                }
-            }
-        }
+        public AttestationMechanism Attestation { get; set; }
 
         /// <summary>
         /// Desired IoT hub to assign the device to.

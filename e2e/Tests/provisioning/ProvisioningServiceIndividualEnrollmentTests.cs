@@ -189,16 +189,16 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     attestationMechanism.Type.Should().Be(AttestationMechanismType.SymmetricKey);
 
                     var symmetricKeyAttestation = (SymmetricKeyAttestation)attestationMechanism.GetAttestation();
-                    symmetricKeyAttestation.PrimaryKey.Should().Be(((SymmetricKeyAttestation)individualEnrollment.Attestation).PrimaryKey);
-                    symmetricKeyAttestation.SecondaryKey.Should().Be(((SymmetricKeyAttestation)individualEnrollment.Attestation).SecondaryKey);
+                    symmetricKeyAttestation.PrimaryKey.Should().Be(((SymmetricKeyAttestation)individualEnrollment.AttestationMechanism.SymmetricKey).PrimaryKey);
+                    symmetricKeyAttestation.SecondaryKey.Should().Be(((SymmetricKeyAttestation)individualEnrollment.AttestationMechanism.SymmetricKey).SecondaryKey);
                 }
                 else if (attestationType == AttestationMechanismType.X509)
                 {
                     attestationMechanism.Type.Should().Be(AttestationMechanismType.X509);
 
                     var x509Attestation = (X509Attestation)attestationMechanism.GetAttestation();
-                    x509Attestation.GetPrimaryX509CertificateInfo().Sha1Thumbprint.Should().Be(((X509Attestation)individualEnrollment.Attestation).GetPrimaryX509CertificateInfo().Sha1Thumbprint);
-                    x509Attestation.GetSecondaryX509CertificateInfo().Sha1Thumbprint.Should().Be(((X509Attestation)individualEnrollment.Attestation).GetSecondaryX509CertificateInfo().Sha1Thumbprint);
+                    x509Attestation.GetPrimaryX509CertificateInfo().Sha1Thumbprint.Should().Be(((X509Attestation)individualEnrollment.AttestationMechanism.X509).GetPrimaryX509CertificateInfo().Sha1Thumbprint);
+                    x509Attestation.GetSecondaryX509CertificateInfo().Sha1Thumbprint.Should().Be(((X509Attestation)individualEnrollment.AttestationMechanism.X509).GetSecondaryX509CertificateInfo().Sha1Thumbprint);
                 }
             }
             finally
