@@ -20,10 +20,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     public class X509CertificateWithInfo
     {
         /// <summary>
-        /// 
+        /// Construct with a certificate object
         /// </summary>
-        /// <param name="certificate"></param>
-        /// <exception cref="ProvisioningServiceException"></exception>
+        /// <param name="certificate">The certificate</param>
         public X509CertificateWithInfo(X509Certificate2 certificate)
         {
             try
@@ -39,10 +38,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         }
 
         /// <summary>
-        /// 
+        /// Construct with a certificate string
         /// </summary>
-        /// <param name="certificate"></param>
-        /// <exception cref="ProvisioningServiceException"></exception>
+        /// <param name="certificate">The certificate string</param>
         public X509CertificateWithInfo(string certificate)
         {
             try
@@ -58,10 +56,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         }
 
         /// <summary>
-        /// 
+        /// Construct with a certificate string and its info
         /// </summary>
-        /// <param name="certificate"></param>
-        /// <param name="info"></param>
+        /// <param name="certificate">The certificate string</param>
+        /// <param name="info">The certificate's info</param>
         [JsonConstructor]
         public X509CertificateWithInfo(string certificate, X509CertificateInfo info)
         {
