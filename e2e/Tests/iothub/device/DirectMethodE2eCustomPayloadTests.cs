@@ -31,10 +31,29 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         [DataRow(Protocol.Mqtt)]
         public async Task Method_DeviceReceivesMethodAndResponse_CustomStronglyTypedObject(Protocol protocol)
         {
-            DirectMethodRequestPayload _customTypeRequest = new() { DesiredState = "on" };
-            DirectMethodResponsePayload _customTypeResponse = new() { CurrentState = "off" };
+            DirectMethodRequestPayload _customTypeRequest = new() 
+            { 
+                DesiredState = "on", 
+                TimeStamp = DateTimeOffset.MinValue ,
+                NestedObject = new()
+                { 
+                    ArrayValues = { "firstValue", 55 },
+                    SomeDouble = 12.3
+                }
+            };
 
-        DirectMethodServiceRequest request = new(MethodName)
+            DirectMethodResponsePayload _customTypeResponse = new() 
+            { 
+                CurrentState = "off", 
+                TimeStamp = DateTimeOffset.MaxValue,
+                NestedObject = new()
+                {
+                    ArrayValues = { false, 11.6 },
+                    SomeDouble = 12.3
+                }
+            };
+
+            DirectMethodServiceRequest request = new(MethodName)
             { 
                 ResponseTimeoutInSeconds = s_defaultMethodResponseTimeout
             };
@@ -199,7 +218,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
 
             VerboseTestLogger.WriteLine($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Method response status: {methodResponse.Status} for device {deviceId}.");
             methodResponse.Status.Should().Be(200);
-            expectedClientResponsePayload.Should().Equal(JsonSerializer.SerializeToUtf8Bytes(methodResponse.JsonPayload)); // Sensitive to order within the json object, but good enough for this test
+            TestAssert.AreEqualJson(Encoding.UTF8.GetString(expectedClientResponsePayload), JsonSerializer.Serialize(methodResponse.JsonPayload));
         }
     }
 }
