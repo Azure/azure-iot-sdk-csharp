@@ -147,12 +147,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         }
 
         /// <summary>
-        /// 
+        /// Try to retrieve the given property and deserialize it into the given type.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="propertyName"></param>
-        /// <param name="propertyValue"></param>
-        /// <returns></returns>
+        /// <typeparam name="T">The type that the property value will be deserialized into</typeparam>
+        /// <param name="propertyName">The name of the property to look for.</param>
+        /// <param name="propertyValue">The retrieved and deserialized value of the property if it was found and successfully deserialized.</param>
+        /// <returns>True if the property was found and its value was successfully deserialized. False otherwise.</returns>
         public bool TryGetAndDeserializeValue<T>(string propertyName, out T propertyValue)
         {
             propertyValue = default;
@@ -204,16 +204,22 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             return false;
         }
 
-        /// <inheritdoc/>
-        public bool TryGetValue<T>(string key, [MaybeNullWhen(false)] out T value)
+        /// <summary>
+        /// Try to retrieve the given property and cast it as the given type.
+        /// </summary>
+        /// <typeparam name="T">The type that the property value will be cast as</typeparam>
+        /// <param name="propertyName">The name of the property to look for.</param>
+        /// <param name="propertyValue">The retrieved and cast value of the property if it was found and successfully cast.</param>
+        /// <returns>True if the property was found and its value was successfully cast. False otherwise.</returns>
+        public bool TryGetValue<T>(string propertyName, [MaybeNullWhen(false)] out T propertyValue)
         {
-            value = default;
-            if (Properties.TryGetValue(key, out JsonElement jsonValue))
+            propertyValue = default;
+            if (Properties.TryGetValue(propertyName, out JsonElement jsonValue))
             {
                 dynamic dynamicValue = FromJsonElement(jsonValue);
                 if (dynamicValue is T castType)
                 {
-                    value = castType;
+                    propertyValue = castType;
                     return true;
                 }
             }
