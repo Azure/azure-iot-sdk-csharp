@@ -15,13 +15,13 @@ namespace Microsoft.Azure.Devices.Client
     public sealed class TwinDocument
     {
         /// <summary>
-        /// 
+        /// The desired properties for this device
         /// </summary>
         [JsonPropertyName("desired")]
         public Dictionary<string, object> Desired { get; set; }
 
         /// <summary>
-        /// 
+        /// The reported properties for this device
         /// </summary>
         [JsonPropertyName("reported")]
         public Dictionary<string, object> Reported { get; set; }

@@ -61,7 +61,7 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// 
+        /// TODO
         /// </summary>
         /// <param name="propertyName"></param>
         /// <param name="propertyValue"></param>
