@@ -319,7 +319,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
                     if (forceUpdate)
                     {
-                        retrievedIndividualEnrollment.ETag = ETag.All;
+                        retrievedIndividualEnrollment.ETag = Microsoft.Azure.Devices.Provisioning.Service.ETag.All;
                     }
 
                     IndividualEnrollment updatedIndividualEnrollment = null;

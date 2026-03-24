@@ -315,7 +315,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
                     if (forceUpdate)
                     {
-                        retrievedEnrollmentGroup.ETag = ETag.All;
+                        retrievedEnrollmentGroup.ETag = Microsoft.Azure.Devices.Provisioning.Service.ETag.All;
                     }
 
                     EnrollmentGroup updatedEnrollmentGroup = null;
