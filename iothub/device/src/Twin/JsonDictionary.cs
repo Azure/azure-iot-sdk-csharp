@@ -208,14 +208,13 @@ namespace Microsoft.Azure.Devices.Client
 
             return false;
         }
-
         /// <summary>
-        /// 
+        /// Try to retrieve the given property and deserialize it into the given type.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="propertyName"></param>
-        /// <param name="propertyValue"></param>
-        /// <returns></returns>
+        /// <typeparam name="T">The type that the property value will be deserialized into</typeparam>
+        /// <param name="propertyName">The name of the property to look for.</param>
+        /// <param name="propertyValue">The retrieved and deserialized value of the property if it was found and successfully deserialized.</param>
+        /// <returns>True if the property was found and its value was successfully deserialized. False otherwise.</returns>
         public bool TryGetAndDeserializeValue<T>(string propertyName, out T propertyValue)
         {
             propertyValue = default;
