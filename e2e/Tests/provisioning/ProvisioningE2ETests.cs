@@ -980,7 +980,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                                         capabilities)
                                     .ConfigureAwait(false);
 
-                                x509IndividualEnrollment.Attestation.Should().BeAssignableTo<X509Attestation>();
+                                x509IndividualEnrollment.AttestationMechanism.Should().BeAssignableTo<X509Attestation>();
                             }
 
                             break;

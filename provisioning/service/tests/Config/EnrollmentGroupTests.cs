@@ -90,7 +90,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
 
             // assert
             Assert.AreEqual(SampleEnrollmentGroupId, individualEnrollment.Id);
-            Assert.AreEqual(SamplePublicKeyCertificateString, ((X509Attestation)individualEnrollment.Attestation).RootCertificates.Primary.Certificate);
+            Assert.AreEqual(SamplePublicKeyCertificateString, ((X509Attestation)individualEnrollment.Attestation.GetAttestation()).RootCertificates.Primary.Certificate);
         }
 
         [TestMethod]
@@ -139,7 +139,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
             // act - assert
             Assert.IsNotNull(enrollmentGroup);
             Assert.AreEqual(SampleEnrollmentGroupId, enrollmentGroup.Id);
-            Assert.IsTrue(enrollmentGroup.Attestation is X509Attestation);
+            Assert.IsTrue(enrollmentGroup.Attestation.GetAttestation() is X509Attestation);
             Assert.AreEqual(SampleIotHubHostName, enrollmentGroup.IotHubHostName);
             Assert.IsNotNull(enrollmentGroup.InitialTwinState);
             Assert.AreEqual(SampleProvisioningStatus, enrollmentGroup.ProvisioningStatus);
@@ -181,7 +181,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
             // act - assert
             Assert.IsNotNull(enrollmentGroup);
             Assert.AreEqual(SampleEnrollmentGroupId, enrollmentGroup.Id);
-            Assert.IsTrue(enrollmentGroup.Attestation is X509Attestation);
+            Assert.IsTrue(enrollmentGroup.Attestation.GetAttestation() is X509Attestation);
             Assert.AreEqual(s_sampleEtag, enrollmentGroup.ETag);
         }
     }

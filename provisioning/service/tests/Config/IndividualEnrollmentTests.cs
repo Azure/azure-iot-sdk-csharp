@@ -116,7 +116,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
 
             // assert
             Assert.AreEqual(SampleRegistrationId, individualEnrollment.RegistrationId);
-            Assert.AreEqual(SampleEndorsementKey, ((TpmAttestation)individualEnrollment.Attestation).EndorsementKey);
+            Assert.AreEqual(SampleEndorsementKey, ((TpmAttestation)individualEnrollment.AttestationMechanism.GetAttestation()).EndorsementKey);
         }
 
         [TestMethod]
@@ -127,7 +127,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
 
             // assert
             Assert.AreEqual(SampleRegistrationId, individualEnrollment.RegistrationId);
-            Assert.AreEqual(SamplePublicKeyCertificateString, ((X509Attestation)individualEnrollment.Attestation).ClientCertificates.Primary.Certificate);
+            Assert.AreEqual(SamplePublicKeyCertificateString, ((X509Attestation)individualEnrollment.AttestationMechanism.GetAttestation()).ClientCertificates.Primary.Certificate);
         }
 
         [TestMethod]
@@ -138,7 +138,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
 
             // assert
             Assert.AreEqual(SampleRegistrationId, individualEnrollment.RegistrationId);
-            Assert.AreEqual(SampleCAReference, ((X509Attestation)individualEnrollment.Attestation).CaReferences.Primary);
+            Assert.AreEqual(SampleCAReference, individualEnrollment.AttestationMechanism.X509.CaReferences.Primary);
         }
 
         [TestMethod]
@@ -270,7 +270,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
             // act - assert
             Assert.IsNotNull(individualEnrollment);
             Assert.AreEqual(SampleRegistrationId, individualEnrollment.RegistrationId);
-            Assert.IsTrue(individualEnrollment.Attestation is X509Attestation);
+            Assert.IsTrue(individualEnrollment.AttestationMechanism.GetAttestation() is X509Attestation);
             Assert.AreEqual(SampleDeviceId, individualEnrollment.DeviceId);
             Assert.AreEqual(SampleIotHubHostName, individualEnrollment.IotHubHostName);
             Assert.IsNotNull(individualEnrollment.InitialTwinState);
@@ -290,7 +290,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
             // act - assert
             Assert.IsNotNull(individualEnrollment);
             Assert.AreEqual(SampleRegistrationId, individualEnrollment.RegistrationId);
-            Assert.IsTrue(individualEnrollment.Attestation is X509Attestation);
+            Assert.IsTrue(individualEnrollment.AttestationMechanism.GetAttestation() is X509Attestation);
             Assert.AreEqual(SampleDeviceId, individualEnrollment.DeviceId);
             Assert.AreEqual(SampleIotHubHostName, individualEnrollment.IotHubHostName);
             Assert.IsNotNull(individualEnrollment.InitialTwinState);
@@ -310,7 +310,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
             // act - assert
             Assert.IsNotNull(individualEnrollment);
             Assert.AreEqual(SampleRegistrationId, individualEnrollment.RegistrationId);
-            Assert.IsTrue(individualEnrollment.Attestation is X509Attestation);
+            Assert.IsTrue(individualEnrollment.AttestationMechanism.GetAttestation() is X509Attestation);
             Assert.AreEqual(SampleDeviceId, individualEnrollment.DeviceId);
             Assert.AreEqual(SampleIotHubHostName, individualEnrollment.IotHubHostName);
             Assert.IsNotNull(individualEnrollment.InitialTwinState);
@@ -354,7 +354,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
             // act - assert
             Assert.IsNotNull(individualEnrollment);
             Assert.AreEqual(SampleRegistrationId, individualEnrollment.RegistrationId);
-            Assert.IsTrue(individualEnrollment.Attestation is X509Attestation);
+            Assert.IsTrue(individualEnrollment.AttestationMechanism.GetAttestation() is X509Attestation);
             Assert.AreEqual(s_sampleEtag, individualEnrollment.ETag);
         }
     }
