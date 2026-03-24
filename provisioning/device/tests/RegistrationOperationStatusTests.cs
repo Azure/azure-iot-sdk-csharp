@@ -33,8 +33,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
                 OperationId = FakeOperationId,
                 Status = s_status,
                 RegistrationState = s_registrationState,
+                RetryAfter = TimeSpan.FromSeconds(1),
             };
-            string body = JsonSerializer.Serialize(source);
+            string body = JsonSerializer.Serialize(source, JsonSerializerSettings.Options);
 
             // act
             RegistrationOperationStatus registrationOperationStatus = JsonSerializer.Deserialize<RegistrationOperationStatus>(body);

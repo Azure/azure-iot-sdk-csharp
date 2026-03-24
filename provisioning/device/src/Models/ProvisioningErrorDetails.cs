@@ -34,6 +34,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// Additional information.
         /// </summary>
         [JsonPropertyName("info")]
-        public Dictionary<string, string> Info { get; internal set; } = new();
+        public Dictionary<string, string> Info { get; set; } = new();
     }
 }

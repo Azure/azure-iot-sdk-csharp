@@ -71,14 +71,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// The entity tag associated with the resource.
         /// </summary>
         [JsonPropertyName("etag")]
-        // NewtonsoftJsonETagConverter is used here because otherwise the ETag isn't serialized properly.
         public ETag ETag { get; set; }
 
         /// <summary>
         /// The custom data returned from the webhook to the device.
         /// </summary>
         [JsonPropertyName("payload")]
-        public JsonElement Payload { get; set; }
+        public JsonElement? Payload { get; set; }
 
         /// <summary>
         /// The registration result for X.509 certificate authentication.
@@ -101,14 +100,16 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         public bool TryGetPayload<T>(out T value)
         {
             value = default;
-            if (Payload.ValueKind == JsonValueKind.Null)
+            if (Payload == null 
+                || Payload.Value.ValueKind == JsonValueKind.Null
+                || Payload.Value.ValueKind == JsonValueKind.Undefined)
             {
                 return false;
             }
 
             try
             {
-                value = JsonSerializer.Deserialize<T>(Payload, JsonSerializerSettings.Options);
+                value = JsonSerializer.Deserialize<T>(Payload.Value, JsonSerializerSettings.Options);
                 return true;
             }
             catch (JsonException)
