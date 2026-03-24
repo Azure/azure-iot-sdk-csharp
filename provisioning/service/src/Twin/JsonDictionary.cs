@@ -167,7 +167,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 propertyValue = JsonSerializer.Deserialize<T>(jsonElement, JsonSerializerSettings.Options);
                 return true;
             }
-            catch (InvalidCastException)
+            catch (JsonException)
             { }
 
             return false;
