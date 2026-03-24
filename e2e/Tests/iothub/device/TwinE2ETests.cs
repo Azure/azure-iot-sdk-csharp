@@ -10,7 +10,9 @@ using System.Threading.Tasks;
 using Azure;
 using FluentAssertions;
 using FluentAssertions.Specialized;
+using Microsoft.Azure.Amqp.Transport;
 using Microsoft.Azure.Devices.Client;
+using Microsoft.Azure.Devices.E2ETests.helpers;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -486,6 +488,109 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 .Invoking(async () => { twin = await s_serviceClient.Twins.UpdateAsync(testDevice.Id, twin, true, ct).ConfigureAwait(false); })
                 .Should()
                 .NotThrowAsync<IotHubServiceException>("Did not expect test to throw a precondition failed exception since 'onlyIfUnchanged' was set to true");
+        }
+
+        [DataTestMethod]
+        [DataRow(Protocol.Amqp)]
+        [DataRow(Protocol.Mqtt)]
+        public async Task TestSendingModeledTypesInDesiredProperties(Protocol protocol)
+        {
+            // Setting up one cancellation token for the complete test flow
+            using var cts = new CancellationTokenSource(s_testTimeout);
+            CancellationToken ct = cts.Token;
+
+            IotHubClientTransportSettings transportSettings;
+            if (protocol == Protocol.Mqtt)
+            {
+                transportSettings = new IotHubClientAmqpSettings(IotHubClientTransportProtocol.Tcp);
+            }
+            else if (protocol == Protocol.Amqp)
+            {
+                transportSettings = new IotHubClientAmqpSettings(IotHubClientTransportProtocol.Tcp);
+            }
+            else
+            {
+                throw new NotSupportedException("Unknown protocol");
+            }
+
+            string propName = Guid.NewGuid().ToString();
+            CustomTwinProperty expected = new CustomTwinProperty()
+            {
+                Id = 12,
+                Name = Guid.NewGuid().ToString(),
+                Nested = new()
+                {
+                    Id = 34,
+                    Name = Guid.NewGuid().ToString(),
+                }
+            };
+
+            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix, ct: ct).ConfigureAwait(false);
+            var options = new IotHubClientOptions(transportSettings);
+            await using var deviceClient = new IotHubDeviceClient(testDevice.ConnectionString, options);
+            await deviceClient.OpenAsync(ct).ConfigureAwait(false);
+
+            var serviceTwin = await s_serviceClient.Twins.GetAsync(testDevice.Id, ct);
+            serviceTwin.Properties.Desired[propName] = expected;
+            await s_serviceClient.Twins.ReplaceAsync(testDevice.Id, serviceTwin, cancellationToken: ct);
+
+            TwinProperties deviceTwin = await deviceClient.GetTwinPropertiesAsync(ct).ConfigureAwait(false);
+            bool propertyFound = deviceTwin.Desired.TryGetAndDeserializeValue(propName, out CustomTwinProperty actual);
+            propertyFound.Should().BeTrue();
+            TestAssert.AreEqualJson(JsonSerializer.Serialize(actual), JsonSerializer.Serialize(expected));
+        }
+
+        [DataTestMethod]
+        [DataRow(Protocol.Amqp)]
+        [DataRow(Protocol.Mqtt)]
+        public async Task TestSendingModeledTypesInReportedProperties(Protocol protocol)
+        {
+            // Setting up one cancellation token for the complete test flow
+            using var cts = new CancellationTokenSource(s_testTimeout);
+            CancellationToken ct = cts.Token;
+
+            IotHubClientTransportSettings transportSettings;
+            if (protocol == Protocol.Mqtt)
+            {
+                transportSettings = new IotHubClientAmqpSettings(IotHubClientTransportProtocol.Tcp);
+            }
+            else if (protocol == Protocol.Amqp)
+            {
+                transportSettings = new IotHubClientAmqpSettings(IotHubClientTransportProtocol.Tcp);
+            }
+            else
+            {
+                throw new NotSupportedException("Unknown protocol");
+            }
+
+            string propName = Guid.NewGuid().ToString();
+            CustomTwinProperty expected = new CustomTwinProperty()
+            {
+                Id = 12,
+                Name = Guid.NewGuid().ToString(),
+                Nested = new()
+                {
+                    Id = 34,
+                    Name = Guid.NewGuid().ToString(),
+                }
+            };
+
+            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix, ct: ct).ConfigureAwait(false);
+            var options = new IotHubClientOptions(transportSettings);
+            await using var deviceClient = new IotHubDeviceClient(testDevice.ConnectionString, options);
+            await deviceClient.OpenAsync(ct).ConfigureAwait(false);
+
+            var reportedProperties = new PropertyCollection()
+            {
+                [propName] = expected,
+            };
+            await deviceClient.UpdateReportedPropertiesAsync(reportedProperties, ct);
+
+            var serviceTwin = await s_serviceClient.Twins.GetAsync(testDevice.Id, ct);
+
+            bool propertyFound = serviceTwin.Properties.Reported.TryGetAndDeserializeValue(propName, out CustomTwinProperty actual);
+            propertyFound.Should().BeTrue();
+            TestAssert.AreEqualJson(JsonSerializer.Serialize(actual), JsonSerializer.Serialize(expected));
         }
 
         public static async Task Twin_DeviceSetsReportedPropertyAndGetsItBackAsync<T>(IotHubDeviceClient deviceClient, string deviceId, T propValue, CancellationToken ct)
