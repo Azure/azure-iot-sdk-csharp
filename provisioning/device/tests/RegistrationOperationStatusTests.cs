@@ -38,7 +38,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
             string body = JsonSerializer.Serialize(source, JsonSerializerSettings.Options);
 
             // act
-            RegistrationOperationStatus registrationOperationStatus = JsonSerializer.Deserialize<RegistrationOperationStatus>(body);
+            RegistrationOperationStatus registrationOperationStatus = JsonSerializer.Deserialize<RegistrationOperationStatus>(body, JsonSerializerSettings.Options);
 
             // assert
 
