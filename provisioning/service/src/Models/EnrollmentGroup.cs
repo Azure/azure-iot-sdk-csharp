@@ -3,9 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using Azure;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service

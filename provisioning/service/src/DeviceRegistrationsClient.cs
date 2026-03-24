@@ -67,7 +67,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                                 GetDeviceRegistrationStatusUri(registrationId),
                                 null,
                                 null,
-                                new ETag(),
+                                new Microsoft.Azure.Devices.Provisioning.Service.ETag(),
                                 cancellationToken)
                             .ConfigureAwait(false);
                     },
