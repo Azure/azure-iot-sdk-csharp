@@ -10,6 +10,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
     /// <summary>
     /// Provisioning error details.
     /// </summary>
+    [JsonDerivedType(typeof(ProvisioningErrorDetailsAmqp))]
+    [JsonDerivedType(typeof(ProvisioningErrorDetailsMqtt))]
     public class ProvisioningErrorDetails
     {
         /// <summary>

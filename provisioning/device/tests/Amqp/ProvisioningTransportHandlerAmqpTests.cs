@@ -2,9 +2,12 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 using System.Security.Authentication;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using FluentAssertions;
+using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Amqp.Framing;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -137,10 +140,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
 
         private class TestErrorDescription
         {
+            [JsonPropertyName("message")]
             public string Message { get; set; }
 
+            [JsonPropertyName("trackingId")]
             public string TrackingId { get; set; }
 
+            [JsonPropertyName("errorCode")]
             public int ErrorCode { get; set; }
         }
     }
