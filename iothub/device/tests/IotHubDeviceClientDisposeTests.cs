@@ -119,7 +119,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
         public async Task IotHubDeviceClient_UpdateReportedPropertiesAsync_ThrowsWhenClientIsDisposed()
         {
             using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(1));
-            Func<Task> op = async () => await s_client.UpdateReportedPropertiesAsync(new ReportedProperties(), cts.Token).ConfigureAwait(false);
+            Func<Task> op = async () => await s_client.UpdateReportedPropertiesAsync(new PropertyCollection(new()), cts.Token).ConfigureAwait(false);
             await op.Should().ThrowAsync<ObjectDisposedException>().ConfigureAwait(false);
         }
 

@@ -26,10 +26,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
             string userId = Guid.NewGuid().ToString();
 
             VerboseTestLogger.WriteLine($"{nameof(ComposeTestMessageOfSpecifiedSize)}: messageId='{messageId}' payload='{payload}' p1Value='{p1Value}' messageSize= exceeds '{messageSize}'.");
-            var message = new TelemetryMessage(payload)
+            var message = new TelemetryMessage()
             {
                 MessageId = messageId,
             };
+            message.SetPayload(payload);
             message.Properties.Add("property1", p1Value);
             message.Properties.Add("property2", null);
 

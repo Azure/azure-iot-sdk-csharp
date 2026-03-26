@@ -2,8 +2,8 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Text;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices
 {
@@ -13,39 +13,20 @@ namespace Microsoft.Azure.Devices
     public class DirectMethodClientResponse
     {
         /// <summary>
-        /// This constructor is for deserialization and unit test mocking purposes.
-        /// </summary>
-        /// <remarks>
-        /// To unit test methods that use this type as a response, inherit from this class and give it a constructor
-        /// that can set the properties you want.
-        /// </remarks>
-        protected internal DirectMethodClientResponse()
-        { }
-
-        /// <summary>
         /// Gets or sets the status of device method invocation.
         /// </summary>
         /// <remarks>
         /// Can be any status code value (int), but it is recommended to use
         /// HTTP status codes, which are well-known and documented.
         /// </remarks>
-        [JsonProperty("status")]
-        public int Status { get; protected internal set; }
+        [JsonPropertyName("status")]
+        public int Status { get; set; }
 
         /// <summary>
-        /// Get the payload as a JSON string.
+        /// The response payload as a Json object. This may be deserialized using System.Text.Json by calling <see cref="TryDeserializePayload{T}(out T)"/>.
         /// </summary>
-        /// <remarks>
-        /// To get the payload as a specified type, use <see cref="TryGetPayload{T}(out T)"/>.
-        /// </remarks>
-        [JsonIgnore]
-        public string PayloadAsString => JsonPayload.Value<string>();
-
-        [JsonIgnore]
-        internal byte[] PayloadAsBytes => Encoding.UTF8.GetBytes(PayloadAsString);
-
-        [JsonProperty("payload")]
-        internal JRaw JsonPayload { get; set; }
+        [JsonPropertyName("payload")]
+        public JsonElement JsonPayload { get; set; }
 
         /// <summary>
         /// Tries to deserialize the payload as the specified type.
@@ -64,21 +45,22 @@ namespace Microsoft.Azure.Devices
         /// // deserialize as needed and do work...
         /// </code>
         /// </example>
-        public bool TryGetPayload<T>(out T value)
+        public bool TryDeserializePayload<T>(out T value)
         {
             value = default;
 
-            if (JsonPayload == null)
+            if (JsonPayload.ValueKind == JsonValueKind.Null
+                || JsonPayload.ValueKind == JsonValueKind.Undefined)
             {
                 return false;
             }
 
             try
             {
-                value = JsonConvert.DeserializeObject<T>(Encoding.UTF8.GetString(PayloadAsBytes));
+                value = JsonSerializer.Deserialize<T>(JsonPayload.GetRawText(), JsonSerializerSettings.Options);
                 return true;
             }
-            catch (JsonSerializationException)
+            catch (JsonException)
             {
                 return false;
             }

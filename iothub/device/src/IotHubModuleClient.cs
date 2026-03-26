@@ -314,13 +314,11 @@ namespace Microsoft.Azure.Devices.Client
 
         private async Task<DirectMethodResponse> InvokeMethodAsync(Uri uri, EdgeModuleDirectMethodRequest methodRequest, CancellationToken cancellationToken = default)
         {
-            methodRequest.PayloadConvention = _clientOptions.PayloadConvention;
             DirectMethodResponse result = await InnerHandler.InvokeMethodAsync(methodRequest, uri, cancellationToken).ConfigureAwait(false);
 
             return new DirectMethodResponse(result.Status)
             {
                 Payload = result.Payload,
-                PayloadConvention = _clientOptions.PayloadConvention,
             };
         }
 

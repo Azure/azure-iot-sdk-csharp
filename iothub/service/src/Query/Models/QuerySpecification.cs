@@ -1,13 +1,20 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Newtonsoft.Json;
+
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices
 {
-    internal sealed class QuerySpecification
+    /// <summary>
+    /// 
+    /// </summary>
+    public sealed class QuerySpecification
     {
-        [JsonProperty("query")]
-        internal string Sql { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        [JsonPropertyName("query")]
+        public string Sql { get; set; }
     }
 }

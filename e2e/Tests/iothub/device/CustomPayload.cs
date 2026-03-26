@@ -1,16 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices.E2ETests
 {
-    internal class NjCustomPayload
+    internal class CustomPayload
     {
-        [JsonProperty("string")]
+        [JsonPropertyName("string")]
         public string StringProperty { get; set; }
 
-        [JsonProperty("guid")]
+        [JsonPropertyName("guid")]
         public string GuidProperty { get; set; }
     }
 }

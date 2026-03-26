@@ -26,7 +26,7 @@ namespace Microsoft.Azure.Devices.Tests
         private static readonly string s_toSelect = "Devices";
         private static readonly string s_jobId = "foo";
         private static readonly string s_deviceId = "bar";
-        private static readonly TimeSpan s_jobTimeSpan = new(10);
+        private static readonly int s_jobTimeSpan = 10;
 
         private static readonly Uri s_httpUri = new($"https://{HostName}");
         private static readonly RetryHandler s_retryHandler = new(new IotHubServiceNoRetry());
@@ -44,7 +44,7 @@ namespace Microsoft.Azure.Devices.Tests
             {
                 JobId = s_jobId,
                 DeviceId = s_deviceId,
-                MaxExecutionTime = s_jobTimeSpan,
+                MaxExecutionTimeInSeconds = s_jobTimeSpan,
             };
 
             var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
@@ -81,7 +81,7 @@ namespace Microsoft.Azure.Devices.Tests
             // assert
             jobResponse.JobId.Should().Be(s_jobId);
             jobResponse.DeviceId.Should().Be(s_deviceId);
-            jobResponse.MaxExecutionTimeInSeconds.Should().Be(s_jobTimeSpan.Seconds);
+            jobResponse.MaxExecutionTimeInSeconds.Should().Be(s_jobTimeSpan);
         }
 
         [TestMethod]
@@ -150,7 +150,7 @@ namespace Microsoft.Azure.Devices.Tests
             {
                 JobId = s_jobId,
                 DeviceId = s_deviceId,
-                MaxExecutionTime = s_jobTimeSpan,
+                MaxExecutionTimeInSeconds = s_jobTimeSpan,
             };
 
             var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
@@ -187,7 +187,7 @@ namespace Microsoft.Azure.Devices.Tests
             // assert
             jobResponse.JobId.Should().Be(s_jobId);
             jobResponse.DeviceId.Should().Be(s_deviceId);
-            jobResponse.MaxExecutionTimeInSeconds.Should().Be(s_jobTimeSpan.Seconds);
+            jobResponse.MaxExecutionTimeInSeconds.Should().Be(s_jobTimeSpan);
         }
 
         [TestMethod]
@@ -257,7 +257,7 @@ namespace Microsoft.Azure.Devices.Tests
             {
                 JobId = s_jobId,
                 DeviceId = s_deviceId,
-                MaxExecutionTime = s_jobTimeSpan,
+                MaxExecutionTimeInSeconds = s_jobTimeSpan,
             };
 
             var directMethodRequest = new DirectMethodServiceRequest("foo");
@@ -302,7 +302,7 @@ namespace Microsoft.Azure.Devices.Tests
             // assert
             returnedJob.JobId.Should().Be(s_jobId);
             returnedJob.DeviceId.Should().Be(s_deviceId);
-            returnedJob.MaxExecutionTimeInSeconds.Should().Be(s_jobTimeSpan.Seconds);
+            returnedJob.MaxExecutionTimeInSeconds.Should().Be(s_jobTimeSpan);
         }
 
         [TestMethod]
@@ -380,7 +380,7 @@ namespace Microsoft.Azure.Devices.Tests
             {
                 JobId = s_jobId,
                 DeviceId = s_deviceId,
-                MaxExecutionTime = s_jobTimeSpan,
+                MaxExecutionTimeInSeconds = s_jobTimeSpan,
             };
 
             var mockCredentialProvider = new Mock<IotHubConnectionProperties>();
@@ -420,7 +420,7 @@ namespace Microsoft.Azure.Devices.Tests
             // assert
             jobResponse.JobId.Should().Be(s_jobId);
             jobResponse.DeviceId.Should().Be(s_deviceId);
-            jobResponse.MaxExecutionTimeInSeconds.Should().Be(s_jobTimeSpan.Seconds);
+            jobResponse.MaxExecutionTimeInSeconds.Should().Be(s_jobTimeSpan);
         }
 
         [TestMethod]

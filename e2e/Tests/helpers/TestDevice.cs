@@ -205,11 +205,19 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                     X509Thumbprint = new X509Thumbprint
                     {
                         PrimaryThumbprint = TestConfiguration.IotHub.GetCertificateWithPrivateKey().Thumbprint
-                    }
+                    },
+                    Type = ClientAuthenticationType.SelfSigned,
                 };
                 authCertificate = TestConfiguration.IotHub.GetCertificateWithPrivateKey();
                 auth = new ClientAuthenticationWithX509Certificate(authCertificate, deviceName);
 #pragma warning restore CA2000 // Dispose objects before losing scope
+            }
+            else
+            {
+                requestDevice.Authentication = new AuthenticationMechanism
+                {
+                    Type = ClientAuthenticationType.Sas,
+                };
             }
 
             Device device = null;

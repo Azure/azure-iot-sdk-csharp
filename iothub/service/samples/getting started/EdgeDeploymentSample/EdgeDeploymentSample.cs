@@ -143,17 +143,17 @@ namespace Microsoft.Azure.Devices.Samples
         {
             return new ConfigurationContent
             {
-                ModulesContent = new Dictionary<string, IDictionary<string, object>>
+                ModulesContent = new Dictionary<string, JsonDictionary>
                 {
-                    ["$edgeAgent"] = new Dictionary<string, object>
+                    ["$edgeAgent"] = new JsonDictionary
                     {
                         ["properties.desired"] = GetEdgeAgentConfiguration(),
                     },
-                    ["$edgeHub"] = new Dictionary<string, object>
+                    ["$edgeHub"] = new JsonDictionary
                     {
                         ["properties.desired"] = GetEdgeHubConfiguration(),
                     },
-                    ["mongoserver"] = new Dictionary<string, object>
+                    ["mongoserver"] = new JsonDictionary
                     {
                         ["properties.desired"] = GetTwinConfiguration("mongoserver"),
                     }
@@ -165,17 +165,17 @@ namespace Microsoft.Azure.Devices.Samples
         {
             return new ConfigurationContent
             {
-                ModulesContent = new Dictionary<string, IDictionary<string, object>>
+                ModulesContent = new Dictionary<string, JsonDictionary>
                 {
-                    ["$edgeAgent"] = new Dictionary<string, object>
+                    ["$edgeAgent"] = new JsonDictionary
                     {
                         ["properties.desired.modules.asa"] = GetEdgeAgentAddOnConfiguration(),
                     },
-                    ["asa"] = new Dictionary<string, object>
+                    ["asa"] = new JsonDictionary
                     {
                         ["properties.desired"] = GetTwinConfiguration("asa"),
                     },
-                    ["$edgeHub"] = new Dictionary<string, object>
+                    ["$edgeHub"] = new JsonDictionary
                     {
                         ["properties.desired.routes.route1"] = "from /* INTO $upstream",
                     }

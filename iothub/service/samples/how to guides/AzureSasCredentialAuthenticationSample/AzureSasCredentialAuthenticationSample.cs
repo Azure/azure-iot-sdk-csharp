@@ -22,7 +22,8 @@ namespace AzureSasCredentialAuthenticationSample
             Console.WriteLine("Successfully opened connection.");
 
             Console.WriteLine("Sending a cloud-to-device message.");
-            var message = new OutgoingMessage("Hello, Cloud!");
+            var message = new OutgoingMessage();
+            message.SetPayload("Hello, Cloud!");
             await client.Messages.SendAsync(deviceId, message);
             Console.WriteLine("Successfully sent message.");
         }

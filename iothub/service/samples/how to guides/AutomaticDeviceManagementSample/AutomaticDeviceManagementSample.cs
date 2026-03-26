@@ -5,7 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
+using System.Text.Json;
 
 namespace Microsoft.Azure.Devices.Samples
 {
@@ -76,7 +77,7 @@ namespace Microsoft.Azure.Devices.Samples
         {
             configuration.Content = new ConfigurationContent
             {
-                DeviceContent = new Dictionary<string, object>()
+                DeviceContent = new()
             };
             configuration.Content.DeviceContent["properties.desired.deviceContent_key"] = "deviceContent_value-" + configurationId;
         }
@@ -102,7 +103,7 @@ namespace Microsoft.Azure.Devices.Samples
             // Check configuration's metrics for expected conditions
             foreach (Configuration configuration in configurations)
             {
-                string configurationString = JsonConvert.SerializeObject(configuration, Formatting.Indented);
+                string configurationString = JsonSerializer.Serialize(configuration);
                 Console.WriteLine(configurationString);
                 await Task.Delay(1000);
             }

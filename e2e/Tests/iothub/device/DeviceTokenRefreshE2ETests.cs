@@ -110,7 +110,8 @@ namespace Microsoft.Azure.Devices.E2ETests
             await deviceClient.OpenAsync(ct).ConfigureAwait(false);
 
             VerboseTestLogger.WriteLine($"{deviceId}: DeviceClient SendTelemetryAsync.");
-            var testMessage = new TelemetryMessage("TestMessage");
+            var testMessage = new TelemetryMessage();
+            testMessage.SetPayload("TestMessage");
             await deviceClient.SendTelemetryAsync(testMessage, ct).ConfigureAwait(false);
         }
 
@@ -149,7 +150,8 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             deviceClient.ConnectionStatusChangeCallback = ConnectionStatusChangeHandler;
 
-            var message = new TelemetryMessage("Hello");
+            var message = new TelemetryMessage();
+            message.SetPayload("Hello");
 
             VerboseTestLogger.WriteLine($"[{testDevice.Id}]: SendTelemetryAsync (1)");
             var timeout = TimeSpan.FromSeconds(sasTokenTimeToLive.TotalSeconds * 2);
@@ -206,7 +208,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                 deviceClient.ConnectionStatusChangeCallback = ConnectionStatusChangeHandler;
             }
 
-            var message = new TelemetryMessage("Hello");
+            var message = new TelemetryMessage();
+            message.SetPayload("Hello");
 
             using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(ttl.TotalSeconds * 10));
             try

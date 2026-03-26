@@ -41,7 +41,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             Console.WriteLine($"\tReported properties: {twin.Reported.GetSerializedString()}");
 
             Console.WriteLine("Sending sample start time as reported property");
-            var reportedProperties = new ReportedProperties
+            var reportedProperties = new PropertyCollection
             {
                 ["DateTimeLastAppLaunch"] = DateTime.UtcNow
             };
@@ -62,9 +62,9 @@ namespace Microsoft.Azure.Devices.Client.Samples
             await _deviceClient.SetDesiredPropertyUpdateCallbackAsync(null);
         }
 
-        private async Task OnDesiredPropertyChangedAsync(DesiredProperties desiredProperties)
+        private async Task OnDesiredPropertyChangedAsync(PropertyCollection desiredProperties)
         {
-            var reportedProperties = new ReportedProperties();
+            var reportedProperties = new PropertyCollection();
 
             Console.WriteLine("\tDesired properties requested:");
             Console.WriteLine($"\t{desiredProperties.GetSerializedString()}");

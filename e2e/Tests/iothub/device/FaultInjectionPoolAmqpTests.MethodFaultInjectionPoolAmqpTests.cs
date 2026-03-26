@@ -11,7 +11,7 @@ using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.Azure.Devices.E2ETests.Helpers.Templates;
 using Microsoft.Azure.Devices.E2ETests.Methods;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Newtonsoft.Json;
+using System.Text.Json;
 
 namespace Microsoft.Azure.Devices.E2ETests
 {
@@ -23,7 +23,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         private static readonly DirectMethodResponsePayload s_deviceResponsePayload = new() { CurrentState = "on" };
         private static readonly DirectMethodRequestPayload s_serviceRequestPayload = new() { DesiredState = "off" };
 
-        private static readonly TimeSpan s_defaultMethodResponseTimeout = TimeSpan.FromSeconds(30);
+        private static readonly int s_defaultMethodResponseTimeout = 30;
 
         [DataTestMethod]
         [TestCategory("LongRunning")]
@@ -104,8 +104,8 @@ namespace Microsoft.Azure.Devices.E2ETests
             async Task InitOperationAsync(TestDevice _, TestDeviceCallbackHandler testDeviceCallbackHandler, CancellationToken ct)
             {
                 await testDeviceCallbackHandler
-                    .SetDeviceReceiveMethodAndRespondAsync<DirectMethodRequestPayload>(
-                        Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(s_deviceResponsePayload)), ct)
+                    .SetDeviceReceiveMethodAndRespondAsync(
+                        Encoding.UTF8.GetBytes(JsonSerializer.Serialize(s_deviceResponsePayload)), ct)
                     .ConfigureAwait(false);
             }
 
@@ -116,15 +116,13 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                 var directMethodRequest = new DirectMethodServiceRequest(MethodName)
                 {
-                    Payload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(s_serviceRequestPayload)),
-                    ResponseTimeout = s_defaultMethodResponseTimeout,
+                    ResponseTimeoutInSeconds = s_defaultMethodResponseTimeout,
                 };
+                directMethodRequest.SetPayload(s_serviceRequestPayload);
+
                 testDeviceCallbackHandler.ExpectedDirectMethodRequest = directMethodRequest;
 
-                Task serviceSendTask = ServiceSendMethodAndVerifyResponseAsync(testDevice.Id, directMethodRequest, s_deviceResponsePayload, ct);
-                Task methodReceivedTask = testDeviceCallbackHandler.WaitForMethodCallbackAsync(ct);
-
-                await Task.WhenAll(serviceSendTask, methodReceivedTask).ConfigureAwait(false);
+                await ServiceSendMethodAndVerifyResponseAsync(testDevice.Id, directMethodRequest, s_deviceResponsePayload, ct);
             }
 
             await FaultInjectionPoolingOverAmqp
@@ -160,7 +158,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             VerboseTestLogger.WriteLine($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Method response status: {methodResponse.Status} for device {deviceId}.");
             methodResponse.Status.Should().Be(200);
-            methodResponse.PayloadAsString.Should().BeEquivalentTo(JsonConvert.SerializeObject(expectedClientResponsePayload));
+            methodResponse.JsonPayload.GetRawText().Should().BeEquivalentTo(JsonSerializer.Serialize(expectedClientResponsePayload));
         }
     }
 }

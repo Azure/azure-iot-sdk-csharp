@@ -3,8 +3,7 @@
 
 using System;
 using System.Text;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
+using System.Text.Json;
 
 namespace Microsoft.Azure.Devices.Client
 {
@@ -16,7 +15,6 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Initializes an instance of this class.
         /// </summary>
-        [JsonConstructor]
         public DirectMethodResponse(int status)
         {
             Status = status;
@@ -25,46 +23,87 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The status of direct method response.
         /// </summary>
-        [JsonProperty]
         public int Status { get; set; }
 
         /// <summary>
         /// The optional direct method payload.
         /// </summary>
-        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        /// <remarks>
+        ///  The value of this payload must be the UTF-8 encodeded bytes of a valid Json value (string, int, bool, etc),
+        ///  a valid Json array, or a valid Json object. Use functions like <see cref="SetPayload(bool)"/>
+        ///  to set this payload equal to primitive types. Use functions like <see cref="SetPayload(JsonElement)"/>
+        ///  or <see cref="SetPayloadJson(string)"/> to set this payload as an unmodeled complex json object. Use 
+        ///  <see cref="SetPayload(object)"/> to set this payload as a strongly typed object (that is serializable by System.Text.Json)
+        /// </remarks>
         public byte[] Payload { get; set; }
 
         /// <summary>
-        /// An overload of the optional direct method payload to be used in place of a byte array.
-        /// </summary>
-        /// <remarks>
-        /// The payload can be null or primitive type (e.g., string, int/array/list/dictionary/custom type)
-        /// </remarks>
-        public object PayloadAsObject
-        {
-            get => JsonConvert.DeserializeObject(Encoding.UTF8.GetString(Payload));
-            set => Payload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(value));
-        }
-        /// <summary>
         /// The request Id for the transport layer.
         /// </summary>
-        [JsonProperty]
-        internal string RequestId { get; set; }
+        public string RequestId { get; set; }
 
         /// <summary>
-        /// The convention to use with the direct method payload.
+        /// Set this payload as an integer (a simple JSON value).
         /// </summary>
-        [JsonIgnore]
-        protected internal PayloadConvention PayloadConvention { get; set; }
+        /// <param name="value">The JSON value integer</param>
+        public void SetPayload(int value)
+        {
+            Payload = JsonSerializer.SerializeToUtf8Bytes(value);
+        }
+
+        /// <summary>
+        /// Set this payload as a boolean (a JSON value).
+        /// </summary>
+        /// <param name="value">The JSON value boolean</param>
+        public void SetPayload(bool value)
+        {
+            Payload = JsonSerializer.SerializeToUtf8Bytes(value);
+        }
+
+        /// <summary>
+        /// Set this payload as a string (a simple JSON value).
+        /// </summary>
+        /// <param name="value">The JSON value string. For instance, "someValue".</param>
+        public void SetPayload(string value)
+        {
+            Payload = JsonSerializer.SerializeToUtf8Bytes(value);
+        }
+
+        /// <summary>
+        /// Set this payload as an arbitrary JSON document.
+        /// </summary>
+        /// <param name="jsonString">The JSON value string. For instance "{\"someKey\":\"someValue\"}"</param>
+        /// <remarks>This function just UTF-8 encodes the provided string. It does not further validation.</remarks>
+        public void SetPayloadJson(string jsonString)
+        {
+            Payload = Encoding.UTF8.GetBytes(jsonString);
+        }
+
+        /// <summary>
+        /// Set the payload equal to a <see cref="JsonElement"/>.
+        /// </summary>
+        /// <param name="jsonElement">The JsonElement value to assign.</param>
+        public void SetPayload(JsonElement jsonElement)
+        {
+            Payload = Encoding.UTF8.GetBytes(jsonElement.GetRawText());
+        }
+
+        /// <summary>
+        /// Use a serializable object as the payload.
+        /// </summary>
+        /// <param name="serializableObject">Any custom payload object that is serializable by System.Text.Json</param>
+        /// <remarks>
+        /// This object must be serializable by System.Text.Json
+        /// </remarks>
+        public void SetPayload(object serializableObject)
+        {
+            Payload = JsonSerializer.SerializeToUtf8Bytes(serializableObject);
+        }
 
         /// <summary>
         /// The direct method response payload, deserialized to the specified type.
         /// </summary>
         /// <remarks>
-        /// <para>
-        /// Use this method when the payload type is known and it can be deserialized using the configured
-        /// <see cref="PayloadConvention"/>. If it is not JSON or the type is not known, use <see cref="Payload"/>.
-        /// </para>
         /// <para>
         /// One usage of this method is to deserialize the direct method response received by an edge module client
         /// after it invokes a direct method on an edge device or an edge module connected to the same edge hub.
@@ -90,13 +129,18 @@ namespace Microsoft.Azure.Devices.Client
         /// // ...
         /// </code>
         /// </example>
-        public bool TryGetPayload<T>(out T payload)
+        public bool TryDeserializePayload<T>(out T payload)
         {
             payload = default;
 
+            if (Payload == null || Payload.Length == 0)
+            {
+                return false;
+            }
+
             try
             {
-                payload = PayloadConvention.GetObject<T>(Payload);
+                payload = JsonSerializer.Deserialize<T>(Payload, JsonSerializerSettings.Options);
                 return true;
             }
             catch (Exception ex)
@@ -104,7 +148,7 @@ namespace Microsoft.Azure.Devices.Client
                 // In case the value cannot be converted using the serializer,
                 // then return false with the default value of the type <T> passed in.
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"Unable to convert payload to {typeof(T)} due to {ex}", nameof(TryGetPayload));
+                    Logging.Error(this, $"Unable to convert payload to {typeof(T)} due to {ex}", nameof(TryDeserializePayload));
             }
 
             return false;

@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using Newtonsoft.Json;
+using System.Text.Json;
 
 namespace Microsoft.Azure.Devices
 {
@@ -19,17 +19,6 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         public OutgoingMessage()
         {
-        }
-
-        /// <summary>
-        /// Creates a cloud-to-device message with the specified payload.
-        /// </summary>
-        /// <remarks>User should treat the input byte array as immutable when sending the message.</remarks>
-        /// <param name="payload">The payload will be serialized with
-        /// <see href="https://www.nuget.org/packages/Newtonsoft.Json">Newtonsoft.Json</see> and encoded using <see cref="Encoding.UTF8"/>.</param>
-        public OutgoingMessage(object payload)
-        {
-            Payload = payload;
         }
 
         /// <summary>
@@ -216,7 +205,13 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// The message payload.
         /// </summary>
-        public object Payload { get; }
+        /// <remarks>
+        ///  Use functions like <see cref="SetPayload(bool)"/> to set this payload equal to primitive types. Use functions 
+        ///  like <see cref="SetPayload(JsonElement)"/> or <see cref="SetPayloadJson(string)"/> to set this payload as an 
+        ///  unmodeled complex json object. Use <see cref="SetPayload(object)"/> to set this payload as a strongly typed object 
+        ///  (that is serializable by System.Text.Json)
+        /// </remarks>
+        public byte[] Payload { get; set; }
 
         /// <summary>
         /// Indicates if the message has a payload.
@@ -225,23 +220,67 @@ namespace Microsoft.Azure.Devices
         public bool HasPayload => Payload != null;
 
         /// <summary>
+        /// Set this payload as an integer (a simple JSON value).
+        /// </summary>
+        /// <param name="value">The JSON value integer</param>
+        public void SetPayload(int value)
+        {
+            Payload = JsonSerializer.SerializeToUtf8Bytes(value);
+        }
+
+        /// <summary>
+        /// Set this payload as a boolean (a JSON value).
+        /// </summary>
+        /// <param name="value">The JSON value boolean</param>
+        public void SetPayload(bool value)
+        {
+            Payload = JsonSerializer.SerializeToUtf8Bytes(value);
+        }
+
+        /// <summary>
+        /// Set this payload as a string (a simple JSON value).
+        /// </summary>
+        /// <param name="value">The JSON value string. For instance, "someValue".</param>
+        public void SetPayload(string value)
+        {
+            Payload = JsonSerializer.SerializeToUtf8Bytes(value);
+        }
+
+        /// <summary>
+        /// Set this payload as an arbitrary JSON document.
+        /// </summary>
+        /// <param name="jsonString">The JSON value string. For instance "{\"someKey\":\"someValue\"}"</param>
+        /// <remarks>This function just UTF-8 encodes the provided string. It does not further validation.</remarks>
+        public void SetPayloadJson(string jsonString)
+        {
+            Payload = Encoding.UTF8.GetBytes(jsonString);
+        }
+
+        /// <summary>
+        /// Set the payload equal to a <see cref="JsonElement"/>.
+        /// </summary>
+        /// <param name="jsonElement">The JsonElement value to assign.</param>
+        public void SetPayload(JsonElement jsonElement)
+        {
+            Payload = Encoding.UTF8.GetBytes(jsonElement.GetRawText());
+        }
+
+        /// <summary>
+        /// Use a serializable object as the payload.
+        /// </summary>
+        /// <param name="serializableObject">Any custom payload object that is serializable by System.Text.Json</param>
+        /// <remarks>
+        /// This object must be serializable by System.Text.Json
+        /// </remarks>
+        public void SetPayload(object serializableObject)
+        {
+            Payload = JsonSerializer.SerializeToUtf8Bytes(serializableObject);
+        }
+
+        /// <summary>
         /// Gets or sets the delivery tag which is used for server side checkpointing.
         /// </summary>
         internal ArraySegment<byte> DeliveryTag { get; set; }
-
-        /// <summary>
-        /// Gets the payload as a byte array, serialized and encoded if necessary.
-        /// </summary>
-        /// <remarks>
-        /// If needed, serialization uses Newtonsoft.Json and encoding is UTF8.
-        /// </remarks>
-        /// <returns>A payload as a byte array.</returns>
-        internal byte[] GetPayloadObjectBytes()
-        {
-            return Payload is byte[] payloadAsByteArray
-                ? payloadAsByteArray
-                : Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(Payload));
-        }
 
         private T GetSystemProperty<T>(string key)
         {

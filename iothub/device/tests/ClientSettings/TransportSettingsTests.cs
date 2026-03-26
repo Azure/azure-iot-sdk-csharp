@@ -51,7 +51,6 @@ namespace Microsoft.Azure.Devices.Client.Tests
             var options = new IotHubClientOptions();
             options.TransportSettings.Should().BeOfType<IotHubClientMqttSettings>();
             options.HttpOperationTransportSettings.Should().BeOfType<IotHubClientHttpSettings>();
-            options.PayloadConvention.Should().Be(DefaultPayloadConvention.Instance);
             options.SdkAssignsMessageId.Should().Be(SdkAssignsMessageId.Never);
         }
 
@@ -170,7 +169,6 @@ namespace Microsoft.Azure.Devices.Client.Tests
                 GatewayHostName = "sampleHost",
                 SdkAssignsMessageId = SdkAssignsMessageId.WhenUnset,
                 HttpOperationTransportSettings = new IotHubClientHttpSettings(),
-                PayloadConvention = DefaultPayloadConvention.Instance,
                 ModelId = "Id",
                 AdditionalUserAgentInfo = "info"
             };
@@ -217,7 +215,6 @@ namespace Microsoft.Azure.Devices.Client.Tests
                 GatewayHostName = "sampleHost",
                 SdkAssignsMessageId = SdkAssignsMessageId.WhenUnset,
                 HttpOperationTransportSettings = new IotHubClientHttpSettings(),
-                PayloadConvention = DefaultPayloadConvention.Instance,
                 ModelId = "Id",
                 AdditionalUserAgentInfo = "info"
             };

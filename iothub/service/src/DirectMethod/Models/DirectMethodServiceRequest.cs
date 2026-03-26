@@ -3,7 +3,8 @@
 
 using System;
 using System.Text;
-using Newtonsoft.Json;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices
 {
@@ -23,33 +24,23 @@ namespace Microsoft.Azure.Devices
         {
             Argument.AssertNotNullOrWhiteSpace(methodName, nameof(methodName));
             MethodName = methodName;
-            Payload = Array.Empty<byte>();
+            Payload = null;
         }
 
         /// <summary>
         /// The method name to run.
         /// </summary>
-        [JsonProperty("methodName")]
-        public string MethodName { get; }
+        [JsonPropertyName("methodName")]
+        public string MethodName { get; set; }
 
         /// <summary>
         /// The serialized and encoded payload bytes.
         /// </summary>
-        [JsonProperty("payload")]
-        public byte[] Payload { get; set; }
+        [JsonPropertyName("payload")]
+        public JsonElement? Payload { get; set; }
 
         /// <summary>
-        /// The payload to have serialized and sent as JSON.
-        /// </summary>
-        [JsonIgnore]
-        public object PayloadAsObject
-        {
-            get => JsonConvert.DeserializeObject(Encoding.UTF8.GetString(Payload));
-            set => Payload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(value));
-        }
-
-        /// <summary>
-        /// The amount of time given to the service to connect to the device.
+        /// The amount of time (in seconds) given to the service to connect to the device.
         /// </summary>
         /// <remarks>
         /// A timeout may occur if this value is set to zero and the target device is not connected to
@@ -62,11 +53,11 @@ namespace Microsoft.Azure.Devices
         /// interpreted as 0 seconds (using <c>ConnectTimeout.TotalSeconds</c>).
         /// </para>
         /// </remarks>
-        [JsonIgnore]
-        public TimeSpan? ConnectionTimeout { get; set; }
+        [JsonPropertyName("connectTimeoutInSeconds")]
+        public int? ConnectTimeoutInSeconds { get; set; }
 
         /// <summary>
-        /// The amount of time given to the device to process and respond to the command request.
+        /// The amount of time (in seconds) given to the device to process and respond to the command request.
         /// </summary>
         /// <remarks>
         /// This timeout may happen if the target device is slow in handling the direct method.
@@ -76,13 +67,73 @@ namespace Microsoft.Azure.Devices
         /// in this request having a timeout of 0 seconds.
         /// </para>
         /// </remarks>
-        [JsonIgnore]
-        public TimeSpan? ResponseTimeout { get; set; }
+        [JsonPropertyName("responseTimeoutInSeconds")]
+        public int? ResponseTimeoutInSeconds { get; set; }
 
-        [JsonProperty("responseTimeoutInSeconds", NullValueHandling = NullValueHandling.Ignore)]
-        internal int? ResponseTimeoutInSeconds => (int?)ResponseTimeout?.TotalSeconds ?? null;
+        /// <summary>
+        /// Set the payload as a single integer Json value.
+        /// </summary>
+        /// <param name="value">The integer Json value.</param>
+        public void SetPayload(int value)
+        {
+            Payload = JsonSerializer.SerializeToElement(value);
+        }
 
-        [JsonProperty("connectTimeoutInSeconds", NullValueHandling = NullValueHandling.Ignore)]
-        internal int? ConnectionTimeoutInSeconds => (int?)ConnectionTimeout?.TotalSeconds ?? null;
+        /// <summary>
+        /// Set the payload as a single string Json value.
+        /// </summary>
+        /// <param name="value">The string Json value.</param>
+        /// <remarks>This method should not be confused with <see cref="SetPayloadJson(string)"/> which allows you to pass in a Json object (rather than a Json value).</remarks>
+        public void SetPayload(string value)
+        {
+            Payload = JsonSerializer.SerializeToElement(value);
+        }
+
+        /// <summary>
+        /// Set the payload as a single boolean Json value.
+        /// </summary>
+        /// <param name="value">The boolean Json value.</param>
+        public void SetPayload(bool value)
+        {
+            Payload = JsonSerializer.SerializeToElement(value);
+        }
+
+        /// <summary>
+        /// Set the payload as a single DateTimeOffset Json value.
+        /// </summary>
+        /// <param name="value">The DateTimeOffset Json value.</param>
+        public void SetPayload(DateTimeOffset value)
+        { 
+            Payload = JsonSerializer.SerializeToElement(value);
+        }
+
+        /// <summary>
+        /// Set the payload as a Json object string.
+        /// </summary>
+        /// <param name="jsonString">A valid Json object string such as "{\"someKey\":\"someValue\"}"</param>
+        /// <remarks>This method should not be confused with <see cref="SetPayload(string)"/> which allows users to set the payload as a single Json value (like "someJsonValue").</remarks>
+        public void SetPayloadJson(string jsonString)
+        {
+            Payload = JsonDocument.Parse(jsonString).RootElement;
+        }
+
+        /// <summary>
+        /// Set the payload as a single unmodeled Json object.
+        /// </summary>
+        /// <param name="value">The unmodeled Json object.</param>
+        public void SetPayloadJson(JsonElement value)
+        {
+            Payload = value;
+        }
+
+        /// <summary>
+        /// Set the payload as a modeled object that System.Text.Json can serialize for you.
+        /// </summary>
+        /// <param name="value">the model type</param>
+        /// <remarks>This allows you to pass in strongly typed objects (where fields are marked with <see cref="JsonPropertyNameAttribute"/>).</remarks>
+        public void SetPayload(object value)
+        {
+            SetPayloadJson(JsonSerializer.Serialize(value));
+        }
     }
 }

@@ -244,7 +244,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 Configuration updateResult = await sc.Configurations.SetAsync(addResult, false).ConfigureAwait(false);
 
                 // assert
-                updateResult.Labels.Should().BeEmpty();
+                updateResult.Labels.Should().BeNull();
             }
             finally
             {

@@ -51,7 +51,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
         // A dictionary to hold all desired property change callbacks that this pnp device should be able to handle.
         // The key for this dictionary is the componentName.
-        private readonly Dictionary<string, Func<DesiredProperties, object, Task>> _desiredPropertyUpdateCallbacks = new();
+        private readonly Dictionary<string, Func<PropertyCollection, object, Task>> _desiredPropertyUpdateCallbacks = new();
 
         // Dictionary to hold the current temperature for each "Thermostat" component.
         private readonly Dictionary<string, double> _temperature = new();
@@ -151,7 +151,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             TwinProperties twin = await _deviceClient.GetTwinPropertiesAsync();
             _logger.LogInformation($"Device retrieving twin values on CONNECT: {twin.Desired.GetSerializedString()}");
 
-            DesiredProperties desiredProperties = twin.Desired;
+            PropertyCollection desiredProperties = twin.Desired;
             long serverWritablePropertiesVersion = desiredProperties.Version;
 
             // Check if the writable property version is outdated on the local side.
@@ -191,7 +191,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
         // The callback to handle "reboot" command. This method will send a temperature update (of 0°C) over telemetry for both associated components.
         private async Task<DirectMethodResponse> HandleRebootCommandAsync(DirectMethodRequest request)
         {
-            bool delayReceived = request.TryGetPayload(out int delay);
+            bool delayReceived = request.TryDeserializePayload(out int delay);
 
             if (delayReceived)
             {
@@ -217,7 +217,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
         private Task<DirectMethodResponse> HandleMaxMinReportCommand(DirectMethodRequest request, object userContext)
         {
             string componentName = (string)userContext;
-            bool sinceInUtcReceived = request.TryGetPayload(out DateTime sinceInUtc);
+            bool sinceInUtcReceived = request.TryDeserializePayload(out DateTime sinceInUtc);
 
             if (sinceInUtcReceived)
             {
@@ -260,7 +260,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             return Task.FromResult(new DirectMethodResponse((int)StatusCode.NotFound));
         }
 
-        private Task SetDesiredPropertyUpdateCallback(DesiredProperties desiredProperties)
+        private Task SetDesiredPropertyUpdateCallback(PropertyCollection desiredProperties)
         {
             bool callbackNotInvoked = true;
 
@@ -284,11 +284,11 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
         // The desired property update callback, which receives the target temperature as a desired property update,
         // and updates the current temperature value over telemetry and property update.
-        private async Task TargetTemperatureUpdateCallbackAsync(DesiredProperties desiredProperties, object userContext)
+        private async Task TargetTemperatureUpdateCallbackAsync(PropertyCollection desiredProperties, object userContext)
         {
             string componentName = (string)userContext;
 
-            bool targetTempUpdateReceived = desiredProperties.TryGetValue(TargetTemperatureProperty, out double targetTemperature);
+            bool targetTempUpdateReceived = desiredProperties.TryGetAndDeserializeValue(TargetTemperatureProperty, out double targetTemperature);
             if (!targetTempUpdateReceived)
             {
                 _logger.LogDebug($"Property: Update - component=\"{componentName}\", received an update which is not associated with a valid property.\n{desiredProperties.GetSerializedString()}");
@@ -299,9 +299,9 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
             s_localWritablePropertiesVersion = desiredProperties.Version;
 
-            var pendingReportedProperty = new ReportedProperties
+            var pendingReportedProperty = new PropertyCollection
             {
-                { componentName, new Dictionary<string, object>
+                { componentName, new JsonDictionary
                     {
                         { ComponentIdentifierKey, ComponentIdentifierValue },
                         { TargetTemperatureProperty, new PropertyAcknowledgement
@@ -325,9 +325,9 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 await Task.Delay(6 * 1000);
             }
 
-            var completedReportedProperty = new ReportedProperties
+            var completedReportedProperty = new PropertyCollection
             {
-                { componentName, new Dictionary<string, object>
+                { componentName, new JsonDictionary
                     {
                         { ComponentIdentifierKey, ComponentIdentifierValue },
                         { TargetTemperatureProperty, new PropertyAcknowledgement
@@ -348,7 +348,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
         private async Task UpdateDeviceInformationAsync(CancellationToken cancellationToken)
         {
             const string componentName = "deviceInformation";
-            var deviceInformationProperties = new Dictionary<string, object>
+            var deviceInformationProperties = new JsonDictionary
             {
                 { ComponentIdentifierKey, ComponentIdentifierValue },
                 { "manufacturer", "element15" },
@@ -361,7 +361,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 { "totalMemory", 1024 },
             };
 
-            var deviceInfoTc = new ReportedProperties
+            var deviceInfoTc = new PropertyCollection
             {
                 { componentName, deviceInformationProperties }
             };
@@ -376,7 +376,8 @@ namespace Microsoft.Azure.Devices.Client.Samples
             const string workingSetName = "workingSet";
             long workingSet = Process.GetCurrentProcess().PrivateMemorySize64 / 1024;
 
-            var message = new TelemetryMessage(new Dictionary<string, object> { { workingSetName, workingSet } });
+            var message = new TelemetryMessage();
+            message.SetPayload(new JsonDictionary { { workingSetName, workingSet } });
 
             await _deviceClient.SendTelemetryAsync(message, cancellationToken);
             _logger.LogDebug($"Telemetry: Sent - {{ \"{workingSetName}\": {workingSet} }} in KB.");
@@ -386,7 +387,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
         private async Task SendDeviceSerialNumberAsync(CancellationToken cancellationToken)
         {
             const string propertyName = "serialNumber";
-            var reportedProperties = new ReportedProperties
+            var reportedProperties = new PropertyCollection
             {
                 { propertyName, SerialNumber },
             };
@@ -412,10 +413,12 @@ namespace Microsoft.Azure.Devices.Client.Samples
             const string telemetryName = "temperature";
             double currentTemperature = _temperature[componentName];
 
-            var message = new TelemetryMessage(new Dictionary<string, object> { { telemetryName, currentTemperature } })
+            var message = new TelemetryMessage()
             {
                 ComponentName = componentName,
             };
+
+            message.SetPayload(new JsonDictionary { { telemetryName, currentTemperature } });
 
             await _deviceClient.SendTelemetryAsync(message, cancellationToken);
             _logger.LogDebug($"Telemetry: Sent - component=\"{componentName}\", {{ \"{telemetryName}\": {currentTemperature} }} in °C.");
@@ -440,9 +443,9 @@ namespace Microsoft.Azure.Devices.Client.Samples
             const string propertyName = "maxTempSinceLastReboot";
             double maxTemp = _maxTemp[componentName];
 
-            var reportedProperties = new ReportedProperties
+            var reportedProperties = new PropertyCollection
             {
-                { componentName, new Dictionary<string, object>{
+                { componentName, new JsonDictionary{
                     { ComponentIdentifierKey, ComponentIdentifierValue },
                     { propertyName, maxTemp },
                 } },
@@ -455,8 +458,8 @@ namespace Microsoft.Azure.Devices.Client.Samples
         private async Task CheckEmptyPropertiesAsync(string componentName, CancellationToken cancellationToken)
         {
             TwinProperties twin = await _deviceClient.GetTwinPropertiesAsync(cancellationToken);
-            DesiredProperties desiredProperties = twin.Desired;
-            ReportedProperties reportedProperties = twin.Reported;
+            PropertyCollection desiredProperties = twin.Desired;
+            PropertyCollection reportedProperties = twin.Reported;
 
             // Check if the device properties (both writable and reported) for the current component are empty.
             if (!desiredProperties.TryGetValue(componentName, out object _) && !reportedProperties.TryGetValue(componentName, out object _))
@@ -469,9 +472,9 @@ namespace Microsoft.Azure.Devices.Client.Samples
         {
             // If the device properties are empty, report the default value with ACK(ac=203, av=0) as part of the PnP convention.
             // "DefaultPropertyValue" is set from the device when the desired property is not set via the hub.
-            var reportedProperty = new ReportedProperties
+            var reportedProperty = new PropertyCollection
             {
-                { componentName, new Dictionary<string, object>
+                { componentName, new JsonDictionary
                     {
                         { ComponentIdentifierKey, ComponentIdentifierValue },
                         { propertyName, new PropertyAcknowledgement

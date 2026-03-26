@@ -2,7 +2,8 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using Newtonsoft.Json;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices.Client
 {
@@ -26,7 +27,7 @@ namespace Microsoft.Azure.Devices.Client
         /// a direct method on an edge device or an edge module connected to the same edge hub.
         /// </summary>
         /// <param name="methodName">The method name to invoke.</param>
-        /// <param name="payload">The direct method payload that will be serialized using <see cref="DefaultPayloadConvention"/>.</param>
+        /// <param name="payload">The direct method payload that will be serialized.</param>
         [JsonConstructor]
         public EdgeModuleDirectMethodRequest(string methodName, byte[] payload)
         {
@@ -37,7 +38,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// The method name to invoke.
         /// </summary>
-        [JsonProperty("methodName")]
+        [JsonPropertyName("methodName")]
         public string MethodName { get; }
 
         /// <summary>
@@ -54,8 +55,8 @@ namespace Microsoft.Azure.Devices.Client
         /// interpreted as 0 seconds (using <c>ConnectTimeout.TotalSeconds</c>).
         /// </para>
         /// </remarks>
-        [JsonIgnore]
-        public TimeSpan? ConnectionTimeout { get; set; }
+        [JsonPropertyName("connectTimeoutInSeconds")]
+        public int? ConnectTimeoutInSeconds { get; set; }
 
         /// <summary>
         /// The amount of time given to the device to process and respond to the command request.
@@ -68,49 +69,18 @@ namespace Microsoft.Azure.Devices.Client
         /// in this request having a timeout of 0 seconds.
         /// </para>
         /// </remarks>
-        [JsonIgnore]
-        public TimeSpan? ResponseTimeout { get; set; }
-
-        /// <summary>
-        /// The convention to use with the direct method payload.
-        /// </summary>
-        [JsonIgnore]
-        internal PayloadConvention PayloadConvention { get; set; }
+        [JsonPropertyName("responseTimeoutInSeconds")]
+        public int? ResponseTimeoutInSeconds { get; set; }
 
         /// <summary>
         /// The direct method payload.
         /// </summary>
-        [JsonProperty("payload", NullValueHandling = NullValueHandling.Include)]
-        internal byte[] Payload { get; set; }
-
-        /// <summary>
-        /// An overloaded way of storing the direct method payload instead of as a byte array.
-        /// </summary>
-        internal object PayloadAsObject { get; set; }
-
-        /// <summary>
-        /// Method timeout, in seconds.
-        /// </summary>
-        [JsonProperty("responseTimeoutInSeconds", NullValueHandling = NullValueHandling.Ignore)]
-        internal int? ResponseTimeoutInSeconds => ResponseTimeout.HasValue && ResponseTimeout > TimeSpan.Zero
-            ? (int)ResponseTimeout.Value.TotalSeconds
-            : null;
-
-        /// <summary>
-        /// Connection timeout, in seconds.
-        /// </summary>
-        [JsonProperty("connectTimeoutInSeconds", NullValueHandling = NullValueHandling.Ignore)]
-        internal int? ConnectionTimeoutInSeconds => ConnectionTimeout.HasValue && ConnectionTimeout > TimeSpan.Zero
-            ? (int)ConnectionTimeout.Value.TotalSeconds
-            : null;
+        [JsonPropertyName("payload")]
+        public byte[] Payload { get; set; }
 
         /// <summary>
         /// The direct method request payload, deserialized to the specified type.
         /// </summary>
-        /// <remarks>
-        /// Use this method when the payload type is known and it can be deserialized using the configured
-        /// <see cref="PayloadConvention"/>. If it is not JSON or the type is not known, use <see cref="GetPayloadAsBytes"/>.
-        /// </remarks>
         /// <typeparam name="T">The type to deserialize the direct method request payload to.</typeparam>
         /// <param name="payload">When this method returns true, this contains the value of the direct method request payload.
         /// When this method returns false, this contains the default value of the type <c>T</c> passed in.</param>
@@ -139,47 +109,26 @@ namespace Microsoft.Azure.Devices.Client
         /// cancellationToken);
         /// </code>
         /// </example>
-        public bool TryGetPayload<T>(out T payload)
+        public bool TryDeserializePayload<T>(out T payload)
         {
             payload = default;
 
+            if (Payload == null || Payload.Length == 0)
+            {
+                return false;
+            }
+
             try
             {
-                payload = PayloadConvention.GetObject<T>(Payload);
+                payload = JsonSerializer.Deserialize<T>(Payload, JsonSerializerSettings.Options);
                 return true;
             }
             catch (Exception ex) when (Logging.IsEnabled)
             {
-                Logging.Error(this, $"Unable to convert payload to {typeof(T)} due to {ex}", nameof(TryGetPayload));
+                Logging.Error(this, $"Unable to convert payload to {typeof(T)} due to {ex}", nameof(TryDeserializePayload));
             }
 
             return false;
-        }
-
-        /// <summary>
-        /// Get the raw payload bytes.
-        /// </summary>
-        /// <remarks>
-        /// Use this method when the payload is not JSON or the type is not known or the type cannot be deserialized
-        /// using the configured <see cref="PayloadConvention"/>. Otherwise, use <see cref="TryGetPayload{T}(out T)"/>.
-        /// </remarks>
-        /// <returns>A copy of the raw payload as a byte array.</returns>
-        /// <example>
-        /// <code language="csharp">
-        /// await client.SetDirectMethodCallbackAsync((edgeModuleDirectMethodRequest) =>
-        /// {
-        ///     byte[] arr = edgeModuleDirectMethodRequest.GetPayloadAsBytes();
-        ///     // deserialize as needed and do work...
-        ///     
-        ///     // Acknowlege the direct method call with the status code 200. 
-        ///     return Task.FromResult(new DirectMethodResponse(200));
-        /// },
-        /// cancellationToken);
-        /// </code>
-        /// </example>
-        public byte[] GetPayloadAsBytes()
-        {
-            return Payload == null || Payload.Length == 0 ? null : (byte[])Payload.Clone();
         }
     }
 }

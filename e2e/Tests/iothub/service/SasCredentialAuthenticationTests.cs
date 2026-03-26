@@ -34,7 +34,13 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 TestConfiguration.IotHub.GetIotHubHostName(),
                 new AzureSasCredential(signature));
 
-            var device = new Device(Guid.NewGuid().ToString());
+            var device = new Device(Guid.NewGuid().ToString())
+            {
+                Authentication = new()
+                {
+                    Type = ClientAuthenticationType.Sas,
+                }
+            };
 
             // act
             Device createdDevice = await serviceClient.Devices.CreateAsync(device).ConfigureAwait(false);
@@ -57,7 +63,13 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 TestConfiguration.IotHub.GetIotHubHostName(),
                 sasCredential);
 
-            var device = new Device(Guid.NewGuid().ToString());
+            var device = new Device(Guid.NewGuid().ToString())
+            {
+                Authentication = new()
+                {
+                    Type = ClientAuthenticationType.Sas,
+                }
+            };
 
             // act
             try
@@ -99,7 +111,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 var scheduledTwinUpdateOptions = new ScheduledJobsOptions
                 {
                     JobId = jobId,
-                    MaxExecutionTime = TimeSpan.FromMinutes(2),
+                    MaxExecutionTimeInSeconds = 120,
                 };
                 TwinScheduledJob scheduledJob = await serviceClient.ScheduledJobs
                     .ScheduleTwinUpdateAsync(
@@ -174,7 +186,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             // act
 
             await serviceClient.Messages.OpenAsync().ConfigureAwait(false);
-            var message = new OutgoingMessage("Hello, Cloud!");
+            var message = new OutgoingMessage();
+            message.SetPayload("Hello, Cloud!");
 
             await serviceClient.Messages.SendAsync(testDevice.Id, message);
 
@@ -217,7 +230,8 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             sasCredential.Update(signature);
 
             await serviceClient.Messages.OpenAsync().ConfigureAwait(false);
-            var message = new OutgoingMessage("Hello, Cloud!");
+            var message = new OutgoingMessage();
+            message.SetPayload("Hello, Cloud!");
             await serviceClient.Messages.SendAsync(testDevice.Id, message);
             await serviceClient.Messages.CloseAsync().ConfigureAwait(false);
         }

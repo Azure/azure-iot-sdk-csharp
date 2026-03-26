@@ -1,8 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Azure;
-
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
@@ -19,7 +17,7 @@ namespace Microsoft.Azure.Devices
         /// </remarks>
         /// <param name="eTag">Weak ETag of the modified resource.</param>
         /// <param name="digitalTwin">The deserialized digital twin.</param>
-        protected internal DigitalTwinGetResponse(T digitalTwin, ETag eTag = default)
+        public DigitalTwinGetResponse(T digitalTwin, ETag eTag = default)
         {
             DigitalTwin = digitalTwin;
             ETag = eTag;
@@ -28,11 +26,11 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Gets the deserialized digital twin.
         /// </summary>
-        public T DigitalTwin { get; protected internal set; }
+        public T DigitalTwin { get; set; }
 
         /// <summary>
         /// Gets the weak ETag of the modified resource.
         /// </summary>
-        public ETag ETag { get; protected internal set; }
+        public ETag ETag { get; set; }
     }
 }

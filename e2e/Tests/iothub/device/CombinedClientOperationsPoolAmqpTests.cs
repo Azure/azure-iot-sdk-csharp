@@ -12,7 +12,7 @@ using Microsoft.Azure.Devices.E2ETests.Helpers.Templates;
 using Microsoft.Azure.Devices.E2ETests.Methods;
 using Microsoft.Azure.Devices.E2ETests.Twins;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Newtonsoft.Json;
+using System.Text.Json;
 
 namespace Microsoft.Azure.Devices.E2ETests
 {
@@ -27,7 +27,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         private static readonly DirectMethodResponsePayload s_deviceResponsePayload = new() { CurrentState = "on" };
         private static readonly DirectMethodRequestPayload s_serviceRequestPayload = new() { DesiredState = "off" };
 
-        private static readonly TimeSpan s_defaultMethodResponseTimeout = TimeSpan.FromSeconds(30);
+        private static readonly int s_defaultMethodResponseTimeout = 30;
 
         [DataTestMethod]
         [DataRow(IotHubClientTransportProtocol.Tcp)]
@@ -66,8 +66,8 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                 // Set method handler
                 VerboseTestLogger.WriteLine($"{nameof(CombinedClientOperationsPoolAmqpTests)}: Set direct method {MethodName} for device={testDevice.Id}");
-                Task methodCallbackSet = testDeviceCallbackHandler.SetDeviceReceiveMethodAndRespondAsync<DirectMethodRequestPayload>(
-                    Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(s_deviceResponsePayload)), ct);
+                Task methodCallbackSet = testDeviceCallbackHandler.SetDeviceReceiveMethodAndRespondAsync(
+                    Encoding.UTF8.GetBytes(JsonSerializer.Serialize(s_deviceResponsePayload)), ct);
                 initOperations.Add(methodCallbackSet);
 
                 // Set the twin desired properties callback
@@ -106,15 +106,14 @@ namespace Microsoft.Azure.Devices.E2ETests
                 VerboseTestLogger.WriteLine($"{nameof(CombinedClientOperationsPoolAmqpTests)}: Operation 3: Direct methods test for device={testDevice.Id}");
                 var directMethodRequest = new DirectMethodServiceRequest(MethodName)
                 {
-                    Payload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(s_serviceRequestPayload)),
-                    ResponseTimeout = s_defaultMethodResponseTimeout,
+                    ResponseTimeoutInSeconds = s_defaultMethodResponseTimeout,
                 };
+                directMethodRequest.SetPayload(s_serviceRequestPayload);
+
                 testDeviceCallbackHandler.ExpectedDirectMethodRequest = directMethodRequest;
 
                 Task serviceInvokeMethod = MethodE2ETests.ServiceSendMethodAndVerifyResponseAsync(testDevice.Id, null, directMethodRequest, s_deviceResponsePayload, ct);
-                Task methodReceivedTask = testDeviceCallbackHandler.WaitForMethodCallbackAsync(ct);
                 clientOperations.Add(serviceInvokeMethod);
-                clientOperations.Add(methodReceivedTask);
 
                 // Set reported twin properties
                 VerboseTestLogger.WriteLine($"{nameof(CombinedClientOperationsPoolAmqpTests)}: Operation 4: Set reported property for device={testDevice.Id}");

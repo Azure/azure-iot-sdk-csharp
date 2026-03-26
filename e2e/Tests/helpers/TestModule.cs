@@ -13,12 +13,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
         /// Used in conjunction with ModuleClient.CreateFromConnectionString()
         /// </summary>
         internal string ConnectionString =>
-            $"HostName={TestConfiguration.IotHub.GetIotHubHostName()};DeviceId={Module.DeviceId};ModuleId={Module.Id};SharedAccessKey={Module.Authentication.SymmetricKey.PrimaryKey}";
+            $"HostName={TestConfiguration.IotHub.GetIotHubHostName()};DeviceId={Module.DeviceId};ModuleId={Module.ModuleId};SharedAccessKey={Module.Authentication.SymmetricKey.PrimaryKey}";
 
         /// <summary>
         /// Module Id
         /// </summary>
-        internal string Id => Module.Id;
+        internal string Id => Module.ModuleId;
 
         /// <summary>
         /// Device Id

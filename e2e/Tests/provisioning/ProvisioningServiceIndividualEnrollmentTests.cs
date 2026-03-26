@@ -13,6 +13,7 @@ using FluentAssertions.Specialized;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.Azure.Devices.Provisioning.Service;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using AzureCoreEtag = Azure.ETag;
 
 namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 {
@@ -319,7 +320,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
                     if (forceUpdate)
                     {
-                        retrievedIndividualEnrollment.ETag = ETag.All;
+                        retrievedIndividualEnrollment.ETag = AzureCoreEtag.All;
                     }
 
                     IndividualEnrollment updatedIndividualEnrollment = null;

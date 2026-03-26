@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices
 {
@@ -13,25 +13,25 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// The Id of the device that indicated the error.
         /// </summary>
-        [JsonProperty("deviceId")]
-        public string DeviceId { get; internal set; }
+        [JsonPropertyName("deviceId")]
+        public string DeviceId { get; set; }
 
         /// <summary>
         /// Module Id on the device that indicated the error.
         /// </summary>
-        [JsonProperty("moduleId")]
-        public string ModuleId { get; internal set; }
+        [JsonPropertyName("moduleId")]
+        public string ModuleId { get; set; }
 
         /// <summary>
         /// Error code associated with the error.
         /// </summary>
-        [JsonProperty("errorCode")]
-        public IotHubServiceErrorCode ErrorCode { get; internal set; }
+        [JsonPropertyName("errorCode")]
+        public IotHubServiceErrorCode ErrorCode { get; set; }
 
         /// <summary>
         /// Additional details associated with the error.
         /// </summary>
-        [JsonProperty("errorStatus")]
-        public string ErrorStatus { get; internal set; }
+        [JsonPropertyName("errorStatus")]
+        public string ErrorStatus { get; set; }
     }
 }

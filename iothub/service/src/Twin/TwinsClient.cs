@@ -545,6 +545,10 @@ namespace Microsoft.Azure.Devices
                     {
                         Desired = twin.Properties?.Desired
                     },
+                    Authentication = new()
+                    { 
+                        Type = twin.AuthenticationType,
+                    }
                 };
 
                 exportImportDeviceList.Add(exportImportDevice);

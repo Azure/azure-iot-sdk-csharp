@@ -11,7 +11,7 @@ using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Amqp.Framing;
 using Microsoft.Azure.Devices.Amqp;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices.Tests.Amqp
 {
@@ -213,7 +213,8 @@ namespace Microsoft.Azure.Devices.Tests.Amqp
                 },
             };
 
-            var message = new OutgoingMessage(dataList);
+            var message = new OutgoingMessage();
+            message.SetPayload(dataList);
 
             using AmqpMessage amqpMessage = MessageConverter.MessageToAmqpMessage(message);
             amqpMessage.Properties.ContentType = AmqpsConstants.BatchedFeedbackContentType;

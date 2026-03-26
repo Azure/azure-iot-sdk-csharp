@@ -6,12 +6,12 @@ using System.Collections.Generic;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-using Azure;
 using FluentAssertions;
 using FluentAssertions.Specialized;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.Azure.Devices.Provisioning.Service;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using AzureCoreEtag = Azure.ETag;
 
 namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 {
@@ -315,7 +315,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
                     if (forceUpdate)
                     {
-                        retrievedEnrollmentGroup.ETag = ETag.All;
+                        retrievedEnrollmentGroup.ETag = AzureCoreEtag.All;
                     }
 
                     EnrollmentGroup updatedEnrollmentGroup = null;

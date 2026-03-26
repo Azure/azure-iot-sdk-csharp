@@ -3,7 +3,7 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices
 {
@@ -19,19 +19,32 @@ namespace Microsoft.Azure.Devices
     /// }
     /// </code>
     /// </remarks>
-    internal sealed class ErrorPayload2
+    public sealed class ErrorPayload2
     {
+        /// <summary>
+        /// The human-readable error message
+        /// </summary>
         [SuppressMessage("Usage", "CA1507: Use nameof in place of string literal 'Message'",
             Justification = "This JsonProperty annotation depends on service-defined contract (name) and is independent of the property name selected by the SDK.")]
-        [JsonProperty("Message")]
-        internal string Message { get; set; }
+        [JsonPropertyName("Message")]
+        public string Message { get; set; }
 
+        /// <summary>
+        /// Another human-readable error message
+        /// </summary>
         [SuppressMessage("Usage", "CA1507: Use nameof in place of string literal 'ExceptionMessage'",
             Justification = "This JsonProperty annotation depends on service-defined contract (name) and is independent of the property name selected by the SDK.")]
-        [JsonProperty("ExceptionMessage")]
-        internal string ExceptionMessage { get; set; }
+        [JsonPropertyName("ExceptionMessage")]
+        public string ExceptionMessage { get; set; }
 
+        /// <summary>
+        /// The error code
+        /// </summary>
         public IotHubServiceErrorCode ErrorCode { get; set; }
+
+        /// <summary>
+        /// The tracking Id to include in any communications with customer support.
+        /// </summary>
         public string TrackingId { get; set; }
 
         internal bool TryParse()

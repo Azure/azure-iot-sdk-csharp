@@ -2,33 +2,51 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Diagnostics.CodeAnalysis;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
     /// A class used as a model to deserialize one schema type of errors received from IoT hub.
     /// </summary>
-    internal sealed class ErrorPayload1
+    public sealed class ErrorPayload1
     {
-        [JsonProperty("errorCode")]
-        internal string ErrorCode { get; set; }
+        /// <summary>
+        /// The error code
+        /// </summary>
+        [JsonPropertyName("errorCode")]
+        public int ErrorCode { get; set; }
 
-        [JsonProperty("trackingId")]
-        internal string TrackingId { get; set; }
+        /// <summary>
+        /// The tracking Id to include in any communications with customer support.
+        /// </summary>
+        [JsonPropertyName("trackingId")]
+        public string TrackingId { get; set; }
 
-        [JsonProperty("message")]
-        internal string Message { get; set; }
+        /// <summary>
+        /// The human readable error message
+        /// </summary>
+        [JsonPropertyName("message")]
+        public string Message { get; set; }
 
-        [JsonProperty("timestampUtc")]
-        internal string OccurredOnUtc { get; set; }
+        /// <summary>
+        /// When the error occurred.
+        /// </summary>
+        [JsonPropertyName("timestampUtc")]
+        public string OccurredOnUtc { get; set; }
     }
 
-    internal sealed class ResponseMessageWrapper
+    /// <summary>
+    /// Modeling class for deserializing error messages sent from the service
+    /// </summary>
+    public sealed class ResponseMessageWrapper
     {
+        /// <summary>
+        /// The message
+        /// </summary>
         [SuppressMessage("Usage", "CA1507: Use nameof in place of string literal 'Message'",
             Justification = "This JsonProperty annotation depends on service-defined contract (name) and is independent of the property name selected by the SDK.")]
-        [JsonProperty("Message")]
-        internal string Message { get; set; }
+        [JsonPropertyName("Message")]
+        public string Message { get; set; }
     }
 }

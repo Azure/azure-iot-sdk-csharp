@@ -97,7 +97,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             var ScheduledTwinUpdateOptions = new ScheduledJobsOptions
             {
                 JobId = "testDevice",
-                MaxExecutionTime = TimeSpan.FromSeconds(60)
+                MaxExecutionTimeInSeconds = 60
             };
 
             // act

@@ -209,7 +209,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
         internal async Task<AmqpIotOutcome> SendTwinPatchMessageAsync(
             string correlationId,
-            ReportedProperties reportedProperties,
+            PropertyCollection reportedProperties,
             CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)

@@ -3,8 +3,8 @@
 
 using System;
 using System.Collections.Generic;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices
 {
@@ -16,7 +16,7 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// When a property was last updated.
         /// </summary>
-        [JsonProperty("$lastUpdated", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("$lastUpdated")]
         public DateTimeOffset? LastUpdatedOnUtc { get; set; }
 
         /// <summary>
@@ -25,11 +25,14 @@ namespace Microsoft.Azure.Devices
         /// <remarks>
         /// This should be not be included for reported properties metadata and must not be null for desired properties metadata.
         /// </remarks>
-        [JsonProperty("$lastUpdatedVersion", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonPropertyName("$lastUpdatedVersion")]
         public long? LastUpdatedVersion { get; set; }
 
+        /// <summary>
+        /// 
+        /// </summary>
         [JsonExtensionData]
-        internal IDictionary<string, JToken> Properties { get; set; } = new Dictionary<string, JToken>();
+        public JsonDictionary Properties { get; set; } = new();
 
         /// <summary>
         /// Gets the specified property's metadata by name as another metadata object.
@@ -41,7 +44,7 @@ namespace Microsoft.Azure.Devices
         {
             propertyValue = default;
 
-            if (!Properties.TryGetValue(propertyName, out JToken jTokenValue))
+            if (!Properties.TryGetAndDeserializeValue(propertyName, out JsonElement jTokenValue))
             {
                 return false;
             }
@@ -49,7 +52,7 @@ namespace Microsoft.Azure.Devices
             // Try convert.
             try
             {
-                propertyValue = jTokenValue.ToObject<ClientTwinMetadata>();
+                propertyValue = JsonSerializer.Deserialize<ClientTwinMetadata>(jTokenValue, JsonSerializerSettings.Options);
                 return true;
             }
             catch (InvalidCastException)

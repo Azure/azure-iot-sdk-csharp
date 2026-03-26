@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Devices.Client.Transport.Amqp;
 using Microsoft.Azure.Devices.Client.Transport.AmqpIot;
-using Newtonsoft.Json;
+using System.Text.Json;
 
 namespace Microsoft.Azure.Devices.Client.Transport
 {
@@ -20,14 +20,12 @@ namespace Microsoft.Azure.Devices.Client.Transport
 #pragma warning restore CA1852
     {
         protected AmqpUnit _amqpUnit;
-        private readonly Action<DesiredProperties> _onDesiredStatePatchListener;
+        private readonly Action<PropertyCollection> _onDesiredStatePatchListener;
         private readonly object _lock = new();
         private readonly ConcurrentDictionary<string, PendingAmqpTwinOperation> _pendingTwinOperations = new();
 
         // Timer to check if any expired messages exist. The timer is executed after each hour of execution.
         private readonly Timer _twinTimeoutTimer;
-
-        private readonly PayloadConvention _payloadConvention;
 
         internal IotHubConnectionCredentials _connectionCredentials;
 
@@ -56,9 +54,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 ProductInfo = context.ProductInfo,
                 ModelId = context.ModelId,
-                PayloadConvention = context.PayloadConvention,
             };
-            _payloadConvention = context.PayloadConvention;
 
             _connectionCredentials = context.IotHubConnectionCredentials;
             _amqpUnit = AmqpUnitManager.GetInstance().CreateAmqpUnit(
@@ -384,21 +380,15 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 {
                     // The response here is deserialized into an SDK-defined type based on service-defined NewtonSoft.Json-based json property name.
                     // For this reason, we use NewtonSoft Json serializer for this deserialization.
-                    TwinDocument clientTwinProperties = DefaultPayloadConvention.Instance.GetObject<TwinDocument>(responseFromService.BodyStream);
+                    TwinDocument clientTwinProperties = JsonSerializer.Deserialize<TwinDocument>(responseFromService.BodyStream, JsonSerializerSettings.Options);
 
-                    var twinDesiredProperties = new DesiredProperties(clientTwinProperties.Desired)
-                    {
-                        PayloadConvention = _payloadConvention,
-                    };
+                    var twinDesiredProperties = new PropertyCollection(clientTwinProperties.Desired);
 
-                    var twinReportedProperties = new ReportedProperties(clientTwinProperties.Reported, true)
-                    {
-                        PayloadConvention = _payloadConvention,
-                    };
+                    var twinReportedProperties = new PropertyCollection(clientTwinProperties.Reported, true);
 
                     return new TwinProperties(twinDesiredProperties, twinReportedProperties);
                 }
-                catch (JsonReaderException ex)
+                catch (JsonException ex)
                 {
                     if (Logging.IsEnabled)
                     {
@@ -417,7 +407,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
-        public override async Task<long> UpdateReportedPropertiesAsync(ReportedProperties reportedProperties, CancellationToken cancellationToken)
+        public override async Task<long> UpdateReportedPropertiesAsync(PropertyCollection reportedProperties, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, reportedProperties, cancellationToken, nameof(UpdateReportedPropertiesAsync));
@@ -441,7 +431,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         private async Task<AmqpMessage> RoundTripTwinMessageAsync(
             AmqpTwinMessageType amqpTwinMessageType,
-            ReportedProperties reportedProperties,
+            PropertyCollection reportedProperties,
             CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
@@ -485,11 +475,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
             if (correlationId == null)
             {
                 // This is desired property updates, so call the callback with DesiredPropertyCollection.
-                Dictionary<string, object> desiredPropertyPatchDictionary = DefaultPayloadConvention.Instance.GetObject<Dictionary<string, object>>(responseFromService.BodyStream);
-                var desiredPropertyPatch = new DesiredProperties(desiredPropertyPatchDictionary)
-                {
-                    PayloadConvention = _payloadConvention,
-                };
+                Dictionary<string, object> desiredPropertyPatchDictionary = JsonSerializer.Deserialize<Dictionary<string, object>>(responseFromService.BodyStream, JsonSerializerSettings.Options);
+                var desiredPropertyPatch = new PropertyCollection(desiredPropertyPatchDictionary);
 
                 _onDesiredStatePatchListener.Invoke(desiredPropertyPatch);
             }
