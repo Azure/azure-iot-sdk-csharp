@@ -4,15 +4,17 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure;
 using FluentAssertions;
 using FluentAssertions.Specialized;
+using Microsoft.Azure.Amqp.Transport;
 using Microsoft.Azure.Devices.Client;
+using Microsoft.Azure.Devices.E2ETests.helpers;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.E2ETests.Twins
 {
@@ -34,13 +36,15 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             {
                 Id = 123,
                 Name = "someName",
+                Nested = new CustomNestedTwinProperty()
+                { 
+                    Id = 456,
+                    Name = "someNestedName"
+                }
             },
         };
 
-        // ISO 8601 date-formatted string with trailing zeros in the microseconds portion.
-        // This is to verify the Newtonsoft.Json known issue is worked around in the SDK.
-        // See https://github.com/JamesNK/Newtonsoft.Json/issues/1511 for more details about the known issue.
-        private const string DateTimeValue = "2023-01-31T10:37:08.4599400";
+        private DateTimeOffset DateTimeValue = DateTimeOffset.Now;
 
         // This operation behaves the same irrespective of if the client is initialized over tcp or websocket.
         [TestMethod]
@@ -190,7 +194,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
 
         // This operation behaves the same irrespective of if the client is initialized over tcp or websocket.
         [TestMethod]
-        public async Task Twin_ServiceSetsDesiredPropertyArrayAndDeviceReceivesEvent_Mqtt()
+        public async Task Twin_ServiceSetsComplexDesiredPropertyAndDeviceReceivesEvent_Mqtt()
         {
             // Setting up one cancellation token for the complete test flow
             using var cts = new CancellationTokenSource(s_testTimeout);
@@ -205,7 +209,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
 
         // This operation behaves the same irrespective of if the client is initialized over tcp or websocket.
         [TestMethod]
-        public async Task Twin_ServiceSetsDesiredPropertyArrayAndDeviceReceivesEvent_Amqp()
+        public async Task Twin_ServiceSetsComplexDesiredPropertyAndDeviceReceivesEvent_Amqp()
         {
             // Setting up one cancellation token for the complete test flow
             using var cts = new CancellationTokenSource(s_testTimeout);
@@ -486,13 +490,116 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 .NotThrowAsync<IotHubServiceException>("Did not expect test to throw a precondition failed exception since 'onlyIfUnchanged' was set to true");
         }
 
+        [DataTestMethod]
+        [DataRow(Protocol.Amqp)]
+        [DataRow(Protocol.Mqtt)]
+        public async Task TestSendingModeledTypesInDesiredProperties(Protocol protocol)
+        {
+            // Setting up one cancellation token for the complete test flow
+            using var cts = new CancellationTokenSource(s_testTimeout);
+            CancellationToken ct = cts.Token;
+
+            IotHubClientTransportSettings transportSettings;
+            if (protocol == Protocol.Mqtt)
+            {
+                transportSettings = new IotHubClientAmqpSettings(IotHubClientTransportProtocol.Tcp);
+            }
+            else if (protocol == Protocol.Amqp)
+            {
+                transportSettings = new IotHubClientAmqpSettings(IotHubClientTransportProtocol.Tcp);
+            }
+            else
+            {
+                throw new NotSupportedException("Unknown protocol");
+            }
+
+            string propName = Guid.NewGuid().ToString();
+            CustomTwinProperty expected = new CustomTwinProperty()
+            {
+                Id = 12,
+                Name = Guid.NewGuid().ToString(),
+                Nested = new()
+                {
+                    Id = 34,
+                    Name = Guid.NewGuid().ToString(),
+                }
+            };
+
+            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix, ct: ct).ConfigureAwait(false);
+            var options = new IotHubClientOptions(transportSettings);
+            await using var deviceClient = new IotHubDeviceClient(testDevice.ConnectionString, options);
+            await deviceClient.OpenAsync(ct).ConfigureAwait(false);
+
+            var serviceTwin = await s_serviceClient.Twins.GetAsync(testDevice.Id, ct);
+            serviceTwin.Properties.Desired[propName] = expected;
+            await s_serviceClient.Twins.ReplaceAsync(testDevice.Id, serviceTwin, cancellationToken: ct);
+
+            TwinProperties deviceTwin = await deviceClient.GetTwinPropertiesAsync(ct).ConfigureAwait(false);
+            bool propertyFound = deviceTwin.Desired.TryGetAndDeserializeValue(propName, out CustomTwinProperty actual);
+            propertyFound.Should().BeTrue();
+            TestAssert.AreEqualJson(JsonSerializer.Serialize(actual), JsonSerializer.Serialize(expected));
+        }
+
+        [DataTestMethod]
+        [DataRow(Protocol.Amqp)]
+        [DataRow(Protocol.Mqtt)]
+        public async Task TestSendingModeledTypesInReportedProperties(Protocol protocol)
+        {
+            // Setting up one cancellation token for the complete test flow
+            using var cts = new CancellationTokenSource(s_testTimeout);
+            CancellationToken ct = cts.Token;
+
+            IotHubClientTransportSettings transportSettings;
+            if (protocol == Protocol.Mqtt)
+            {
+                transportSettings = new IotHubClientAmqpSettings(IotHubClientTransportProtocol.Tcp);
+            }
+            else if (protocol == Protocol.Amqp)
+            {
+                transportSettings = new IotHubClientAmqpSettings(IotHubClientTransportProtocol.Tcp);
+            }
+            else
+            {
+                throw new NotSupportedException("Unknown protocol");
+            }
+
+            string propName = Guid.NewGuid().ToString();
+            CustomTwinProperty expected = new CustomTwinProperty()
+            {
+                Id = 12,
+                Name = Guid.NewGuid().ToString(),
+                Nested = new()
+                {
+                    Id = 34,
+                    Name = Guid.NewGuid().ToString(),
+                }
+            };
+
+            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix, ct: ct).ConfigureAwait(false);
+            var options = new IotHubClientOptions(transportSettings);
+            await using var deviceClient = new IotHubDeviceClient(testDevice.ConnectionString, options);
+            await deviceClient.OpenAsync(ct).ConfigureAwait(false);
+
+            var reportedProperties = new PropertyCollection()
+            {
+                [propName] = expected,
+            };
+            await deviceClient.UpdateReportedPropertiesAsync(reportedProperties, ct);
+
+            var serviceTwin = await s_serviceClient.Twins.GetAsync(testDevice.Id, ct);
+
+            bool propertyFound = serviceTwin.Properties.Reported.TryGetAndDeserializeValue(propName, out CustomTwinProperty actual);
+            propertyFound.Should().BeTrue();
+            TestAssert.AreEqualJson(JsonSerializer.Serialize(actual), JsonSerializer.Serialize(expected));
+        }
+
         public static async Task Twin_DeviceSetsReportedPropertyAndGetsItBackAsync<T>(IotHubDeviceClient deviceClient, string deviceId, T propValue, CancellationToken ct)
         {
             string propName = Guid.NewGuid().ToString();
 
             VerboseTestLogger.WriteLine($"{nameof(Twin_DeviceSetsReportedPropertyAndGetsItBackAsync)}: name={propName}, value={propValue}");
 
-            var props = new ReportedProperties
+            var props = new PropertyCollection
             {
                 [propName] = propValue
             };
@@ -502,15 +609,15 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
 
             // Validate the updated twin from the device-client
             TwinProperties deviceTwin = await deviceClient.GetTwinPropertiesAsync(ct).ConfigureAwait(false);
-            bool propertyFound = deviceTwin.Reported.TryGetValue(propName, out T actual);
+            bool propertyFound = deviceTwin.Reported.TryGetAndDeserializeValue(propName, out T actual);
             propertyFound.Should().BeTrue();
             // We don't support nested deserialization yet, so we'll need to serialize the response and compare them.
-            JsonConvert.SerializeObject(actual).Should().Be(JsonConvert.SerializeObject(propValue));
+            JsonSerializer.Serialize(actual).Should().Be(JsonSerializer.Serialize(propValue));
 
             // Validate the updated twin from the service-client
             ClientTwin completeTwin = await s_serviceClient.Twins.GetAsync(deviceId, ct).ConfigureAwait(false);
             object actualProp = completeTwin.Properties.Reported[propName];
-            JsonConvert.SerializeObject(actualProp).Should().Be(JsonConvert.SerializeObject(propValue));
+            JsonSerializer.Serialize(actualProp).Should().Be(JsonSerializer.Serialize(propValue));
             completeTwin.Properties.Reported.Version.Should().Be(newTwinVersion);
         }
 
@@ -546,7 +653,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
 
             VerboseTestLogger.WriteLine($"{nameof(Twin_DeviceSetsReportedPropertyAndGetsItBackAsync)}: name={propName}, value={propValue}");
 
-            var props = new ReportedProperties
+            var props = new PropertyCollection
             {
                 [propName] = propValue
             };
@@ -607,15 +714,15 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
 
             // Validate the updated twin from the device-client
             TwinProperties deviceTwin = await deviceClient.GetTwinPropertiesAsync(ct).ConfigureAwait(false);
-            bool propertyFound = deviceTwin.Desired.TryGetValue(propName, out T actual);
+            bool propertyFound = deviceTwin.Desired.TryGetAndDeserializeValue(propName, out T actual);
             propertyFound.Should().BeTrue();
             // We don't support nested deserialization yet, so we'll need to serialize the response and compare them.
-            JsonConvert.SerializeObject(actual).Should().Be(JsonConvert.SerializeObject(propValue));
+            JsonSerializer.Serialize(actual).Should().Be(JsonSerializer.Serialize(propValue));
 
             // Validate the updated twin from the service-client
             ClientTwin completeTwin = await s_serviceClient.Twins.GetAsync(testDevice.Id, ct).ConfigureAwait(false);
             dynamic actualProp = completeTwin.Properties.Desired[propName];
-            Assert.AreEqual(JsonConvert.SerializeObject(actualProp), JsonConvert.SerializeObject(propValue));
+            Assert.AreEqual(JsonSerializer.Serialize(actualProp), JsonSerializer.Serialize(propValue));
         }
 
         public static async Task RegistryManagerUpdateDesiredPropertyAsync(string deviceId, string propName, object propValue, CancellationToken ct)
@@ -688,15 +795,17 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
 
             // Validate the updated twin from the device-client
             TwinProperties deviceTwin = await deviceClient.GetTwinPropertiesAsync(ct).ConfigureAwait(false);
-            bool propertyFound = deviceTwin.Desired.TryGetValue(propName, out T actual);
+            bool propertyFound = deviceTwin.Desired.TryGetAndDeserializeValue(propName, out T actual);
             propertyFound.Should().BeTrue();
             // We don't support nested deserialization yet, so we'll need to serialize the response and compare them.
-            JsonConvert.SerializeObject(actual).Should().Be(JsonConvert.SerializeObject(propValue));
+            JsonSerializer.Serialize(actual).Should().Be(JsonSerializer.Serialize(propValue));
 
             // Validate the updated twin from the service-client
             ClientTwin completeTwin = await s_serviceClient.Twins.GetAsync(testDevice.Id, ct).ConfigureAwait(false);
             object actualProp = completeTwin.Properties.Desired[propName];
-            JsonConvert.SerializeObject(actualProp).Should().Be(JsonConvert.SerializeObject(propValue));
+            var actualSer = JsonSerializer.Serialize(actualProp);
+            var expectedSer = JsonSerializer.Serialize(propValue);
+            actualSer.Should().Be(expectedSer);
         }
 
         private async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGetAsync(IotHubClientTransportSettings transportSettings, string propName, string propValue, CancellationToken ct)
@@ -712,7 +821,25 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             await TestDevice.OpenWithRetryAsync(deviceClient, ct).ConfigureAwait(false);
 
             TwinProperties deviceTwin = await deviceClient.GetTwinPropertiesAsync(ct).ConfigureAwait(false);
-            bool propertyFound = deviceTwin.Desired.TryGetValue(propName, out string actual);
+            bool propertyFound = deviceTwin.Desired.TryGetAndDeserializeValue(propName, out string actual);
+            propertyFound.Should().BeTrue();
+            actual.Should().Be(propValue);
+        }
+
+        private async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGetAsync(IotHubClientTransportSettings transportSettings, string propName, DateTimeOffset propValue, CancellationToken ct)
+        {
+            await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix, ct: ct).ConfigureAwait(false);
+            var options = new IotHubClientOptions(transportSettings);
+            await using var deviceClient = new IotHubDeviceClient(testDevice.ConnectionString, options);
+
+            var twinPatch = new ClientTwin();
+            twinPatch.Properties.Desired[propName] = propValue;
+            await s_serviceClient.Twins.UpdateAsync(testDevice.Id, twinPatch, cancellationToken: ct).ConfigureAwait(false);
+
+            await TestDevice.OpenWithRetryAsync(deviceClient, ct).ConfigureAwait(false);
+
+            TwinProperties deviceTwin = await deviceClient.GetTwinPropertiesAsync(ct).ConfigureAwait(false);
+            bool propertyFound = deviceTwin.Desired.TryGetAndDeserializeValue(propName, out DateTimeOffset actual);
             propertyFound.Should().BeTrue();
             actual.Should().Be(propValue);
         }
@@ -727,7 +854,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
             await using var deviceClient = new IotHubDeviceClient(testDevice.ConnectionString, options);
             await deviceClient.OpenAsync(ct).ConfigureAwait(false);
 
-            var patch = new ReportedProperties
+            var patch = new PropertyCollection
             {
                 [propName] = propValue
             };
@@ -754,7 +881,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
 
             await deviceClient
                 .UpdateReportedPropertiesAsync(
-                    new ReportedProperties
+                    new PropertyCollection
                     {
                         [propName1] = null
                     },
@@ -762,13 +889,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 .ConfigureAwait(false);
 
             ClientTwin serviceTwin = await s_serviceClient.Twins.GetAsync(testDevice.Id, ct).ConfigureAwait(false);
-            serviceTwin.Properties.Reported.Contains(propName1).Should().BeFalse();
+            serviceTwin.Properties.Reported.ContainsKey(propName1).Should().BeFalse();
 
             await deviceClient
                 .UpdateReportedPropertiesAsync(
-                    new ReportedProperties
+                    new PropertyCollection
                     {
-                        [propName1] = new Dictionary<string, object>
+                        [propName1] = new JsonDictionary
                         {
                             [propName2] = null
                         }
@@ -777,15 +904,23 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
                 .ConfigureAwait(false);
 
             serviceTwin = await s_serviceClient.Twins.GetAsync(testDevice.Id, ct).ConfigureAwait(false);
-            serviceTwin.Properties.Reported.Contains(propName1).Should().BeTrue();
-            serviceTwin.Properties.Reported.TryGetValue(propName1, out Dictionary<string, object> value1).Should().BeTrue();
-            value1.Count.Should().Be(0);
+            serviceTwin.Properties.Reported.ContainsKey(propName1).Should().BeTrue();
+            JsonDictionary jsonDictionary = serviceTwin.Properties.Reported[propName1];
+            jsonDictionary.Count.Should().Be(0);
         }
     }
 
     internal class CustomTwinProperty
     {
-        // The properties in here need to be public otherwise NewtonSoft.Json cannot serialize and deserialize them properly.
+        public int Id { get; set; }
+
+        public string Name { get; set; }
+
+        public CustomNestedTwinProperty Nested { get; set; }
+    }
+
+    internal class CustomNestedTwinProperty
+    {
         public int Id { get; set; }
 
         public string Name { get; set; }

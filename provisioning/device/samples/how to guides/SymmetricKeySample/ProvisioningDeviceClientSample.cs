@@ -79,7 +79,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
 
             await iotHubClient.OpenAsync();
             _logger.LogInformation("Sending a telemetry message...");
-            var message = new TelemetryMessage("TestMessage");
+            var message = new TelemetryMessage();
+            message.SetPayload("TestMessage");
             await iotHubClient.SendTelemetryAsync(message);
 
             await iotHubClient.CloseAsync();

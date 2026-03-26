@@ -2,7 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Collections.Generic;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices
 {
@@ -17,6 +17,6 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         /// <remarks>For convenience, the value of each dictionary object can be turned into an instance of <see cref="WritableProperty"/>.</remarks>
         [JsonExtensionData]
-        public IDictionary<string, object> WritableProperties { get; } = new Dictionary<string, object>();
+        public JsonDictionary WritableProperties { get; set; } = new();
     }
 }

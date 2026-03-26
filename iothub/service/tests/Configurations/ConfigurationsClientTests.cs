@@ -472,17 +472,17 @@ namespace Microsoft.Azure.Devices.Tests.Configurations
             // arrange
             var configurationContent = new ConfigurationContent
             {
-                ModulesContent = new Dictionary<string, IDictionary<string, object>>
+                ModulesContent = new Dictionary<string, JsonDictionary>
                 {
                     {
-                        "Module1", new Dictionary<string, object>
+                        "Module1", new JsonDictionary
                         {
                             { "setting1", "value1" },
                             { "setting2", "value2" }
                         }
                     },
                     {
-                        "Module2", new Dictionary<string, object>
+                        "Module2", new JsonDictionary
                         {
                             { "settings3", true },
                             { "settings4", 123 }
@@ -559,17 +559,17 @@ namespace Microsoft.Azure.Devices.Tests.Configurations
             var deviceId = Guid.NewGuid().ToString();
             var configurationContent = new ConfigurationContent
             {
-                ModulesContent = new Dictionary<string, IDictionary<string, object>>
+                ModulesContent = new Dictionary<string, JsonDictionary>
                 {
                     {
-                        "Module1", new Dictionary<string, object>
+                        "Module1", new JsonDictionary
                         {
                             { "setting1", "value1" },
                             { "setting2", "value2" }
                         }
                     },
                     {
-                        "Module2", new Dictionary<string, object>
+                        "Module2", new JsonDictionary
                         {
                             { "settings3", true },
                             { "settings4", 123 }

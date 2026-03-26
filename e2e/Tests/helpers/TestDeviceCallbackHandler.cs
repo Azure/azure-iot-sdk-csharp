@@ -5,12 +5,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.ExceptionServices;
+using System.Text.Json;
 using System.Threading;
-using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Azure.Devices.Client;
-using Newtonsoft.Json;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Azure.Devices.E2ETests.Helpers
 {
@@ -19,7 +19,6 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
         private readonly IotHubDeviceClient _deviceClient;
         private readonly string _testDeviceId;
 
-        private readonly SemaphoreSlim _methodCallbackSemaphore = new(0, 1);
         private ExceptionDispatchInfo _methodExceptionDispatch;
         private DirectMethodServiceRequest _expectedDirectMethodRequest;
 
@@ -63,13 +62,12 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
 
         public void Dispose()
         {
-            _methodCallbackSemaphore?.Dispose();
             _twinCallbackSemaphore?.Dispose();
             _receivedMessageCallbackSemaphore?.Dispose();
         }
 
         // Set a direct method callback that expects a request with payload of type T.
-        internal async Task SetDeviceReceiveMethodAndRespondAsync<T>(byte[] deviceResponsePayload, CancellationToken ct = default)
+        internal async Task SetDeviceReceiveMethodAndRespondAsync(byte[] deviceResponsePayload, CancellationToken ct = default)
         {
             await _deviceClient.SetDirectMethodCallbackAsync(
                 (request) =>
@@ -79,8 +77,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                     {
                         request.MethodName.Should().Be(ExpectedDirectMethodRequest.MethodName, "The expected method name should match what was sent from service");
 
-                        byte[] expectedRequestPayload = ExpectedDirectMethodRequest.Payload;
-                        request.GetPayload().Should().BeEquivalentTo(expectedRequestPayload, "The expected method data should match what was sent from service");
+                        byte[] expectedRequestPayload = JsonSerializer.SerializeToUtf8Bytes(ExpectedDirectMethodRequest.Payload);
+                        byte[] actualRequestPayload = request.Payload;
+                        Assert.IsTrue(Enumerable.SequenceEqual(expectedRequestPayload, actualRequestPayload), "The expected method data should match what was sent from service");
 
                         var response = new DirectMethodResponse(200)
                         {
@@ -96,19 +95,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                         var response = new DirectMethodResponse(500);
                         return Task.FromResult(response);
                     }
-                    finally
-                    {
-                        // Always notify that we got the callback.
-                        _methodCallbackSemaphore.Release();
-                    }
                 },
                 ct).ConfigureAwait(false);
-        }
-
-        internal async Task WaitForMethodCallbackAsync(CancellationToken ct)
-        {
-            await _methodCallbackSemaphore.WaitAsync(ct).ConfigureAwait(false);
-            _methodExceptionDispatch?.Throw();
         }
 
         // Set a twin patch callback that expects a patch of type T.
@@ -123,11 +111,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                     {
                         string expectedPropertyName = ExpectedTwinPatchKeyValuePair.Item1;
                         var expectedTwinPropertyValue = (T)ExpectedTwinPatchKeyValuePair.Item2;
-                        bool containsProperty = patch.TryGetValue(expectedPropertyName, out T actualPropertyValue);
+                        bool containsProperty = patch.TryGetAndDeserializeValue(expectedPropertyName, out T actualPropertyValue);
                         containsProperty.Should().BeTrue($"Expecting property update patch received for {_testDeviceId} for {expectedPropertyName} to be {expectedTwinPropertyValue} but was: {patch.GetSerializedString()}");
 
                         // We don't support nested deserialization yet, so we'll need to serialize the response and compare them.
-                        JsonConvert.SerializeObject(expectedTwinPropertyValue).Should().Be(JsonConvert.SerializeObject(actualPropertyValue), "The property value should match what was set by service");
+                        JsonSerializer.Serialize(expectedTwinPropertyValue).Should().Be(JsonSerializer.Serialize(actualPropertyValue), "The property value should match what was set by service");
                     }
                     catch (Exception ex)
                     {
@@ -166,9 +154,18 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
                     receivedMessage.To.Should().Be(receivedMessageDestination, "Received message destination is not what was sent by service");
 
                     receivedMessage.TryGetPayload(out T actualPayload).Should().BeTrue();
-                    ExpectedOutgoingMessage.Payload.Should().BeOfType<T>();
-                    var expectedPayload = (T)ExpectedOutgoingMessage.Payload;
-                    actualPayload.Should().BeEquivalentTo(expectedPayload);
+
+                    T expectedPayloadDeserialized = default;
+                    try
+                    {
+                        expectedPayloadDeserialized = JsonSerializer.Deserialize<T>(ExpectedOutgoingMessage.Payload);
+                    }
+                    catch (JsonException)
+                    {
+                        Assert.Fail("expected payload did not deserialize into expected type");
+                    }
+
+                    actualPayload.Should().BeEquivalentTo(expectedPayloadDeserialized);
 
                     receivedMessage.Properties.Count.Should().Be(ExpectedOutgoingMessage.Properties.Count, $"The count of received properties did not match for device {_testDeviceId}");
                     if (ExpectedOutgoingMessage.Properties.Count > 0)

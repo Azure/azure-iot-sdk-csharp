@@ -30,7 +30,6 @@ namespace Microsoft.Azure.Devices.Client
         ///     connectionString,
         ///     new IotHubClientOptions(new IotHubClientMqttSettings(IotHubClientTransportProtocol.WebSocket))
         ///     {
-        ///         PayloadConvention = SystemTextJsonPayloadConvention.Instance,
         ///         GatewayHostName = "myIotEdgeGateway.contoso.com",
         ///         SdkAssignsMessageId = SdkAssignsMessageId.WhenUnset,
         ///         RetryPolicy = new IotHubClientFixedDelayRetryPolicy(maxRetries: 10, fixedDelay: TimeSpan.FromSeconds(3), userJitter: true),
@@ -62,19 +61,6 @@ namespace Microsoft.Azure.Devices.Client
         /// take place over HTTP as well. The settings provided in this class will be used for all these operations.
         /// </remarks>
         public IotHubClientHttpSettings HttpOperationTransportSettings { get; set; } = new IotHubClientHttpSettings();
-
-        /// <summary>
-        /// The payload convention to be used to serialize and encode JSON payloads exchanged with the service.
-        /// </summary>
-        /// <remarks>
-        /// The payload convention defines the serializer and deserializer be used. It only needs to be set if there are objects
-        /// that have special serialization rules or require a specific byte encoding.
-        /// <para>
-        /// The default value is set to <see cref="DefaultPayloadConvention"/> which uses
-        /// <see href="https://www.nuget.org/packages/Newtonsoft.Json"/> and UTF-8 encoding.
-        /// </para>
-        /// </remarks>
-        public PayloadConvention PayloadConvention { get; set; } = DefaultPayloadConvention.Instance;
 
         /// <summary>
         /// The fully-qualified DNS host name of a gateway to connect through.
@@ -136,7 +122,6 @@ namespace Microsoft.Azure.Devices.Client
             return new IotHubClientOptions(transport)
             {
                 HttpOperationTransportSettings = (IotHubClientHttpSettings)HttpOperationTransportSettings.Clone(),
-                PayloadConvention = PayloadConvention,
                 GatewayHostName = GatewayHostName,
                 ModelId = ModelId,
                 SdkAssignsMessageId = SdkAssignsMessageId,

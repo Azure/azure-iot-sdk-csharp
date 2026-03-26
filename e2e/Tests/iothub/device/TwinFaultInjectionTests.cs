@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -254,7 +255,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
         {
             async Task TestOperationAsync(TestDevice testDevice, TestDeviceCallbackHandler testDeviceCallbackHandler, CancellationToken ct)
             {
-                var props = new ReportedProperties();
+                var props = new PropertyCollection();
                 string propName = Guid.NewGuid().ToString();
                 string propValue = Guid.NewGuid().ToString();
                 props[propName] = propValue;
@@ -263,11 +264,11 @@ namespace Microsoft.Azure.Devices.E2ETests.Twins
 
                 TwinProperties deviceTwin = await testDevice.DeviceClient.GetTwinPropertiesAsync(ct).ConfigureAwait(false);
                 deviceTwin.Should().NotBeNull();
-                deviceTwin.Reported.Should().NotBeNull();
-                deviceTwin.Reported.TryGetValue(propName, out string actualValue).Should().BeTrue();
+                Assert.IsNotNull(deviceTwin.Reported);
+                deviceTwin.Reported.TryGetAndDeserializeValue(propName, out string actualValue).Should().BeTrue();
                 actualValue.Should().Be(propValue);
-                deviceTwin.Reported[propName].Should().NotBeNull();
-                deviceTwin.Reported[propName].Should().BeEquivalentTo(propValue);
+                Assert.IsNotNull(deviceTwin.Reported[propName]);
+                Assert.AreEqual(propValue, deviceTwin.Reported[propName]);
             }
 
             await FaultInjection

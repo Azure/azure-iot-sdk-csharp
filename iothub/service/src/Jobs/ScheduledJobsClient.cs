@@ -263,7 +263,7 @@ namespace Microsoft.Azure.Devices
                     DirectMethodRequest = directMethodRequest,
                     QueryCondition = queryCondition,
                     StartOn = startOnUtc,
-                    MaxExecutionTime = scheduledJobsOptions.MaxExecutionTime,
+                    MaxExecutionTimeInSeconds = scheduledJobsOptions.MaxExecutionTimeInSeconds,
                 };
 
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Put, GetJobUri(jobRequest.JobId), _credentialProvider, jobRequest);
@@ -355,7 +355,7 @@ namespace Microsoft.Azure.Devices
                     UpdateTwin = twin,
                     QueryCondition = queryCondition,
                     StartOn = startOnUtc,
-                    MaxExecutionTime = scheduledJobsOptions?.MaxExecutionTime,
+                    MaxExecutionTimeInSeconds = scheduledJobsOptions?.MaxExecutionTimeInSeconds,
                 };
                 using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Put, GetJobUri(jobRequest.JobId), _credentialProvider, jobRequest);
                 HttpResponseMessage response = null;

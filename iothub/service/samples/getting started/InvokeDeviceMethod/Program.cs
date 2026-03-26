@@ -9,7 +9,8 @@ using System.Diagnostics;
 using System.Text;
 using System.Threading.Tasks;
 using CommandLine;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
+using System.Text.Json;
 
 namespace Microsoft.Azure.Devices.Samples.InvokeDeviceMethod
 {
@@ -47,16 +48,17 @@ namespace Microsoft.Azure.Devices.Samples.InvokeDeviceMethod
         {
             var methodInvocation = new DirectMethodServiceRequest("SetTelemetryInterval")
             {
-                Payload = Encoding.UTF8.GetBytes("10"),
-                ResponseTimeout = TimeSpan.FromSeconds(30),
+                ResponseTimeoutInSeconds = 30,
             };
+
+            methodInvocation.SetPayload(10);
 
             Console.WriteLine($"Invoking direct method for device: {deviceId}");
 
             // Invoke the direct method asynchronously and get the response from the simulated device.
             DirectMethodClientResponse response = await serviceClient.DirectMethods.InvokeAsync(deviceId, methodInvocation);
 
-            Console.WriteLine($"Response status: {response.Status}, payload:\n\t{JsonConvert.SerializeObject(response.PayloadAsString)}");
+            Console.WriteLine($"Response status: {response.Status}, payload:\n\t{JsonSerializer.Serialize(response.JsonPayload.GetRawText())}");
         }
     }
 }

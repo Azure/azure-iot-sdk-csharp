@@ -72,7 +72,11 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 // Create a top-level edge device.
                 var edgeDevice1 = new Device(edgeId1)
                 {
-                    Capabilities = new ClientCapabilities { IsIotEdge = true }
+                    Capabilities = new ClientCapabilities { IsIotEdge = true },
+                    Authentication = new()
+                    { 
+                        Type = ClientAuthenticationType.Sas
+                    }
                 };
                 edgeDevice1 = await serviceClient.Devices.CreateAsync(edgeDevice1).ConfigureAwait(false);
 
@@ -81,11 +85,22 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                 {
                     Capabilities = new ClientCapabilities { IsIotEdge = true },
                     ParentScopes = { edgeDevice1.Scope },
+                    Authentication = new()
+                    {
+                        Type = ClientAuthenticationType.Sas
+                    }
                 };
                 edgeDevice2 = await serviceClient.Devices.CreateAsync(edgeDevice2).ConfigureAwait(false);
 
                 // Create a leaf device with edge 2 as the parent.
-                var leafDevice = new Device(deviceId) { Scope = edgeDevice2.Scope };
+                var leafDevice = new Device(deviceId) 
+                { 
+                    Scope = edgeDevice2.Scope,
+                    Authentication = new()
+                    { 
+                        Type = ClientAuthenticationType.Sas,
+                    }
+                };
                 leafDevice = await serviceClient.Devices.CreateAsync(leafDevice).ConfigureAwait(false);
 
                 // assert
@@ -99,10 +114,16 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             finally
             {
                 // clean up
-
-                await serviceClient.Devices.DeleteAsync(deviceId).ConfigureAwait(false);
-                await serviceClient.Devices.DeleteAsync(edgeId1).ConfigureAwait(false);
-                await serviceClient.Devices.DeleteAsync(edgeId2).ConfigureAwait(false);
+                try
+                {
+                    await serviceClient.Devices.DeleteAsync(deviceId).ConfigureAwait(false);
+                    await serviceClient.Devices.DeleteAsync(edgeId1).ConfigureAwait(false);
+                    await serviceClient.Devices.DeleteAsync(edgeId2).ConfigureAwait(false);
+                }
+                catch (Exception)
+                { 
+                    // ignore any errors on cleanup since that isn't what is being tested here.
+                }
             }
         }
 
@@ -120,7 +141,11 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
             var iotEdgeDevice = new Device(deviceId)
             {
-                Capabilities = new ClientCapabilities { IsIotEdge = true }
+                Capabilities = new ClientCapabilities { IsIotEdge = true },
+                Authentication = new()
+                { 
+                    Type = ClientAuthenticationType.Sas,
+                }
             };
 
             await serviceClient.Devices.CreateWithTwinAsync(iotEdgeDevice, twin).ConfigureAwait(false);
@@ -152,10 +177,18 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             var edge = new Device(_idPrefix + Guid.NewGuid())
             {
                 Scope = "someScope" + Guid.NewGuid(),
+                Authentication = new()
+                { 
+                    Type = ClientAuthenticationType.Sas,
+                }
             };
             var device = new Device(_idPrefix + Guid.NewGuid())
             {
                 Scope = edge.Scope,
+                Authentication = new()
+                {
+                    Type = ClientAuthenticationType.Sas,
+                }
             };
 
             IotHubServiceClient serviceClient = TestDevice.ServiceClient;
@@ -233,8 +266,20 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             // arrange
 
             IotHubServiceClient serviceClient = TestDevice.ServiceClient;
-            var device1 = new Device(_idPrefix + Guid.NewGuid());
-            var device2 = new Device(_idPrefix + Guid.NewGuid());
+            var device1 = new Device(_idPrefix + Guid.NewGuid())
+            { 
+                Authentication = new()
+                { 
+                    Type = ClientAuthenticationType.Sas,
+                }
+            };
+            var device2 = new Device(_idPrefix + Guid.NewGuid())
+            {
+                Authentication = new()
+                {
+                    Type = ClientAuthenticationType.Sas,
+                }
+            };
 
             device1 = await serviceClient.Devices.CreateAsync(device1).ConfigureAwait(false);
             device2 = await serviceClient.Devices.CreateAsync(device2).ConfigureAwait(false);
@@ -272,7 +317,14 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             };
 
             using var serviceClient = new IotHubServiceClient(TestConfiguration.IotHub.ConnectionString, options);
-            var device = new Device(deviceId);
+            var device = new Device(deviceId)
+            { 
+                Authentication = new()
+                { 
+                    Type = ClientAuthenticationType.Sas,
+                }
+            };
+
             try
             {
                 await serviceClient.Devices.CreateAsync(device).ConfigureAwait(false);
@@ -280,8 +332,14 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             finally
             {
                 // clean up
-                // If this fails, we shall let it throw an exception and fail the test
-                await serviceClient.Devices.DeleteAsync(deviceId).ConfigureAwait(false);
+                try
+                {
+                    await serviceClient.Devices.DeleteAsync(deviceId).ConfigureAwait(false);
+                }
+                catch (Exception)
+                {
+                    // ignore any errors on cleanup since that isn't what is being tested here.
+                }
             }
         }
 
@@ -350,7 +408,13 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             // arrange
 
             IotHubServiceClient serviceClient = TestDevice.ServiceClient;
-            var device = new Device(_idPrefix);
+            var device = new Device(_idPrefix)
+            { 
+                Authentication = new()
+                { 
+                    Type = ClientAuthenticationType.Sas,
+                }
+            };
             device = await serviceClient.Devices.CreateAsync(device).ConfigureAwait(false);
 
             try

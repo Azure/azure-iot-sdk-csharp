@@ -3,9 +3,9 @@
 
 using System;
 using System.Text;
+using System.Text.Json;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Client.Tests
 {
@@ -20,7 +20,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
             const string payload = "test message";
 
             // act
-            var testMessage = new IncomingMessage(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(payload)));
+            var testMessage = new IncomingMessage(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(payload, JsonSerializerSettings.Options)));
 
             // assert
             testMessage.TryGetPayload(out string actualPayload);
@@ -34,7 +34,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
             const int payload = 123;
 
             // act
-            var testMessage = new IncomingMessage(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(payload)));
+            var testMessage = new IncomingMessage(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(payload, JsonSerializerSettings.Options)));
 
             // assert
             testMessage.TryGetPayload(out int actualPayload);
@@ -48,7 +48,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
             DateTime payload = DateTime.Now;
 
             // act
-            var testMessage = new IncomingMessage(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(payload)));
+            var testMessage = new IncomingMessage(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(payload, JsonSerializerSettings.Options)));
 
             // assert
             testMessage.TryGetPayload(out DateTime actualPayload);
@@ -62,7 +62,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
             DateTimeOffset payload = DateTimeOffset.UtcNow;
 
             // act
-            var testMessage = new IncomingMessage(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(payload)));
+            var testMessage = new IncomingMessage(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(payload, JsonSerializerSettings.Options)));
 
             // assert
             testMessage.TryGetPayload(out DateTimeOffset actualPayload);
@@ -76,7 +76,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
             var payload = TimeSpan.FromSeconds(123);
 
             // act
-            var testMessage = new IncomingMessage(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(payload)));
+            var testMessage = new IncomingMessage(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(payload, JsonSerializerSettings.Options)));
 
             // assert
             testMessage.TryGetPayload(out TimeSpan actualPayload);
@@ -101,7 +101,6 @@ namespace Microsoft.Azure.Devices.Client.Tests
                 MessageSchema = "schema",
                 ContentType = "type",
                 ContentEncoding = "encoding",
-                PayloadConvention = DefaultPayloadConvention.Instance,
             };
 
             // assert
@@ -118,7 +117,6 @@ namespace Microsoft.Azure.Devices.Client.Tests
             testMessage.ContentType.Should().Be("type");
             testMessage.ContentEncoding.Should().Be("encoding");
             testMessage.Properties.Should().NotBeNull();
-            testMessage.PayloadConvention.Should().Be(DefaultPayloadConvention.Instance);
         }
     }
 }

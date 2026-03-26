@@ -9,7 +9,8 @@ using System.Threading.Tasks;
 using Castle.Components.DictionaryAdapter.Xml;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
+using System.Text.Json;
 
 namespace Microsoft.Azure.Devices.Tests.Jobs
 {
@@ -53,12 +54,11 @@ namespace Microsoft.Azure.Devices.Tests.Jobs
                 UpdateTwin = s_updateTwin,
                 QueryCondition = "TestQuery",
                 StartOn = s_startOn,
-                MaxExecutionTime = new TimeSpan()
+                MaxExecutionTimeInSeconds = 7
             };
 
             // act
-            var settings = new JsonSerializerSettings();
-            JobRequest deserializedRequest = JsonConvert.DeserializeObject<JobRequest>(JsonConvert.SerializeObject(request, settings));
+            JobRequest deserializedRequest = JsonSerializer.Deserialize<JobRequest>(JsonSerializer.Serialize(request));
 
             // assert
             deserializedRequest.Should().NotBeNull();
@@ -68,8 +68,7 @@ namespace Microsoft.Azure.Devices.Tests.Jobs
             deserializedRequest.UpdateTwin.Should().BeEquivalentTo(s_updateTwin);
             deserializedRequest.QueryCondition.Should().Be("TestQuery");
             deserializedRequest.StartOn.Should().Be(s_startOn);
-            deserializedRequest.MaxExecutionTime.Should().Be(new TimeSpan());
-            deserializedRequest.MaxExecutionTimeInSeconds.Should().Be(new TimeSpan().Seconds);
+            deserializedRequest.MaxExecutionTimeInSeconds.Should().Be(7);
         }
     }
 }

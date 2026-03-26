@@ -13,7 +13,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
+using System.Text.Json;
 
 namespace Microsoft.Azure.Devices.Client.Transport
 {
@@ -160,7 +160,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 {
                     // Set the complete entity object into the HttpRequestMessage content. This includes the user-defined payload (if applicable)
                     // and all associated metadata. The content is set as per service-defined contract, i.e. UTF-8 encoded json string.
-                    msg.Content = new StringContent(DefaultPayloadConvention.Serialize(entity), Encoding.UTF8, "application/json");
+                    msg.Content = new StringContent(JsonSerializer.Serialize(entity, JsonSerializerSettings.Options), Encoding.UTF8, "application/json");
                 }
 
                 HttpResponseMessage responseMsg;
@@ -172,7 +172,13 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         throw new InvalidOperationException(
                             $"The response message was null when executing operation {HttpMethod.Post}.");
                     }
-                    if (responseMsg.IsSuccessStatusCode)
+                    if (responseMsg.StatusCode == HttpStatusCode.NoContent)
+                    {
+                        // If the service response has no content (only applicable for completing file upload API), then the response doesn't need to have
+                        // its contents deserialized
+                        return result;
+                    }
+                    else if (responseMsg.IsSuccessStatusCode)
                     {
                         result = await ReadResponseMessageAsync<T2>(responseMsg, cancellationToken).ConfigureAwait(false);
                     }
@@ -240,10 +246,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             token.ThrowIfCancellationRequested();
 
-            using Stream stream = await content.ReadAsStreamAsync(token).ConfigureAwait(false);
-            using var reader = new StreamReader(stream);
-            using var jsonReader = new JsonTextReader(reader);
-            return new JsonSerializer().Deserialize<T>(jsonReader);
+            return JsonSerializer.Deserialize<T>(await content.ReadAsStringAsync(token), JsonSerializerSettings.Options);
         }
 
         public void Dispose()

@@ -2,7 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices
 {
@@ -18,20 +18,27 @@ namespace Microsoft.Azure.Devices
         /// To unit test methods that use this type as a response, inherit from this class and give it a constructor
         /// that can set the properties you want.
         /// </remarks>
-        protected internal ScheduledJob()
+        public ScheduledJob()
         { }
 
         /// <summary>
         /// The type of job to execute.
         /// </summary>
-        [JsonProperty("jobType")]
-        public JobType JobType { get; protected internal set; }
+        [JsonPropertyName("jobType")]
+        public JobType JobType { get; set; }
 
-        // Some service Jobs APIs use "type" as the key for this value and some others use "jobType".
-        // This private field is a workaround that allows us to deserialize either "type" or "jobType"
-        // as the created time value for this class and expose it either way as JobType.
-        [JsonProperty("type")]
-        internal JobType AlternateJobType
+
+        /// <summary>
+        /// This field is the same as <see cref="JobType"/>. It only exists for serialization/deserialization differences in some
+        /// some service APIs.
+        /// </summary>
+        /// <remarks>
+        /// Some service Jobs APIs use "type" as the key for this value and some others use "jobType".
+        /// This private field is a workaround that allows us to deserialize either "type" or "jobType"
+        /// as the created time value for this class and expose it either way as JobType.
+        /// </remarks>
+        [JsonPropertyName("type")]
+        public JobType AlternateJobType
         {
             get => JobType;
             set => JobType = value;
@@ -40,28 +47,20 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Device query condition.
         /// </summary>
-        [JsonProperty("queryCondition")]
-        public string QueryCondition { get; protected internal set; }
+        [JsonPropertyName("queryCondition")]
+        public string QueryCondition { get; set; }
 
         /// <summary>
-        /// Max execution time.
+        /// Max execution time for this job.
         /// </summary>
-        /// <remarks>The precision on this is in seconds.</remarks>
-        [JsonIgnore]
-        public TimeSpan MaxExecutionTime { get; set; }
-
-        [JsonProperty("maxExecutionTimeInSeconds")]
-        internal long MaxExecutionTimeInSeconds
-        {
-            get => (long)MaxExecutionTime.TotalSeconds;
-            set => MaxExecutionTime = TimeSpan.FromSeconds(value);
-        }
+        [JsonPropertyName("maxExecutionTimeInSeconds")]
+        public int MaxExecutionTimeInSeconds { get; set; }
 
         /// <summary>
         /// Different number of devices in the job.
         /// </summary>
-        [JsonProperty("deviceJobStatistics")]
-        public DeviceJobStatistics DeviceJobStatistics { get; protected internal set; }
+        [JsonPropertyName("deviceJobStatistics")]
+        public DeviceJobStatistics DeviceJobStatistics { get; set; }
 
         /// <summary>
         /// The Id of the device for this response.
@@ -69,13 +68,13 @@ namespace Microsoft.Azure.Devices
         /// <remarks>
         /// It can be null (e.g., in case of a parent orchestration).
         /// </remarks>
-        [JsonProperty("deviceId")]
-        public string DeviceId { get; protected internal set; }
+        [JsonPropertyName("deviceId")]
+        public string DeviceId { get; set; }
 
         /// <summary>
         /// The job Id of the parent orchestration, if any.
         /// </summary>
-        [JsonProperty("parentJobId")]
-        public string ParentJobId { get; protected internal set; }
+        [JsonPropertyName("parentJobId")]
+        public string ParentJobId { get; set; }
     }
 }

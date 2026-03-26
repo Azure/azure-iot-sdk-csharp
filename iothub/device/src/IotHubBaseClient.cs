@@ -36,7 +36,7 @@ namespace Microsoft.Azure.Devices.Client
         // Twin property update request callback information
         private bool _twinPatchSubscribedWithService;
 
-        private Func<DesiredProperties, Task> _desiredPropertyUpdateCallback;
+        private Func<PropertyCollection, Task> _desiredPropertyUpdateCallback;
 
         private protected readonly IotHubClientOptions _clientOptions;
 
@@ -61,7 +61,6 @@ namespace Microsoft.Azure.Devices.Client
                 IotHubConnectionCredentials = IotHubConnectionCredentials,
                 ProductInfo = _clientOptions.UserAgentInfo,
                 ModelId = _clientOptions.ModelId,
-                PayloadConvention = _clientOptions.PayloadConvention,
                 IotHubClientTransportSettings = _clientOptions.TransportSettings,
                 MethodCallback = OnMethodCalledAsync,
                 DesiredPropertyUpdateCallback = OnDesiredStatePatchReceived,
@@ -190,10 +189,6 @@ namespace Microsoft.Azure.Devices.Client
                 message.MessageId = Guid.NewGuid().ToString();
             }
 
-            message.PayloadConvention = _clientOptions.PayloadConvention;
-            message.ContentType ??= _clientOptions.PayloadConvention.ContentType;
-            message.ContentEncoding ??= _clientOptions.PayloadConvention.ContentEncoding;
-
             try
             {
                 await InnerHandler.SendTelemetryAsync(message, cancellationToken).ConfigureAwait(false);
@@ -253,10 +248,6 @@ namespace Microsoft.Azure.Devices.Client
 
             foreach (TelemetryMessage message in messages)
             {
-                message.PayloadConvention = _clientOptions.PayloadConvention;
-                message.ContentType ??= _clientOptions.PayloadConvention.ContentType;
-                message.ContentEncoding ??= _clientOptions.PayloadConvention.ContentEncoding;
-
                 if (_clientOptions?.SdkAssignsMessageId == SdkAssignsMessageId.WhenUnset)
                 {
                     message.MessageId ??= Guid.NewGuid().ToString();
@@ -483,12 +474,11 @@ namespace Microsoft.Azure.Devices.Client
         ///     });
         /// </code>
         /// </example>
-        public async Task<long> UpdateReportedPropertiesAsync(ReportedProperties reportedProperties, CancellationToken cancellationToken = default)
+        public async Task<long> UpdateReportedPropertiesAsync(PropertyCollection reportedProperties, CancellationToken cancellationToken = default)
         {
             Argument.AssertNotNull(reportedProperties, nameof(reportedProperties));
             cancellationToken.ThrowIfCancellationRequested();
 
-            reportedProperties.PayloadConvention = _clientOptions.PayloadConvention;
             return await InnerHandler.UpdateReportedPropertiesAsync(reportedProperties, cancellationToken).ConfigureAwait(false);
         }
 
@@ -529,7 +519,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </code>
         /// </example>
         public async Task SetDesiredPropertyUpdateCallbackAsync(
-            Func<DesiredProperties, Task> callback,
+            Func<PropertyCollection, Task> callback,
             CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
@@ -703,7 +693,6 @@ namespace Microsoft.Azure.Devices.Client
                     .ConfigureAwait(false);
 
                 directMethodResponse.RequestId = directMethodRequest.RequestId;
-                directMethodResponse.PayloadConvention = _clientOptions.PayloadConvention;
 
                 await SendDirectMethodResponseAsync(directMethodResponse).ConfigureAwait(false);
             }
@@ -718,7 +707,7 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-        internal void OnDesiredStatePatchReceived(DesiredProperties patch)
+        internal void OnDesiredStatePatchReceived(PropertyCollection patch)
         {
             if (_desiredPropertyUpdateCallback == null)
             {

@@ -14,12 +14,14 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
             string messageId = Guid.NewGuid().ToString();
             string userId = Guid.NewGuid().ToString();
 
-            var message = new OutgoingMessage(payload)
+            var message = new OutgoingMessage()
             {
                 MessageId = messageId,
                 UserId = userId,
                 Properties = { ["property1"] = p1Value }
             };
+
+            message.SetPayload(payload);
 
             return message;
         }

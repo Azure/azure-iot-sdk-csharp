@@ -4,8 +4,8 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices
 {
@@ -17,110 +17,85 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Gets the version of the collection.
         /// </summary>
-        [JsonProperty("$version", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        public long? Version { get; internal set; }
+        [JsonPropertyName("$version")]
+        public long? Version { get; set; }
 
         /// <summary>
         /// Metadata about the properties.
         /// </summary>
-        [JsonProperty("$metadata")]
-        public ClientTwinMetadata Metadata { get; set; } = new();
-
-        [JsonExtensionData]
-        internal IDictionary<string, JToken> Properties { get; set; } = new Dictionary<string, JToken>();
+        [JsonPropertyName("$metadata")]
+        public ClientTwinMetadata Metadata { get; set; }
 
         /// <summary>
-        /// Gets the count of properties in the collection.
+        /// 
+        /// </summary>
+        [JsonExtensionData]
+        public JsonDictionary Properties { get; set; } = new();
+
+        /// <summary>
+        /// 
         /// </summary>
         [JsonIgnore]
         public int Count => Properties.Count;
 
         /// <summary>
-        /// Property indexer.
+        /// 
         /// </summary>
-        /// <param name="propertyName">Name of the property to get.</param>
-        /// <returns>Value for the given property name.</returns>
-        /// <exception cref="InvalidOperationException">When the specified <paramref name="propertyName"/> does not exist in the collection.</exception>
+        /// <param name="propertyName"></param>
+        /// <returns></returns>
+        /// <exception cref="InvalidOperationException"></exception>
         public dynamic this[string propertyName]
         {
-            get => TryGetMemberInternal(propertyName, out dynamic value)
-                ? value
-                : throw new InvalidOperationException($"Unexpected property name '{propertyName}'.");
-            set => Properties[propertyName] = value is null || value is JToken
-                ? value
-                : JToken.FromObject(value);
+            get => Properties[propertyName];
+            set => Properties[propertyName] = value;
         }
 
         /// <summary>
-        /// Determines whether the specified property is present.
+        /// 
         /// </summary>
-        /// <param name="propertyName">The property to locate.</param>
-        /// <returns>true if the specified property is present; otherwise, false.</returns>
-        public bool Contains(string propertyName)
+        /// <param name="propertyName"></param>
+        /// <returns></returns>
+        public bool ContainsKey(string propertyName)
         {
             return Properties.ContainsKey(propertyName);
         }
 
         /// <summary>
-        /// Gets the specified property by name as the specified type.
+        /// TODO
         /// </summary>
-        /// <typeparam name="T">The type to convert to.</typeparam>
-        /// <param name="propertyName">The name of the property.</param>
-        /// <param name="propertyValue">The resulting value.</param>
-        /// <returns>True if the property exists and could be converted, otherwise false.</returns>
+        /// <param name="propertyName"></param>
+        /// <param name="propertyValue"></param>
+        /// <returns></returns>
         public bool TryGetValue<T>(string propertyName, out T propertyValue)
         {
-            propertyValue = default;
-
-            if (!Properties.TryGetValue(propertyName, out JToken jTokenValue))
-            {
-                return false;
-            }
-
-            // Try cast.
-            try
-            {
-                propertyValue = jTokenValue.Value<T>();
-                return true;
-            }
-            catch (InvalidCastException)
-            { }
-
-            // Try convert.
-            try
-            {
-                propertyValue = jTokenValue.ToObject<T>();
-                return true;
-            }
-            catch (InvalidCastException)
-            { }
-
-            return false;
+            return Properties.TryGetValue<T>(propertyName, out propertyValue);
         }
 
-        /// <inheritdoc />
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         public IEnumerator GetEnumerator() => Properties.GetEnumerator();
 
         /// <summary>
-        /// The property payload as a JSON string.
+        /// 
         /// </summary>
+        /// <returns></returns>
         public string GetPropertiesAsJson()
         {
-            return JsonConvert.SerializeObject(Properties);
+            return JsonSerializer.Serialize(Properties, JsonSerializerSettings.Options);
         }
 
-        private bool TryGetMemberInternal(string propertyName, out object result)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="propertyName"></param>
+        /// <param name="propertyValue"></param>
+        /// <returns></returns>
+        public bool TryGetAndDeserializeValue<T>(string propertyName, out T propertyValue)
         {
-            result = default;
-
-            if (!Properties.TryGetValue(propertyName, out JToken jTokenValue))
-            {
-                return false;
-            }
-
-            result = jTokenValue;
-
-            return true;
+            return Properties.TryGetAndDeserializeValue<T>(propertyName, out propertyValue);
         }
     }
 }

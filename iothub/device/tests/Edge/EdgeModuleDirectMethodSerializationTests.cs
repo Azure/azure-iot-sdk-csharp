@@ -1,14 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+using System.Text.Json;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Client.Tests.Edge
 {
@@ -24,8 +20,8 @@ namespace Microsoft.Azure.Devices.Client.Tests.Edge
             var edgeDirectMethod = new EdgeModuleDirectMethodRequest("testMethod", payload);
 
             // act
-            string edgeDirectMethodJson = JsonConvert.SerializeObject(edgeDirectMethod, Formatting.None);
-            EdgeModuleDirectMethodRequest deserializedEdgeDirectMethod = JsonConvert.DeserializeObject<EdgeModuleDirectMethodRequest>(edgeDirectMethodJson);
+            string edgeDirectMethodJson = JsonSerializer.Serialize(edgeDirectMethod, JsonSerializerSettings.Options);
+            EdgeModuleDirectMethodRequest deserializedEdgeDirectMethod = JsonSerializer.Deserialize<EdgeModuleDirectMethodRequest>(edgeDirectMethodJson, JsonSerializerSettings.Options);
             // assert
             deserializedEdgeDirectMethod.Should().BeEquivalentTo(edgeDirectMethod);
             deserializedEdgeDirectMethod.Payload.Should().BeEquivalentTo(payload);

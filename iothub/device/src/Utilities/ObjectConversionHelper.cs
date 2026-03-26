@@ -3,12 +3,13 @@
 
 using System;
 using System.Globalization;
+using System.Text.Json;
 
 namespace Microsoft.Azure.Devices.Client
 {
     internal sealed class ObjectConversionHelper
     {
-        internal static bool TryCastOrConvert<T>(object objectToCastOrConvert, PayloadConvention payloadConvention, out T value)
+        internal static bool TryCastOrConvert<T>(object objectToCastOrConvert, out T value)
         {
             // If the object is of type T or can be cast to type T, go ahead and return it.
             if (TryCast(objectToCastOrConvert, out value))
@@ -20,7 +21,7 @@ namespace Microsoft.Azure.Devices.Client
             {
                 // We'll serialize the object back to JSON using the default payload convention
                 // and then to the type of their choosing with the same payload convention.
-                value = payloadConvention.GetObject<T>(DefaultPayloadConvention.Instance.GetObjectBytes(objectToCastOrConvert));
+                value = JsonSerializer.Deserialize<T>(JsonSerializer.SerializeToUtf8Bytes(objectToCastOrConvert, JsonSerializerSettings.Options));
                 return true;
             }
             catch

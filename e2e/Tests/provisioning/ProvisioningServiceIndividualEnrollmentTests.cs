@@ -13,6 +13,7 @@ using FluentAssertions.Specialized;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.Azure.Devices.Provisioning.Service;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using AzureCoreEtag = Azure.ETag;
 
 namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 {

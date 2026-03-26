@@ -14,15 +14,13 @@ namespace Microsoft.Azure.Devices.Client
 
         internal string ModelId { get; set; }
 
-        internal PayloadConvention PayloadConvention { get; set; }
-
         internal IotHubClientTransportSettings IotHubClientTransportSettings { get; set; }
 
         internal IotHubClientHttpSettings HttpOperationTransportSettings { get; set; }
 
         internal Action<ConnectionStatusInfo> ConnectionStatusChangeHandler { get; set; }
 
-        internal Action<DesiredProperties> DesiredPropertyUpdateCallback { get; set; }
+        internal Action<PropertyCollection> DesiredPropertyUpdateCallback { get; set; }
 
         internal Func<DirectMethodRequest, Task> MethodCallback { get; set; }
 

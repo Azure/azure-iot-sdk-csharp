@@ -63,7 +63,7 @@ namespace Microsoft.Azure.Devices
         public virtual async Task<Module> CreateAsync(Module moduleIdentity, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"Creating module: {moduleIdentity?.Id} on device: {moduleIdentity?.DeviceId}", nameof(CreateAsync));
+                Logging.Enter(this, $"Creating module: {moduleIdentity?.ModuleId} on device: {moduleIdentity?.DeviceId}", nameof(CreateAsync));
 
             Argument.AssertNotNull(moduleIdentity, nameof(moduleIdentity));
 
@@ -71,7 +71,7 @@ namespace Microsoft.Azure.Devices
 
             try
             {
-                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Put, GetModulesRequestUri(moduleIdentity.DeviceId, moduleIdentity.Id), _credentialProvider, moduleIdentity);
+                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Put, GetModulesRequestUri(moduleIdentity.DeviceId, moduleIdentity.ModuleId), _credentialProvider, moduleIdentity);
                 HttpResponseMessage response = null;
 
                 await _internalRetryHandler
@@ -96,13 +96,13 @@ namespace Microsoft.Azure.Devices
             }
             catch (Exception ex) when (Logging.IsEnabled)
             {
-                Logging.Error(this, $"Creating module {moduleIdentity?.Id} on device {moduleIdentity?.DeviceId} threw an exception: {ex}", nameof(CreateAsync));
+                Logging.Error(this, $"Creating module {moduleIdentity?.ModuleId} on device {moduleIdentity?.DeviceId} threw an exception: {ex}", nameof(CreateAsync));
                 throw;
             }
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Creating module: {moduleIdentity?.Id} on device: {moduleIdentity?.DeviceId}", nameof(CreateAsync));
+                    Logging.Exit(this, $"Creating module: {moduleIdentity?.ModuleId} on device: {moduleIdentity?.DeviceId}", nameof(CreateAsync));
             }
         }
 
@@ -190,7 +190,7 @@ namespace Microsoft.Azure.Devices
         public virtual async Task<Module> SetAsync(Module moduleIdentity, bool onlyIfUnchanged = false, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"Updating module: {moduleIdentity?.Id} on device: {moduleIdentity?.DeviceId} - only if changed: {onlyIfUnchanged}", nameof(SetAsync));
+                Logging.Enter(this, $"Updating module: {moduleIdentity?.ModuleId} on device: {moduleIdentity?.DeviceId} - only if changed: {onlyIfUnchanged}", nameof(SetAsync));
 
             Argument.AssertNotNull(moduleIdentity, nameof(moduleIdentity));
 
@@ -198,7 +198,7 @@ namespace Microsoft.Azure.Devices
 
             try
             {
-                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Put, GetModulesRequestUri(moduleIdentity.DeviceId, moduleIdentity.Id), _credentialProvider, moduleIdentity);
+                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Put, GetModulesRequestUri(moduleIdentity.DeviceId, moduleIdentity.ModuleId), _credentialProvider, moduleIdentity);
                 HttpMessageHelper.ConditionallyInsertETag(request, moduleIdentity.ETag, onlyIfUnchanged);
                 HttpResponseMessage response = null;
 
@@ -224,13 +224,13 @@ namespace Microsoft.Azure.Devices
             }
             catch (Exception ex) when (Logging.IsEnabled)
             {
-                Logging.Error(this, $"Updating module {moduleIdentity?.Id} on device {moduleIdentity?.DeviceId} - only if changed {onlyIfUnchanged} threw an exception: {ex}", nameof(SetAsync));
+                Logging.Error(this, $"Updating module {moduleIdentity?.ModuleId} on device {moduleIdentity?.DeviceId} - only if changed {onlyIfUnchanged} threw an exception: {ex}", nameof(SetAsync));
                 throw;
             }
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Updating module: {moduleIdentity?.Id} on device: {moduleIdentity?.DeviceId} - only if changed: {onlyIfUnchanged}", nameof(SetAsync));
+                    Logging.Exit(this, $"Updating module: {moduleIdentity?.ModuleId} on device: {moduleIdentity?.DeviceId} - only if changed: {onlyIfUnchanged}", nameof(SetAsync));
             }
         }
 
@@ -283,7 +283,7 @@ namespace Microsoft.Azure.Devices
         public virtual async Task DeleteAsync(Module moduleIdentity, bool onlyIfUnchanged = false, CancellationToken cancellationToken = default)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"Deleting module: {moduleIdentity?.Id} on device: {moduleIdentity?.DeviceId} - only if changed: {onlyIfUnchanged}", nameof(DeleteAsync));
+                Logging.Enter(this, $"Deleting module: {moduleIdentity?.ModuleId} on device: {moduleIdentity?.DeviceId} - only if changed: {onlyIfUnchanged}", nameof(DeleteAsync));
 
             Argument.AssertNotNull(moduleIdentity, nameof(moduleIdentity));
 
@@ -291,7 +291,7 @@ namespace Microsoft.Azure.Devices
 
             try
             {
-                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Delete, GetModulesRequestUri(moduleIdentity.DeviceId, moduleIdentity.Id), _credentialProvider);
+                using HttpRequestMessage request = _httpRequestMessageFactory.CreateRequest(HttpMethod.Delete, GetModulesRequestUri(moduleIdentity.DeviceId, moduleIdentity.ModuleId), _credentialProvider);
                 HttpMessageHelper.ConditionallyInsertETag(request, moduleIdentity.ETag, onlyIfUnchanged);
                 HttpResponseMessage response = null;
 
@@ -316,13 +316,13 @@ namespace Microsoft.Azure.Devices
             }
             catch (Exception ex) when (Logging.IsEnabled)
             {
-                Logging.Error(this, $"Deleting module {moduleIdentity?.Id} on device {moduleIdentity?.DeviceId} - only if changed {onlyIfUnchanged} threw an exception: {ex}", nameof(DeleteAsync));
+                Logging.Error(this, $"Deleting module {moduleIdentity?.ModuleId} on device {moduleIdentity?.DeviceId} - only if changed {onlyIfUnchanged} threw an exception: {ex}", nameof(DeleteAsync));
                 throw;
             }
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, $"Deleting module: {moduleIdentity?.Id} on device: {moduleIdentity?.DeviceId} - only if changed: {onlyIfUnchanged}", nameof(DeleteAsync));
+                    Logging.Exit(this, $"Deleting module: {moduleIdentity?.ModuleId} on device: {moduleIdentity?.DeviceId} - only if changed: {onlyIfUnchanged}", nameof(DeleteAsync));
             }
         }
 

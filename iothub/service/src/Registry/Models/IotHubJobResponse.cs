@@ -3,7 +3,7 @@
 
 using System;
 using System.Linq;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices
 {
@@ -20,22 +20,13 @@ namespace Microsoft.Azure.Devices
         };
 
         /// <summary>
-        /// Creates an instance of this class. Provided for unit testing purposes and serialization.
-        /// </summary>
-        /// <remarks>
-        /// This class can be inherited from and set by unit tests for mocking purposes.
-        /// </remarks>
-        protected internal IotHubJobResponse()
-        { }
-
-        /// <summary>
         /// The unique Id of the job.
         /// </summary>
         /// <remarks>
         /// This value is created by the service. If specified by the user, it will be ignored.
         /// </remarks>
-        [JsonProperty("jobId")]
-        public string JobId { get; protected internal set; }
+        [JsonPropertyName("jobId")]
+        public string JobId { get; set; }
 
         /// <summary>
         /// When the job started running.
@@ -43,8 +34,8 @@ namespace Microsoft.Azure.Devices
         /// <remarks>
         /// This value is created by the service. If specified by the user, it will be ignored.
         /// </remarks>
-        [JsonProperty("startTimeUtc")]
-        public DateTimeOffset? StartedOnUtc { get; protected internal set; }
+        [JsonPropertyName("startTimeUtc")]
+        public DateTimeOffset? StartedOnUtc { get; set; }
 
         /// <summary>
         /// When the job finished.
@@ -52,8 +43,8 @@ namespace Microsoft.Azure.Devices
         /// <remarks>
         /// This value is created by the service. If specified by the user, it will be ignored.
         /// </remarks>
-        [JsonProperty("endTimeUtc")]
-        public DateTimeOffset? EndedOnUtc { get; protected internal set; }
+        [JsonPropertyName("endTimeUtc")]
+        public DateTimeOffset? EndedOnUtc { get; set; }
 
         /// <summary>
         /// The status of the job.
@@ -61,8 +52,8 @@ namespace Microsoft.Azure.Devices
         /// <remarks>
         /// This value is created by the service. If specified by the user, it will be ignored.
         /// </remarks>
-        [JsonProperty("status")]
-        public JobStatus Status { get; protected internal set; }
+        [JsonPropertyName("status")]
+        public JobStatus Status { get; set; }
 
         /// <summary>
         /// If status == failure, this represents a string containing the reason.
@@ -70,8 +61,8 @@ namespace Microsoft.Azure.Devices
         /// <remarks>
         /// This value is created by the service. If specified by the user, it will be ignored.
         /// </remarks>
-        [JsonProperty("failureReason")]
-        public string FailureReason { get; protected internal set; }
+        [JsonPropertyName("failureReason")]
+        public string FailureReason { get; set; }
 
         /// <summary>
         /// Convenience property to determine if the job is in a terminal state, based on <see cref="Status"/>.

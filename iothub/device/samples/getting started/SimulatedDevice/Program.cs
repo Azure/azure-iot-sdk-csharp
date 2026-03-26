@@ -6,10 +6,10 @@
 
 using System;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using CommandLine;
-using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Client.Samples
 {
@@ -64,14 +64,14 @@ namespace Microsoft.Azure.Devices.Client.Samples
         }
         private static Task<DirectMethodResponse> DirectMethodCallback(DirectMethodRequest methodRequest)
         {
-            Console.WriteLine($"Received direct method [{methodRequest.MethodName}] with payload [{Encoding.UTF8.GetString(methodRequest.GetPayload())}].");
+            Console.WriteLine($"Received direct method [{methodRequest.MethodName}] with payload [{Encoding.UTF8.GetString(methodRequest.Payload)}].");
 
             switch (methodRequest.MethodName)
             {
                 case "SetTelemetryInterval":
                     try
                     {
-                        if (methodRequest.TryGetPayload(out int telemetryIntervalSeconds))
+                        if (methodRequest.TryDeserializePayload(out int telemetryIntervalSeconds))
                         {
                             s_telemetryInterval = TimeSpan.FromSeconds(telemetryIntervalSeconds);
                             Console.WriteLine($"Setting the telemetry interval to {s_telemetryInterval}.");
@@ -108,7 +108,8 @@ namespace Microsoft.Azure.Devices.Client.Samples
                         temperature = currentTemperature,
                         humidity = currentHumidity,
                     };
-                    var message = new TelemetryMessage(telemetryDataPoint);
+                    var message = new TelemetryMessage();
+                    message.SetPayload(telemetryDataPoint);
 
                     // Add a custom application property to the message.
                     // An IoT hub can filter on these properties without access to the message body.
@@ -117,7 +118,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                     await deviceClient.OpenAsync(ct);
                     // Send the telemetry message
                     await deviceClient.SendTelemetryAsync(message, ct);
-                    Console.WriteLine($"{DateTime.Now} > Sending message: {JsonConvert.SerializeObject(telemetryDataPoint)}");
+                    Console.WriteLine($"{DateTime.Now} > Sending message: {JsonSerializer.Serialize(telemetryDataPoint)}");
 
                     await Task.Delay(s_telemetryInterval, ct);
                 }

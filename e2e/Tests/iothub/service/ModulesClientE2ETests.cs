@@ -68,7 +68,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             IEnumerable<Module> modulesOnDevice = await serviceClient.Devices.GetModulesAsync(testDevice.Id).ConfigureAwait(false);
 
             List<string> moduleIdsOnDevice = modulesOnDevice
-                .Select(module => module.Id)
+                .Select(module => module.ModuleId)
                 .ToList();
 
             // assert
@@ -93,7 +93,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             IotHubServiceClient serviceClient = TestDevice.ServiceClient;
 
             // Create a device to house the module
-            Device device = await serviceClient.Devices.CreateAsync(new Device(testDeviceId)).ConfigureAwait(false);
+            Device device = await serviceClient.Devices.CreateAsync(new Device(testDeviceId) { Authentication = new() { Type = ClientAuthenticationType.Sas } }).ConfigureAwait(false);
 
             try
             {
@@ -102,7 +102,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                     new Module(testDeviceId, testModuleId)).ConfigureAwait(false);
 
                 createdModule.DeviceId.Should().Be(testDeviceId);
-                createdModule.Id.Should().Be(testModuleId);
+                createdModule.ModuleId.Should().Be(testModuleId);
 
                 // Get device
                 // Get the device and compare ETag values (should remain unchanged);
@@ -197,7 +197,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
             string deviceId = _idPrefix + Guid.NewGuid();
             string moduleId = _idPrefix + Guid.NewGuid();
             var module = new Module(deviceId, moduleId);
-            Device device = await serviceClient.Devices.CreateAsync(new Device(deviceId)).ConfigureAwait(false);
+            Device device = await serviceClient.Devices.CreateAsync(new Device(deviceId) { Authentication = new() { Type = ClientAuthenticationType.Sas } }).ConfigureAwait(false);
 
             try
             {

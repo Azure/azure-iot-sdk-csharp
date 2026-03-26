@@ -155,7 +155,6 @@ namespace Microsoft.Azure.Devices.Client.Samples
             var options = new IotHubClientOptions
             {
                 ModelId = ModelId,
-                PayloadConvention = SystemTextJsonPayloadConvention.Instance,
             };
 
             var deviceClient = new IotHubDeviceClient(hostname, authenticationMethod, options);

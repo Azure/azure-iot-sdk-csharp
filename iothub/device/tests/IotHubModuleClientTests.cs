@@ -3,16 +3,18 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Sockets;
 using System.Net.WebSockets;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Client.Tests
 {
@@ -194,10 +196,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
         {
             // arrange
             await using var moduleClient = new IotHubModuleClient(s_fakeConnectionStringWithoutGateway);
-            var DirectMethodRequest = new EdgeModuleDirectMethodRequest("TestMethodName")
-            {
-                PayloadConvention = DefaultPayloadConvention.Instance,
-            };
+            var DirectMethodRequest = new EdgeModuleDirectMethodRequest("TestMethodName");
             
             // act
             Func<Task> act = async () => await moduleClient.InvokeMethodAsync(DeviceId, null);
@@ -211,10 +210,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
         {
             // arrange
             await using var moduleClient = new IotHubModuleClient(s_fakeConnectionStringWithoutGateway);
-            var DirectMethodRequest = new EdgeModuleDirectMethodRequest("TestMethodName")
-            {
-                PayloadConvention = DefaultPayloadConvention.Instance,
-            };
+            var DirectMethodRequest = new EdgeModuleDirectMethodRequest("TestMethodName");
 
             // act
             Func<Task> act = async () => await moduleClient.InvokeMethodAsync(DeviceId, ModuleId, null);
@@ -228,10 +224,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
         {
             // arrange
             await using var moduleClient = new IotHubModuleClient(s_fakeConnectionStringWithoutGateway);
-            var DirectMethodRequest = new EdgeModuleDirectMethodRequest("TestMethodName")
-            {
-                PayloadConvention = DefaultPayloadConvention.Instance,
-            };
+            var DirectMethodRequest = new EdgeModuleDirectMethodRequest("TestMethodName");
 
             // act
             Func<Task> act = async () => await moduleClient.InvokeMethodAsync(DeviceId, ModuleId, DirectMethodRequest);
@@ -349,22 +342,19 @@ namespace Microsoft.Azure.Devices.Client.Tests
 
             bool methodCallbackCalled = false;
             string actualMethodName = string.Empty;
-            CustomDirectMethodPayload actualMethodBody = null;
+            byte[] actualMethodBody = null;
             Func<DirectMethodRequest, Task<DirectMethodResponse>> methodCallback = (methodRequest) =>
             {
                 actualMethodName = methodRequest.MethodName;
-                bool methodReceived = methodRequest.TryGetPayload(out actualMethodBody);
+                actualMethodBody = methodRequest.Payload;
                 methodCallbackCalled = true;
                 return Task.FromResult(_directMethodResponseWithEmptyByteArrayPayload);
             };
 
             const string methodName = "TestMethodName";
-            byte[] methodBody = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(new CustomDirectMethodPayload { Grade = "good" }));
+            byte[] methodBody = JsonSerializer.SerializeToUtf8Bytes(new CustomDirectMethodPayload { Grade = "good" });
             await moduleClient.SetDirectMethodCallbackAsync(methodCallback).ConfigureAwait(false);
-            var directMethodRequest = new DirectMethodRequest(methodName, Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(methodBody)))
-            {
-                PayloadConvention = DefaultPayloadConvention.Instance,
-            };
+            var directMethodRequest = new DirectMethodRequest(methodName, methodBody);
 
             // act
             await moduleClient.OnMethodCalledAsync(directMethodRequest).ConfigureAwait(false);
@@ -376,15 +366,12 @@ namespace Microsoft.Azure.Devices.Client.Tests
 
             methodCallbackCalled.Should().BeTrue();
             methodName.Should().Be(actualMethodName);
-            Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(actualMethodBody)).Should().BeEquivalentTo(methodBody);
+            Assert.IsTrue(Enumerable.SequenceEqual(methodBody, actualMethodBody));
 
             // arrange
             methodCallbackCalled = false;
             await moduleClient.SetDirectMethodCallbackAsync(null).ConfigureAwait(false);
-            directMethodRequest = new DirectMethodRequest(methodName, DefaultPayloadConvention.Instance.GetObjectBytes(methodBody))
-            {
-                PayloadConvention = DefaultPayloadConvention.Instance,
-            };
+            directMethodRequest = new DirectMethodRequest(methodName, JsonSerializer.SerializeToUtf8Bytes(methodBody));
 
             // act
             await moduleClient.OnMethodCalledAsync(directMethodRequest).ConfigureAwait(false);
@@ -424,7 +411,7 @@ namespace Microsoft.Azure.Devices.Client.Tests
 
         private class CustomDirectMethodPayload
         {
-            [JsonProperty("grade")]
+            [JsonPropertyName("grade")]
             public string Grade { get; set; }
         }
     }

@@ -46,7 +46,7 @@ namespace Microsoft.Azure.Devices.Samples.JobsSample
                 var jobOptions = new ScheduledJobsOptions
                 {
                     JobId = jobId,
-                    MaxExecutionTime = TimeSpan.FromMinutes(2)
+                    MaxExecutionTimeInSeconds = 60
                 };
 
 

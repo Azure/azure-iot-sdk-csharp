@@ -2,9 +2,9 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Client.Samples
 {
@@ -49,7 +49,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
         private Task<DirectMethodResponse> SetTelemetryInterval(DirectMethodRequest methodRequest)
         {
             // Check the payload is a single integer value.
-            if (methodRequest.TryGetPayload<int>(out int telemetryIntervalInSeconds))
+            if (methodRequest.TryDeserializePayload<int>(out int telemetryIntervalInSeconds))
             {
                 s_telemetryInterval = TimeSpan.FromSeconds(telemetryIntervalInSeconds);
 
@@ -88,7 +88,8 @@ namespace Microsoft.Azure.Devices.Client.Samples
                         temperature = currentTemperature,
                         humidity = currentHumidity
                     };
-                    var message = new TelemetryMessage(telemetryDataPoint);
+                    var message = new TelemetryMessage();
+                    message.SetPayload(telemetryDataPoint);
 
                     // Add a custom application property to the message.
                     // An IoT hub can filter on these properties without access to the message body.
@@ -96,7 +97,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
                     // Send the telemetry message.
                     await _deviceClient.SendTelemetryAsync(message, ct);
-                    Console.WriteLine($"{DateTime.Now} > Sending message: {JsonConvert.SerializeObject(telemetryDataPoint)}");
+                    Console.WriteLine($"{DateTime.Now} > Sending message: {JsonSerializer.Serialize(telemetryDataPoint)}");
 
                     await Task.Delay(s_telemetryInterval, ct);
                 }

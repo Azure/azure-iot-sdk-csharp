@@ -33,7 +33,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
             TimeSpan faultDelay,
             TimeSpan faultDuration)
         {
-            return new TelemetryMessage(Guid.NewGuid().ToString())
+            var msg = new TelemetryMessage()
             {
                 Properties =
                 {
@@ -43,6 +43,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers.Templates
                     ["AzIoTHub_FaultOperationDurationInSecs"] = faultDuration.TotalSeconds.ToString(CultureInfo.InvariantCulture)
                 }
             };
+
+            msg.SetPayload(Guid.NewGuid().ToString());
+
+            return msg;
         }
 
         internal static bool FaultShouldDisconnect(string faultType)

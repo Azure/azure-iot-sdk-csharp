@@ -9,7 +9,8 @@ using System.Threading.Tasks;
 using Azure.Core;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
+using System.Text.Json;
 
 namespace Microsoft.Azure.Devices.Tests.Jobs
 {
@@ -26,7 +27,7 @@ namespace Microsoft.Azure.Devices.Tests.Jobs
             var options = new ScheduledJobsOptions();
 
             // act
-            options.MaxExecutionTime = TimeSpan.FromSeconds(MaxExecutionTime);
+            options.MaxExecutionTimeInSeconds = MaxExecutionTime;
 
             // assert
             options.MaxExecutionTimeInSeconds.Should().Be(MaxExecutionTime);
@@ -39,17 +40,16 @@ namespace Microsoft.Azure.Devices.Tests.Jobs
             var options = new ScheduledJobsOptions
             {
                 JobId = "TestJob",
-                MaxExecutionTime = TimeSpan.FromSeconds(MaxExecutionTime),
+                MaxExecutionTimeInSeconds = MaxExecutionTime,
             };
 
             // act
-            var settings = new JsonSerializerSettings();
-            ScheduledJobsOptions deserializedRequest = JsonConvert.DeserializeObject<ScheduledJobsOptions>(JsonConvert.SerializeObject(options, settings));
+            ScheduledJobsOptions deserializedRequest = JsonSerializer.Deserialize<ScheduledJobsOptions>(JsonSerializer.Serialize(options));
 
             // assert
             deserializedRequest.Should().NotBeNull();
             deserializedRequest.JobId.Should().Be("TestJob");
-            deserializedRequest.MaxExecutionTime.Should().Be(TimeSpan.FromSeconds(MaxExecutionTime));
+            deserializedRequest.MaxExecutionTimeInSeconds.Should().Be(MaxExecutionTime);
         }
     }
 }

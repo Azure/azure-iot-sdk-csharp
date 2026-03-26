@@ -98,12 +98,12 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
 
             IotHubServiceClient serviceClient = TestDevice.ServiceClient;
             await using TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix, ct: ct);
-            var responseTimeout = TimeSpan.FromSeconds(5);
+            var responseTimeout = 5;
 
             var methodInvocation = new DirectMethodServiceRequest("someDirectMethod")
             {
-                ConnectionTimeout = responseTimeout,
-                ResponseTimeout = responseTimeout,
+                ConnectTimeoutInSeconds = responseTimeout,
+                ResponseTimeoutInSeconds = responseTimeout,
             };
             IotHubDeviceClient deviceClient = testDevice.CreateDeviceClient();
             await testDevice.OpenWithRetryAsync(ct).ConfigureAwait(false);
@@ -114,7 +114,7 @@ namespace Microsoft.Azure.Devices.E2ETests.IotHub.Service
                     async (methodRequest) =>
                     {
                         // force a timeout
-                        await Task.Delay(responseTimeout.Add(responseTimeout)).ConfigureAwait(false);
+                        await Task.Delay(TimeSpan.FromSeconds(responseTimeout + responseTimeout)).ConfigureAwait(false);
                         var response = new DirectMethodResponse(200);
                         return response;
                     })

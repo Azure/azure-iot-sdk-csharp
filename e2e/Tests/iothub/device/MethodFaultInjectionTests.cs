@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Net;
 using System.Runtime.ExceptionServices;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -13,7 +14,6 @@ using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.E2ETests.Helpers;
 using Microsoft.Azure.Devices.E2ETests.Helpers.Templates;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.E2ETests.Methods
 {
@@ -28,7 +28,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
         private static readonly DirectMethodResponsePayload s_deviceResponsePayload = new() { CurrentState = "on" };
         private static readonly DirectMethodRequestPayload s_serviceRequestPayload = new() { DesiredState = "off" };
 
-        private static readonly TimeSpan s_defaultMethodResponseTimeout = TimeSpan.FromSeconds(30);
+        private static readonly int s_defaultMethodResponseTimeout = 30;
 
         // Ungraceful disconnection recovery test is marked as a build verification test
         // to test client reconnection logic in PR runs.
@@ -184,8 +184,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
                     VerboseTestLogger.WriteLine($"{nameof(ServiceSendMethodAndVerifyResponseAsync)}: Method status: {clientResponse.Status} for device {deviceId}.");
 
                     clientResponse.Status.Should().Be(200);
-                    string jsonPayload = clientResponse.PayloadAsString;
-                    jsonPayload.Should().Be(JsonConvert.SerializeObject(expectedClientResponsePayload));
+                    string jsonPayload = clientResponse.JsonPayload.GetRawText();
+                    jsonPayload.Should().Be(JsonSerializer.Serialize(expectedClientResponsePayload));
 
                     done = true;
                 }
@@ -214,7 +214,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             {
                 await testDevice.DeviceClient.OpenAsync(ct).ConfigureAwait(false);
                 await testDeviceCallbackHandler
-                    .SetDeviceReceiveMethodAndRespondAsync<DirectMethodRequestPayload>(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(s_deviceResponsePayload)), ct)
+                    .SetDeviceReceiveMethodAndRespondAsync(JsonSerializer.SerializeToUtf8Bytes(s_deviceResponsePayload), ct)
                     .ConfigureAwait(false);
             }
 
@@ -223,15 +223,13 @@ namespace Microsoft.Azure.Devices.E2ETests.Methods
             {
                 var directMethodRequest = new DirectMethodServiceRequest(MethodName)
                 {
-                    Payload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(s_serviceRequestPayload)),
-                    ResponseTimeout = s_defaultMethodResponseTimeout,
+                    ResponseTimeoutInSeconds = s_defaultMethodResponseTimeout,
                 };
+                directMethodRequest.SetPayload(s_serviceRequestPayload);
+
                 testDeviceCallbackHandler.ExpectedDirectMethodRequest = directMethodRequest;
 
-                Task serviceSendTask = ServiceSendMethodAndVerifyResponseAsync(testDevice.Id, directMethodRequest, s_deviceResponsePayload, ct);
-                Task methodReceivedTask = testDeviceCallbackHandler.WaitForMethodCallbackAsync(ct);
-
-                await Task.WhenAll(serviceSendTask, methodReceivedTask).ConfigureAwait(false);
+                await ServiceSendMethodAndVerifyResponseAsync(testDevice.Id, directMethodRequest, s_deviceResponsePayload, ct);
             }
 
             await FaultInjection
