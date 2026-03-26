@@ -5,10 +5,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Client.Samples
 {
@@ -238,14 +238,14 @@ namespace Microsoft.Azure.Devices.Client.Samples
                             $" maxTemp={report.maxTemp}, minTemp={report.minTemp}, avgTemp={report.avgTemp}, " +
                             $"startTime={report.startTime.LocalDateTime}, endTime={report.endTime.LocalDateTime}");
 
-                        return Task.FromResult(new DirectMethodResponse((int)StatusCode.Completed) { Payload = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(report)) });
+                        return Task.FromResult(new DirectMethodResponse((int)StatusCode.Completed) { Payload = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(report)) });
                     }
                 }
 
                 _logger.LogDebug($"Command: No relevant readings found, cannot generate any report.");
                 return Task.FromResult(new DirectMethodResponse((int)StatusCode.NotFound));
             }
-            catch (JsonReaderException ex)
+            catch (JsonException ex)
             {
                 _logger.LogDebug($"Command input is invalid: {ex.Message}.");
                 return Task.FromResult(new DirectMethodResponse((int)StatusCode.BadRequest));
