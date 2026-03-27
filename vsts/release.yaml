@@ -46,7 +46,7 @@ jobs:
         packageType: 'sdk'
         version: '10.0.x'   
     - bash: |
-        if [[ !${{ parameters.publishHubDevice }} && !${{ parameters.publishHubService }} && !${{ parameters.publishDpsDevice }} && !${{ parameters.publishDpsService }} ]]; then
+        if [[ ${{ parameters.publishHubDevice }} -ne "true" && ${{ parameters.publishHubService }} -ne "true" && ${{ parameters.publishDpsDevice }} -ne "true" && ${{ parameters.publishDpsService }} -ne "true" ]]; then
           echo "Must select at least one package to publish"
           exit 1
         fi
