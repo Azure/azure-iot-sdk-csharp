@@ -35,10 +35,10 @@ parameters:
   default: false
 
 jobs:
-  - job: LINUX
-    displayName: Linux
+  - job: Package
+    displayName: Package
     pool:
-      vmImage: ubuntu-20.04
+      vmImage: ubuntu-latest
     steps:
     - task: UseDotNet@2
       displayName: Install DotNet 10
