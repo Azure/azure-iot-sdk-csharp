@@ -46,6 +46,13 @@ jobs:
         packageType: 'sdk'
         version: '10.0.x'   
     - bash: |
+        if [[ !${{ parameters.publishHubDevice }} && !${{ parameters.publishHubService }} && !${{ parameters.publishDpsDevice }} && !${{ parameters.publishDpsService }} ]]; then
+          echo "Must select at least one package to publish"
+          exit 1
+        fi
+      displayName: Build and pack Microsoft.Azure.Devices.Client
+
+    - bash: |
         dotnet pack --configuration  Release $(Build.SourcesDirectory)/iothub/device/src/Microsoft.Azure.Devices.Client.csproj -o $(Build.SourcesDirectory)/_nupkgs/ -p:IncludeSymbols=false 
       displayName: Build and pack Microsoft.Azure.Devices.Client
       condition: eq(${{ parameters.publishHubDevice }}, 'true')
