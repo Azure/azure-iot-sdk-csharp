@@ -50,7 +50,7 @@ jobs:
           echo "Must select at least one package to publish"
           exit 1
         fi
-      displayName: Build and pack Microsoft.Azure.Devices.Client
+      displayName: Validate build params
 
     - bash: |
         dotnet pack --configuration  Release $(Build.SourcesDirectory)/iothub/device/src/Microsoft.Azure.Devices.Client.csproj -o $(Build.SourcesDirectory)/_nupkgs/ -p:IncludeSymbols=false 
