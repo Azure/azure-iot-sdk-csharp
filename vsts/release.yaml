@@ -1,10 +1,6 @@
 name: $(BuildID)_$(BuildDefinitionName)_$(SourceBranchName)_$(Date:yyyyMMdd)$(Rev:.r)
 
 parameters:
-- name: branch
-  displayName: The branch of the Azure/azure-iot-sdk-csharp repo to package from
-  type: string
-  default: main
 - name: publishHubDevice
   displayName: Publish Microsoft.Azure.Devices.Client package
   type: string
