@@ -64,6 +64,5 @@
     <PackageReference Include="Azure.Core" Version="1.31.0" />
     <PackageReference Include="Microsoft.Azure.Amqp" Version="2.6.2" />
     <PackageReference Include="MQTTnet" Version="5.1.0.1559" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
   </ItemGroup>
 </Project>

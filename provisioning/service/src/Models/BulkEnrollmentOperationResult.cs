@@ -3,7 +3,8 @@
 
 using System.Collections.Generic;
 using System.Threading;
-using Newtonsoft.Json;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
@@ -22,8 +23,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <summary>
         /// If false, not all operations in the bulk enrollment succeeded.
         /// </summary>
-        [JsonProperty("isSuccessful")]
-        public bool IsSuccessful { get; protected internal set; }
+        [JsonPropertyName("isSuccessful")]
+        public bool IsSuccessful { get; set; }
 
         /// <summary>
         /// Registration errors.
@@ -31,7 +32,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <remarks>
         /// Detail each enrollment failed in the bulk operation, and report the fail reason.
         /// </remarks>
-        [JsonProperty("errors", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        public IList<BulkEnrollmentOperationError> Errors { get; protected internal set; } = new List<BulkEnrollmentOperationError>();
+        [JsonPropertyName("errors")]
+        public IList<BulkEnrollmentOperationError> Errors { get; set; } = new List<BulkEnrollmentOperationError>();
     }
 }

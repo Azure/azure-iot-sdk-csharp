@@ -129,10 +129,8 @@ namespace Microsoft.Azure.Devices.Client.Samples
             var symmetricKeyProvider = new AuthenticationProviderSymmetricKey(parameters.DeviceId, parameters.DeviceSymmetricKey, null);
             var pdc = new ProvisioningDeviceClient(parameters.DpsEndpoint, parameters.DpsIdScope, symmetricKeyProvider);
 
-            var pnpPayload = new RegistrationRequestPayload
-            {
-                Payload = new ModelIdPayload { ModelId = ModelId },
-            };
+            var pnpPayload = new RegistrationRequestPayload();
+            pnpPayload.SetPayload(new ModelIdPayload { ModelId = ModelId });
             return await pdc.RegisterAsync(pnpPayload, cancellationToken);
         }
 

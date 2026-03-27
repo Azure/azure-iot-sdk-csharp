@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System.Text.Json.Serialization;
+
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
     /// <summary>
@@ -10,6 +12,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// For now, the provisioning service supports <see cref="X509Attestation"/>, <see cref="SymmetricKeyAttestation"/>,
     /// and <see cref="TpmAttestation"/>.
     /// </remarks>
+    [JsonDerivedType(typeof(SymmetricKeyAttestation))]
+    [JsonDerivedType(typeof(TpmAttestation))]
+    [JsonDerivedType(typeof(X509Attestation))]
     public abstract class Attestation
     {
         // Abstract class fully implemented by the child.

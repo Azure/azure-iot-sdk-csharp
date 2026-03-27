@@ -50,11 +50,14 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
                 InitialTwinState = new InitialTwin
                 {
                     Tags = null,
-                    DesiredProperties =
+                    Properties =
                     {
-                        ["Brand"] = "Contoso",
-                        ["Model"] = "SSC4",
-                        ["Color"] = "White",
+                        Desired = 
+                        {
+                            ["Brand"] = "Contoso",
+                            ["Model"] = "SSC4",
+                            ["Color"] = "White",
+                        }
                     },
                 },
             };
@@ -68,7 +71,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
             IndividualEnrollment individualEnrollment = await GetIndividualEnrollmentInfoAsync();
             _logger.LogInformation($"Initial device twin state is {individualEnrollment.InitialTwinState}.");
             _logger.LogInformation($"IoT Edge device set to '{individualEnrollment.Capabilities.IsIotEdge}'.");
-            individualEnrollment.InitialTwinState.DesiredProperties["Color"] = "Yellow";
+            individualEnrollment.InitialTwinState.Properties.Desired["Color"] = "Yellow";
             individualEnrollment.Capabilities = _optionalEdgeCapabilityDisabled;
 
             _logger.LogInformation($"Updating desired properties and capabilities of the individual enrollment '{individualEnrollment.RegistrationId}'...");

@@ -2,8 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using Azure;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
@@ -24,56 +23,55 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <summary>
         /// Registration Id.
         /// </summary>
-        [JsonProperty("registrationId", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        public string RegistrationId { get; protected internal set; }
+        [JsonPropertyName("registrationId")]
+        public string RegistrationId { get; set; }
 
         /// <summary>
         /// Registration create date time (in UTC).
         /// </summary>
-        [JsonProperty("createdDateTimeUtc", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        public DateTimeOffset? CreatedOnUtc { get; protected internal set; }
+        [JsonPropertyName("createdDateTimeUtc")]
+        public DateTimeOffset? CreatedOnUtc { get; set; }
 
         /// <summary>
         /// Last updated date time (in UTC).
         /// </summary>
-        [JsonProperty("lastUpdatedDateTimeUtc", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        public DateTimeOffset? LastUpdatedOnUtc { get; protected internal set; }
+        [JsonPropertyName("lastUpdatedDateTimeUtc")]
+        public DateTimeOffset? LastUpdatedOnUtc { get; set; }
 
         /// <summary>
         /// Assigned IoT hub.
         /// </summary>
-        [JsonProperty("assignedHub", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        public string AssignedHub { get; protected internal set; }
+        [JsonPropertyName("assignedHub")]
+        public string AssignedHub { get; set; }
 
         /// <summary>
         /// Device Id.
         /// </summary>
-        [JsonProperty("deviceId", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        public string DeviceId { get; protected internal set; }
+        [JsonPropertyName("deviceId")]
+        public string DeviceId { get; set; }
 
         /// <summary>
         /// Status.
         /// </summary>
-        [JsonProperty("status")]
-        public EnrollmentStatus Status { get; protected internal set; }
+        [JsonPropertyName("status")]
+        public EnrollmentStatus Status { get; set; }
 
         /// <summary>
         /// Error code.
         /// </summary>
-        [JsonProperty("errorCode", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        public int? ErrorCode { get; protected internal set; }
+        [JsonPropertyName("errorCode")]
+        public int? ErrorCode { get; set; }
 
         /// <summary>
         /// Error message.
         /// </summary>
-        [JsonProperty("errorMessage", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        public string ErrorMessage { get; protected internal set; }
+        [JsonPropertyName("errorMessage")]
+        public string ErrorMessage { get; set; }
 
         /// <summary>
         /// Registration status ETag.
         /// </summary>
-        [JsonProperty("etag", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        [JsonConverter(typeof(NewtonsoftJsonETagConverter))] // NewtonsoftJsonETagConverter is used here because otherwise the ETag isn't serialized properly
-        public ETag ETag { get; protected internal set; }
+        [JsonPropertyName("etag")]
+        public ETag ETag { get; set; }
     }
 }

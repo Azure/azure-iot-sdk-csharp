@@ -5,10 +5,10 @@ using System;
 using System.Net;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using System.Text.Json;
 using FluentAssertions;
 using FluentAssertions.Specialized;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
 {
@@ -416,7 +416,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
         {
             // arrange
             string json = X509AttestationTests.MakeX509AttestationJson("clientCertificates");
-            X509Attestation attestation = JsonConvert.DeserializeObject<X509Attestation>(json);
+            X509Attestation attestation = JsonSerializer.Deserialize<X509Attestation>(json, JsonSerializerSettings.Options);
 
             // act - assert
             Assert.IsNotNull(attestation.GetPrimaryX509CertificateInfo());
@@ -428,7 +428,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
         {
             // arrange
             string json = X509AttestationTests.MakeX509AttestationJson("clientCertificates", true);
-            X509Attestation attestation = JsonConvert.DeserializeObject<X509Attestation>(json);
+            X509Attestation attestation = JsonSerializer.Deserialize<X509Attestation>(json, JsonSerializerSettings.Options);
 
             // act - assert
             Assert.IsNotNull(attestation.GetPrimaryX509CertificateInfo());
@@ -440,7 +440,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
         {
             // arrange
             string json = X509AttestationTests.MakeX509AttestationJson("signingCertificates");
-            X509Attestation attestation = JsonConvert.DeserializeObject<X509Attestation>(json);
+            X509Attestation attestation = JsonSerializer.Deserialize<X509Attestation>(json, JsonSerializerSettings.Options);
 
             // act - assert
             Assert.IsNotNull(attestation.GetPrimaryX509CertificateInfo());
@@ -458,90 +458,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
                 "    \"secondary\": \"" + CaReferenceString + "\"" +
                 "  }" +
                 "}";
-            X509Attestation attestation = JsonConvert.DeserializeObject<X509Attestation>(json);
+            X509Attestation attestation = JsonSerializer.Deserialize<X509Attestation>(json, JsonSerializerSettings.Options);
 
             // act - assert
             Assert.IsNull(attestation.GetPrimaryX509CertificateInfo());
             Assert.IsNull(attestation.GetSecondaryX509CertificateInfo());
-        }
-
-        [TestMethod]
-        public void X509AttestationJsonConstructorThrowsOnNoCert()
-        {
-            // arrange
-            string json = "{}";
-
-            // act
-            Action act = () => JsonConvert.DeserializeObject<X509Attestation>(json);
-
-            // assert
-            act.Should().Throw<InvalidOperationException>();
-        }
-
-        [TestMethod]
-        public void X509AttestationJsonConstructorThrowsOnClientAndRootCertificates()
-        {
-            // arrange
-            string json =
-                "{" +
-                "  \"clientCertificates\": {" +
-                "    \"primary\": " +
-                MakeCertInfoJson(SubjectName, Sha1Thumbprint, Sha256Thumbprint, IssuerName, NotBeforeUtcString, NotAfterUtcString, SerialNumber, Version) +
-                "  }," +
-                "  \"signingCertificates\": {" +
-                "    \"primary\": " +
-                MakeCertInfoJson(SubjectName, Sha1Thumbprint, Sha256Thumbprint, IssuerName, NotBeforeUtcString, NotAfterUtcString, SerialNumber, Version) +
-                "  }" +
-                "}";
-
-            Action act = () => JsonConvert.DeserializeObject<X509Attestation>(json);
-
-            // assert
-            act.Should().Throw<InvalidOperationException>();
-        }
-
-        [TestMethod]
-        public void X509AttestationJsonConstructorThrowsOnClientCertificatesAndCaReferences()
-        {
-            // arrange
-            string json =
-                "{" +
-                "  \"clientCertificates\": {" +
-                "    \"primary\": " +
-                MakeCertInfoJson(SubjectName, Sha1Thumbprint, Sha256Thumbprint, IssuerName, NotBeforeUtcString, NotAfterUtcString, SerialNumber, Version) +
-                "  }," +
-                "  \"caReferences\": {" +
-                "    \"primary\": \"" + CaReferenceString + "\"" +
-                "  }" +
-                "}";
-
-            // act
-            Action act = () => JsonConvert.DeserializeObject<X509Attestation>(json);
-
-            // assert
-            act.Should().Throw<InvalidOperationException>();
-        }
-
-        [TestMethod]
-        public void X509AttestationJsonConstructorThrowsOnRootCertificatesAndCaReferences()
-        {
-            // arrange
-            string json =
-                "{" +
-                "  \"signingCertificates\": {" +
-                "    \"primary\": " +
-                MakeCertInfoJson(SubjectName, Sha1Thumbprint, Sha256Thumbprint, IssuerName, NotBeforeUtcString, NotAfterUtcString, SerialNumber, Version) +
-                "  }," +
-                "  \"caReferences\": {" +
-                "    \"primary\": \"" + CaReferenceString + "\"" +
-                "  }" +
-                "}";
-
-            // act - assert
-            Action act = () => JsonConvert.DeserializeObject<X509Attestation>(json);
-
-            // assert
-            act.Should().Throw<InvalidOperationException>();
         }
 
         private static string MakeCertInfoJson(

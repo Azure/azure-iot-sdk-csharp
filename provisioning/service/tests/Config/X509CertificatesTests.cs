@@ -3,9 +3,9 @@
 
 using System;
 using System.Security.Cryptography.X509Certificates;
+using System.Text.Json;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
 {
@@ -126,7 +126,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
                 "}";
 
             // act
-            X509Certificates x509Certificates = JsonConvert.DeserializeObject<X509Certificates>(json);
+            X509Certificates x509Certificates = JsonSerializer.Deserialize<X509Certificates>(json, JsonSerializerSettings.Options);
 
             // assert
             Assert.IsNotNull(x509Certificates.Primary);
@@ -147,7 +147,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
                 "}";
 
             // act
-            X509Certificates x509Certificates = JsonConvert.DeserializeObject<X509Certificates>(json);
+            X509Certificates x509Certificates = JsonSerializer.Deserialize<X509Certificates>(json, JsonSerializerSettings.Options);
 
             // assert
             Assert.IsNotNull(x509Certificates.Primary);
@@ -189,7 +189,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
                 "}";
 
             // act - assert
-            Action act = () => JsonConvert.DeserializeObject<X509Certificates>(json);
+            Action act = () => JsonSerializer.Deserialize<X509Certificates>(json, JsonSerializerSettings.Options);
             act.Should().Throw<ArgumentNullException>();
         }
     }

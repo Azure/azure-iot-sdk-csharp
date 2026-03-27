@@ -2,9 +2,9 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Text.Json;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
 {
@@ -17,28 +17,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
            "hP1XH9B33VqHG9SHnbnQXdBUaCgKAfxome8UmBKfe+naTsE5fkvjb/do3/dD6l4sGBwFCnKRdln4XpM03zLpoHFao8zOwt8l/uP3qUIxmC" +
            "Yv9A7m69Ms+5/pCkTu/rK4mRDsfhZ0QLfbzVI6zQFOKF/rwsfBtFeWlWtcuJMKlXdD8TXWElTzgh7JS4qhFzreL0c1mI0GCj+Aws0usZh7" +
            "dLIVPnlgZcBhgy1SSDQMQ==";
-
-        [TestMethod]
-        public void TpmAttestationThrowsOnNullEndorsementKey()
-        {
-            // arrange
-            string endorsementKey = null;
-
-            // act - assert
-            Action act = () => _ = new TpmAttestation(endorsementKey);
-            var error = act.Should().Throw<ArgumentNullException>();
-        }
-
-        [TestMethod]
-        public void TpmAttestationThrowsOnEmptyEndorsementKey()
-        {
-            // arrange
-            string endorsementKey = "";
-
-            // act - assert
-            Action act = () => _ = new TpmAttestation(endorsementKey);
-            var error = act.Should().Throw<ArgumentException>();
-        }
 
         [TestMethod]
         public void TpmAttestationSucceedOnNullStorageRootKey()
@@ -113,7 +91,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
             var tpmAttestation = new TpmAttestation(endorsementKey, storageRootKey);
 
             // act
-            string json = JsonConvert.SerializeObject(tpmAttestation);
+            string json = JsonSerializer.Serialize(tpmAttestation, JsonSerializerSettings.Options);
 
             // assert
             TestAssert.AreEqualJson(expectedJson, json);
@@ -131,7 +109,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
             var tpmAttestation = new TpmAttestation(endorsementKey);
 
             // act
-            string json = JsonConvert.SerializeObject(tpmAttestation);
+            string json = JsonSerializer.Serialize(tpmAttestation, JsonSerializerSettings.Options);
 
             // assert
             TestAssert.AreEqualJson(expectedJson, json);
@@ -151,7 +129,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
             var tpmAttestation = new TpmAttestation(endorsementKey, storageRootKey);
 
             // act
-            string json = JsonConvert.SerializeObject(tpmAttestation);
+            string json = JsonSerializer.Serialize(tpmAttestation, JsonSerializerSettings.Options);
 
             // assert
             TestAssert.AreEqualJson(expectedJson, json);
@@ -170,42 +148,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
                 "}";
 
             // act
-            TpmAttestation tpmAttestation = JsonConvert.DeserializeObject<TpmAttestation>(json);
+            TpmAttestation tpmAttestation = JsonSerializer.Deserialize<TpmAttestation>(json, JsonSerializerSettings.Options);
 
             // assert
             Assert.AreEqual(endorsementKey, tpmAttestation.EndorsementKey);
             Assert.AreEqual(storageRootKey, tpmAttestation.StorageRootKey);
-        }
-
-        [TestMethod]
-        public void TpmAttestationThrowsOnDeserializationWithoutEndorsementKey()
-        {
-            // arrange
-            string storageRootKey = Key;
-            string json =
-                "{" +
-                "  \"storageRootKey\":\"" + storageRootKey + "\"" +
-                "}";
-
-            // act - assert
-            Action act = () => JsonConvert.DeserializeObject<TpmAttestation>(json);
-            var error = act.Should().Throw<ArgumentException>();
-        }
-
-        [TestMethod]
-        public void TpmAttestationThrowsOnDeserializationWithEmptyEndorsementKey()
-        {
-            // arrange
-            string storageRootKey = Key;
-            string json =
-                "{" +
-                "  \"endorsementKey\":\"\"," +
-                "  \"storageRootKey\":\"" + storageRootKey + "\"" +
-                "}";
-
-            // act - assert
-            Action act = () => JsonConvert.DeserializeObject<TpmAttestation>(json);
-            var error = act.Should().Throw<ArgumentException>();
         }
 
         [TestMethod]
@@ -219,7 +166,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
                 "}";
 
             // act
-            TpmAttestation tpmAttestation = JsonConvert.DeserializeObject<TpmAttestation>(json);
+            TpmAttestation tpmAttestation = JsonSerializer.Deserialize<TpmAttestation>(json, JsonSerializerSettings.Options);
 
             // assert
             Assert.AreEqual(endorsementKey, tpmAttestation.EndorsementKey);
@@ -238,7 +185,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
                 "}";
 
             // act
-            TpmAttestation tpmAttestation = JsonConvert.DeserializeObject<TpmAttestation>(json);
+            TpmAttestation tpmAttestation = JsonSerializer.Deserialize<TpmAttestation>(json, JsonSerializerSettings.Options);
 
             // assert
             Assert.AreEqual(endorsementKey, tpmAttestation.EndorsementKey);

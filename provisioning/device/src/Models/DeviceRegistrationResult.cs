@@ -3,8 +3,8 @@
 
 using System;
 using Azure;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client
 {
@@ -14,90 +14,82 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
     public class DeviceRegistrationResult
     {
         /// <summary>
-        /// For deserialization and unit testing.
-        /// </summary>
-        protected internal DeviceRegistrationResult()
-        { }
-
-        /// <summary>
         /// This id is used to uniquely identify a device registration of an enrollment.
         /// </summary>
-        [JsonProperty("registrationId")]
-        public string RegistrationId { get; protected internal set; }
+        [JsonPropertyName("registrationId")]
+        public string RegistrationId { get; set; }
 
         /// <summary>
         /// Registration create date time (in UTC).
         /// </summary>
-        [JsonProperty("createdDateTimeUtc")]
-        public DateTimeOffset? CreatedOnUtc { get; protected internal set; }
+        [JsonPropertyName("createdDateTimeUtc")]
+        public DateTimeOffset? CreatedOnUtc { get; set; }
 
         /// <summary>
         /// The assigned Azure IoT hub.
         /// </summary>
-        [JsonProperty("assignedHub")]
-        public string AssignedHub { get; protected internal set; }
+        [JsonPropertyName("assignedHub")]
+        public string AssignedHub { get; set; }
 
         /// <summary>
         /// The Device Id.
         /// </summary>
-        [JsonProperty("deviceId")]
-        public string DeviceId { get; protected internal set; }
+        [JsonPropertyName("deviceId")]
+        public string DeviceId { get; set; }
 
         /// <summary>
         /// The status of the operation.
         /// </summary>
-        [JsonProperty("status")]
-        public ProvisioningRegistrationStatus Status { get; protected internal set; }
+        [JsonPropertyName("status")]
+        public ProvisioningRegistrationStatus Status { get; set; }
 
         /// <summary>
         /// The substatus of the operation.
         /// </summary>
-        [JsonProperty("substatus")]
-        public ProvisioningRegistrationSubstatus Substatus { get; protected internal set; }
+        [JsonPropertyName("substatus")]
+        public ProvisioningRegistrationSubstatus Substatus { get; set; }
 
         /// <summary>
         /// The time when the device last refreshed the registration.
         /// </summary>
-        [JsonProperty("lastUpdatedDateTimeUtc")]
-        public DateTimeOffset? LastUpdatedOnUtc { get; protected internal set; }
+        [JsonPropertyName("lastUpdatedDateTimeUtc")]
+        public DateTimeOffset? LastUpdatedOnUtc { get; set; }
 
         /// <summary>
         /// Error code.
         /// </summary>
-        [JsonProperty("errorCode")]
-        public int? ErrorCode { get; protected internal set; }
+        [JsonPropertyName("errorCode")]
+        public int? ErrorCode { get; set; }
 
         /// <summary>
         /// Error message.
         /// </summary>
-        [JsonProperty("errorMessage")]
-        public string ErrorMessage { get; protected internal set; }
+        [JsonPropertyName("errorMessage")]
+        public string ErrorMessage { get; set; }
 
         /// <summary>
         /// The entity tag associated with the resource.
         /// </summary>
-        [JsonProperty("etag")]
-        // NewtonsoftJsonETagConverter is used here because otherwise the ETag isn't serialized properly.
-        [JsonConverter(typeof(NewtonsoftJsonETagConverter))]
-        public ETag ETag { get; protected internal set; }
+        [JsonPropertyName("etag")]
+        public ETag ETag { get; set; }
 
         /// <summary>
         /// The custom data returned from the webhook to the device.
         /// </summary>
-        [JsonProperty("payload")]
-        protected internal JRaw Payload { get; set; }
+        [JsonPropertyName("payload")]
+        public JsonElement? Payload { get; set; }
 
         /// <summary>
         /// The registration result for X.509 certificate authentication.
         /// </summary>
-        [JsonProperty("x509")]
-        public X509RegistrationResult X509 { get; protected internal set; }
+        [JsonPropertyName("x509")]
+        public X509RegistrationResult X509 { get; set; }
 
         /// <summary>
         /// The registration result for symmetric key authentication.
         /// </summary>
-        [JsonProperty("symmetricKey")]
-        public SymmetricKeyRegistrationResult SymmetricKey { get; protected internal set; }
+        [JsonPropertyName("symmetricKey")]
+        public SymmetricKeyRegistrationResult SymmetricKey { get; set; }
 
         /// <summary>
         ///  Custom allocation payload (as a type) returned from the webhook to the device.
@@ -108,14 +100,16 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         public bool TryGetPayload<T>(out T value)
         {
             value = default;
-            if (Payload == null)
+            if (Payload == null 
+                || Payload.Value.ValueKind == JsonValueKind.Null
+                || Payload.Value.ValueKind == JsonValueKind.Undefined)
             {
                 return false;
             }
 
             try
             {
-                value = JsonConvert.DeserializeObject<T>(Payload.Value<string>());
+                value = JsonSerializer.Deserialize<T>(Payload.Value, JsonSerializerSettings.Options);
                 return true;
             }
             catch (JsonException)

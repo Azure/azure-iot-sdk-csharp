@@ -1,29 +1,48 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
     /// <summary>
     /// A class used as a model to deserialize response body object received from DPS in error cases.
     /// </summary>
-    internal sealed class ErrorResponse
+    public sealed class ErrorResponse
     {
-        [JsonProperty("errorCode")]
-        internal int ErrorCode { get; set; }
+        /// <summary>
+        /// The error code sent by the Device Provisioning Service.
+        /// </summary>
+        [JsonPropertyName("errorCode")]
+        public int ErrorCode { get; set; }
 
-        [JsonProperty("code")]
-        internal int Code
+        /// <summary>
+        /// The error code sent by the Device Provisioning Service
+        /// </summary>
+        /// <remarks>
+        /// This field is a duplicate of <see cref="ErrorCode"/> for serialization purposes.
+        /// </remarks>
+        [JsonPropertyName("code")]
+        public int Code
         {
             get => ErrorCode;
             set => ErrorCode = value;
         }
 
-        [JsonProperty("trackingId")]
-        internal string TrackingId { get; set; }
+        /// <summary>
+        /// The tracking Id to include in any communications with customer support.
+        /// </summary>
+        [JsonPropertyName("trackingId")]
+        public string TrackingId { get; set; }
 
-        [JsonProperty("message")]
-        internal string Message { get; set; }
+        /// <summary>
+        /// The human-readable error message
+        /// </summary>
+        [JsonPropertyName("message")]
+        public string Message { get; set; }
 
-        [JsonProperty("timestampUtc")]
-        internal string OccurredOnUtc { get; set; }
+        /// <summary>
+        /// The date when the error occurred.
+        /// </summary>
+        [JsonPropertyName("timestampUtc")]
+        public string OccurredOnUtc { get; set; }
     }
 }

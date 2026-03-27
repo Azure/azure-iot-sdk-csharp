@@ -3,7 +3,7 @@
 
 using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
+using System.Text.Json;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client
 {
@@ -37,9 +37,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             {
                 CertificateInstaller.EnsureChainIsInstalled(x509Auth.CertificateChain);
             }
-
-            // Specify the JsonSerializerSettings. Check JsonSerializerSettingsInitializer for more details.
-            JsonConvert.DefaultSettings = JsonSerializerSettingsInitializer.GetJsonSerializerSettings;
 
             _options = options != default
                 ? options.Clone()

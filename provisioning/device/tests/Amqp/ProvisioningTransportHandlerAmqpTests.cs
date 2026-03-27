@@ -2,11 +2,14 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 using System.Security.Authentication;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using FluentAssertions;
+using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Amqp.Framing;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
 {
@@ -35,7 +38,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
         {
             // arrange
 
-            string errorDescriptionJsonString = JsonConvert.SerializeObject(s_notTransientErrorDescription);
+            string errorDescriptionJsonString = JsonSerializer.Serialize(s_notTransientErrorDescription, JsonSerializerSettings.Options);
 
             var rejected= new Rejected() { Error = new Error() { Description = errorDescriptionJsonString } };
 
@@ -59,7 +62,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
         {
             // arrange
 
-            string errorDescriptionJsonString = JsonConvert.SerializeObject(s_transientErrorDescription);
+            string errorDescriptionJsonString = JsonSerializer.Serialize(s_transientErrorDescription);
 
             var rejected = new Rejected() { Error = new Error() { Description = errorDescriptionJsonString } };
 
@@ -95,7 +98,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
 
             var error = act.Should().Throw<ProvisioningClientException>();
             error.And.Message.Should().Be($"AMQP transport exception: malformed server error message: '{rejected.Error.Description}'");
-            error.And.InnerException.Should().BeOfType<JsonReaderException>();
+            error.And.InnerException.Should().BeOfType<JsonException>();
             error.And.IsTransient.Should().BeFalse();
         }
 
@@ -137,10 +140,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
 
         private class TestErrorDescription
         {
+            [JsonPropertyName("message")]
             public string Message { get; set; }
 
+            [JsonPropertyName("trackingId")]
             public string TrackingId { get; set; }
 
+            [JsonPropertyName("errorCode")]
             public int ErrorCode { get; set; }
         }
     }

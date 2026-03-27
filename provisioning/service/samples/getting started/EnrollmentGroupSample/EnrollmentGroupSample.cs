@@ -3,10 +3,10 @@
 
 using System;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Azure;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
 {
@@ -34,17 +34,17 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
         {
             Attestation attestation = new SymmetricKeyAttestation();
             var enrollmentGroup = new EnrollmentGroup(s_enrollmentGroupId, attestation);
-            _logger.LogInformation($"Creating an enrollment group: {JsonConvert.SerializeObject(enrollmentGroup)}");
+            _logger.LogInformation($"Creating an enrollment group: {JsonSerializer.Serialize(enrollmentGroup)}");
 
             EnrollmentGroup group = await _provisioningServiceClient.EnrollmentGroups.CreateOrUpdateAsync(enrollmentGroup);
-            _logger.LogInformation($"Created {group.Id}: {JsonConvert.SerializeObject(group)}");
+            _logger.LogInformation($"Created {group.Id}: {JsonSerializer.Serialize(group)}");
         }
 
         public async Task GetEnrollmentGroupInfoAsync()
         {
             _logger.LogInformation("Getting the enrollment group information...");
             EnrollmentGroup group = await _provisioningServiceClient.EnrollmentGroups.GetAsync(s_enrollmentGroupId);
-            _logger.LogInformation($"Got {group.Id}: {JsonConvert.SerializeObject(group)}");
+            _logger.LogInformation($"Got {group.Id}: {JsonSerializer.Serialize(group)}");
         }
 
         public async Task QueryEnrollmentGroupAsync()

@@ -4,8 +4,7 @@
 using System;
 using System.ComponentModel;
 using System.Net;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
@@ -20,7 +19,19 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
         private static readonly NoneAttestation s_none = new();
 
-        internal AttestationMechanism(Attestation attestation)
+        /// <summary>
+        /// For Json serialization purposes
+        /// </summary>
+        public AttestationMechanism()
+        { 
+            
+        }
+
+        /// <summary>
+        /// Constructor for a given attestation.
+        /// </summary>
+        /// <param name="attestation">The attestation to use. Should be of type <see cref="X509Attestation"/>, <see cref="SymmetricKeyAttestation"/>, or <see cref="TpmAttestation"/></param>
+        public AttestationMechanism(Attestation attestation)
         {
             ArgumentNullException.ThrowIfNull(attestation);
 
@@ -43,10 +54,14 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             }
         }
 
-        [JsonConstructor]
-#pragma warning disable IDE0051 // Used for serialization
-        private AttestationMechanism(AttestationMechanismType type, X509Attestation x509, TpmAttestation tpm, SymmetricKeyAttestation symmetricKey)
-#pragma warning restore IDE0051
+        /// <summary>
+        /// The Json constructor used for serialization purposes.
+        /// </summary>
+        /// <param name="type">The type of attestation mechanism</param>
+        /// <param name="x509">The x509 attestation, if any is present.</param>
+        /// <param name="tpm">The TPM attestation, if any is present.</param>
+        /// <param name="symmetricKey">The symmetric key attestation, if any is present.</param>
+        public AttestationMechanism(AttestationMechanismType type, X509Attestation x509, TpmAttestation tpm, SymmetricKeyAttestation symmetricKey)
         {
             switch (type)
             {
@@ -64,7 +79,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
                 case AttestationMechanismType.SymmetricKey:
                     // In some cases symmetric keys are nulled out by the service
-                    SymmetricKey = symmetricKey ?? new SymmetricKeyAttestation(string.Empty, string.Empty);
+                    SymmetricKey = symmetricKey ?? new SymmetricKeyAttestation();
                     break;
 
                 case AttestationMechanismType.Tpm:
@@ -85,18 +100,16 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         ///  Attestation type.
         /// </summary>
         [DefaultValue(AttestationMechanismType.None)]
-        [JsonProperty("type")]
+        [JsonPropertyName("type")]
         public AttestationMechanismType Type { get; set; }
 
         /// <summary>
         /// Gets or sets the instance used for attestation.
         /// </summary>
-        [JsonProperty("x509", DefaultValueHandling = DefaultValueHandling.Ignore)]
-#pragma warning disable IDE0052 // Used for serialization
-        private X509Attestation X509
+        [JsonPropertyName("x509")]
+        public X509Attestation X509
         {
             get => _x509;
-#pragma warning restore IDE0052
 
             set
             {
@@ -107,13 +120,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             }
         }
 
-        [JsonProperty("symmetricKey", DefaultValueHandling = DefaultValueHandling.Ignore)]
-#pragma warning disable IDE0052 // Used for serialization
-        private SymmetricKeyAttestation SymmetricKey
+        /// <summary>
+        /// 
+        /// </summary>
+        [JsonPropertyName("symmetricKey")]
+        public SymmetricKeyAttestation SymmetricKey
         {
             get => _symmetricKey;
-#pragma warning restore IDE0052
-
             set
             {
                 _symmetricKey = value;
@@ -126,13 +139,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <summary>
         /// Gets or sets the instance used for attestation.
         /// </summary>
-        [JsonProperty("tpm", DefaultValueHandling = DefaultValueHandling.Ignore)]
-#pragma warning disable IDE0052 // Used for serialization
-        private TpmAttestation Tpm
+        [JsonPropertyName("tpm")]
+        public TpmAttestation Tpm
         {
             get => _tpm;
-#pragma warning restore IDE0052
-
             set
             {
                 _tpm = value;

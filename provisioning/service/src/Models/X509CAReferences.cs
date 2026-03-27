@@ -1,7 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Newtonsoft.Json;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
@@ -37,7 +38,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="primary">the String with the primary CA reference.</param>
         /// <param name="secondary">the String with the secondary CA reference.</param>
         [JsonConstructor]
-        protected internal X509CaReferences(string primary, string secondary = default)
+        public X509CaReferences(string primary, string secondary = default)
         {
             Primary = primary;
             Secondary = secondary;
@@ -46,13 +47,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <summary>
         /// Primary reference.
         /// </summary>
-        [JsonProperty("primary", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        public string Primary { get; private set; }
+        [JsonPropertyName("primary")]
+        public string Primary { get; set; }
 
         /// <summary>
         /// Secondary reference.
         /// </summary>
-        [JsonProperty("secondary", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        public string Secondary { get; private set; }
+        [JsonPropertyName("secondary")]
+        public string Secondary { get; set; }
     }
 }

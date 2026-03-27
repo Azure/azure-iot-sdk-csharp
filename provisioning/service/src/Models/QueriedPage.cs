@@ -3,7 +3,7 @@
 
 using System.Collections.Generic;
 using System.Net.Http;
-using Newtonsoft.Json;
+using System.Text.Json;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
@@ -18,7 +18,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         // in an async function.
         internal QueriedPage(HttpResponseMessage response, string payload)
         {
-            Items = JsonConvert.DeserializeObject<IReadOnlyList<T>>(payload);
+            Items = JsonSerializer.Deserialize<IReadOnlyList<T>>(payload, JsonSerializerSettings.Options);
             ContinuationToken = response.Headers.SafeGetValue(ContinuationTokenHeader);
         }
 

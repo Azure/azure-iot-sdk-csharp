@@ -980,7 +980,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                                         capabilities)
                                     .ConfigureAwait(false);
 
-                                x509IndividualEnrollment.Attestation.Should().BeAssignableTo<X509Attestation>();
+                                x509IndividualEnrollment.AttestationMechanism.Type.Should().Be(AttestationMechanismType.X509);
                             }
 
                             break;
@@ -1029,8 +1029,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                                     iothubs,
                                     capabilities)
                                 .ConfigureAwait(false);
-                            Assert.IsTrue(symmetricKeyEnrollmentGroup.Attestation is SymmetricKeyAttestation);
-                            var symmetricKeyAttestation = (SymmetricKeyAttestation)symmetricKeyEnrollmentGroup.Attestation;
+                            Assert.IsTrue(symmetricKeyEnrollmentGroup.Attestation.GetAttestation() is SymmetricKeyAttestation);
+                            var symmetricKeyAttestation = (SymmetricKeyAttestation)symmetricKeyEnrollmentGroup.Attestation.GetAttestation();
                             string registrationIdSymmetricKey = _idPrefix + Guid.NewGuid();
                             string primaryKeyEnrollmentGroup = symmetricKeyAttestation.PrimaryKey;
                             string secondaryKeyEnrollmentGroup = symmetricKeyAttestation.SecondaryKey;
@@ -1053,8 +1053,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                                     capabilities)
                                 .ConfigureAwait(false);
 
-                            Assert.IsTrue(symmetricKeyEnrollment.Attestation is SymmetricKeyAttestation);
-                            symmetricKeyAttestation = (SymmetricKeyAttestation)symmetricKeyEnrollment.Attestation;
+                            Assert.IsTrue(symmetricKeyEnrollment.AttestationMechanism.Type is AttestationMechanismType.SymmetricKey);
+                            symmetricKeyAttestation = symmetricKeyEnrollment.AttestationMechanism.SymmetricKey;
 
                             registrationIdSymmetricKey = symmetricKeyEnrollment.RegistrationId;
                             string primaryKey = symmetricKeyAttestation.PrimaryKey;

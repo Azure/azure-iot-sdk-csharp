@@ -5,7 +5,8 @@ using System;
 using System.Net;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
-using Newtonsoft.Json;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
@@ -55,12 +56,19 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <summary>
         /// Provided for deserialization and unit testing.
         /// </summary>
+        public X509Attestation()
+        {
+
+        }
+
+        /// <summary>
+        /// Provided for deserialization and unit testing.
+        /// </summary>
         /// <param name="clientCertificates">Client certificates.</param>
         /// <param name="rootCertificates">Root certificates.</param>
         /// <param name="caReferences">Certificate authority references.</param>
         /// <exception cref="InvalidOperationException"></exception>
-        [JsonConstructor]
-        private protected X509Attestation(
+        public X509Attestation(
             X509Certificates clientCertificates,
             X509Certificates rootCertificates,
             X509CaReferences caReferences)
@@ -100,20 +108,20 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <summary>
         /// Client certificates.
         /// </summary>
-        [JsonProperty("clientCertificates", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        public X509Certificates ClientCertificates { get; protected private set; }
+        [JsonPropertyName("clientCertificates")]
+        public X509Certificates ClientCertificates { get; set; }
 
         /// <summary>
         /// Signing certificates.
         /// </summary>
-        [JsonProperty("signingCertificates", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        public X509Certificates RootCertificates { get; protected private set; }
+        [JsonPropertyName("signingCertificates")]
+        public X509Certificates RootCertificates { get; set; }
 
         /// <summary>
         /// Certificates Authority references.
         /// </summary>
-        [JsonProperty("caReferences", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        public X509CaReferences CaReferences { get; protected private set; }
+        [JsonPropertyName("caReferences")]
+        public X509CaReferences CaReferences { get; set; }
 
         /// <summary>
         /// Factory from ClientCertificates with primary certificate.

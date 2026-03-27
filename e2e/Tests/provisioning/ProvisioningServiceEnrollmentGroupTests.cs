@@ -216,8 +216,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     attestationMechanism.Type.Should().Be(AttestationMechanismType.SymmetricKey);
 
                     var symmetricKeyAttestation = (SymmetricKeyAttestation)attestationMechanism.GetAttestation();
-                    symmetricKeyAttestation.PrimaryKey.Should().Be(((SymmetricKeyAttestation)enrollmentGroup.Attestation).PrimaryKey);
-                    symmetricKeyAttestation.SecondaryKey.Should().Be(((SymmetricKeyAttestation)enrollmentGroup.Attestation).SecondaryKey);
+                    symmetricKeyAttestation.PrimaryKey.Should().Be(((SymmetricKeyAttestation)enrollmentGroup.Attestation.GetAttestation()).PrimaryKey);
+                    symmetricKeyAttestation.SecondaryKey.Should().Be(((SymmetricKeyAttestation)enrollmentGroup.Attestation.GetAttestation()).SecondaryKey);
                 }
                 else if (attestationType == AttestationMechanismType.X509)
                 {
@@ -226,10 +226,10 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
                     var x509Attestation = (X509Attestation)attestationMechanism.GetAttestation();
                     x509Attestation.GetPrimaryX509CertificateInfo().Sha1Thumbprint
                         .Should()
-                        .Be(((X509Attestation)enrollmentGroup.Attestation).GetPrimaryX509CertificateInfo().Sha1Thumbprint);
+                        .Be(((X509Attestation)enrollmentGroup.Attestation.GetAttestation()).GetPrimaryX509CertificateInfo().Sha1Thumbprint);
                     x509Attestation.GetSecondaryX509CertificateInfo().Sha1Thumbprint
                         .Should()
-                        .Be(((X509Attestation)enrollmentGroup.Attestation).GetSecondaryX509CertificateInfo().Sha1Thumbprint);
+                        .Be(((X509Attestation)enrollmentGroup.Attestation.GetAttestation()).GetSecondaryX509CertificateInfo().Sha1Thumbprint);
                 }
             }
             finally
@@ -315,7 +315,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
                     if (forceUpdate)
                     {
-                        retrievedEnrollmentGroup.ETag = AzureCoreEtag.All;
+                        retrievedEnrollmentGroup.ETag = Microsoft.Azure.Devices.Provisioning.Service.ETag.All;
                     }
 
                     EnrollmentGroup updatedEnrollmentGroup = null;

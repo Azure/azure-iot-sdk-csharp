@@ -3,8 +3,8 @@
 
 using System;
 using System.Text;
+using System.Text.Json;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
 {
@@ -87,7 +87,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
         public void AttestationMechanismConstructorJsonSucceedForX509()
         {
             // arrange
-            AttestationMechanism attestationMechanism = JsonConvert.DeserializeObject<AttestationMechanism>(SampleX509AttestationJson);
+            AttestationMechanism attestationMechanism = JsonSerializer.Deserialize<AttestationMechanism>(SampleX509AttestationJson, JsonSerializerSettings.Options);
 
             // act - assert
             Assert.IsNotNull(attestationMechanism);
@@ -111,7 +111,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
             "}";
 
             // act
-            AttestationMechanism attestationMechanism = JsonConvert.DeserializeObject<AttestationMechanism>(symmetricKeyJson);
+            AttestationMechanism attestationMechanism = JsonSerializer.Deserialize<AttestationMechanism>(symmetricKeyJson, JsonSerializerSettings.Options);
             
             //assert
             Assert.IsNotNull(attestationMechanism);

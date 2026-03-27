@@ -3,13 +3,13 @@
 
 using System;
 using System.Security.Cryptography.X509Certificates;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
 {
@@ -164,7 +164,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
             var mockRegistrationResult = new DeviceRegistrationResult
             {
                 Status = ProvisioningRegistrationStatus.Assigned,
-                Payload = new JRaw(JsonConvert.SerializeObject(customPayload)),
+                Payload = JsonSerializer.SerializeToElement(customPayload),
             };
 
             var mockTransportHandler = new Mock<ProvisioningTransportHandler>();
@@ -195,7 +195,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
             var mockRegistrationResult = new DeviceRegistrationResult
             {
                 Status = ProvisioningRegistrationStatus.Assigned,
-                Payload = new JRaw(JsonConvert.SerializeObject(customPayload)),
+                Payload = JsonSerializer.SerializeToElement(customPayload),
             };
 
             var mockTransportHandler = new Mock<ProvisioningTransportHandler>();
@@ -211,7 +211,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
 
             var requestPayload = new RegistrationRequestPayload
             {
-                Payload = customPayload,
+                Payload = JsonSerializer.SerializeToElement(customPayload),
             };
 
             // act
@@ -223,10 +223,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.UnitTests
 
         private class CustomType
         {
-            [JsonProperty("customInt")]
+            [JsonPropertyName("customInt")]
             public int CustomInt { get; set; }
 
-            [JsonProperty("customString")]
+            [JsonPropertyName("customString")]
             public string CustomString { get; set; }
         }
     }

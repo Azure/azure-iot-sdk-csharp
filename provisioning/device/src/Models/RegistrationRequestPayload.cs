@@ -2,8 +2,8 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client
 {
@@ -18,8 +18,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// <remarks>
         /// The service supports passing a DTDL model Id, so one supported payload is <see cref="ModelIdPayload"/>.
         /// </remarks>
-        [JsonProperty("payload")]
-        public object Payload { get; set; }
+        [JsonPropertyName("payload")]
+        public JsonElement Payload { get; set; }
 
         /// <summary>
         /// Use if you have a serialized JSON string instead of a serializable object to set on <see cref="Payload"/>.
@@ -30,7 +30,19 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         public void SetPayload(string payloadAsJsonString)
         {
             Argument.AssertNotNullOrEmpty(payloadAsJsonString, nameof(payloadAsJsonString));
-            Payload = new JRaw(payloadAsJsonString);
+            
+            Payload = JsonDocument.Parse(payloadAsJsonString).RootElement;
+        }
+
+        /// <summary>
+        /// Set the payload as a strongly typed object that can be serialized using System.Text.Json.
+        /// </summary>
+        /// <param name="serializableObject">The object to be serialized and used as the payload.</param>
+        public void SetPayload(object serializableObject)
+        {
+            Argument.AssertNotNull(serializableObject, nameof(serializableObject));
+
+            Payload = JsonSerializer.SerializeToElement(serializableObject, JsonSerializerSettings.Options);
         }
     }
 }

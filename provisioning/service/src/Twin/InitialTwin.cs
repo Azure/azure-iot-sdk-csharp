@@ -2,7 +2,8 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Collections.Generic;
-using Newtonsoft.Json;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
@@ -18,43 +19,23 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// </remarks>
     public class InitialTwin
     {
-        [JsonProperty("properties", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        private InitialTwinProperties _properties;
-
         /// <summary>
         /// Creates an instance of this class.
         /// </summary>
         public InitialTwin()
         {
-            _properties ??= new InitialTwinProperties();
-        }
-
-        [JsonConstructor]
-#pragma warning disable IDE0051 // Used for deserialization
-        private InitialTwin(IDictionary<string, object> tags, InitialTwinProperties properties)
-#pragma warning restore IDE0051
-        {
-            Tags = tags;
-            DesiredProperties = properties?.Desired;
         }
 
         /// <summary>
         /// Getter and setter the for tags.
         /// </summary>
-        [JsonProperty("tags", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        public IDictionary<string, object> Tags { get; set; } = new Dictionary<string, object>();
+        [JsonPropertyName("tags")]
+        public JsonDictionary Tags { get; set; } = new();
 
         /// <summary>
         /// Getter and setter the desired properties.
         /// </summary>
-        [JsonIgnore]
-        public InitialTwinPropertyCollection DesiredProperties
-        {
-            get => _properties?.Desired;
-
-            set => _properties = value == null
-                ? null
-                : new InitialTwinProperties { Desired = value };
-        }
+        [JsonPropertyName("properties")]
+        public InitialTwinProperties Properties { get; set; }
     }
 }

@@ -2,19 +2,24 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Text.Json.Serialization;
 using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Amqp.Framing;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client
 {
-    internal sealed class ProvisioningErrorDetailsAmqp : ProvisioningErrorDetails
+    /// <summary>
+    /// AMQP-specific serialization of provisioning errors
+    /// </summary>
+    public sealed class ProvisioningErrorDetailsAmqp : ProvisioningErrorDetails
     {
         internal const string RetryAfterKey = "Retry-After";
 
         /// <summary>
         /// The time to wait before trying again if this error is transient
         /// </summary>
-        internal TimeSpan? RetryAfter { get; set; }
+        [JsonPropertyName("retryAfter")]
+        public TimeSpan? RetryAfter { get; set; }
 
         internal static TimeSpan? GetRetryAfterFromApplicationProperties(AmqpMessage amqpResponse, TimeSpan defaultInterval)
         {

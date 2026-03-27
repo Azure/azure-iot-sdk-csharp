@@ -1,8 +1,9 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Newtonsoft.Json;
+using System.Text.Json;
 using System;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client
 {
@@ -12,57 +13,51 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
     public class X509CertificateInfo
     {
         /// <summary>
-        /// For deserialization.
-        /// </summary>
-        protected internal X509CertificateInfo()
-        { }
-
-        /// <summary>
         /// The certificate subject name.
         /// </summary>
-        [JsonProperty("subjectName")]
-        public string SubjectName { get; protected internal set; }
+        [JsonPropertyName("subjectName")]
+        public string SubjectName { get; set; }
 
         /// <summary>
         /// The certificate SHA1 thumbprint.
         /// </summary>
-        [JsonProperty("sha1Thumbprint")]
-        public string Sha1Thumbprint { get; protected internal set; }
+        [JsonPropertyName("sha1Thumbprint")]
+        public string Sha1Thumbprint { get; set; }
 
         /// <summary>
         /// The certificate SHA256 thumbprint.
         /// </summary>
-        [JsonProperty("sha256Thumbprint")]
-        public string Sha256Thumbprint { get; protected internal set; }
+        [JsonPropertyName("sha256Thumbprint")]
+        public string Sha256Thumbprint { get; set; }
 
         /// <summary>
         /// The certificate issuer name.
         /// </summary>
-        [JsonProperty("issuerName")]
-        public string IssuerName { get; protected internal set; }
+        [JsonPropertyName("issuerName")]
+        public string IssuerName { get; set; }
 
         /// <summary>
         /// The certificate invalidity before date in UTC.
         /// </summary>
-        [JsonProperty("notBeforeUtc")]
-        public DateTimeOffset? NotBeforeUtc { get; protected internal set; }
+        [JsonPropertyName("notBeforeUtc")]
+        public DateTimeOffset? NotBeforeUtc { get; set; }
 
         /// <summary>
         /// The certificate invalidity after date in UTC.
         /// </summary>
-        [JsonProperty("notAfterUtc")]
-        public DateTimeOffset? NotAfterUtc { get; protected internal set; }
+        [JsonPropertyName("notAfterUtc")]
+        public DateTimeOffset? NotAfterUtc { get; set; }
 
         /// <summary>
         /// The certificate serial number.
         /// </summary>
-        [JsonProperty("serialNumber")]
-        public string SerialNumber { get; protected internal set; }
+        [JsonPropertyName("serialNumber")]
+        public string SerialNumber { get; set; }
 
         /// <summary>
         /// The certficiate version.
         /// </summary>
-        [JsonProperty("version")]
-        public int? Version { get; protected internal set; }
+        [JsonPropertyName("version")]
+        public int? Version { get; set; }
     }
 }

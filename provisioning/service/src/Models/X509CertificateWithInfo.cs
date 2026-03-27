@@ -6,7 +6,7 @@ using System.Net;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
@@ -19,7 +19,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// </remarks>
     public class X509CertificateWithInfo
     {
-        internal X509CertificateWithInfo(X509Certificate2 certificate)
+        /// <summary>
+        /// Construct with a certificate object
+        /// </summary>
+        /// <param name="certificate">The certificate</param>
+        public X509CertificateWithInfo(X509Certificate2 certificate)
         {
             try
             {
@@ -33,7 +37,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             }
         }
 
-        internal X509CertificateWithInfo(string certificate)
+        /// <summary>
+        /// Construct with a certificate string
+        /// </summary>
+        /// <param name="certificate">The certificate string</param>
+        public X509CertificateWithInfo(string certificate)
         {
             try
             {
@@ -47,10 +55,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             }
         }
 
+        /// <summary>
+        /// Construct with a certificate string and its info
+        /// </summary>
+        /// <param name="certificate">The certificate string</param>
+        /// <param name="info">The certificate's info</param>
         [JsonConstructor]
-#pragma warning disable IDE0051 // Used for deserialization
-        private X509CertificateWithInfo(string certificate, X509CertificateInfo info)
-#pragma warning restore IDE0051
+        public X509CertificateWithInfo(string certificate, X509CertificateInfo info)
         {
             Certificate = certificate;
             Info = info;
@@ -59,14 +70,14 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <summary>
         /// Certificate
         /// </summary>
-        [JsonProperty("certificate", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        public string Certificate { get; private set; }
+        [JsonPropertyName("certificate")]
+        public string Certificate { get; set; }
 
         /// <summary>
         /// Certificate properties.
         /// </summary>
-        [JsonProperty("info", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        public X509CertificateInfo Info { get; private set; }
+        [JsonPropertyName("info")]
+        public X509CertificateInfo Info { get; set; }
 
         private static void ValidateCertificate(X509Certificate2 certificate)
         {
