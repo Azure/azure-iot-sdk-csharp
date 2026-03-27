@@ -78,6 +78,7 @@ jobs:
       condition: eq(${{ parameters.publishDpsService }}, 'true')
 
     - task: AzureCLI@2
+      displayName: "Upload packages to Azure storage"
       inputs:
         azureSubscription: 'azuresdkpartnerdrops'
         scriptType: 'bash'
