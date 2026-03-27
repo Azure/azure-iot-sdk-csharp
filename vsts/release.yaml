@@ -1,0 +1,47 @@
+name: $(BuildID)_$(BuildDefinitionName)_$(SourceBranchName)_$(Date:yyyyMMdd)$(Rev:.r)
+
+parameters:
+- name: branch
+  displayName: The branch of the Azure/azure-iot-sdk-csharp repo to package from
+  type: string
+  default: main
+- name: publishHubDevice
+  displayName: Publish Microsoft.Azure.Devices.Client package
+  type: string
+  values:
+    - true
+    - false
+  default: false
+- name: publishHubService
+  displayName: Publish Microsoft.Azure.Devices package
+  type: string
+  values:
+    - true
+    - false
+  default: false
+- name: publishDpsDevice
+  displayName: Publish Microsoft.Azure.Devices.Provisioning.Client package
+  type: string
+  values:
+    - true
+    - false
+  default: false
+- name: publishDpsService
+  displayName: Publish Microsoft.Azure.Devices.Provisioning.Service package
+  type: string
+  values:
+    - true
+    - false
+  default: false
+
+jobs:
+  - job: LINUX
+    displayName: Linux
+    pool:
+      vmImage: ubuntu-20.04
+    steps:
+    - task: UseDotNet@2
+      displayName: Install DotNet 10
+      inputs:
+        packageType: 'sdk'
+        version: '10.0.x'   
