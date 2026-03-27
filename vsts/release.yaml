@@ -46,10 +46,10 @@ jobs:
         packageType: 'sdk'
         version: '10.0.x'   
     - bash: |
-        echo "${{ parameters.publishHubDevice }}"
-        echo "${{ parameters.publishHubService }}"
-        echo "${{ parameters.publishDpsDevice }}"
-        echo "${{ parameters.publishDpsService }}"
+        echo "Publish IoT hub device client package? ${{ parameters.publishHubDevice }}"
+        echo "Publish IoT hub service client package? ${{ parameters.publishHubService }}"
+        echo "Publish Dps device client package? ${{ parameters.publishDpsDevice }}"
+        echo "Publish Dps service client package? ${{ parameters.publishDpsService }}"
         if [[ ${{ parameters.publishHubDevice }} -ne "true" && ${{ parameters.publishHubService }} -ne "true" && ${{ parameters.publishDpsDevice }} -ne "true" && ${{ parameters.publishDpsService }} -ne "true" ]]; then
           echo "Must select at least one package to publish"
           exit 1
