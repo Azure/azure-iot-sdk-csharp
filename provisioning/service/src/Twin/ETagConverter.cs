@@ -9,7 +9,7 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
-    internal class ETagConverter : JsonConverter<ETag>
+    internal sealed class ETagConverter : JsonConverter<ETag>
     {
         public override ETag Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {

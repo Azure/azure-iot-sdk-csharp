@@ -1,10 +1,6 @@
 name: $(BuildID)_$(BuildDefinitionName)_$(SourceBranchName)_$(Date:yyyyMMdd)$(Rev:.r)
 
 parameters:
-- name: branch
-  displayName: The branch of the Azure/azure-iot-sdk-csharp repo to package from
-  type: string
-  default: main
 - name: publishHubDevice
   displayName: Publish Microsoft.Azure.Devices.Client package
   type: string
@@ -35,16 +31,28 @@ parameters:
   default: false
 
 jobs:
-  - job: LINUX
-    displayName: Linux
+  - job: Package
+    displayName: Package
     pool:
-      vmImage: ubuntu-20.04
+      vmImage: ubuntu-latest
     steps:
+    - bash: |
+        echo "Publish IoT hub device client package? ${{ parameters.publishHubDevice }}"
+        echo "Publish IoT hub service client package? ${{ parameters.publishHubService }}"
+        echo "Publish Dps device client package? ${{ parameters.publishDpsDevice }}"
+        echo "Publish Dps service client package? ${{ parameters.publishDpsService }}"
+        if [[ ${{ parameters.publishHubDevice }} -ne "true" && ${{ parameters.publishHubService }} -ne "true" && ${{ parameters.publishDpsDevice }} -ne "true" && ${{ parameters.publishDpsService }} -ne "true" ]]; then
+          echo "Must select at least one package to publish"
+          exit 1
+        fi
+      displayName: Validate build params
+    
     - task: UseDotNet@2
       displayName: Install DotNet 10
       inputs:
         packageType: 'sdk'
         version: '10.0.x'   
+
     - bash: |
         dotnet pack --configuration  Release $(Build.SourcesDirectory)/iothub/device/src/Microsoft.Azure.Devices.Client.csproj -o $(Build.SourcesDirectory)/_nupkgs/ -p:IncludeSymbols=false 
       displayName: Build and pack Microsoft.Azure.Devices.Client
@@ -66,6 +74,7 @@ jobs:
       condition: eq(${{ parameters.publishDpsService }}, 'true')
 
     - task: AzureCLI@2
+      displayName: "Upload packages to Azure storage"
       inputs:
         azureSubscription: 'azuresdkpartnerdrops'
         scriptType: 'bash'
