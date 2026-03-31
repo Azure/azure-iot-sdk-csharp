@@ -1,0 +1,88 @@
+name: $(BuildID)_$(BuildDefinitionName)_$(SourceBranchName)_$(Date:yyyyMMdd)$(Rev:.r)
+
+parameters:
+- name: publishHubDevice
+  displayName: Publish Microsoft.Azure.Devices.Client package
+  type: string
+  values:
+    - true
+    - false
+  default: false
+- name: publishHubService
+  displayName: Publish Microsoft.Azure.Devices package
+  type: string
+  values:
+    - true
+    - false
+  default: false
+- name: publishDpsDevice
+  displayName: Publish Microsoft.Azure.Devices.Provisioning.Client package
+  type: string
+  values:
+    - true
+    - false
+  default: false
+- name: publishDpsService
+  displayName: Publish Microsoft.Azure.Devices.Provisioning.Service package
+  type: string
+  values:
+    - true
+    - false
+  default: false
+
+jobs:
+  - job: Package
+    displayName: Package
+    pool:
+      vmImage: ubuntu-latest
+    steps:
+    - bash: |
+        echo "Publish IoT hub device client package? ${{ parameters.publishHubDevice }}"
+        echo "Publish IoT hub service client package? ${{ parameters.publishHubService }}"
+        echo "Publish Dps device client package? ${{ parameters.publishDpsDevice }}"
+        echo "Publish Dps service client package? ${{ parameters.publishDpsService }}"
+        if [[ ${{ parameters.publishHubDevice }} -ne "true" && ${{ parameters.publishHubService }} -ne "true" && ${{ parameters.publishDpsDevice }} -ne "true" && ${{ parameters.publishDpsService }} -ne "true" ]]; then
+          echo "Must select at least one package to publish"
+          exit 1
+        fi
+      displayName: Validate build params
+    
+    - task: UseDotNet@2
+      displayName: Install DotNet 10
+      inputs:
+        packageType: 'sdk'
+        version: '10.0.x'   
+
+    - bash: |
+        dotnet pack --configuration  Release $(Build.SourcesDirectory)/iothub/device/src/Microsoft.Azure.Devices.Client.csproj -o $(Build.SourcesDirectory)/_nupkgs/ -p:IncludeSymbols=false 
+      displayName: Build and pack Microsoft.Azure.Devices.Client
+      condition: eq(${{ parameters.publishHubDevice }}, 'true')
+    
+    - bash: |
+        dotnet pack --configuration  Release $(Build.SourcesDirectory)/iothub/service/src/Microsoft.Azure.Devices.csproj -o $(Build.SourcesDirectory)/_nupkgs/ -p:IncludeSymbols=false 
+      displayName: Build and pack Microsoft.Azure.Devices.Client
+      condition: eq(${{ parameters.publishHubService }}, 'true')
+    
+    - bash: |
+        dotnet pack --configuration  Release $(Build.SourcesDirectory)/provisioning/device/src/Microsoft.Azure.Devices.Provisioning.Client.csproj -o $(Build.SourcesDirectory)/_nupkgs/ -p:IncludeSymbols=false 
+      displayName: Build and pack Microsoft.Azure.Devices.Provisioning.Client
+      condition: eq(${{ parameters.publishDpsDevice }}, 'true')
+    
+    - bash: |
+        dotnet pack --configuration  Release $(Build.SourcesDirectory)/provisioning/service/src/Microsoft.Azure.Devices.Provisioning.Service.csproj -o $(Build.SourcesDirectory)/_nupkgs/ -p:IncludeSymbols=false 
+      displayName: Build and pack Microsoft.Azure.Devices.Provisioning.Service
+      condition: eq(${{ parameters.publishDpsService }}, 'true')
+
+    - task: AzureCLI@2
+      displayName: "Upload packages to Azure storage"
+      inputs:
+        azureSubscription: 'azuresdkpartnerdrops'
+        scriptType: 'bash'
+        scriptLocation: 'inlineScript'
+        inlineScript: 'az storage blob upload-batch --source "$(Build.SourcesDirectory)/_nupkgs/" --destination "drops/azure-iot-sdks/dotnet/$(Build.BuildNumber)" --account-name azuresdkpartnerdrops --auth-mode login'
+    
+    - bash: |
+        echo "Files uploaded to partner storage directory drops/azure-iot-sdks/dotnet/$(Build.BuildNumber)"
+        echo "Go to https://dev.azure.com/azure-sdk/internal/_build?definitionId=4442 and run the pipeline with Relative Path in Partner Drops Blob Container set to azure-iot-operations-sdks/dotnet/$(Build.BuildNumber)"
+      displayName: Next Steps
+    
