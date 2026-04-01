@@ -1,4 +1,4 @@
-name: $(BuildID)_$(BuildDefinitionName)_$(SourceBranchName)_$(Date:yyyyMMdd)$(Rev:.r)
+name: $(Date:yyyyMMdd).$(Rev:r)
 
 parameters:
 - name: publishHubDevice
@@ -83,6 +83,6 @@ jobs:
     
     - bash: |
         echo "Files uploaded to partner storage directory drops/azure-iot-sdks/dotnet/$(Build.BuildNumber)"
-        echo "Go to https://dev.azure.com/azure-sdk/internal/_build?definitionId=4442 and run the pipeline with Relative Path in Partner Drops Blob Container set to azure-iot-operations-sdks/dotnet/$(Build.BuildNumber)"
+        echo "Go to https://dev.azure.com/azure-sdk/internal/_build?definitionId=4442 and run the pipeline with Relative Path in Partner Drops Blob Container set to azure-iot-sdks/dotnet/$(Build.BuildNumber)"
       displayName: Next Steps
     
