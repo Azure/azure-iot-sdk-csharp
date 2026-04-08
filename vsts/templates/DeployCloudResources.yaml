@@ -24,7 +24,7 @@ steps:
       Import-Module $(Build.SourcesDirectory)/e2e/Tests/prerequisites/Azure.Iot.SDK.Test.psm1
 
       # cert management is only available in centraluseuap currently
-      $TestEnvInfo = New-AzIotTestEnvironment -AzureLocation centraluseuap -AzureSubscriptionId $subscriptionId -ResourceGroup $resourceGroupName -DpsName todo -IotHubName todo -StorageAccountName todo -EnableFileUpload -EnableCertificateManagement
+      $TestEnvInfo = New-AzIotTestEnvironment -AzureLocation centraluseuap -AzureSubscriptionId $subscriptionId -ResourceGroup $resourceGroupName -DpsName "dotnetsdkgate"+$CloudResourceUniqueSuffix+"-dps" -IotHubName "dotnetsdkgate"+$CloudResourceUniqueSuffix+"-hub" -StorageAccountName "dotnetsdkgate"+$CloudResourceUniqueSuffix -EnableFileUpload -EnableCertificateManagement
       New-AzIotDotNetSDKE2ETestConfig -TestEnvInfo $TestEnvInfo
 
 - publish:  $(Pipeline.Workspace)
