@@ -18,12 +18,14 @@ steps:
 
       # Create a unique deployment name
       $randomSuffix = -join ((65..90) + (97..122) | Get-Random -Count 5 | ForEach-Object { [char]$_ })
-      $deploymentName = "DotnetSDKE2eInfra-$randomSuffix"
 
       Write-Host "##vso[task.setvariable variable=RESOURCE_GROUP_NAME;isOutput=true]$resourceGroupName"
-      Write-Host "##vso[task.setvariable variable=DEPLOYMENT_NAME;isOutput=true]$deploymentName"
 
-      $(Build.SourcesDirectory)/e2e/Tests/prerequisites/e2eTestsSetup.ps1 -SubscriptionId $subscriptionId -Region westcentralus -ResourceGroup $resourceGroupName -GroupCertificatePassword someCertPass -TestCertificateOutputLocation $(Pipeline.Workspace)/test-certificates -DeploymentName $deploymentName
+      Import-Module $(Build.SourcesDirectory)/e2e/Tests/prerequisites/Azure.Iot.SDK.Test.psm1
+
+      # cert management is only available in centraluseuap currently
+      $TestEnvInfo = New-AzIotTestEnvironment -AzureLocation centraluseuap -AzureSubscriptionId $subscriptionId -ResourceGroup $resourceGroupName -DpsName todo -IotHubName todo -StorageAccountName todo -EnableFileUpload -EnableCertificateManagement
+      New-AzIotDotNetSDKE2ETestConfig -TestEnvInfo $TestEnvInfo
 
 - publish:  $(Pipeline.Workspace)
   displayName: 'save test certificates locally'
