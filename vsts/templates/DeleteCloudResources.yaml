@@ -7,7 +7,4 @@ steps:
     inlineScript: |
       Write-Host "Deleting resource group with name "
       Write-Host $(RESOURCE_GROUP_NAME)
-      if ! az group delete --name "$(RESOURCE_GROUP_NAME)" --yes 2>/dev/null; then
-        echo "##[warning]Synchronous delete failed, retrying with --force-deletion-types..."
-        az group delete --name "$(RESOURCE_GROUP_NAME)" --yes --force-deletion-types Microsoft.DeviceRegistry/discoveryAssetEndpointProfiles 2>/dev/null || true
-      fi
+      az group delete --name "$(RESOURCE_GROUP_NAME)" --yes --force-deletion-types Microsoft.DeviceRegistry/discoveryAssetEndpointProfiles
