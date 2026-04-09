@@ -27,7 +27,7 @@ steps:
       $dpsName = "dotnetsdkgate"+$CloudResourceUniqueSuffix+"-dps"
       $hubName = "dotnetsdkgate"+$CloudResourceUniqueSuffix+"-hub"
       $storageName = "dotnetsdkgate"+$CloudResourceUniqueSuffix
-      $testCertificateOutputLocation = $(Pipeline.Workspace)/test-certificates
+      $testCertificateOutputLocation = $(Pipeline.Workspace)\test-certificates
       $TestEnvInfo = New-AzIotTestEnvironment -AzureLocation centraluseuap -AzureSubscriptionId $subscriptionId -ResourceGroup $resourceGroupName -DpsName $dpsName -IotHubName $hubName -StorageAccountName $storageName -EnableFileUpload -EnableCertificateManagement -TestCertificateOutputLocation $testCertificateOutputLocation
       New-AzIotDotNetSDKE2ETestConfig -TestEnvInfo $TestEnvInfo
 
