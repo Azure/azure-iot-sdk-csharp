@@ -1282,7 +1282,8 @@ function Get-AzIotTestEnvironment {
 
 function New-AzIotDotNetSDKE2ETestConfig {
     param(
-        [TestEnvironmentInfo]$TestEnvInfo = $null
+        [TestEnvironmentInfo]$TestEnvInfo = $null,
+        [string] $TestCertificateOutputLocation
     )
 
     ########################################################################################################
