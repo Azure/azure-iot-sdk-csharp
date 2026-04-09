@@ -28,8 +28,8 @@ steps:
       $hubName = "dotnetsdkgate"+$CloudResourceUniqueSuffix+"-hub"
       $storageName = "dotnetsdkgate"+$CloudResourceUniqueSuffix
       $testCertificateOutputLocation = "$(Pipeline.Workspace)/test-certificates"
-      $TestEnvInfo = New-AzIotTestEnvironment -AzureLocation centraluseuap -AzureSubscriptionId $subscriptionId -ResourceGroup $resourceGroupName -DpsName $dpsName -IotHubName $hubName -StorageAccountName $storageName -EnableFileUpload -EnableCertificateManagement -TestCertificateOutputLocation $testCertificateOutputLocation
-      New-AzIotDotNetSDKE2ETestConfig -TestEnvInfo $TestEnvInfo
+      $TestEnvInfo = New-AzIotTestEnvironment -AzureLocation centraluseuap -AzureSubscriptionId $subscriptionId -ResourceGroup $resourceGroupName -DpsName $dpsName -IotHubName $hubName -StorageAccountName $storageName -EnableFileUpload -EnableCertificateManagement
+      New-AzIotDotNetSDKE2ETestConfig -TestEnvInfo $TestEnvInfo -TestCertificateOutputLocation $testCertificateOutputLocation
 
 - publish:  $(Pipeline.Workspace)
   displayName: 'save test certificates locally'
