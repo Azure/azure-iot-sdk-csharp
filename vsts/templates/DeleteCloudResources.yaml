@@ -7,4 +7,4 @@ steps:
     inlineScript: |
       Write-Host "Deleting resource group with name "
       Write-Host $(RESOURCE_GROUP_NAME)
-      az group delete --name "$(RESOURCE_GROUP_NAME)" --yes --force-deletion-types Microsoft.DeviceRegistry/discoveryAssetEndpointProfiles
+      az group delete --name "$(RESOURCE_GROUP_NAME)" --yes
