@@ -7,4 +7,4 @@ steps:
     inlineScript: |
       Write-Host "Deleting resource group with name "
       Write-Host $(RESOURCE_GROUP_NAME)
-      az group delete --name "$(RESOURCE_GROUP_NAME)" --yes
+      az group delete --name "$(RESOURCE_GROUP_NAME)" --yes # TODO specific version of AZ CLI needed for the force delete flag?
