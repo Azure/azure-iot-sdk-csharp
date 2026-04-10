@@ -26,9 +26,9 @@ namespace Microsoft.Azure.Devices.Samples
                 Environment.Exit(1);
             }
 
-            using var serviceClient = new IotHubServiceClient(parameters.HubConnectionString);
+            using RegistryManager registryManager = RegistryManager.CreateFromConnectionString(parameters.HubConnectionString);
 
-            var sample = new EdgeDeploymentSample(serviceClient);
+            var sample = new EdgeDeploymentSample(registryManager);
             await sample.RunSampleAsync();
 
             Console.WriteLine("Done.");

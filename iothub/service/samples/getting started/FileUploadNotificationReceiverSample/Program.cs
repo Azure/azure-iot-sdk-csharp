@@ -42,23 +42,16 @@ namespace Microsoft.Azure.Devices.Samples
                     // The SDK logs are written at Trace level. Set this to LogLevel.Trace to get ALL logs.
                     MinLogLevel = LogLevel.Debug,
                 });
-            ILogger<Program> logger = loggerFactory.CreateLogger<Program>();
+            var logger = loggerFactory.CreateLogger<Program>();
 
             // Instantiating this seems to do all we need for outputting SDK events to our console log.
             using var sdkLogs = new ConsoleEventListener(SdkEventProviderPrefix, logger);
 
-            TimeSpan runningTime = parameters.ApplicationRunningTime != null
+            var runningTime = parameters.ApplicationRunningTime != null
                 ? TimeSpan.FromSeconds((double)parameters.ApplicationRunningTime)
                 : Timeout.InfiniteTimeSpan;
 
-            var serviceClientOptions = new IotHubServiceClientOptions
-            {
-                Protocol = IotHubTransportProtocol.Tcp,
-                RetryPolicy = new IotHubServiceExponentialBackoffRetryPolicy(uint.MaxValue, TimeSpan.MaxValue)
-            };
-
-            using var serviceClient = new IotHubServiceClient(parameters.IoTHubConnectionString, serviceClientOptions);
-            var sample = new FileUploadNotificationReceiverSample(serviceClient, logger);
+            var sample = new FileUploadNotificationReceiverSample(parameters.IoTHubConnectionString, parameters.TransportType, logger);
             await sample.RunSampleAsync(parameters.DeviceId, runningTime);
 
             Console.WriteLine("Done.");

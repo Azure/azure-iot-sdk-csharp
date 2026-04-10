@@ -1,8 +1,12 @@
 @startuml csharpDeviceClientSDKArchitecture
-class IotHubBaseClient
+class ClientFactory 
+{ 
+}
+
+class InternalClient 
 {
-  + PipelineContext PipelineContext
-  + IDelegatingHandler InnerHandler
+  + pipelineContext
+  + IDelegatingHandler innerHandler
 }
 
 class DeviceClient 
@@ -13,9 +17,10 @@ class ModuleClient
 {
 }
 
-IotHubBaseClient --* DeviceClient
-IotHubBaseClient --* ModuleClient
-IotHubBaseClient -> "Transport Pipeline"
+ClientFactory --> InternalClient
+InternalClient --* DeviceClient
+InternalClient --* ModuleClient
+InternalClient -> "Transport Pipeline"
 
 package "Transport Pipeline" 
 {
@@ -27,30 +32,23 @@ package "Transport Pipeline"
     + WaitForTransportClosedAsync
     + IsUsable
     ..Device to Cloud (D2C)..
-    + SendTelemetryAsync
+    + SendEventAsync
     ..Cloud to Device (C2D)..
-    + EnableReceiveMessageAsync
-    + DisableReceiveMessageAsync
+    + ReceiveAsync
+    + AbandonAsync
+    + CompleteAsync
+    ..Module to Module (M2M)..
+    + EnableEventReceiveAsync
     ..Methods..
     + EnableMethodsAsync
-    + DisableMethodsAsync
     + SendMethodResponseAsync
     ..Twin..
-    + GetTwinAsync
-    + UpdateReportedPropertiesAsync
+    + SendTwinGetAsync
+    + SendTwinPatchAsync
     + EnableTwinPatchAsync
-    + DisableTwinPatchAsync
-    ..HTTP operations..
-    + GetFileUploadSasUriAsync
-    + CompleteFileUploadAsync
-    + InvokeMethodAsync
   }
 
-  class DefaultDelegatingHandler 
-  {
-  }
-
-  class ConnectionStateDelegatingHandler
+  abstract class DefaultDelegatingHandler 
   {
   }
 
@@ -58,17 +56,15 @@ package "Transport Pipeline"
   {
   }
 
-  class ExceptionRemappingHandler
+  class ErrorDelegatingHandler 
   {
   }
 
-  class TransportDelegatingHandler
+  class ProtocolRoutingDelegatingHandler 
   {
-    + CreateNewTransportIfNotReady
-    + WaitForTransportClosedAsync
   }
 
-  abstract class TransportHandlerBase
+  abstract class TransportHandler 
   {
     + OnTransportClosedGracefully
     + OnTransportDisconnected
@@ -87,19 +83,16 @@ package "Transport Pipeline"
   }
 
   IDelegatingHandler <|-- DefaultDelegatingHandler
-  DefaultDelegatingHandler <|-- ConnectionStateDelegatingHandler
   DefaultDelegatingHandler <|-- RetryDelegatingHandler
-  DefaultDelegatingHandler <|-- ExceptionRemappingHandler
-  DefaultDelegatingHandler <|-- TransportDelegatingHandler
-  DefaultDelegatingHandler <|-- TransportHandlerBase
-  TransportHandlerBase <|-- MqttTransportHandler
-  TransportHandlerBase <|-- AmqpTransportHandler
-  TransportHandlerBase <|-- HttpTransportHandler
-  DefaultDelegatingHandler --> ConnectionStateDelegatingHandler
-  ConnectionStateDelegatingHandler -> RetryDelegatingHandler
-  RetryDelegatingHandler -> ExceptionRemappingHandler
-  ExceptionRemappingHandler-> TransportDelegatingHandler
-  TransportDelegatingHandler -> TransportHandlerBase
-  TransportHandlerBase -> HttpTransportHandler
+  DefaultDelegatingHandler <|-- ErrorDelegatingHandler
+  DefaultDelegatingHandler <|-- ProtocolRoutingDelegatingHandler
+  DefaultDelegatingHandler <|-- TransportHandler
+  TransportHandler <|-- AmqpTransportHandler
+  TransportHandler <|-- MqttTransportHandler
+  TransportHandler <|-- HttpTransportHandler
+  RetryDelegatingHandler -> ErrorDelegatingHandler
+  ErrorDelegatingHandler -> ProtocolRoutingDelegatingHandler
+  ProtocolRoutingDelegatingHandler -> TransportHandler
 }
+
 @enduml

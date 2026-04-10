@@ -2,29 +2,29 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Net;
-using System.Security.Cryptography.X509Certificates;
 using System.Text;
-using System.Text.Json;
-using FluentAssertions;
-using FluentAssertions.Specialized;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Newtonsoft.Json;
+using System.Security.Cryptography.X509Certificates;
 
-namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
+
+namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 {
     [TestClass]
     [TestCategory("Unit")]
     public class X509AttestationTests
     {
-        private const string SubjectName = "CN=ROOT_00000000-0000-0000-0000-000000000000, OU=Azure IoT, O=MSFT, C=US";
-        private const string Sha1Thumbprint = "0000000000000000000000000000000000";
-        private const string Sha256Thumbprint = "validEnrollmentGroupId";
-        private const string IssuerName = "CN=ROOT_00000000-0000-0000-0000-000000000000, OU=Azure IoT, O=MSFT, C=US";
-        private const string NotBeforeUtcString = "2017-11-14T12:34:18.123Z";
-        private const string NotAfterUtcString = "2017-11-14T12:34:18.321Z";
-        private const string SerialNumber = "000000000000000000";
-        private const int Version = 3;
-        private const string PublicKeyCertificateString =
+        private const string SUBJECT_NAME = "CN=ROOT_00000000-0000-0000-0000-000000000000, OU=Azure IoT, O=MSFT, C=US";
+        private const string SHA1THUMBPRINT = "0000000000000000000000000000000000";
+        private const string SHA256THUMBPRINT = "validEnrollmentGroupId";
+        private const string ISSUER_NAME = "CN=ROOT_00000000-0000-0000-0000-000000000000, OU=Azure IoT, O=MSFT, C=US";
+        private const string NOT_BEFORE_UTC_STRING = "2017-11-14T12:34:18.123Z";
+        private DateTime NOT_BEFORE_UTC = new DateTime(2017, 11, 14, 12, 34, 18, 123, DateTimeKind.Utc);
+        private const string NOT_AFTER_UTC_STRING = "2017-11-14T12:34:18.321Z";
+        private DateTime NOT_AFTER_UTC = new DateTime(2017, 11, 14, 12, 34, 18, 321, DateTimeKind.Utc);
+        private const string SERIAL_NUMBER = "000000000000000000";
+        private const int VERSION = 3;
+        private const string PUBLIC_KEY_CERTIFICATE_STRING =
             "-----BEGIN CERTIFICATE-----\n" +
             "MIIBiDCCAS2gAwIBAgIFWks8LR4wCgYIKoZIzj0EAwIwNjEUMBIGA1UEAwwLcmlv\n" +
             "dGNvcmVuZXcxETAPBgNVBAoMCE1TUl9URVNUMQswCQYDVQQGEwJVUzAgFw0xNzAx\n" +
@@ -36,444 +36,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
             "/yAQNj2Vji9RthQ33HG/QdL12b1ABU5UXgIhAPJujG/c/S+7vcREWI7bQcCb31JI\n" +
             "BDhWZbt4eyCvXZtZ\n" +
             "-----END CERTIFICATE-----\n";
-        private const string CaReferenceString = "valid-ca-reference";
-
-        [TestMethod]
-        public void X509AttestationCreateFromClientCertificatesThrowsOnNullPrimaryCertificate()
-        {
-            // arrange
-            X509Certificate2 primaryCert = null;
-            X509Certificate2 secondaryCert = null;
-            string primaryStr = null;
-            string secondaryStr = null;
-
-            // act - assert
-            Action act = () => X509Attestation.CreateFromClientCertificates(primaryCert);
-            act.Should().Throw<ArgumentException>();
-
-            act = () => X509Attestation.CreateFromClientCertificates(primaryCert, secondaryCert);
-            act.Should().Throw<ArgumentException>();
-
-            act = () => X509Attestation.CreateFromClientCertificates(primaryStr);
-            act.Should().Throw<ArgumentException>();
-
-            act = () => X509Attestation.CreateFromClientCertificates(primaryStr, secondaryStr);
-            act.Should().Throw<ArgumentException>();
-
-        }
-
-        [TestMethod]
-        public void X509AttestationCreateFromClientCertificatesThrowsOnInvalidPrimaryCertificate()
-        {
-            // arrange
-            string primaryStr =
-                "-----BEGIN CERTIFICATE-----\n" +
-                "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n" +
-                "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n" +
-                "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n" +
-                "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n" +
-                "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n" +
-                "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n" +
-                "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n" +
-                "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n" +
-                "xxxxxxxxxxxxxxxx\n" +
-                "-----END CERTIFICATE-----\n";
-            string secondaryStr = null;
-
-            // act - assert
-            Action act1 = () => X509Attestation.CreateFromClientCertificates(primaryStr);
-            ExceptionAssertions<ProvisioningServiceException> error1 = act1.Should().Throw<ProvisioningServiceException>();
-            error1.And.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-            error1.And.IsTransient.Should().BeFalse();
-
-            Action act2 = () => X509Attestation.CreateFromClientCertificates(primaryStr, secondaryStr);
-            var error2 = act2.Should().Throw<ProvisioningServiceException>();
-            error2.And.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-            error2.And.IsTransient.Should().BeFalse();
-        }
-
-        [TestMethod]
-        public void X509AttestationCreateFromRootCertificatesThrowsOnNullPrimaryCertificate()
-        {
-            // arrange
-            X509Certificate2 primaryCert = null;
-            X509Certificate2 secondaryCert = null;
-            string primaryStr = null;
-            string secondaryStr = null;
-
-            // act - assert
-            TestAssert.Throws<ArgumentException>(() => X509Attestation.CreateFromRootCertificates(primaryCert));
-            TestAssert.Throws<ArgumentException>(() => X509Attestation.CreateFromRootCertificates(primaryCert, secondaryCert));
-            TestAssert.Throws<ArgumentException>(() => X509Attestation.CreateFromRootCertificates(primaryStr));
-            TestAssert.Throws<ArgumentException>(() => X509Attestation.CreateFromRootCertificates(primaryStr, secondaryStr));
-        }
-
-        [TestMethod]
-        public void X509AttestationCreateFromRootCertificatesThrowsOnInvalidPrimaryCertificate()
-        {
-            // arrange
-            string primaryStr =
-                "-----BEGIN CERTIFICATE-----\n" +
-                "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n" +
-                "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n" +
-                "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n" +
-                "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n" +
-                "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n" +
-                "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n" +
-                "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n" +
-                "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n" +
-                "xxxxxxxxxxxxxxxx\n" +
-                "-----END CERTIFICATE-----\n";
-            string secondaryStr = null;
-
-            // act - assert
-            Action act1 = () => X509Attestation.CreateFromRootCertificates(primaryStr);
-            ExceptionAssertions<ProvisioningServiceException> error1 = act1.Should().Throw<ProvisioningServiceException>();
-            error1.And.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-            error1.And.IsTransient.Should().BeFalse();
-
-            Action act2 = () => X509Attestation.CreateFromRootCertificates(primaryStr, secondaryStr);
-            ExceptionAssertions<ProvisioningServiceException> error2 = act2.Should().Throw<ProvisioningServiceException>();
-            error2.And.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-            error2.And.IsTransient.Should().BeFalse();
-        }
-
-        [TestMethod]
-        public void X509AttestationCreateFromClientCertificatesSucceedOnPrimaryCertificate()
-        {
-            // arrange
-            var primary = new X509Certificate2(Encoding.ASCII.GetBytes(PublicKeyCertificateString));
-
-            // act
-            var attestation = X509Attestation.CreateFromClientCertificates(primary);
-            primary.Dispose();
-
-            // assert
-            Assert.IsNotNull(attestation.ClientCertificates.Primary);
-            Assert.IsNull(attestation.ClientCertificates.Secondary);
-            Assert.IsNull(attestation.RootCertificates);
-            Assert.IsNull(attestation.CaReferences);
-        }
-
-        [TestMethod]
-        public void X509AttestationCreateFromClientCertificatesSucceedOnPrimaryAndSecondaryCertificates()
-        {
-            // arrange
-            var primary = new X509Certificate2(Encoding.ASCII.GetBytes(PublicKeyCertificateString));
-            var secondary = new X509Certificate2(Encoding.ASCII.GetBytes(PublicKeyCertificateString));
-
-            // act
-            var attestation = X509Attestation.CreateFromClientCertificates(primary, secondary);
-            primary.Dispose();
-            secondary.Dispose();
-
-            // assert
-            Assert.IsNotNull(attestation.ClientCertificates.Primary);
-            Assert.IsNotNull(attestation.ClientCertificates.Secondary);
-            Assert.IsNull(attestation.RootCertificates);
-            Assert.IsNull(attestation.CaReferences);
-        }
-
-        [TestMethod]
-        public void X509AttestationCreateFromClientCertificatesSucceedOnPrimaryAndSecondaryNullCertificates()
-        {
-            // arrange
-            var primary = new X509Certificate2(Encoding.ASCII.GetBytes(PublicKeyCertificateString));
-            X509Certificate2 secondary = null;
-
-            // act
-            var attestation = X509Attestation.CreateFromClientCertificates(primary, secondary);
-            primary.Dispose();
-
-            // assert
-            Assert.IsNotNull(attestation.ClientCertificates.Primary);
-            Assert.IsNull(attestation.ClientCertificates.Secondary);
-            Assert.IsNull(attestation.RootCertificates);
-            Assert.IsNull(attestation.CaReferences);
-        }
-
-        [TestMethod]
-        public void X509AttestationCreateFromClientCertificatesSucceedOnPrimaryString()
-        {
-            // arrange
-            string primary = PublicKeyCertificateString;
-
-            // act
-            var attestation = X509Attestation.CreateFromClientCertificates(primary);
-
-            // assert
-            Assert.IsNotNull(attestation.ClientCertificates.Primary);
-            Assert.IsNull(attestation.ClientCertificates.Secondary);
-            Assert.IsNull(attestation.RootCertificates);
-            Assert.IsNull(attestation.CaReferences);
-        }
-
-        [TestMethod]
-        public void X509AttestationCreateFromClientCertificatesSucceedOnPrimaryAndSecondaryString()
-        {
-            // arrange
-            string primary = PublicKeyCertificateString;
-            string secondary = PublicKeyCertificateString;
-
-            // act
-            var attestation = X509Attestation.CreateFromClientCertificates(primary, secondary);
-
-            // assert
-            Assert.IsNotNull(attestation.ClientCertificates.Primary);
-            Assert.IsNotNull(attestation.ClientCertificates.Secondary);
-            Assert.IsNull(attestation.RootCertificates);
-            Assert.IsNull(attestation.CaReferences);
-        }
-
-        [TestMethod]
-        public void X509AttestationCreateFromClientCertificatesSucceedOnPrimaryAndSecondaryNullString()
-        {
-            // arrange
-            string primary = PublicKeyCertificateString;
-            string secondary = null;
-
-            // act
-            var attestation = X509Attestation.CreateFromClientCertificates(primary, secondary);
-
-            // assert
-            Assert.IsNotNull(attestation.ClientCertificates.Primary);
-            Assert.IsNull(attestation.ClientCertificates.Secondary);
-            Assert.IsNull(attestation.RootCertificates);
-            Assert.IsNull(attestation.CaReferences);
-        }
-
-        [TestMethod]
-        public void X509AttestationCreateFromRootCertificatesSucceedOnPrimaryCertificate()
-        {
-            // arrange
-            var primary = new X509Certificate2(Encoding.ASCII.GetBytes(PublicKeyCertificateString));
-
-            // act
-            var attestation = X509Attestation.CreateFromRootCertificates(primary);
-            primary.Dispose();
-
-            // assert
-            Assert.IsNotNull(attestation.RootCertificates.Primary);
-            Assert.IsNull(attestation.RootCertificates.Secondary);
-            Assert.IsNull(attestation.ClientCertificates);
-            Assert.IsNull(attestation.CaReferences);
-        }
-
-        [TestMethod]
-        public void X509AttestationCreateFromRootCertificatesSucceedOnPrimaryAndSecondaryCertificates()
-        {
-            // arrange
-            var primary = new X509Certificate2(Encoding.ASCII.GetBytes(PublicKeyCertificateString));
-            var secondary = new X509Certificate2(Encoding.ASCII.GetBytes(PublicKeyCertificateString));
-
-            // act
-            var attestation = X509Attestation.CreateFromRootCertificates(primary, secondary);
-            primary.Dispose();
-            secondary.Dispose();
-
-            // assert
-            Assert.IsNotNull(attestation.RootCertificates.Primary);
-            Assert.IsNotNull(attestation.RootCertificates.Secondary);
-            Assert.IsNull(attestation.ClientCertificates);
-            Assert.IsNull(attestation.CaReferences);
-        }
-
-        [TestMethod]
-        public void X509AttestationCreateFromRootCertificatesSucceedOnPrimaryAndSecondaryNullCertificates()
-        {
-            // arrange
-            var primary = new X509Certificate2(Encoding.ASCII.GetBytes(PublicKeyCertificateString));
-            X509Certificate2 secondary = null;
-
-            // act
-            var attestation = X509Attestation.CreateFromRootCertificates(primary, secondary);
-            primary.Dispose();
-
-            // assert
-            Assert.IsNotNull(attestation.RootCertificates.Primary);
-            Assert.IsNull(attestation.RootCertificates.Secondary);
-            Assert.IsNull(attestation.ClientCertificates);
-            Assert.IsNull(attestation.CaReferences);
-        }
-
-        [TestMethod]
-        public void X509AttestationCreateFromRootCertificatesSucceedOnPrimaryString()
-        {
-            // arrange
-            string primary = PublicKeyCertificateString;
-
-            // act
-            var attestation = X509Attestation.CreateFromRootCertificates(primary);
-
-            // assert
-            Assert.IsNotNull(attestation.RootCertificates.Primary);
-            Assert.IsNull(attestation.RootCertificates.Secondary);
-            Assert.IsNull(attestation.ClientCertificates);
-            Assert.IsNull(attestation.CaReferences);
-        }
-
-        [TestMethod]
-        public void X509AttestationCreateFromRootCertificatesSucceedOnPrimaryAndSecondaryString()
-        {
-            // arrange
-            string primary = PublicKeyCertificateString;
-            string secondary = PublicKeyCertificateString;
-
-            // act
-            var attestation = X509Attestation.CreateFromRootCertificates(primary, secondary);
-
-            // assert
-            Assert.IsNotNull(attestation.RootCertificates.Primary);
-            Assert.IsNotNull(attestation.RootCertificates.Secondary);
-            Assert.IsNull(attestation.ClientCertificates);
-            Assert.IsNull(attestation.CaReferences);
-        }
-
-        [TestMethod]
-        public void X509AttestationCreateFromRootCertificatesSucceedOnPrimaryAndSecondaryNullString()
-        {
-            // arrange
-            string primary = PublicKeyCertificateString;
-            string secondary = null;
-
-            // act
-            var attestation = X509Attestation.CreateFromRootCertificates(primary, secondary);
-
-            // assert
-            Assert.IsNotNull(attestation.RootCertificates.Primary);
-            Assert.IsNull(attestation.RootCertificates.Secondary);
-            Assert.IsNull(attestation.ClientCertificates);
-            Assert.IsNull(attestation.CaReferences);
-        }
-
-        [TestMethod]
-        public void X509AttestationCreateFromCAReferencesThrowsOnNullPrimaryCertificate()
-        {
-            // arrange
-            string primaryStr = null;
-            string secondaryStr = null;
-
-            // act - assert
-            Action act = () => X509Attestation.CreateFromCaReferences(primaryStr);
-            act.Should().Throw<ArgumentException>();
-
-            act = () => X509Attestation.CreateFromCaReferences(primaryStr, secondaryStr);
-            act.Should().Throw<ArgumentException>();
-        }
-
-        [TestMethod]
-        public void X509AttestationCreateFromCAReferencesSucceedOnPrimaryString()
-        {
-            // arrange
-            string primary = CaReferenceString;
-
-            // act
-            var attestation = X509Attestation.CreateFromCaReferences(primary);
-
-            // assert
-            Assert.IsNotNull(attestation.CaReferences.Primary);
-            Assert.IsNull(attestation.CaReferences.Secondary);
-            Assert.IsNull(attestation.ClientCertificates);
-            Assert.IsNull(attestation.RootCertificates);
-        }
-
-        [TestMethod]
-        public void X509AttestationCreateFromCAReferencesSucceedOnPrimaryAndSecondaryString()
-        {
-            // arrange
-            string primary = CaReferenceString;
-            string secondary = CaReferenceString;
-
-            // act
-            var attestation = X509Attestation.CreateFromCaReferences(primary, secondary);
-
-            // assert
-            Assert.IsNotNull(attestation.CaReferences.Primary);
-            Assert.IsNotNull(attestation.CaReferences.Secondary);
-            Assert.IsNull(attestation.ClientCertificates);
-            Assert.IsNull(attestation.RootCertificates);
-        }
-
-        [TestMethod]
-        public void X509AttestationCreateFromCAReferencesSucceedOnPrimaryAndSecondaryNullString()
-        {
-            // arrange
-            string primary = CaReferenceString;
-            string secondary = null;
-
-            // act
-            var attestation = X509Attestation.CreateFromCaReferences(primary, secondary);
-
-            // assert
-            Assert.IsNotNull(attestation.CaReferences.Primary);
-            Assert.IsNull(attestation.CaReferences.Secondary);
-            Assert.IsNull(attestation.ClientCertificates);
-            Assert.IsNull(attestation.RootCertificates);
-        }
-
-        [TestMethod]
-        public void X509AttestationGetX509CertificateInfoSucceedOnPrimaryAndSecondaryClientCertificates()
-        {
-            // arrange
-            string json = X509AttestationTests.MakeX509AttestationJson("clientCertificates");
-            X509Attestation attestation = JsonSerializer.Deserialize<X509Attestation>(json, JsonSerializerSettings.Options);
-
-            // act - assert
-            Assert.IsNotNull(attestation.GetPrimaryX509CertificateInfo());
-            Assert.IsNotNull(attestation.GetSecondaryX509CertificateInfo());
-        }
-
-        [TestMethod]
-        public void X509AttestationGetX509CertificateInfoSucceedOnPrimaryOnlyClientCertificates()
-        {
-            // arrange
-            string json = X509AttestationTests.MakeX509AttestationJson("clientCertificates", true);
-            X509Attestation attestation = JsonSerializer.Deserialize<X509Attestation>(json, JsonSerializerSettings.Options);
-
-            // act - assert
-            Assert.IsNotNull(attestation.GetPrimaryX509CertificateInfo());
-            Assert.IsNull(attestation.GetSecondaryX509CertificateInfo());
-        }
-
-        [TestMethod]
-        public void X509AttestationGetX509CertificateInfoSucceedOnPrimaryAndSecondaryRoottCertificates()
-        {
-            // arrange
-            string json = X509AttestationTests.MakeX509AttestationJson("signingCertificates");
-            X509Attestation attestation = JsonSerializer.Deserialize<X509Attestation>(json, JsonSerializerSettings.Options);
-
-            // act - assert
-            Assert.IsNotNull(attestation.GetPrimaryX509CertificateInfo());
-            Assert.IsNotNull(attestation.GetSecondaryX509CertificateInfo());
-        }
-
-        [TestMethod]
-        public void X509AttestationGetX509CertificateInfoSucceedOnPrimaryAndSecondaryCAReferences()
-        {
-            // arrange
-            string json =
-                "{" +
-                "  \"caReferences\": {" +
-                "    \"primary\": \"" + CaReferenceString + "\"," +
-                "    \"secondary\": \"" + CaReferenceString + "\"" +
-                "  }" +
-                "}";
-            X509Attestation attestation = JsonSerializer.Deserialize<X509Attestation>(json, JsonSerializerSettings.Options);
-
-            // act - assert
-            Assert.IsNull(attestation.GetPrimaryX509CertificateInfo());
-            Assert.IsNull(attestation.GetSecondaryX509CertificateInfo());
-        }
-
-        private static string MakeCertInfoJson(
-            string subjectName,
-            string sha1Thumbprint,
-            string sha256Thumbprint,
-            string issuerName,
-            string notBeforeUtcString,
-            string notAfterUtcString,
-            string serialNumber,
-            int version)
+        private const string CA_REFERENCE_STRING = "valid-ca-reference";
+
+        private string MakeCertInfoJson(
+            string subjectName, string sha1Thumbprint, string sha256Thumbprint,
+            string issuerName, string notBeforeUtcString, string notAfterUtcString, string serialNumber, int version)
         {
             string json =
                 "{" +
@@ -493,17 +60,17 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
             return json;
         }
 
-        private static string MakeX509AttestationJson(string certName, bool primaryOnly = false)
+        private string MakeX509AttestationJson(string certName, bool primaryOnly = false)
         {
             string json =
                 "{" +
                 "  \"" + certName + "\": {" +
                 "    \"primary\": " +
-                MakeCertInfoJson(SubjectName, Sha1Thumbprint, Sha256Thumbprint, IssuerName, NotBeforeUtcString, NotAfterUtcString, SerialNumber, Version) +
-                (primaryOnly ? "" :
+                MakeCertInfoJson(SUBJECT_NAME, SHA1THUMBPRINT, SHA256THUMBPRINT, ISSUER_NAME, NOT_BEFORE_UTC_STRING, NOT_AFTER_UTC_STRING, SERIAL_NUMBER, VERSION) +
+                (primaryOnly?"":
                 "," +
                 "    \"secondary\": " +
-                MakeCertInfoJson(SubjectName, Sha1Thumbprint, Sha256Thumbprint, IssuerName, NotBeforeUtcString, NotAfterUtcString, SerialNumber, Version)
+                MakeCertInfoJson(SUBJECT_NAME, SHA1THUMBPRINT, SHA256THUMBPRINT, ISSUER_NAME, NOT_BEFORE_UTC_STRING, NOT_AFTER_UTC_STRING, SERIAL_NUMBER, VERSION)
                 ) +
                 "  }" +
                 "}";
@@ -511,5 +78,449 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
             return json;
         }
 
+
+        /* SRS_X509_ATTESTATION_21_001: [The factory shall throws ArgumentException if the primary certificate is null or empty.] */
+        [TestMethod]
+        public void X509AttestationCreateFromClientCertificatesThrowsOnNullPrimaryCertificate()
+        {
+            // arrange
+            X509Certificate2 primaryCert = null;
+            X509Certificate2 secondaryCert = null;
+            string primaryStr = null;
+            string secondaryStr = null;
+
+            // act - assert
+            TestAssert.Throws<ArgumentException>(() => X509Attestation.CreateFromClientCertificates(primaryCert));
+            TestAssert.Throws<ArgumentException>(() => X509Attestation.CreateFromClientCertificates(primaryCert, secondaryCert));
+            TestAssert.Throws<ArgumentException>(() => X509Attestation.CreateFromClientCertificates(primaryStr));
+            TestAssert.Throws<ArgumentException>(() => X509Attestation.CreateFromClientCertificates(primaryStr, secondaryStr));
+        }
+
+        [TestMethod]
+        public void X509AttestationCreateFromRootCertificatesThrowsOnNullPrimaryCertificate()
+        {
+            // arrange
+            X509Certificate2 primaryCert = null;
+            X509Certificate2 secondaryCert = null;
+            string primaryStr = null;
+            string secondaryStr = null;
+
+            // act - assert
+            TestAssert.Throws<ArgumentException>(() => X509Attestation.CreateFromRootCertificates(primaryCert));
+            TestAssert.Throws<ArgumentException>(() => X509Attestation.CreateFromRootCertificates(primaryCert, secondaryCert));
+            TestAssert.Throws<ArgumentException>(() => X509Attestation.CreateFromRootCertificates(primaryStr));
+            TestAssert.Throws<ArgumentException>(() => X509Attestation.CreateFromRootCertificates(primaryStr, secondaryStr));
+        }
+
+        /* SRS_X509_ATTESTATION_21_002: [The factory shall create a new instance of the X509Certificates with the provided primary and secondary certificates.] */
+        /* SRS_X509_ATTESTATION_21_003: [The factory shall create a new instance of the X509Attestation with the created X509Certificates as the ClientCertificates.] */
+        [TestMethod]
+        public void X509AttestationCreateFromClientCertificatesSucceedOnPrimaryCertificate()
+        {
+            // arrange
+            var primary = new X509Certificate2(Encoding.ASCII.GetBytes(PUBLIC_KEY_CERTIFICATE_STRING));
+
+            // act
+            var attestation = X509Attestation.CreateFromClientCertificates(primary);
+            primary.Dispose();
+
+            // assert
+            Assert.IsNotNull(attestation.ClientCertificates.Primary);
+            Assert.IsNull(attestation.ClientCertificates.Secondary);
+            Assert.IsNull(attestation.RootCertificates);
+            Assert.IsNull(attestation.CAReferences);
+        }
+
+        [TestMethod]
+        public void X509AttestationCreateFromClientCertificatesSucceedOnPrimaryAndSecondaryCertificates()
+        {
+            // arrange
+            var primary = new X509Certificate2(Encoding.ASCII.GetBytes(PUBLIC_KEY_CERTIFICATE_STRING));
+            var secondary = new X509Certificate2(Encoding.ASCII.GetBytes(PUBLIC_KEY_CERTIFICATE_STRING));
+
+            // act
+            var attestation = X509Attestation.CreateFromClientCertificates(primary, secondary);
+            primary.Dispose();
+            secondary.Dispose();
+
+            // assert
+            Assert.IsNotNull(attestation.ClientCertificates.Primary);
+            Assert.IsNotNull(attestation.ClientCertificates.Secondary);
+            Assert.IsNull(attestation.RootCertificates);
+            Assert.IsNull(attestation.CAReferences);
+        }
+
+        [TestMethod]
+        public void X509AttestationCreateFromClientCertificatesSucceedOnPrimaryAndSecondaryNullCertificates()
+        {
+            // arrange
+            var primary = new X509Certificate2(Encoding.ASCII.GetBytes(PUBLIC_KEY_CERTIFICATE_STRING));
+            X509Certificate2 secondary = null;
+
+            // act
+            var attestation = X509Attestation.CreateFromClientCertificates(primary, secondary);
+            primary.Dispose();
+
+            // assert
+            Assert.IsNotNull(attestation.ClientCertificates.Primary);
+            Assert.IsNull(attestation.ClientCertificates.Secondary);
+            Assert.IsNull(attestation.RootCertificates);
+            Assert.IsNull(attestation.CAReferences);
+        }
+
+        [TestMethod]
+        public void X509AttestationCreateFromClientCertificatesSucceedOnPrimaryString()
+        {
+            // arrange
+            string primary = PUBLIC_KEY_CERTIFICATE_STRING;
+
+            // act
+            var attestation = X509Attestation.CreateFromClientCertificates(primary);
+
+            // assert
+            Assert.IsNotNull(attestation.ClientCertificates.Primary);
+            Assert.IsNull(attestation.ClientCertificates.Secondary);
+            Assert.IsNull(attestation.RootCertificates);
+            Assert.IsNull(attestation.CAReferences);
+        }
+
+        [TestMethod]
+        public void X509AttestationCreateFromClientCertificatesSucceedOnPrimaryAndSecondaryString()
+        {
+            // arrange
+            string primary = PUBLIC_KEY_CERTIFICATE_STRING;
+            string secondary = PUBLIC_KEY_CERTIFICATE_STRING;
+
+            // act
+            var attestation = X509Attestation.CreateFromClientCertificates(primary, secondary);
+
+            // assert
+            Assert.IsNotNull(attestation.ClientCertificates.Primary);
+            Assert.IsNotNull(attestation.ClientCertificates.Secondary);
+            Assert.IsNull(attestation.RootCertificates);
+            Assert.IsNull(attestation.CAReferences);
+        }
+
+        [TestMethod]
+        public void X509AttestationCreateFromClientCertificatesSucceedOnPrimaryAndSecondaryNullString()
+        {
+            // arrange
+            string primary = PUBLIC_KEY_CERTIFICATE_STRING;
+            string secondary = null;
+
+            // act
+            var attestation = X509Attestation.CreateFromClientCertificates(primary, secondary);
+
+            // assert
+            Assert.IsNotNull(attestation.ClientCertificates.Primary);
+            Assert.IsNull(attestation.ClientCertificates.Secondary);
+            Assert.IsNull(attestation.RootCertificates);
+            Assert.IsNull(attestation.CAReferences);
+        }
+
+        /* SRS_X509_ATTESTATION_21_004: [The factory shall create a new instance of the X509Attestation with the created X509Certificates as the RootCertificates.] */
+        [TestMethod]
+        public void X509AttestationCreateFromRootCertificatesSucceedOnPrimaryCertificate()
+        {
+            // arrange
+            var primary = new X509Certificate2(Encoding.ASCII.GetBytes(PUBLIC_KEY_CERTIFICATE_STRING));
+
+            // act
+            var attestation = X509Attestation.CreateFromRootCertificates(primary);
+            primary.Dispose();
+
+            // assert
+            Assert.IsNotNull(attestation.RootCertificates.Primary);
+            Assert.IsNull(attestation.RootCertificates.Secondary);
+            Assert.IsNull(attestation.ClientCertificates);
+            Assert.IsNull(attestation.CAReferences);
+        }
+
+        [TestMethod]
+        public void X509AttestationCreateFromRootCertificatesSucceedOnPrimaryAndSecondaryCertificates()
+        {
+            // arrange
+            var primary = new X509Certificate2(Encoding.ASCII.GetBytes(PUBLIC_KEY_CERTIFICATE_STRING));
+            var secondary = new X509Certificate2(Encoding.ASCII.GetBytes(PUBLIC_KEY_CERTIFICATE_STRING));
+
+            // act
+            var attestation = X509Attestation.CreateFromRootCertificates(primary, secondary);
+            primary.Dispose();
+            secondary.Dispose();
+
+            // assert
+            Assert.IsNotNull(attestation.RootCertificates.Primary);
+            Assert.IsNotNull(attestation.RootCertificates.Secondary);
+            Assert.IsNull(attestation.ClientCertificates);
+            Assert.IsNull(attestation.CAReferences);
+        }
+
+        [TestMethod]
+        public void X509AttestationCreateFromRootCertificatesSucceedOnPrimaryAndSecondaryNullCertificates()
+        {
+            // arrange
+            var primary = new X509Certificate2(Encoding.ASCII.GetBytes(PUBLIC_KEY_CERTIFICATE_STRING));
+            X509Certificate2 secondary = null;
+
+            // act
+            var attestation = X509Attestation.CreateFromRootCertificates(primary, secondary);
+            primary.Dispose();
+
+            // assert
+            Assert.IsNotNull(attestation.RootCertificates.Primary);
+            Assert.IsNull(attestation.RootCertificates.Secondary);
+            Assert.IsNull(attestation.ClientCertificates);
+            Assert.IsNull(attestation.CAReferences);
+        }
+
+        [TestMethod]
+        public void X509AttestationCreateFromRootCertificatesSucceedOnPrimaryString()
+        {
+            // arrange
+            string primary = PUBLIC_KEY_CERTIFICATE_STRING;
+
+            // act
+            var attestation = X509Attestation.CreateFromRootCertificates(primary);
+
+            // assert
+            Assert.IsNotNull(attestation.RootCertificates.Primary);
+            Assert.IsNull(attestation.RootCertificates.Secondary);
+            Assert.IsNull(attestation.ClientCertificates);
+            Assert.IsNull(attestation.CAReferences);
+        }
+
+        [TestMethod]
+        public void X509AttestationCreateFromRootCertificatesSucceedOnPrimaryAndSecondaryString()
+        {
+            // arrange
+            string primary = PUBLIC_KEY_CERTIFICATE_STRING;
+            string secondary = PUBLIC_KEY_CERTIFICATE_STRING;
+
+            // act
+            var attestation = X509Attestation.CreateFromRootCertificates(primary, secondary);
+
+            // assert
+            Assert.IsNotNull(attestation.RootCertificates.Primary);
+            Assert.IsNotNull(attestation.RootCertificates.Secondary);
+            Assert.IsNull(attestation.ClientCertificates);
+            Assert.IsNull(attestation.CAReferences);
+        }
+
+        [TestMethod]
+        public void X509AttestationCreateFromRootCertificatesSucceedOnPrimaryAndSecondaryNullString()
+        {
+            // arrange
+            string primary = PUBLIC_KEY_CERTIFICATE_STRING;
+            string secondary = null;
+
+            // act
+            var attestation = X509Attestation.CreateFromRootCertificates(primary, secondary);
+
+            // assert
+            Assert.IsNotNull(attestation.RootCertificates.Primary);
+            Assert.IsNull(attestation.RootCertificates.Secondary);
+            Assert.IsNull(attestation.ClientCertificates);
+            Assert.IsNull(attestation.CAReferences);
+        }
+
+        /* SRS_X509_ATTESTATION_21_005: [The factory shall throws ArgumentException if the primary CA reference is null or empty.] */
+        [TestMethod]
+        public void X509AttestationCreateFromCAReferencesThrowsOnNullPrimaryCertificate()
+        {
+            // arrange
+            string primaryStr = null;
+            string secondaryStr = null;
+
+            // act - assert
+            TestAssert.Throws<ArgumentException>(() => X509Attestation.CreateFromCAReferences(primaryStr));
+            TestAssert.Throws<ArgumentException>(() => X509Attestation.CreateFromCAReferences(primaryStr, secondaryStr));
+        }
+
+        /* SRS_X509_ATTESTATION_21_006: [The factory shall create a new instance of the X509Certificates with the provided primary and secondary CA reference.] */
+        /* SRS_X509_ATTESTATION_21_007: [The factory shall create a new instance of the X509Attestation with the created X509Certificates as the caReference.] */
+        [TestMethod]
+        public void X509AttestationCreateFromCAReferencesSucceedOnPrimaryString()
+        {
+            // arrange
+            string primary = CA_REFERENCE_STRING;
+
+            // act
+            var attestation = X509Attestation.CreateFromCAReferences(primary);
+
+            // assert
+            Assert.IsNotNull(attestation.CAReferences.Primary);
+            Assert.IsNull(attestation.CAReferences.Secondary);
+            Assert.IsNull(attestation.ClientCertificates);
+            Assert.IsNull(attestation.RootCertificates);
+        }
+
+        [TestMethod]
+        public void X509AttestationCreateFromCAReferencesSucceedOnPrimaryAndSecondaryString()
+        {
+            // arrange
+            string primary = CA_REFERENCE_STRING;
+            string secondary = CA_REFERENCE_STRING;
+
+            // act
+            var attestation = X509Attestation.CreateFromCAReferences(primary, secondary);
+
+            // assert
+            Assert.IsNotNull(attestation.CAReferences.Primary);
+            Assert.IsNotNull(attestation.CAReferences.Secondary);
+            Assert.IsNull(attestation.ClientCertificates);
+            Assert.IsNull(attestation.RootCertificates);
+        }
+
+        [TestMethod]
+        public void X509AttestationCreateFromCAReferencesSucceedOnPrimaryAndSecondaryNullString()
+        {
+            // arrange
+            string primary = CA_REFERENCE_STRING;
+            string secondary = null;
+
+            // act
+            var attestation = X509Attestation.CreateFromCAReferences(primary, secondary);
+
+            // assert
+            Assert.IsNotNull(attestation.CAReferences.Primary);
+            Assert.IsNull(attestation.CAReferences.Secondary);
+            Assert.IsNull(attestation.ClientCertificates);
+            Assert.IsNull(attestation.RootCertificates);
+        }
+
+        /* SRS_X509_ATTESTATION_21_008: [If the ClientCertificates is not null, the GetPrimaryX509CertificateInfo shall return the info in the Primary key of the ClientCertificates.] */
+        /* SRS_X509_ATTESTATION_21_012: [If the ClientCertificates is not null, and it contains Secondary key, the GetSecondaryX509CertificateInfo shall return the info in the Secondary key of the ClientCertificates.] */
+        /* SRS_X509_ATTESTATION_21_016: [The constructor shall store the provided `clientCertificates`, `rootCertificates`, and `caReferences`.] */
+        [TestMethod]
+        public void X509AttestationGetX509CertificateInfoSucceedOnPrimaryAndSecondaryClientCertificates()
+        {
+            // arrange
+            string json = MakeX509AttestationJson("clientCertificates");
+            X509Attestation attestation = Newtonsoft.Json.JsonConvert.DeserializeObject<X509Attestation>(json);
+
+            // act - assert
+            Assert.IsNotNull(attestation.GetPrimaryX509CertificateInfo());
+            Assert.IsNotNull(attestation.GetSecondaryX509CertificateInfo());
+        }
+
+        [TestMethod]
+        public void X509AttestationGetX509CertificateInfoSucceedOnPrimaryOnlyClientCertificates()
+        {
+            // arrange
+            string json = MakeX509AttestationJson("clientCertificates", true);
+            X509Attestation attestation = Newtonsoft.Json.JsonConvert.DeserializeObject<X509Attestation>(json);
+
+            // act - assert
+            Assert.IsNotNull(attestation.GetPrimaryX509CertificateInfo());
+            Assert.IsNull(attestation.GetSecondaryX509CertificateInfo());
+        }
+
+        /* SRS_X509_ATTESTATION_21_009: [If the RootCertificates is not null, the GetPrimaryX509CertificateInfo shall return the info in the Primary key of the RootCertificates.] */
+        /* SRS_X509_ATTESTATION_21_013: [If the RootCertificates is not null, and it contains Secondary key, the GetSecondaryX509CertificateInfo shall return the info in the Secondary key of the RootCertificates.] */
+        [TestMethod]
+        public void X509AttestationGetX509CertificateInfoSucceedOnPrimaryAndSecondaryRoottCertificates()
+        {
+            // arrange
+            string json = MakeX509AttestationJson("signingCertificates");
+            X509Attestation attestation = Newtonsoft.Json.JsonConvert.DeserializeObject<X509Attestation>(json);
+
+            // act - assert
+            Assert.IsNotNull(attestation.GetPrimaryX509CertificateInfo());
+            Assert.IsNotNull(attestation.GetSecondaryX509CertificateInfo());
+        }
+
+        /* SRS_X509_ATTESTATION_21_010: [If the CAReferences is not null, the GetPrimaryX509CertificateInfo shall return null.] */
+        [TestMethod]
+        public void X509AttestationGetX509CertificateInfoSucceedOnPrimaryAndSecondaryCAReferences()
+        {
+            // arrange
+            string json =
+                "{" +
+                "  \"caReferences\": {" +
+                "    \"primary\": \"" + CA_REFERENCE_STRING + "\"," +
+                "    \"secondary\": \"" + CA_REFERENCE_STRING + "\"" +
+                "  }" +
+                "}";
+            X509Attestation attestation = Newtonsoft.Json.JsonConvert.DeserializeObject<X509Attestation>(json);
+
+            // act - assert
+            Assert.IsNull(attestation.GetPrimaryX509CertificateInfo());
+            Assert.IsNull(attestation.GetSecondaryX509CertificateInfo());
+        }
+
+        /* SRS_X509_ATTESTATION_21_011: [If ClientCertificates, RootCertificates, and CAReferences are null, the GetPrimaryX509CertificateInfo shall throw ArgumentException.] */
+        /*
+         * Not testable! 
+         */
+
+        /* SRS_X509_ATTESTATION_21_014: [The constructor shall throws ArgumentException if `clientCertificates`, `rootCertificates`, and `caReferences` are null.] */
+        [TestMethod]
+        public void X509AttestationJsonConstructorTrowsOnNoCert()
+        {
+            // arrange
+            string json = "{}";
+
+            // act - assert
+            TestAssert.Throws<ProvisioningServiceClientException>(() => Newtonsoft.Json.JsonConvert.DeserializeObject<X509Attestation>(json));
+        }
+
+        /* SRS_X509_ATTESTATION_21_015: [The constructor shall throws ArgumentException if more than one certificate type are not null.] */
+        [TestMethod]
+        public void X509AttestationJsonConstructorTrowsOnClientAndRootCertificates()
+        {
+            // arrange
+            string json =
+                "{" +
+                "  \"clientCertificates\": {" +
+                "    \"primary\": " +
+                MakeCertInfoJson(SUBJECT_NAME, SHA1THUMBPRINT, SHA256THUMBPRINT, ISSUER_NAME, NOT_BEFORE_UTC_STRING, NOT_AFTER_UTC_STRING, SERIAL_NUMBER, VERSION) +
+                "  }," +
+                "  \"signingCertificates\": {" +
+                "    \"primary\": " +
+                MakeCertInfoJson(SUBJECT_NAME, SHA1THUMBPRINT, SHA256THUMBPRINT, ISSUER_NAME, NOT_BEFORE_UTC_STRING, NOT_AFTER_UTC_STRING, SERIAL_NUMBER, VERSION) +
+                "  }" +
+                "}";
+
+            // act - assert
+            TestAssert.Throws<ProvisioningServiceClientException>(() => Newtonsoft.Json.JsonConvert.DeserializeObject<X509Attestation>(json));
+        }
+
+        [TestMethod]
+        public void X509AttestationJsonConstructorTrowsOnClientCertificatesAndCAReferences()
+        {
+            // arrange
+            string json =
+                "{" +
+                "  \"clientCertificates\": {" +
+                "    \"primary\": " +
+                MakeCertInfoJson(SUBJECT_NAME, SHA1THUMBPRINT, SHA256THUMBPRINT, ISSUER_NAME, NOT_BEFORE_UTC_STRING, NOT_AFTER_UTC_STRING, SERIAL_NUMBER, VERSION) +
+                "  }," +
+                "  \"caReferences\": {" +
+                "    \"primary\": \"" + CA_REFERENCE_STRING + "\"" +
+                "  }" +
+                "}";
+
+            // act - assert
+            TestAssert.Throws<ProvisioningServiceClientException>(() => Newtonsoft.Json.JsonConvert.DeserializeObject<X509Attestation>(json));
+        }
+
+        [TestMethod]
+        public void X509AttestationJsonConstructorTrowsOnRootCertificatesAndCAReferences()
+        {
+            // arrange
+            string json =
+                "{" +
+                "  \"signingCertificates\": {" +
+                "    \"primary\": " +
+                MakeCertInfoJson(SUBJECT_NAME, SHA1THUMBPRINT, SHA256THUMBPRINT, ISSUER_NAME, NOT_BEFORE_UTC_STRING, NOT_AFTER_UTC_STRING, SERIAL_NUMBER, VERSION) +
+                "  }," +
+                "  \"caReferences\": {" +
+                "    \"primary\": \"" + CA_REFERENCE_STRING + "\"" +
+                "  }" +
+                "}";
+
+            // act - assert
+            TestAssert.Throws<ProvisioningServiceClientException>(() => Newtonsoft.Json.JsonConvert.DeserializeObject<X509Attestation>(json));
+        }
     }
 }

@@ -13,7 +13,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
     public class Program
     {
         private const string SdkEventProviderPrefix = "Microsoft-Azure-";
-
+        
         /// <summary>
         /// A sample for illustrating how a device should handle connection status updates.
         /// </summary>
@@ -42,17 +42,17 @@ namespace Microsoft.Azure.Devices.Client.Samples
                     // The SDK logs are written at Trace level. Set this to LogLevel.Trace to get ALL logs.
                     MinLogLevel = LogLevel.Debug,
                 });
-            ILogger<Program> logger = loggerFactory.CreateLogger<Program>();
+            var logger = loggerFactory.CreateLogger<Program>();
 
             // Instantiating this seems to do all we need for outputting SDK events to our console log.
             using var sdkLogs = new ConsoleEventListener(SdkEventProviderPrefix, logger);
 
             // Run the sample
-            TimeSpan runningTime = parameters.ApplicationRunningTime != null
+            var runningTime = parameters.ApplicationRunningTime != null
                 ? TimeSpan.FromSeconds((double)parameters.ApplicationRunningTime)
                 : Timeout.InfiniteTimeSpan;
 
-            var sample = new DeviceReconnectionSample(parameters.GetConnectionStrings(), parameters, logger);
+            var sample = new DeviceReconnectionSample(parameters.GetConnectionStrings(), parameters.TransportType, logger);
             await sample.RunSampleAsync(runningTime);
 
             logger.LogInformation("Done.");

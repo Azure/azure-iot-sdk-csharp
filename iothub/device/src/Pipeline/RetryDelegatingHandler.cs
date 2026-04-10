@@ -7,177 +7,164 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Azure.Devices.Client.Exceptions;
+using Microsoft.Azure.Devices.Client.Extensions;
+using Microsoft.Azure.Devices.Client.TransientFaultHandling;
+using Microsoft.Azure.Devices.Shared;
 
 namespace Microsoft.Azure.Devices.Client.Transport
 {
-    internal sealed class RetryDelegatingHandler : DefaultDelegatingHandler
+    internal enum ClientTransportStatus
+    {
+        Closed = 0,
+        Open = 1,
+    }
+
+    internal class RetryDelegatingHandler : DefaultDelegatingHandler
     {
         // RetryCount is used for testing purpose and is equal to MaxValue in prod.
-        private const uint RetryMaxCount = uint.MaxValue;
+        private const int RetryMaxCount = int.MaxValue;
 
-        private readonly RetryHandler _internalRetryHandler;
-        private IIotHubClientRetryPolicy _retryPolicy;
+        private RetryPolicy _internalRetryPolicy;
 
-        private bool _recoverSubscriptions;
-
-        private readonly SemaphoreSlim _cloudToDeviceMessageSubscriptionSemaphore = new(1, 1);
-        private readonly SemaphoreSlim _directMethodSubscriptionSemaphore = new(1, 1);
-        private readonly SemaphoreSlim _twinEventsSubscriptionSemaphore = new(1, 1);
-
+        private readonly SemaphoreSlim _clientOpenSemaphore = new SemaphoreSlim(1, 1);
+        private readonly SemaphoreSlim _cloudToDeviceMessageSubscriptionSemaphore = new SemaphoreSlim(1, 1);
+        private readonly SemaphoreSlim _cloudToDeviceEventSubscriptionSemaphore = new SemaphoreSlim(1, 1);
+        private readonly SemaphoreSlim _directMethodSubscriptionSemaphore = new SemaphoreSlim(1, 1);
+        private readonly SemaphoreSlim _twinEventsSubscriptionSemaphore = new SemaphoreSlim(1, 1);
+        private bool _openCalled;
         private bool _methodsEnabled;
         private bool _twinEnabled;
+        private bool _eventsEnabled;
         private bool _deviceReceiveMessageEnabled;
+        private bool _isDisposing;
+        private bool _isAnEdgeModule = true;
+        private long _clientTransportState; // references the current client transport status as the int value of ClientTransportStatus
 
-        private CancellationTokenSource _loopCancellationTokenSource;
-        private Task _refreshLoop;
+        private Task _transportClosedTask;
+        private readonly CancellationTokenSource _handleDisconnectCts = new CancellationTokenSource();
+        private readonly CancellationTokenSource _cancelPendingOperationsCts = new CancellationTokenSource();
 
-        internal RetryDelegatingHandler(PipelineContext context, IDelegatingHandler innerHandler)
+        private readonly ConnectionStatusChangesHandler _onConnectionStatusChanged;
+
+        public RetryDelegatingHandler(PipelineContext context, IDelegatingHandler innerHandler)
             : base(context, innerHandler)
         {
-            _retryPolicy = context.RetryPolicy;
-            _internalRetryHandler = new RetryHandler(_retryPolicy);
-        }
+            IRetryPolicy defaultRetryStrategy = new ExponentialBackoff(
+                retryCount: RetryMaxCount,
+                minBackoff: TimeSpan.FromMilliseconds(100),
+                maxBackoff: TimeSpan.FromSeconds(10),
+                deltaBackoff: TimeSpan.FromMilliseconds(100));
 
-        internal void SetRetryPolicy(IIotHubClientRetryPolicy retryPolicy)
-        {
-            _retryPolicy = retryPolicy;
-            _internalRetryHandler.SetRetryPolicy(_retryPolicy);
+            _internalRetryPolicy = new RetryPolicy(new TransientErrorStrategy(), new RetryStrategyAdapter(defaultRetryStrategy));
+            _onConnectionStatusChanged = context.ConnectionStatusChangesHandler;
 
             if (Logging.IsEnabled)
-                Logging.Associate(this, _internalRetryHandler, nameof(SetRetryPolicy));
+                Logging.Associate(this, _internalRetryPolicy, nameof(SetRetryPolicy));
         }
 
-        public override async Task OpenAsync(CancellationToken cancellationToken)
+        private class TransientErrorStrategy : ITransientErrorDetectionStrategy
         {
-            if (Logging.IsEnabled)
-                Logging.Enter(this, cancellationToken, nameof(OpenAsync));
+            public bool IsTransient(Exception ex)
+            {
+                return ex is IotHubException exception && exception.IsTransient;
+            }
+        }
 
+        public virtual void SetRetryPolicy(IRetryPolicy retryPolicy)
+        {
+            _internalRetryPolicy = new RetryPolicy(
+                new TransientErrorStrategy(),
+                new RetryStrategyAdapter(retryPolicy));
+
+            if (Logging.IsEnabled)
+                Logging.Associate(this, _internalRetryPolicy, nameof(SetRetryPolicy));
+        }
+
+        public override async Task SendEventAsync(Message message, CancellationToken cancellationToken)
+        {
             try
             {
-                await _internalRetryHandler
+                if (Logging.IsEnabled)
+                    Logging.Enter(this, message, cancellationToken, nameof(SendEventAsync));
+
+                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
+
+                await _internalRetryPolicy
                     .RunWithRetryAsync(
                         async () =>
                         {
-                            if (Logging.IsEnabled)
-                                Logging.Enter(this, cancellationToken, nameof(OpenAsync));
+                            await EnsureOpenedAsync(false, operationCts.Token).ConfigureAwait(false);
 
-                            try
+                            if (message.IsBodyCalled)
                             {
-                                // Will throw on error.
-                                await base.OpenAsync(cancellationToken).ConfigureAwait(false);
+                                message.ResetBody();
+                            }
 
-                                if (_recoverSubscriptions)
+                            await base.SendEventAsync(message, operationCts.Token).ConfigureAwait(false);
+                        },
+                        operationCts.Token)
+                    .ConfigureAwait(false);
+            }
+            finally
+            {
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, message, cancellationToken, nameof(SendEventAsync));
+            }
+        }
+
+        public override async Task SendEventAsync(IEnumerable<Message> messages, CancellationToken cancellationToken)
+        {
+            try
+            {
+                if (Logging.IsEnabled)
+                    Logging.Enter(this, messages, cancellationToken, nameof(SendEventAsync));
+
+                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
+
+                await _internalRetryPolicy
+                    .RunWithRetryAsync(
+                        async () =>
+                        {
+                            await EnsureOpenedAsync(false, operationCts.Token).ConfigureAwait(false);
+
+                            foreach (Message m in messages)
+                            {
+                                if (m.IsBodyCalled)
                                 {
-                                    if (Logging.IsEnabled)
-                                        Logging.Info(this, "Attempting to recover subscriptions.", nameof(OpenAsync));
-
-                                    var tasks = new List<Task>(3);
-
-                                    // This is to ensure that, if previously enabled, the callback to receive direct methods is recovered.
-                                    if (_methodsEnabled)
-                                    {
-                                        tasks.Add(base.EnableMethodsAsync(cancellationToken));
-                                    }
-
-                                    // This is to ensure that, if previously enabled, the callback to receive twin properties is recovered.
-                                    if (_twinEnabled)
-                                    {
-                                        tasks.Add(base.EnableTwinPatchAsync(cancellationToken));
-                                    }
-
-                                    // This is to ensure that, if previously enabled, the callback to receive C2D messages is recovered.
-                                    if (_deviceReceiveMessageEnabled)
-                                    {
-                                        tasks.Add(base.EnableReceiveMessageAsync(cancellationToken));
-                                    }
-
-                                    if (tasks.Count != 0)
-                                    {
-                                        await Task.WhenAll(tasks).ConfigureAwait(false);
-                                    }
-
-                                    if (Logging.IsEnabled)
-                                        Logging.Info(this, "Subscriptions recovered.", nameof(OpenAsync));
+                                    m.ResetBody();
                                 }
-
-                                _recoverSubscriptions = true;
                             }
-                            finally
-                            {
-                                if (Logging.IsEnabled)
-                                    Logging.Exit(this, cancellationToken, nameof(OpenAsync));
-                            }
+
+                            await base.SendEventAsync(messages, operationCts.Token).ConfigureAwait(false);
                         },
-                        cancellationToken)
+                        operationCts.Token)
                     .ConfigureAwait(false);
             }
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, cancellationToken, nameof(OpenAsync));
+                    Logging.Exit(this, messages, cancellationToken, nameof(SendEventAsync));
             }
         }
 
-        public override async Task SendTelemetryAsync(TelemetryMessage message, CancellationToken cancellationToken)
+        public override async Task SendMethodResponseAsync(MethodResponseInternal method, CancellationToken cancellationToken)
         {
-            if (Logging.IsEnabled)
-                Logging.Enter(this, message, cancellationToken, nameof(SendTelemetryAsync));
-
             try
-            {
-                await _internalRetryHandler
-                    .RunWithRetryAsync(
-                        async () =>
-                        {
-                            await base.SendTelemetryAsync(message, cancellationToken).ConfigureAwait(false);
-                        },
-                        cancellationToken)
-                    .ConfigureAwait(false);
-            }
-            finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, message, cancellationToken, nameof(SendTelemetryAsync));
-            }
-        }
+                    Logging.Enter(this, method, cancellationToken, nameof(SendMethodResponseAsync));
 
-        public override async Task SendTelemetryAsync(IEnumerable<TelemetryMessage> messages, CancellationToken cancellationToken)
-        {
-            if (Logging.IsEnabled)
-                Logging.Enter(this, messages, cancellationToken, nameof(SendTelemetryAsync));
+                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
 
-            try
-            {
-                await _internalRetryHandler
+                await _internalRetryPolicy
                     .RunWithRetryAsync(
                         async () =>
                         {
-                            await base.SendTelemetryAsync(messages, cancellationToken).ConfigureAwait(false);
+                            await EnsureOpenedAsync(false, operationCts.Token).ConfigureAwait(false);
+                            await base.SendMethodResponseAsync(method, operationCts.Token).ConfigureAwait(false);
                         },
-                        cancellationToken)
-                    .ConfigureAwait(false);
-            }
-            finally
-            {
-                if (Logging.IsEnabled)
-                    Logging.Exit(this, messages, cancellationToken, nameof(SendTelemetryAsync));
-            }
-        }
-
-        public override async Task SendMethodResponseAsync(DirectMethodResponse method, CancellationToken cancellationToken)
-        {
-            if (Logging.IsEnabled)
-                Logging.Enter(this, method, cancellationToken, nameof(SendMethodResponseAsync));
-
-            try
-            {
-                await _internalRetryHandler
-                    .RunWithRetryAsync(
-                        async () =>
-                        {
-                            await base.SendMethodResponseAsync(method, cancellationToken).ConfigureAwait(false);
-                        },
-                        cancellationToken)
+                        operationCts.Token)
                     .ConfigureAwait(false);
             }
             finally
@@ -187,31 +174,98 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
-        public override async Task EnableReceiveMessageAsync(CancellationToken cancellationToken)
+        public override async Task<Message> ReceiveAsync(CancellationToken cancellationToken)
         {
-            if (Logging.IsEnabled)
-                Logging.Enter(this, cancellationToken, nameof(EnableReceiveMessageAsync));
-
             try
             {
-                await _internalRetryHandler
+                if (Logging.IsEnabled)
+                    Logging.Enter(this, cancellationToken, nameof(ReceiveAsync));
+
+                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
+
+                return await _internalRetryPolicy
                     .RunWithRetryAsync(
                         async () =>
                         {
-                            await _cloudToDeviceMessageSubscriptionSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+                            await EnsureOpenedAsync(false, operationCts.Token).ConfigureAwait(false);
+                            return await base.ReceiveAsync(operationCts.Token).ConfigureAwait(false);
+                        },
+                        operationCts.Token)
+                    .ConfigureAwait(false);
+            }
+            finally
+            {
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, cancellationToken, nameof(ReceiveAsync));
+            }
+        }
+
+        public override async Task<Message> ReceiveAsync(TimeoutHelper timeoutHelper)
+        {
+            try
+            {
+                if (Logging.IsEnabled)
+                    Logging.Enter(this, timeoutHelper, nameof(ReceiveAsync));
+
+                using var cts = new CancellationTokenSource(timeoutHelper.GetRemainingTime());
+                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cts.Token, _cancelPendingOperationsCts.Token);
+
+                return await _internalRetryPolicy
+                    .RunWithRetryAsync(
+                        async () =>
+                        {
+                            await EnsureOpenedAsync(false, timeoutHelper).ConfigureAwait(false);
+                            return await base.ReceiveAsync(timeoutHelper).ConfigureAwait(false);
+                        },
+                        operationCts.Token)
+                    .ConfigureAwait(false);
+            }
+            finally
+            {
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, timeoutHelper, nameof(ReceiveAsync));
+            }
+        }
+
+        public override async Task EnableReceiveMessageAsync(CancellationToken cancellationToken)
+        {
+            try
+            {
+                if (Logging.IsEnabled)
+                    Logging.Enter(this, cancellationToken, nameof(EnableReceiveMessageAsync));
+
+                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
+
+                await _internalRetryPolicy
+                    .RunWithRetryAsync(
+                        async () =>
+                        {
+                            await EnsureOpenedAsync(false, operationCts.Token).ConfigureAwait(false);
+
+                            // Wait to acquire the _cloudToDeviceSubscriptionSemaphore. This ensures that concurrently invoked API calls are invoked in a thread-safe manner.
+                            await _cloudToDeviceMessageSubscriptionSemaphore.WaitAsync(operationCts.Token).ConfigureAwait(false);
                             try
                             {
+                                // The telemetry downlink needs to be enabled only for the first time that the callback is set.
                                 Debug.Assert(!_deviceReceiveMessageEnabled);
-
-                                await base.EnableReceiveMessageAsync(cancellationToken).ConfigureAwait(false);
+                                await base.EnableReceiveMessageAsync(operationCts.Token).ConfigureAwait(false);
                                 _deviceReceiveMessageEnabled = true;
                             }
                             finally
                             {
-                                _cloudToDeviceMessageSubscriptionSemaphore?.Release();
+                                try
+                                {
+                                    _cloudToDeviceMessageSubscriptionSemaphore?.Release();
+                                }
+                                catch (ObjectDisposedException) when (_isDisposing)
+                                {
+                                    if (Logging.IsEnabled)
+                                        Logging.Error(this, "Tried releasing cloud-to-device message subscription semaphore but it has already been disposed by client disposal on a separate thread." +
+                                            "Ignoring this exception and continuing with client cleanup.");
+                                }
                             }
                         },
-                        cancellationToken)
+                        operationCts.Token)
                     .ConfigureAwait(false);
             }
             finally
@@ -230,25 +284,38 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 if (Logging.IsEnabled)
                     Logging.Enter(this, cancellationToken, nameof(EnsurePendingMessagesAreDeliveredAsync));
 
-                await _internalRetryHandler
+                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
+
+                await _internalRetryPolicy
                     .RunWithRetryAsync(
                         async () =>
                         {
+                            await EnsureOpenedAsync(false, operationCts.Token).ConfigureAwait(false);
+
                             // Wait to acquire the _cloudToDeviceMessageSubscriptionSemaphore. This ensures that concurrently invoked API calls are invoked in a thread-safe manner.
-                            await _cloudToDeviceMessageSubscriptionSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+                            await _cloudToDeviceMessageSubscriptionSemaphore.WaitAsync(operationCts.Token).ConfigureAwait(false);
 
                             try
                             {
                                 // Ensure that a callback for receiving messages has been previously set.
                                 Debug.Assert(_deviceReceiveMessageEnabled);
-                                await base.EnsurePendingMessagesAreDeliveredAsync(cancellationToken).ConfigureAwait(false);
+                                await base.EnsurePendingMessagesAreDeliveredAsync(operationCts.Token).ConfigureAwait(false);
                             }
                             finally
                             {
-                                _cloudToDeviceMessageSubscriptionSemaphore?.Release();
+                                try
+                                {
+                                    _cloudToDeviceMessageSubscriptionSemaphore?.Release();
+                                }
+                                catch (ObjectDisposedException) when (_isDisposing)
+                                {
+                                    if (Logging.IsEnabled)
+                                        Logging.Error(this, "Tried releasing cloud-to-device message subscription semaphore but it has already been disposed by client disposal on a separate thread." +
+                                            "Ignoring this exception and continuing with client cleanup.");
+                                }
                             }
                         },
-                        cancellationToken)
+                        operationCts.Token)
                     .ConfigureAwait(false);
             }
             finally
@@ -260,29 +327,43 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         public override async Task DisableReceiveMessageAsync(CancellationToken cancellationToken)
         {
-            if (Logging.IsEnabled)
-                Logging.Enter(this, cancellationToken, nameof(DisableReceiveMessageAsync));
-
             try
             {
-                await _internalRetryHandler
+                if (Logging.IsEnabled)
+                    Logging.Enter(this, cancellationToken, nameof(DisableReceiveMessageAsync));
+
+                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
+
+                await _internalRetryPolicy
                     .RunWithRetryAsync(
                         async () =>
                         {
-                            await _cloudToDeviceMessageSubscriptionSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+                            await EnsureOpenedAsync(false, operationCts.Token).ConfigureAwait(false);
+
+                            // Wait to acquire the _cloudToDeviceMessageSubscriptionSemaphore. This ensures that concurrently invoked API calls are invoked in a thread-safe manner.
+                            await _cloudToDeviceMessageSubscriptionSemaphore.WaitAsync(operationCts.Token).ConfigureAwait(false);
                             try
                             {
+                                // Ensure that a callback for receiving messages has been previously set.
                                 Debug.Assert(_deviceReceiveMessageEnabled);
-
-                                await base.DisableReceiveMessageAsync(cancellationToken).ConfigureAwait(false);
+                                await base.DisableReceiveMessageAsync(operationCts.Token).ConfigureAwait(false);
                                 _deviceReceiveMessageEnabled = false;
                             }
                             finally
                             {
-                                _cloudToDeviceMessageSubscriptionSemaphore?.Release();
+                                try
+                                {
+                                    _cloudToDeviceMessageSubscriptionSemaphore?.Release();
+                                }
+                                catch (ObjectDisposedException) when (_isDisposing)
+                                {
+                                    if (Logging.IsEnabled)
+                                        Logging.Error(this, "Tried releasing cloud-to-device message subscription semaphore but it has already been disposed by client disposal on a separate thread." +
+                                            "Ignoring this exception and continuing with client cleanup.");
+                                }
                             }
                         },
-                        cancellationToken)
+                        operationCts.Token)
                     .ConfigureAwait(false);
             }
             finally
@@ -294,29 +375,40 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         public override async Task EnableMethodsAsync(CancellationToken cancellationToken)
         {
-            if (Logging.IsEnabled)
-                Logging.Enter(this, cancellationToken, nameof(EnableMethodsAsync));
-
             try
             {
-                await _internalRetryHandler
+                if (Logging.IsEnabled)
+                    Logging.Enter(this, cancellationToken, nameof(EnableMethodsAsync));
+
+                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
+
+                await _internalRetryPolicy
                     .RunWithRetryAsync(
                         async () =>
                         {
-                            await _directMethodSubscriptionSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+                            await EnsureOpenedAsync(false, operationCts.Token).ConfigureAwait(false);
+                            await _directMethodSubscriptionSemaphore.WaitAsync(operationCts.Token).ConfigureAwait(false);
                             try
                             {
                                 Debug.Assert(!_methodsEnabled);
-
-                                await base.EnableMethodsAsync(cancellationToken).ConfigureAwait(false);
+                                await base.EnableMethodsAsync(operationCts.Token).ConfigureAwait(false);
                                 _methodsEnabled = true;
                             }
                             finally
                             {
-                                _directMethodSubscriptionSemaphore?.Release();
+                                try
+                                {
+                                    _directMethodSubscriptionSemaphore?.Release();
+                                }
+                                catch (ObjectDisposedException) when (_isDisposing)
+                                {
+                                    if (Logging.IsEnabled)
+                                        Logging.Error(this, "Tried releasing direct method subscription semaphore but it has already been disposed by client disposal on a separate thread." +
+                                            "Ignoring this exception and continuing with client cleanup.");
+                                }
                             }
                         },
-                        cancellationToken)
+                        operationCts.Token)
                     .ConfigureAwait(false);
             }
             finally
@@ -328,29 +420,40 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         public override async Task DisableMethodsAsync(CancellationToken cancellationToken)
         {
-            if (Logging.IsEnabled)
-                Logging.Enter(this, cancellationToken, nameof(DisableMethodsAsync));
-
             try
             {
-                await _internalRetryHandler
+                if (Logging.IsEnabled)
+                    Logging.Enter(this, cancellationToken, nameof(DisableMethodsAsync));
+
+                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
+
+                await _internalRetryPolicy
                     .RunWithRetryAsync(
                         async () =>
                         {
-                            await _directMethodSubscriptionSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+                            await EnsureOpenedAsync(false, operationCts.Token).ConfigureAwait(false);
+                            await _directMethodSubscriptionSemaphore.WaitAsync(operationCts.Token).ConfigureAwait(false);
                             try
                             {
                                 Debug.Assert(_methodsEnabled);
-
-                                await base.DisableMethodsAsync(cancellationToken).ConfigureAwait(false);
+                                await base.DisableMethodsAsync(operationCts.Token).ConfigureAwait(false);
                                 _methodsEnabled = false;
                             }
                             finally
                             {
-                                _directMethodSubscriptionSemaphore?.Release();
+                                try
+                                {
+                                    _directMethodSubscriptionSemaphore?.Release();
+                                }
+                                catch (ObjectDisposedException) when (_isDisposing)
+                                {
+                                    if (Logging.IsEnabled)
+                                        Logging.Error(this, "Tried releasing direct method subscription semaphore but it has already been disposed by client disposal on a separate thread." +
+                                            "Ignoring this exception and continuing with client cleanup.");
+                                }
                             }
                         },
-                        cancellationToken)
+                        operationCts.Token)
                     .ConfigureAwait(false);
             }
             finally
@@ -360,31 +463,134 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
-        public override async Task EnableTwinPatchAsync(CancellationToken cancellationToken)
+        public override async Task EnableEventReceiveAsync(bool isAnEdgeModule, CancellationToken cancellationToken)
         {
-            if (Logging.IsEnabled)
-                Logging.Enter(this, cancellationToken, nameof(EnableTwinPatchAsync));
-
             try
             {
-                await _internalRetryHandler
+                if (Logging.IsEnabled)
+                    Logging.Enter(this, cancellationToken, nameof(EnableEventReceiveAsync));
+
+                _isAnEdgeModule = isAnEdgeModule;
+                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
+
+                await _internalRetryPolicy
                     .RunWithRetryAsync(
                         async () =>
                         {
-                            await _twinEventsSubscriptionSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+                            await EnsureOpenedAsync(false, operationCts.Token).ConfigureAwait(false);
+                            await _cloudToDeviceEventSubscriptionSemaphore.WaitAsync(operationCts.Token).ConfigureAwait(false);
+                            try
+                            {
+                                Debug.Assert(!_eventsEnabled);
+                                await base.EnableEventReceiveAsync(isAnEdgeModule, operationCts.Token).ConfigureAwait(false);
+                                _eventsEnabled = true;
+                            }
+                            finally
+                            {
+                                try
+                                {
+                                    _cloudToDeviceEventSubscriptionSemaphore?.Release();
+                                }
+                                catch (ObjectDisposedException) when (_isDisposing)
+                                {
+                                    if (Logging.IsEnabled)
+                                        Logging.Error(this, "Tried releasing cloud-to-device event subscription semaphore but it has already been disposed by client disposal on a separate thread." +
+                                            "Ignoring this exception and continuing with client cleanup.");
+                                }
+                            }
+                        },
+                        operationCts.Token)
+                    .ConfigureAwait(false);
+            }
+            finally
+            {
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, cancellationToken, nameof(EnableEventReceiveAsync));
+            }
+        }
+
+        public override async Task DisableEventReceiveAsync(bool isAnEdgeModule, CancellationToken cancellationToken)
+        {
+            try
+            {
+                if (Logging.IsEnabled)
+                    Logging.Enter(this, cancellationToken, nameof(DisableEventReceiveAsync));
+
+                _isAnEdgeModule = isAnEdgeModule;
+                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
+
+                await _internalRetryPolicy
+                    .RunWithRetryAsync(
+                        async () =>
+                        {
+                            await EnsureOpenedAsync(false, operationCts.Token).ConfigureAwait(false);
+                            await _cloudToDeviceEventSubscriptionSemaphore.WaitAsync(operationCts.Token).ConfigureAwait(false);
+                            try
+                            {
+                                Debug.Assert(_eventsEnabled);
+                                await base.DisableEventReceiveAsync(isAnEdgeModule, operationCts.Token).ConfigureAwait(false);
+                                _eventsEnabled = false;
+                            }
+                            finally
+                            {
+                                try
+                                {
+                                    _cloudToDeviceEventSubscriptionSemaphore?.Release();
+                                }
+                                catch (ObjectDisposedException) when (_isDisposing)
+                                {
+                                    if (Logging.IsEnabled)
+                                        Logging.Error(this, "Tried releasing cloud-to-device event subscription semaphore but it has already been disposed by client disposal on a separate thread." +
+                                            "Ignoring this exception and continuing with client cleanup.");
+                                }
+                            }
+                        },
+                        operationCts.Token)
+                    .ConfigureAwait(false);
+            }
+            finally
+            {
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, cancellationToken, nameof(DisableEventReceiveAsync));
+            }
+        }
+
+        public override async Task EnableTwinPatchAsync(CancellationToken cancellationToken)
+        {
+            try
+            {
+                if (Logging.IsEnabled)
+                    Logging.Enter(this, cancellationToken, nameof(EnableTwinPatchAsync));
+
+                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
+
+                await _internalRetryPolicy
+                    .RunWithRetryAsync(
+                        async () =>
+                        {
+                            await EnsureOpenedAsync(false, operationCts.Token).ConfigureAwait(false);
+                            await _twinEventsSubscriptionSemaphore.WaitAsync(operationCts.Token).ConfigureAwait(false);
                             try
                             {
                                 Debug.Assert(!_twinEnabled);
-
-                                await base.EnableTwinPatchAsync(cancellationToken).ConfigureAwait(false);
+                                await base.EnableTwinPatchAsync(operationCts.Token).ConfigureAwait(false);
                                 _twinEnabled = true;
                             }
                             finally
                             {
-                                _twinEventsSubscriptionSemaphore?.Release();
+                                try
+                                {
+                                    _twinEventsSubscriptionSemaphore?.Release();
+                                }
+                                catch (ObjectDisposedException) when (_isDisposing)
+                                {
+                                    if (Logging.IsEnabled)
+                                        Logging.Error(this, "Tried releasing twin event subscription semaphore but it has already been disposed by client disposal on a separate thread." +
+                                            "Ignoring this exception and continuing with client cleanup.");
+                                }
                             }
                         },
-                        cancellationToken)
+                        operationCts.Token)
                     .ConfigureAwait(false);
             }
             finally
@@ -396,29 +602,40 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         public override async Task DisableTwinPatchAsync(CancellationToken cancellationToken)
         {
-            if (Logging.IsEnabled)
-                Logging.Enter(this, cancellationToken, nameof(DisableTwinPatchAsync));
-
             try
             {
-                await _internalRetryHandler
+                if (Logging.IsEnabled)
+                    Logging.Enter(this, cancellationToken, nameof(DisableTwinPatchAsync));
+
+                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
+
+                await _internalRetryPolicy
                     .RunWithRetryAsync(
                         async () =>
                         {
-                            await _twinEventsSubscriptionSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+                            await EnsureOpenedAsync(false, operationCts.Token).ConfigureAwait(false);
+                            await _twinEventsSubscriptionSemaphore.WaitAsync(operationCts.Token).ConfigureAwait(false);
                             try
                             {
                                 Debug.Assert(_twinEnabled);
-
-                                await base.DisableTwinPatchAsync(cancellationToken).ConfigureAwait(false);
+                                await base.DisableTwinPatchAsync(operationCts.Token).ConfigureAwait(false);
                                 _twinEnabled = false;
                             }
                             finally
                             {
-                                _twinEventsSubscriptionSemaphore?.Release();
+                                try
+                                {
+                                    _twinEventsSubscriptionSemaphore?.Release();
+                                }
+                                catch (ObjectDisposedException) when (_isDisposing)
+                                {
+                                    if (Logging.IsEnabled)
+                                        Logging.Error(this, "Tried releasing twin event subscription semaphore but it has already been disposed by client disposal on a separate thread." +
+                                            "Ignoring this exception and continuing with client cleanup.");
+                                }
                             }
                         },
-                        cancellationToken)
+                        operationCts.Token)
                     .ConfigureAwait(false);
             }
             finally
@@ -428,318 +645,664 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
-        public override async Task<TwinProperties> GetTwinAsync(CancellationToken cancellationToken)
+        public override async Task<Twin> SendTwinGetAsync(CancellationToken cancellationToken)
         {
-            if (Logging.IsEnabled)
-                Logging.Enter(this, cancellationToken, nameof(GetTwinAsync));
-
             try
             {
-                return await _internalRetryHandler
+                if (Logging.IsEnabled)
+                    Logging.Enter(this, cancellationToken, nameof(SendTwinGetAsync));
+
+                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
+
+                return await _internalRetryPolicy
                     .RunWithRetryAsync(
                         async () =>
                         {
-                            return await base.GetTwinAsync(cancellationToken).ConfigureAwait(false);
+                            await EnsureOpenedAsync(false, operationCts.Token).ConfigureAwait(false);
+                            return await base.SendTwinGetAsync(operationCts.Token).ConfigureAwait(false);
                         },
-                        cancellationToken)
+                        operationCts.Token)
                     .ConfigureAwait(false);
             }
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, cancellationToken, nameof(GetTwinAsync));
+                    Logging.Exit(this, cancellationToken, nameof(SendTwinGetAsync));
             }
         }
 
-        public override async Task<long> UpdateReportedPropertiesAsync(PropertyCollection reportedProperties, CancellationToken cancellationToken)
+        public override async Task SendTwinPatchAsync(TwinCollection reportedProperties, CancellationToken cancellationToken)
         {
-            if (Logging.IsEnabled)
-                Logging.Enter(this, reportedProperties, cancellationToken, nameof(UpdateReportedPropertiesAsync));
-
             try
             {
-                return await _internalRetryHandler
+                if (Logging.IsEnabled)
+                    Logging.Enter(this, reportedProperties, cancellationToken, nameof(SendTwinPatchAsync));
+
+                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
+
+                await _internalRetryPolicy
                     .RunWithRetryAsync(
                         async () =>
                         {
-                            return await base.UpdateReportedPropertiesAsync(reportedProperties, cancellationToken).ConfigureAwait(false);
+                            await EnsureOpenedAsync(false, operationCts.Token).ConfigureAwait(false);
+                            await base.SendTwinPatchAsync(reportedProperties, operationCts.Token).ConfigureAwait(false);
                         },
-                        cancellationToken)
+                        operationCts.Token)
                     .ConfigureAwait(false);
             }
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, reportedProperties, cancellationToken, nameof(UpdateReportedPropertiesAsync));
+                    Logging.Exit(this, reportedProperties, cancellationToken, nameof(SendTwinPatchAsync));
             }
         }
 
-        public override async Task<FileUploadSasUriResponse> GetFileUploadSasUriAsync(FileUploadSasUriRequest request, CancellationToken cancellationToken)
+        public override async Task CompleteAsync(string lockToken, CancellationToken cancellationToken)
         {
-            if (Logging.IsEnabled)
-                Logging.Enter(this, request.BlobName, cancellationToken, nameof(GetFileUploadSasUriAsync));
-
             try
             {
-                return await _internalRetryHandler
+                if (Logging.IsEnabled)
+                    Logging.Enter(this, lockToken, cancellationToken, nameof(CompleteAsync));
+
+                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
+
+                await _internalRetryPolicy
                     .RunWithRetryAsync(
                         async () =>
                         {
-                            return await base.GetFileUploadSasUriAsync(request, cancellationToken).ConfigureAwait(false);
+                            await EnsureOpenedAsync(false, operationCts.Token).ConfigureAwait(false);
+                            await base.CompleteAsync(lockToken, operationCts.Token).ConfigureAwait(false);
                         },
-                        cancellationToken)
+                        operationCts.Token)
                     .ConfigureAwait(false);
             }
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, request.BlobName, cancellationToken, nameof(GetFileUploadSasUriAsync));
+                    Logging.Exit(this, lockToken, cancellationToken, nameof(CompleteAsync));
             }
         }
 
-        public override async Task CompleteFileUploadAsync(FileUploadCompletionNotification notification, CancellationToken cancellationToken)
+        public override async Task AbandonAsync(string lockToken, CancellationToken cancellationToken)
         {
-            if (Logging.IsEnabled)
-                Logging.Enter(this, notification.CorrelationId, cancellationToken, nameof(CompleteFileUploadAsync));
-
             try
             {
-                await _internalRetryHandler
+                if (Logging.IsEnabled)
+                    Logging.Enter(this, lockToken, cancellationToken, nameof(AbandonAsync));
+
+                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
+
+                await _internalRetryPolicy
                     .RunWithRetryAsync(
                         async () =>
                         {
-                            await base.CompleteFileUploadAsync(notification, cancellationToken).ConfigureAwait(false);
+                            await EnsureOpenedAsync(false, operationCts.Token).ConfigureAwait(false);
+                            await base.AbandonAsync(lockToken, operationCts.Token).ConfigureAwait(false);
                         },
-                        cancellationToken)
+                        operationCts.Token)
                     .ConfigureAwait(false);
             }
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, notification.CorrelationId, cancellationToken, nameof(CompleteFileUploadAsync));
+                    Logging.Exit(this, lockToken, cancellationToken, nameof(AbandonAsync));
             }
         }
 
-        public override async Task<DirectMethodResponse> InvokeMethodAsync(EdgeModuleDirectMethodRequest methodInvokeRequest, Uri uri, CancellationToken cancellationToken)
+        public override async Task RejectAsync(string lockToken, CancellationToken cancellationToken)
         {
-            if (Logging.IsEnabled)
-                Logging.Enter(this, methodInvokeRequest.MethodName, uri, cancellationToken, nameof(InvokeMethodAsync));
-
             try
             {
-                return await _internalRetryHandler
+                if (Logging.IsEnabled)
+                    Logging.Enter(this, lockToken, cancellationToken, nameof(RejectAsync));
+
+                using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
+
+                await _internalRetryPolicy
                     .RunWithRetryAsync(
                         async () =>
                         {
-                            return await base.InvokeMethodAsync(methodInvokeRequest, uri, cancellationToken).ConfigureAwait(false);
+                            await EnsureOpenedAsync(false, operationCts.Token).ConfigureAwait(false);
+                            await base.RejectAsync(lockToken, operationCts.Token).ConfigureAwait(false);
                         },
-                        cancellationToken)
+                        operationCts.Token)
                     .ConfigureAwait(false);
             }
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, methodInvokeRequest.MethodName, uri, cancellationToken, nameof(InvokeMethodAsync));
+                    Logging.Exit(this, lockToken, cancellationToken, nameof(RejectAsync));
             }
+        }
+
+        public override Task OpenAsync(CancellationToken cancellationToken)
+        {
+            return EnsureOpenedAsync(true, cancellationToken);
         }
 
         public override async Task CloseAsync(CancellationToken cancellationToken)
         {
-            if (Logging.IsEnabled)
-                Logging.Enter(this, cancellationToken, nameof(CloseAsync));
-
             try
             {
-                await _internalRetryHandler
-                    .RunWithRetryAsync(
-                        async () =>
-                        {
-                            await base.CloseAsync(cancellationToken).ConfigureAwait(false);
-                        },
-                        cancellationToken)
-                    .ConfigureAwait(false);
+                if (!_openCalled
+                    || GetClientTransportStatus() == ClientTransportStatus.Closed)
+                {
+                    return;
+                }
+
+                if (Logging.IsEnabled)
+                    Logging.Enter(this, cancellationToken, nameof(CloseAsync));
+
+                _handleDisconnectCts?.Cancel();
+                _cancelPendingOperationsCts?.Cancel();
+                await base.CloseAsync(cancellationToken).ConfigureAwait(false);
             }
             finally
             {
-                _recoverSubscriptions = false;
+                SetClientTransportStatus(ClientTransportStatus.Closed);
+                Dispose(true);
 
                 if (Logging.IsEnabled)
                     Logging.Exit(this, cancellationToken, nameof(CloseAsync));
             }
         }
 
-        public override async Task<DateTime> RefreshSasTokenAsync(CancellationToken cancellationToken)
+        /// <summary>
+        /// Implicit open handler.
+        /// </summary>
+        private async Task EnsureOpenedAsync(bool withRetry, CancellationToken cancellationToken)
         {
-            if (Logging.IsEnabled)
-                Logging.Enter(this, cancellationToken, nameof(RefreshSasTokenAsync));
+            using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
 
+            // If this object has already been disposed, we will throw an exception indicating that.
+            // This is the entry point for interacting with the client and this safety check should be done here.
+            // The current behavior does not support open->close->open
+            if (_isDisposed)
+            {
+                throw new ObjectDisposedException("IoT client", ClientDisposedMessage);
+            }
+
+            if (GetClientTransportStatus() == ClientTransportStatus.Open)
+            {
+                return;
+            }
+
+            await _clientOpenSemaphore.WaitAsync(operationCts.Token).ConfigureAwait(false);
             try
             {
-                return await _internalRetryHandler
-                    .RunWithRetryAsync(
-                        async () =>
-                        {
-                            return await base.RefreshSasTokenAsync(cancellationToken).ConfigureAwait(false);
-                        },
-                        cancellationToken)
-                    .ConfigureAwait(false);
+                if (GetClientTransportStatus() == ClientTransportStatus.Closed)
+                {
+                    if (Logging.IsEnabled)
+                        Logging.Info(this, "Opening connection", nameof(EnsureOpenedAsync));
+
+                    // This is to ensure that if OpenInternalAsync() fails on retry expiration with a custom retry policy,
+                    // we are returning the corresponding connection status change event => disconnected: retry_expired.
+                    try
+                    {
+                        await OpenInternalAsync(withRetry, operationCts.Token).ConfigureAwait(false);
+                    }
+                    catch (Exception ex) when (!ex.IsFatal())
+                    {
+                        HandleConnectionStatusExceptions(ex, true);
+                        throw;
+                    }
+
+                    if (!_isDisposed)
+                    {
+                        SetClientTransportStatus(ClientTransportStatus.Open);
+                        _openCalled = true;
+
+                        // Send the request for transport close notification.
+                        _transportClosedTask = HandleDisconnectAsync();
+                    }
+                    else
+                    {
+                        if (Logging.IsEnabled)
+                            Logging.Info(this, "Race condition: Disposed during opening.", nameof(EnsureOpenedAsync));
+
+                        _handleDisconnectCts?.Cancel();
+                    }
+                }
             }
             finally
             {
-                if (Logging.IsEnabled)
-                    Logging.Exit(this, cancellationToken, nameof(RefreshSasTokenAsync));
-            }
-        }
-
-        public override void SetSasTokenRefreshesOn()
-        {
-            if (Logging.IsEnabled)
-                Logging.Enter(this, nameof(SetSasTokenRefreshesOn));
-
-            if (_refreshLoop == null)
-            {
-                if (_loopCancellationTokenSource != null)
+                try
+                {
+                    _clientOpenSemaphore?.Release();
+                }
+                catch (ObjectDisposedException) when (_isDisposing)
                 {
                     if (Logging.IsEnabled)
-                        Logging.Info(this, "_loopCancellationTokenSource was already initialized, which was unexpected. Canceling and disposing the previous instance.", nameof(SetSasTokenRefreshesOn));
-
-                    try
-                    {
-                        _loopCancellationTokenSource.Cancel();
-                    }
-                    catch (ObjectDisposedException)
-                    {
-                    }
-                    _loopCancellationTokenSource.Dispose();
-                }
-                _loopCancellationTokenSource = new CancellationTokenSource();
-
-                DateTime refreshesOn = GetSasTokenRefreshesOn();
-                if (refreshesOn < DateTime.MaxValue)
-                {
-                    StartSasTokenLoop(refreshesOn, _loopCancellationTokenSource.Token);
+                        Logging.Error(this, "Tried releasing twin event subscription semaphore but it has already been disposed by client disposal on a separate thread." +
+                            "Ignoring this exception and continuing with client cleanup.");
                 }
             }
-
-            if (Logging.IsEnabled)
-                Logging.Exit(this, nameof(SetSasTokenRefreshesOn));
         }
 
-        public override async Task StopSasTokenLoopAsync()
+        private async Task EnsureOpenedAsync(bool withRetry, TimeoutHelper timeoutHelper)
         {
-            if (Logging.IsEnabled)
-                Logging.Enter(this, nameof(StopSasTokenLoopAsync));
+            using var cts = new CancellationTokenSource(timeoutHelper.GetRemainingTime());
+            using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cts.Token, _cancelPendingOperationsCts.Token);
+
+            // If this object has already been disposed, we will throw an exception indicating that.
+            // This is the entry point for interacting with the client and this safety check should be done here.
+            // The current behavior does not support open->close->open
+            if (_isDisposed)
+            {
+                throw new ObjectDisposedException("IoT client", ClientDisposedMessage);
+            }
+
+            if (GetClientTransportStatus() == ClientTransportStatus.Open)
+            {
+                return;
+            }
+
+            await _clientOpenSemaphore.WaitAsync(operationCts.Token).ConfigureAwait(false);
 
             try
             {
-                try
-                {
-                    _loopCancellationTokenSource?.Cancel();
-                }
-                catch (ObjectDisposedException)
+                if (GetClientTransportStatus() == ClientTransportStatus.Closed)
                 {
                     if (Logging.IsEnabled)
-                        Logging.Error(this, "The cancellation token source has already been canceled and disposed", nameof(StopSasTokenLoopAsync));
+                        Logging.Info(this, "Opening connection", nameof(EnsureOpenedAsync));
+
+                    // This is to ensure that if OpenInternalAsync() fails on retry expiration with a custom retry policy,
+                    // we are returning the corresponding connection status change event => disconnected: retry_expired.
+                    try
+                    {
+                        await OpenInternalAsync(withRetry, timeoutHelper).ConfigureAwait(false);
+                    }
+                    catch (Exception ex) when (!ex.IsFatal())
+                    {
+                        HandleConnectionStatusExceptions(ex, true);
+                        throw;
+                    }
+
+                    if (!_isDisposed)
+                    {
+                        SetClientTransportStatus(ClientTransportStatus.Open);
+                        _openCalled = true;
+
+                        // Send the request for transport close notification.
+                        _transportClosedTask = HandleDisconnectAsync();
+                    }
+                    else
+                    {
+                        if (Logging.IsEnabled)
+                            Logging.Info(this, "Race condition: Disposed during opening.", nameof(EnsureOpenedAsync));
+
+                        _handleDisconnectCts?.Cancel();
+                    }
+                }
+            }
+            finally
+            {
+                try
+                {
+                    _clientOpenSemaphore?.Release();
+                }
+                catch (ObjectDisposedException) when (_isDisposing)
+                {
+                    if (Logging.IsEnabled)
+                        Logging.Error(this, "Tried releasing twin event subscription semaphore but it has already been disposed by client disposal on a separate thread." +
+                            "Ignoring this exception and continuing with client cleanup.");
+                }
+            }
+        }
+
+        private async Task OpenInternalAsync(bool withRetry, CancellationToken cancellationToken)
+        {
+            using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancelPendingOperationsCts.Token);
+
+            if (withRetry)
+            {
+                await _internalRetryPolicy
+                    .RunWithRetryAsync(
+                        async () =>
+                        {
+                            try
+                            {
+                                if (Logging.IsEnabled)
+                                    Logging.Enter(this, cancellationToken, nameof(OpenAsync));
+
+                                // Will throw on error.
+                                await base.OpenAsync(operationCts.Token).ConfigureAwait(false);
+                                _onConnectionStatusChanged(ConnectionStatus.Connected, ConnectionStatusChangeReason.Connection_Ok);
+                            }
+                            catch (Exception ex) when (!ex.IsFatal())
+                            {
+                                HandleConnectionStatusExceptions(ex);
+                                throw;
+                            }
+                            finally
+                            {
+                                if (Logging.IsEnabled)
+                                    Logging.Exit(this, cancellationToken, nameof(OpenAsync));
+                            }
+                        },
+                        operationCts.Token).ConfigureAwait(false);
+            }
+            else
+            {
+                try
+                {
+                    if (Logging.IsEnabled)
+                        Logging.Enter(this, cancellationToken, nameof(OpenAsync));
+
+                    // Will throw on error.
+                    await base.OpenAsync(operationCts.Token).ConfigureAwait(false);
+                    _onConnectionStatusChanged(ConnectionStatus.Connected, ConnectionStatusChangeReason.Connection_Ok);
+                }
+                catch (Exception ex) when (!ex.IsFatal())
+                {
+                    HandleConnectionStatusExceptions(ex);
+                    throw;
+                }
+                finally
+                {
+                    if (Logging.IsEnabled)
+                        Logging.Exit(this, cancellationToken, nameof(OpenAsync));
+                }
+            }
+        }
+
+        private async Task OpenInternalAsync(bool withRetry, TimeoutHelper timeoutHelper)
+        {
+            using var cts = new CancellationTokenSource(timeoutHelper.GetRemainingTime());
+            using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(cts.Token, _cancelPendingOperationsCts.Token);
+
+            if (withRetry)
+            {
+                await _internalRetryPolicy
+                .RunWithRetryAsync(
+                    async () =>
+                    {
+                        try
+                        {
+                            if (Logging.IsEnabled)
+                                Logging.Enter(this, timeoutHelper, nameof(OpenAsync));
+
+                            // Will throw on error.
+                            await base.OpenAsync(timeoutHelper).ConfigureAwait(false);
+                            _onConnectionStatusChanged(ConnectionStatus.Connected, ConnectionStatusChangeReason.Connection_Ok);
+                        }
+                        catch (Exception ex) when (!ex.IsFatal())
+                        {
+                            HandleConnectionStatusExceptions(ex);
+                            throw;
+                        }
+                        finally
+                        {
+                            if (Logging.IsEnabled)
+                                Logging.Exit(this, timeoutHelper, nameof(OpenAsync));
+                        }
+                    },
+                    operationCts.Token)
+                .ConfigureAwait(false);
+            }
+            else
+            {
+                try
+                {
+                    if (Logging.IsEnabled)
+                        Logging.Enter(this, timeoutHelper, nameof(OpenAsync));
+
+                    // Will throw on error.
+                    await base.OpenAsync(timeoutHelper).ConfigureAwait(false);
+                    _onConnectionStatusChanged(ConnectionStatus.Connected, ConnectionStatusChangeReason.Connection_Ok);
+                }
+                catch (Exception ex) when (!ex.IsFatal())
+                {
+                    HandleConnectionStatusExceptions(ex);
+                    throw;
+                }
+                finally
+                {
+                    if (Logging.IsEnabled)
+                        Logging.Exit(this, timeoutHelper, nameof(OpenAsync));
+                }
+            }
+        }
+
+        // Triggered from connection loss event
+        private async Task HandleDisconnectAsync()
+        {
+            if (_isDisposed)
+            {
+                if (Logging.IsEnabled)
+                    Logging.Info(this, "Disposed during disconnection.", nameof(HandleDisconnectAsync));
+
+                _handleDisconnectCts?.Cancel();
+            }
+
+            try
+            {
+                // No timeout on connection being established.
+                await WaitForTransportClosedAsync().ConfigureAwait(false);
+            }
+            catch (OperationCanceledException)
+            {
+                // Canceled when the transport is being closed by the application.
+                if (Logging.IsEnabled)
+                    Logging.Info(this, "Transport disconnected: closed by application.", nameof(HandleDisconnectAsync));
+
+                _onConnectionStatusChanged(ConnectionStatus.Disabled, ConnectionStatusChangeReason.Client_Close);
+                return;
+            }
+
+            if (Logging.IsEnabled)
+                Logging.Info(this, "Transport disconnected: unexpected.", nameof(HandleDisconnectAsync));
+
+            await _clientOpenSemaphore.WaitAsync().ConfigureAwait(false);
+            SetClientTransportStatus(ClientTransportStatus.Closed);
+
+            try
+            {
+                // This is used to ensure that when NoRetry() policy is enabled, we should not be retrying.
+                if (!_internalRetryPolicy.RetryStrategy.GetShouldRetry().Invoke(0, new IotHubCommunicationException(), out TimeSpan delay))
+                {
+                    if (Logging.IsEnabled)
+                        Logging.Info(this, "Transport disconnected: closed by application.", nameof(HandleDisconnectAsync));
+
+                    _onConnectionStatusChanged(ConnectionStatus.Disconnected, ConnectionStatusChangeReason.Retry_Expired);
+                    return;
                 }
 
-                // Await the completion of _refreshLoop.
-                // This will ensure that when StopLoopAsync has been exited then no more token refresh attempts are in-progress.
-                if (_refreshLoop != null)
+                if (delay > TimeSpan.Zero)
                 {
-                    await _refreshLoop.ConfigureAwait(false);
+                    await Task.Delay(delay).ConfigureAwait(false);
                 }
+
+                // always reconnect.
+                _onConnectionStatusChanged(ConnectionStatus.Disconnected_Retrying, ConnectionStatusChangeReason.Communication_Error);
+                CancellationToken cancellationToken = _handleDisconnectCts?.Token ?? CancellationToken.None;
+
+                // This will recover to the state before the disconnect.
+                await _internalRetryPolicy.RunWithRetryAsync(async () =>
+                {
+                    if (Logging.IsEnabled)
+                        Logging.Info(this, "Attempting to recover subscriptions.", nameof(HandleDisconnectAsync));
+
+                    await base.OpenAsync(cancellationToken).ConfigureAwait(false);
+
+                    var tasks = new List<Task>(4);
+
+                    // This is to ensure that, if previously enabled, the callback to receive direct methods is recovered.
+                    if (_methodsEnabled)
+                    {
+                        tasks.Add(base.EnableMethodsAsync(cancellationToken));
+                    }
+
+                    // This is to ensure that, if previously enabled, the callback to receive twin properties is recovered.
+                    if (_twinEnabled)
+                    {
+                        tasks.Add(base.EnableTwinPatchAsync(cancellationToken));
+                    }
+
+                    // This is to ensure that, if previously enabled, the callback to receive events for modules is recovered.
+                    if (_eventsEnabled)
+                    {
+                        tasks.Add(base.EnableEventReceiveAsync(_isAnEdgeModule, cancellationToken));
+                    }
+
+                    // This is to ensure that, if previously enabled, the callback to receive C2D messages is recovered.
+                    if (_deviceReceiveMessageEnabled)
+                    {
+                        tasks.Add(base.EnableReceiveMessageAsync(cancellationToken));
+                    }
+
+                    if (tasks.Any())
+                    {
+                        await Task.WhenAll(tasks).ConfigureAwait(false);
+                    }
+
+                    // Don't check for unhandled C2D messages until the callback (EnableReceiveMessageAsync) is hooked up.
+                    if (_deviceReceiveMessageEnabled)
+                    {
+                        await base.EnsurePendingMessagesAreDeliveredAsync(cancellationToken).ConfigureAwait(false);
+                    }
+
+                    // Send the request for transport close notification.
+                    _transportClosedTask = HandleDisconnectAsync();
+
+                    SetClientTransportStatus(ClientTransportStatus.Open);
+                    _onConnectionStatusChanged(ConnectionStatus.Connected, ConnectionStatusChangeReason.Connection_Ok);
+
+                    if (Logging.IsEnabled)
+                        Logging.Info(this, "Subscriptions recovered.", nameof(HandleDisconnectAsync));
+                },
+                cancellationToken).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
                 if (Logging.IsEnabled)
-                    Logging.Error(this, $"Caught exception when stopping token refresh loop: {ex}");
+                    Logging.Error(this, ex.ToString(), nameof(HandleDisconnectAsync));
+
+                HandleConnectionStatusExceptions(ex, true);
             }
             finally
             {
-                if (Logging.IsEnabled)
-                    Logging.Exit(this, nameof(StopSasTokenLoopAsync));
-            }
-        }
-
-        private void StartSasTokenLoop(DateTime refreshesOn, CancellationToken cancellationToken)
-        {
-            if (Logging.IsEnabled)
-                Logging.Enter(this, refreshesOn, nameof(StartSasTokenLoop));
-
-            // This task runs in the background and is unmonitored.
-            // When this refresher is disposed it signals this task to be cancelled.
-            _refreshLoop = RefreshSasTokenLoopAsync(refreshesOn, cancellationToken);
-
-            if (Logging.IsEnabled)
-                Logging.Exit(this, refreshesOn, nameof(StartSasTokenLoop));
-        }
-
-        private async Task RefreshSasTokenLoopAsync(DateTime refreshesOn, CancellationToken cancellationToken)
-        {
-            if (Logging.IsEnabled)
-                Logging.Enter(this, refreshesOn, nameof(RefreshSasTokenLoopAsync));
-
-            try
-            {
-                TimeSpan waitTime = refreshesOn - DateTime.UtcNow;
-
-                while (!cancellationToken.IsCancellationRequested)
+                try
+                {
+                    _clientOpenSemaphore?.Release();
+                }
+                catch (ObjectDisposedException) when (_isDisposing)
                 {
                     if (Logging.IsEnabled)
-                        Logging.Info(this, refreshesOn, $"Before {nameof(RefreshSasTokenLoopAsync)} with wait time {waitTime}.");
-
-                    if (waitTime > TimeSpan.Zero)
-                    {
-                        if (Logging.IsEnabled)
-                            Logging.Info(this, refreshesOn, $"Token refreshes after {waitTime} {nameof(RefreshSasTokenLoopAsync)}.");
-
-                        await Task.Delay(waitTime, cancellationToken).ConfigureAwait(false);
-                    }
-
-                    refreshesOn = await RefreshSasTokenAsync(cancellationToken).ConfigureAwait(false);
-
-                    waitTime = refreshesOn - DateTime.UtcNow;
-
-                    if (Logging.IsEnabled)
-                        Logging.Info(this, refreshesOn, $"Token has been refreshed; valid until {refreshesOn}.");
+                        Logging.Error(this, "Tried releasing twin event subscription semaphore but it has already been disposed by client disposal on a separate thread." +
+                            "Ignoring this exception and continuing with client cleanup.");
                 }
             }
-            // OperationCanceledException can be thrown when the connection is closing or the cancellationToken is signaled
-            catch (OperationCanceledException) { return; }
-            finally
-            {
-                if (Logging.IsEnabled)
-                    Logging.Exit(this, refreshesOn, nameof(RefreshSasTokenLoopAsync));
-            }
         }
 
-        protected private override void Dispose(bool disposing)
+        // The retryAttemptsExhausted flag differentiates between calling this method while still retrying
+        // vs calling this when no more retry attempts are being made.
+        private void HandleConnectionStatusExceptions(Exception exception, bool retryAttemptsExhausted = false)
         {
             if (Logging.IsEnabled)
-                Logging.Enter(this, $"{nameof(DefaultDelegatingHandler)}.Disposed={_isDisposed}; disposing={disposing}", $"{nameof(RetryDelegatingHandler)}.{nameof(Dispose)}");
+                Logging.Info(
+                    this,
+                    $"Received exception: {exception}, retryAttemptsExhausted={retryAttemptsExhausted}",
+                    nameof(HandleConnectionStatusExceptions));
 
+            ConnectionStatusChangeReason reason = ConnectionStatusChangeReason.Communication_Error;
+            ConnectionStatus status = ConnectionStatus.Disconnected;
+
+            if (exception is IotHubException hubException)
+            {
+                if (hubException.IsTransient)
+                {
+                    if (retryAttemptsExhausted)
+                    {
+                        reason = ConnectionStatusChangeReason.Retry_Expired;
+                    }
+                    else
+                    {
+                        status = ConnectionStatus.Disconnected_Retrying;
+                    }
+                }
+                else if (hubException is UnauthorizedException)
+                {
+                    reason = ConnectionStatusChangeReason.Bad_Credential;
+                }
+                else if (hubException is DeviceNotFoundException)
+                {
+                    reason = ConnectionStatusChangeReason.Device_Disabled;
+                }
+            }
+
+            _onConnectionStatusChanged(status, reason);
+            if (Logging.IsEnabled)
+                Logging.Info(
+                    this,
+                    $"Connection status change: status={status}, reason={reason}",
+                    nameof(HandleConnectionStatusExceptions));
+        }
+
+        private ClientTransportStatus GetClientTransportStatus()
+        {
+            return (ClientTransportStatus)Interlocked.Read(ref _clientTransportState);
+        }
+
+        private void SetClientTransportStatus(ClientTransportStatus clientTransportStatus)
+        {
+            _ = Interlocked.Exchange(ref _clientTransportState, (int)clientTransportStatus);
+        }
+
+        protected override void Dispose(bool disposing)
+        {
             try
             {
+                if (Logging.IsEnabled)
+                    Logging.Enter(this, $"{nameof(DefaultDelegatingHandler)}.Disposed={_isDisposed}; disposing={disposing}", $"{nameof(RetryDelegatingHandler)}.{nameof(Dispose)}");
+
                 if (!_isDisposed)
                 {
+                    _isDisposing = true;
+                    SetClientTransportStatus(ClientTransportStatus.Closed);
+
                     base.Dispose(disposing);
 
                     if (disposing)
                     {
-                        _loopCancellationTokenSource?.Dispose();
+                        _handleDisconnectCts?.Cancel();
+                        _cancelPendingOperationsCts?.Cancel();
 
-                        _cloudToDeviceMessageSubscriptionSemaphore?.Dispose();
-                        _directMethodSubscriptionSemaphore?.Dispose();
-                        _twinEventsSubscriptionSemaphore?.Dispose();
+                        var disposables = new List<IDisposable>
+                        {
+                            _handleDisconnectCts,
+                            _cancelPendingOperationsCts,
+                            _clientOpenSemaphore,
+                            _cloudToDeviceMessageSubscriptionSemaphore,
+                            _cloudToDeviceEventSubscriptionSemaphore,
+                            _directMethodSubscriptionSemaphore,
+                            _twinEventsSubscriptionSemaphore,
+                        };
+
+                        foreach (IDisposable disposable in disposables)
+                        {
+                            try
+                            {
+                                disposable?.Dispose();
+                            }
+                            catch (ObjectDisposedException)
+                            {
+                                if (Logging.IsEnabled)
+                                    Logging.Error(this, $"Tried disposing the IDisposable {disposable} but it has already been disposed by client disposal on a separate thread." +
+                                        "Ignoring this exception and continuing with client cleanup.");
+                            }
+                        }
                     }
 
-                    // the _disposed flag is inherited from the base class DefaultDelegatingHandler and is finally set to null there.
+                    // the _disposed flag is inherited from the base class DefaultDelegatingHandler and is finally set to true there.
                 }
             }
             finally
             {
                 if (Logging.IsEnabled)
+                {
                     Logging.Exit(this, $"{nameof(DefaultDelegatingHandler)}.Disposed={_isDisposed}; disposing={disposing}", $"{nameof(RetryDelegatingHandler)}.{nameof(Dispose)}");
+                }
             }
         }
     }

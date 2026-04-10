@@ -2,22 +2,61 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Threading.Tasks;
+using Microsoft.Azure.Devices.Client.Extensions;
+using Microsoft.Azure.Devices.Shared;
+using Microsoft.Azure.Devices.Client.Transport.Amqp;
+using Microsoft.Azure.Devices.Client.Transport.Mqtt;
 
 namespace Microsoft.Azure.Devices.Client.Transport
 {
-    internal sealed class TransportHandlerFactory : ITransportHandlerFactory
+    internal class TransportHandlerFactory : ITransportHandlerFactory
     {
-        public IDelegatingHandler Create(PipelineContext context, IDelegatingHandler nextHandler)
+        public IDelegatingHandler Create(PipelineContext context)
         {
-            IotHubClientTransportSettings transportSettings = context.IotHubClientTransportSettings;
-            return transportSettings switch
+            // ProtocolRoutingDelegatingHandler configures the ITransportSettings configuration
+            // which is different from ITransportSettings[] element.
+            ITransportSettings transportSetting = context.TransportSettingsSelected;
+            IotHubConnectionString connectionString = context.IotHubConnectionString;
+            InternalClient.OnMethodCalledDelegate onMethodCallback = context.MethodCallback;
+            Action<TwinCollection> onDesiredStatePatchReceived = context.DesiredPropertyUpdateCallback;
+            InternalClient.OnModuleEventMessageReceivedDelegate onModuleEventReceivedCallback = context.ModuleEventCallback;
+            InternalClient.OnDeviceMessageReceivedDelegate onDeviceMessageReceivedCallback = context.DeviceEventCallback;
+
+            switch (transportSetting.GetTransportType())
             {
-                IotHubClientAmqpSettings => new AmqpTransportHandler(context, nextHandler),
+                case TransportType.Amqp_WebSocket_Only:
+                case TransportType.Amqp_Tcp_Only:
+                    return new AmqpTransportHandler(
+                        context,
+                        connectionString,
+                        transportSetting as AmqpTransportSettings,
+                        new Func<MethodRequestInternal, Task>(onMethodCallback),
+                        onDesiredStatePatchReceived,
+                        new Func<string, Message, Task>(onModuleEventReceivedCallback),
+                        new Func<Message, Task>(onDeviceMessageReceivedCallback));
 
-                IotHubClientMqttSettings => new MqttTransportHandler(context, nextHandler),
+                case TransportType.Http1:
+                    return new HttpTransportHandler(
+                        context,
+                        connectionString,
+                        transportSetting as Http1TransportSettings,
+                        isClientPrimaryTransportHandler: true);
 
-                _ => throw new InvalidOperationException($"Unsupported transport setting {context.IotHubClientTransportSettings.GetType()}")
-            };
+                case TransportType.Mqtt_Tcp_Only:
+                case TransportType.Mqtt_WebSocket_Only:
+                    return new MqttTransportHandler(
+                        context,
+                        connectionString,
+                        transportSetting as MqttTransportSettings,
+                        new Func<MethodRequestInternal, Task>(onMethodCallback),
+                        onDesiredStatePatchReceived,
+                        new Func<string, Message, Task>(onModuleEventReceivedCallback),
+                        new Func<Message, Task>(onDeviceMessageReceivedCallback));
+
+                default:
+                    throw new InvalidOperationException($"Unsupported transport setting {transportSetting}");
+            }
         }
     }
 }

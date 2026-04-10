@@ -5,11 +5,10 @@ using System.Linq;
 using System.Net.Http;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.Win32;
 
-namespace Microsoft.Azure.Devices.Client.Tests
+namespace Microsoft.Azure.Devices.Client.Test
 {
     [TestClass]
     [TestCategory("Unit")]
@@ -18,15 +17,15 @@ namespace Microsoft.Azure.Devices.Client.Tests
         [TestMethod]
         public void ToString_IsValidHttpHeaderFormat()
         {
-            using var httpRequestMessage = new HttpRequestMessage();
-            httpRequestMessage.Headers.UserAgent.TryParseAdd(new ProductInfo().ToString()).Should().BeTrue();
-            httpRequestMessage.Headers.UserAgent.TryParseAdd(new ProductInfo().ToString(UserAgentFormats.Http)).Should().BeTrue();
+            var httpRequestMessage = new HttpRequestMessage();
+            Assert.IsTrue(httpRequestMessage.Headers.UserAgent.TryParseAdd((new ProductInfo()).ToString()));
+            Assert.IsTrue(httpRequestMessage.Headers.UserAgent.TryParseAdd((new ProductInfo()).ToString(UserAgentFormats.Http)));
         }
 
         [TestMethod]
         public void Extra_DefaultValueIsEmpty()
         {
-            new ProductInfo().Extra.Should().Be(string.Empty);
+            Assert.AreEqual(string.Empty, new ProductInfo().Extra);
         }
 
 #if !NETCOREAPP1_1
@@ -34,83 +33,73 @@ namespace Microsoft.Azure.Devices.Client.Tests
         [TestMethod]
         public void ToString_ReturnsProductNameAndVersion()
         {
-            new ProductInfo().ToString().Should().Be(ExpectedUserAgentString());
+            Assert.AreEqual(ExpectedUserAgentString(), new ProductInfo().ToString());
         }
 
         [TestMethod]
         public void ToString_AppendsValueOfExtra()
         {
-            // arrange  
             const string extra = "abc 123 (xyz; 456)";
 
-            // act
             var info = new ProductInfo
             {
                 Extra = extra,
             };
 
-            // assert
-            info.ToString().Should().Be($"{ExpectedUserAgentString()} {extra}");
-            info.ToString(UserAgentFormats.Http).Should().Be($"{ExpectedHttpUserAgentString()} {extra}");
+            Assert.AreEqual($"{ExpectedUserAgentString()} {extra}", info.ToString());
+            Assert.AreEqual($"{ExpectedHttpUserAgentString()} {extra}", info.ToString(UserAgentFormats.Http));
         }
 
         [TestMethod]
         public void ToString_DoesNotAppendWhenExtraIsNull()
         {
-            // act
-            var info = new ProductInfo
-            {
-                Extra = null
-            };
+            var info = new ProductInfo();
+            info.Extra = null;
 
-            // assert
-            info.ToString().Should().Be(ExpectedUserAgentString());
-            info.ToString(UserAgentFormats.Http).Should().Be(ExpectedHttpUserAgentString());
+            Assert.AreEqual(ExpectedUserAgentString(), info.ToString());
+            Assert.AreEqual(ExpectedHttpUserAgentString(), info.ToString(UserAgentFormats.Http));
         }
 
         [TestMethod]
         public void ToString_DoesNotAppendWhenExtraContainsOnlyWhitespace()
         {
-            // act
             var info = new ProductInfo
             {
                 Extra = "\t  ",
             };
 
-            // assert
-            info.ToString().Should().Be(ExpectedUserAgentString());
-            info.ToString(UserAgentFormats.Http).Should().Be(ExpectedHttpUserAgentString());
+            Assert.AreEqual(ExpectedUserAgentString(), info.ToString());
+            Assert.AreEqual(ExpectedHttpUserAgentString(), info.ToString(UserAgentFormats.Http));
         }
 
         [TestMethod]
         public void ToString_AppendsTrimmedValueOfExtra()
         {
-            // arrange
             const string extra = "\tabc123  ";
 
-            // act
             var info = new ProductInfo
             {
                 Extra = extra,
             };
 
-            // assert
-            info.ToString().Should().Be($"{ExpectedUserAgentString()} {extra.Trim()}");
-            info.ToString(UserAgentFormats.Http).Should().Be($"{ExpectedHttpUserAgentString()} {extra.Trim()}");
+            Assert.AreEqual($"{ExpectedUserAgentString()} {extra.Trim()}", info.ToString());
+            Assert.AreEqual($"{ExpectedHttpUserAgentString()} {extra.Trim()}", info.ToString(UserAgentFormats.Http));
         }
 
         [TestMethod]
         public void ToString_ProtocolFormats()
         {
             var info = new ProductInfo();
-            info.ToString(UserAgentFormats.Default).Should().Be(ExpectedUserAgentString());
+
+            Assert.AreEqual(ExpectedUserAgentString(), info.ToString(UserAgentFormats.Default));
+
             // HTTP user agent string should not include SQM ID
-            info.ToString(UserAgentFormats.Http).Should().Be(ExpectedHttpUserAgentString());
+            Assert.AreEqual(ExpectedHttpUserAgentString(), info.ToString(UserAgentFormats.Http));
         }
 
-        private static string ExpectedUserAgentString()
+        private string ExpectedUserAgentString()
         {
-            string version = typeof(IotHubDeviceClient).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
+            string version = typeof(DeviceClient).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
             string runtime = RuntimeInformation.FrameworkDescription.Trim();
             string operatingSystem = RuntimeInformation.OSDescription.Trim();
             string processorArchitecture = RuntimeInformation.ProcessArchitecture.ToString().Trim();
@@ -130,9 +119,9 @@ namespace Microsoft.Azure.Devices.Client.Tests
             return $".NET/{version} ({string.Join("; ", agentInfoParts.Where(x => !string.IsNullOrEmpty(x)))})";
         }
 
-        private static string ExpectedHttpUserAgentString()
+        private string ExpectedHttpUserAgentString()
         {
-            string version = typeof(IotHubDeviceClient).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
+            string version = typeof(DeviceClient).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
             string runtime = RuntimeInformation.FrameworkDescription.Trim();
             string operatingSystem = RuntimeInformation.OSDescription.Trim();
             string processorArchitecture = RuntimeInformation.ProcessArchitecture.ToString().Trim();
@@ -160,12 +149,13 @@ namespace Microsoft.Azure.Devices.Client.Tests
                 {
                     expectedValue = key.GetValue("MachineId") as string;
                 }
-                expectedValue.Should().Be(actualValue);
+
+                Assert.AreEqual(expectedValue, actualValue);
             }
             else
             {
                 // GetSqmMachineId() should always return null for all other platforms
-                actualValue.Should().BeNull();
+                Assert.IsNull(actualValue);
             }
         }
     }

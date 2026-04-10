@@ -29,9 +29,9 @@ namespace Microsoft.Azure.Devices.Samples
                 Environment.Exit(1);
             }
 
-            using var hubServiceClient = new IotHubServiceClient(parameters.HubConnectionString);
+            using var registryManager = RegistryManager.CreateFromConnectionString(parameters.HubConnectionString);
 
-            var sample = new AutomaticDeviceManagementSample(hubServiceClient);
+            var sample = new AutomaticDeviceManagementSample(registryManager);
 
             await sample.RunSampleAsync();
 

@@ -9,7 +9,12 @@ using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.Azure.Amqp;
 using FluentAssertions;
+
+#if !NET451
+
 using Azure;
+
+#endif
 
 namespace Microsoft.Azure.Devices.Tests
 {
@@ -19,11 +24,13 @@ namespace Microsoft.Azure.Devices.Tests
     {
         private const string _hostName = "myiothub.azure-devices.net";
 
+#if !NET451
+
         [TestMethod]
         public async Task TestCbsTokenGeneration_Succeeds()
         {
             // arrange
-            var epochTime = new DateTime(1970, 1, 1);
+            DateTime epochTime = new DateTime(1970, 1, 1);
             DateTime expiresAt = DateTime.UtcNow.Add(TimeSpan.FromHours(1));
             TimeSpan secondsFromEpochTime = expiresAt.Subtract(epochTime);
             long seconds = Convert.ToInt64(secondsFromEpochTime.TotalSeconds, CultureInfo.InvariantCulture);
@@ -52,6 +59,7 @@ namespace Microsoft.Azure.Devices.Tests
             var iotHubSasCredentialProperties = new IotHubSasCredentialProperties(_hostName, azureSasCredential);
 
             // act
+
             CbsToken cbsToken = await iotHubSasCredentialProperties.GetTokenAsync(null, null, null).ConfigureAwait(false);
             azureSasCredential.Update(updatedToken);
             CbsToken updatedCbsToken = await iotHubSasCredentialProperties.GetTokenAsync(null, null, null).ConfigureAwait(false);
@@ -75,11 +83,18 @@ namespace Microsoft.Azure.Devices.Tests
             var azureSasCredential = new AzureSasCredential(token);
             var iotHubSasCredentialProperties = new IotHubSasCredentialProperties(_hostName, azureSasCredential);
 
-            // act
-            Func<Task> act = async () => await iotHubSasCredentialProperties.GetTokenAsync(null, null, null).ConfigureAwait(false);
+            try
+            {
+                // act
+                await iotHubSasCredentialProperties.GetTokenAsync(null, null, null).ConfigureAwait(false);
 
-            // assert
-            await act.Should().ThrowAsync<InvalidOperationException>();
+                Assert.Fail("The parsing of seconds from string to long should have caused an exception.");
+            }
+            catch (InvalidOperationException ex)
+            {
+                // assert
+                ex.Message.Should().Be($"Invalid seconds from epoch time on {nameof(AzureSasCredential)} signature.");
+            }
         }
 
         [TestMethod]
@@ -95,29 +110,20 @@ namespace Microsoft.Azure.Devices.Tests
             var azureSasCredential = new AzureSasCredential(token);
             var iotHubSasCredentialProperties = new IotHubSasCredentialProperties(_hostName, azureSasCredential);
 
-            // act
-            Func<Task> act = async () => await iotHubSasCredentialProperties.GetTokenAsync(null, null, null).ConfigureAwait(false);
+            try
+            {
+                // act
+                await iotHubSasCredentialProperties.GetTokenAsync(null, null, null).ConfigureAwait(false);
 
-            // assert
-            await act.Should().ThrowAsync<InvalidOperationException>();
+                Assert.Fail("The missing expiry on the SAS token should have caused an exception.");
+            }
+            catch (InvalidOperationException ex)
+            {
+                // assert
+                ex.Message.Should().Be($"There is no expiration time on {nameof(AzureSasCredential)} signature.");
+            }
         }
 
-        [TestMethod]
-        public void TestCbsTokenGeneration_GetAuthorizationHeader_Validate()
-        {
-            // arrange
-            string token = string.Format(
-                CultureInfo.InvariantCulture,
-                "SharedAccessSignature sr={0}&sig={1}",
-                WebUtility.UrlEncode(_hostName),
-                WebUtility.UrlEncode("signature"));
-
-            // act
-            var azureSasCredential = new AzureSasCredential(token);
-            var iotHubSasCredentialProperties = new IotHubSasCredentialProperties(_hostName, azureSasCredential);
-
-            // assert
-            iotHubSasCredentialProperties.GetAuthorizationHeader().Should().Be($"SharedAccessSignature sr={_hostName}&sig=signature");
-        }
+#endif
     }
 }

@@ -2,37 +2,40 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Amqp.Transport;
+using Microsoft.Azure.Devices.Client.Extensions;
 using Microsoft.Azure.Devices.Client.Transport.AmqpIot;
+using Microsoft.Azure.Devices.Shared;
+
+#if NET451
+using System.Configuration;
+#endif
 
 namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 {
-    internal sealed class AmqpIotConnector : IDisposable
+    internal class AmqpIotConnector : IDisposable
     {
-        private static readonly AmqpVersion s_amqpVersion_1_0_0 = new(1, 0, 0);
+#if NET451
+        private const string DisableServerCertificateValidationKeyName = "Microsoft.Azure.Devices.DisableServerCertificateValidation";
+#endif
+        private static readonly AmqpVersion s_amqpVersion_1_0_0 = new AmqpVersion(1, 0, 0);
+        private static readonly bool s_disableServerCertificateValidation = InitializeDisableServerCertificateValidation();
 
-        private readonly IotHubClientAmqpSettings _amqpTransportSettings;
+        private readonly AmqpTransportSettings _amqpTransportSettings;
         private readonly string _hostName;
 
         private AmqpIotTransport _amqpIotTransport;
 
-        internal AmqpIotConnector(IotHubClientAmqpSettings amqpTransportSettings, string hostName)
+        internal AmqpIotConnector(AmqpTransportSettings amqpTransportSettings, string hostName)
         {
             _amqpTransportSettings = amqpTransportSettings;
             _hostName = hostName;
         }
 
-        public void Dispose()
-        {
-            _amqpIotTransport?.Dispose();
-            _amqpIotTransport = null;
-        }
-
-        internal async Task<AmqpIotConnection> OpenConnectionAsync(IConnectionCredentials connectionCredentials, CancellationToken cancellationToken)
+        public async Task<AmqpIotConnection> OpenConnectionAsync(CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, nameof(OpenConnectionAsync));
@@ -46,12 +49,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             var amqpConnectionSettings = new AmqpConnectionSettings
             {
                 MaxFrameSize = AmqpConstants.DefaultMaxFrameSize,
-                ContainerId = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture),
+                ContainerId = CommonResources.GetNewStringGuid(),
                 HostName = _hostName,
                 IdleTimeOut = Convert.ToUInt32(_amqpTransportSettings.IdleTimeout.TotalMilliseconds),
             };
 
-            _amqpIotTransport = new AmqpIotTransport(connectionCredentials, amqpSettings, _amqpTransportSettings, _hostName);
+            _amqpIotTransport = new AmqpIotTransport(amqpSettings, _amqpTransportSettings, _hostName, s_disableServerCertificateValidation);
 
             TransportBase transportBase = await _amqpIotTransport.InitializeAsync(cancellationToken).ConfigureAwait(false);
             try
@@ -66,7 +69,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
                 return amqpIotConnection;
             }
-            catch (Exception ex) when (!Fx.IsFatal(ex))
+            catch (Exception ex) when (!ex.IsFatal())
             {
                 transportBase?.Close();
                 _amqpIotTransport?.Dispose();
@@ -77,6 +80,22 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 if (Logging.IsEnabled)
                     Logging.Exit(this, nameof(OpenConnectionAsync));
             }
+        }
+
+        private static bool InitializeDisableServerCertificateValidation()
+        {
+#if !NET451
+            return AppContext.TryGetSwitch("DisableServerCertificateValidationKeyName", out bool flag) && flag;
+#else
+            string value = ConfigurationManager.AppSettings[DisableServerCertificateValidationKeyName];
+            return !string.IsNullOrEmpty(value) && bool.Parse(value);
+#endif
+        }
+
+        public void Dispose()
+        {
+            _amqpIotTransport?.Dispose();
+            _amqpIotTransport = null;
         }
     }
 }

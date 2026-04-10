@@ -4,14 +4,23 @@
 using System;
 using System.Diagnostics;
 using Microsoft.Azure.Amqp;
+using Microsoft.Azure.Devices.Shared;
 
 namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 {
-    internal sealed class AmqpIotLinkFactory : ILinkFactory
+    internal class AmqpIotLinkFactory : ILinkFactory
     {
-        private static readonly Lazy<AmqpIotLinkFactory> s_instance = new(() => new AmqpIotLinkFactory());
+        private static readonly AmqpIotLinkFactory s_instance = new AmqpIotLinkFactory();
 
-        internal static AmqpIotLinkFactory Instance => s_instance.Value;
+        private AmqpIotLinkFactory()
+        {
+            // Important: must not throw as it's used within the static ctor.
+        }
+
+        public static AmqpIotLinkFactory GetInstance()
+        {
+            return s_instance;
+        }
 
         public IAsyncResult BeginOpenLink(AmqpLink link, TimeSpan timeout, AsyncCallback callback, object state)
         {
@@ -26,7 +35,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
             return settings.IsReceiver()
                 ? new ReceivingAmqpLink(session, settings)
-                : new SendingAmqpLink(session, settings);
+                : (AmqpLink)new SendingAmqpLink(session, settings);
         }
 
         public void EndOpenLink(IAsyncResult result)

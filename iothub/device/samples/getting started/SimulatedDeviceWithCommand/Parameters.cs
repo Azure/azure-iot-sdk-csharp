@@ -3,17 +3,12 @@
 
 using System;
 using CommandLine;
+using Microsoft.Azure.Devices.Client;
 
-namespace Microsoft.Azure.Devices.Client.Samples
+namespace SimulatedDeviceWithCommand
 {
-    public enum Transport
-    {
-        Mqtt,
-        Amqp
-    };
-
     /// <summary>
-    /// Command line parameters for the SimulatedDeviceWithCommand sample
+    /// Command line parameters for the SimulatedDevice sample
     /// </summary>
     internal class Parameters
     {
@@ -28,32 +23,9 @@ namespace Microsoft.Azure.Devices.Client.Samples
         [Option(
             't',
             "TransportType",
-            Default = Transport.Mqtt,
+            Default = TransportType.Mqtt,
             Required = false,
-            HelpText = "The transport (except HTTP) to use to communicate with the IoT hub. Possible values are Mqtt are Amqp.")]
-        public Transport Transport { get; set; }
-
-        [Option(
-           "TransportProtocol",
-           Default = IotHubClientTransportProtocol.Tcp,
-           HelpText = "The transport to use to communicate with the device client.")]
-        public IotHubClientTransportProtocol TransportProtocol { get; set; }
-
-        [Option(
-            'r',
-            "Application running time (in seconds)",
-            Required = false,
-            HelpText = "The running time for this console application. Leave it unassigned to run the application until it is explicitly canceled using Control+C.")]
-        public double? ApplicationRunningTime { get; set; }
-
-        internal IotHubClientTransportSettings GetHubTransportSettings()
-        {
-            return Transport switch
-            {
-                Transport.Mqtt => new IotHubClientMqttSettings(TransportProtocol),
-                Transport.Amqp => new IotHubClientAmqpSettings(TransportProtocol),
-                _ => throw new NotSupportedException($"Unsupported transport type {Transport}/{TransportProtocol}"),
-            };
-        }
+            HelpText = "The transport (except HTTP) to use to communicate with the IoT hub. Possible values include Mqtt, Mqtt_WebSocket_Only, Mqtt_Tcp_Only, Amqp, Amqp_WebSocket_Only, and Amqp_Tcp_Only.")]
+        public TransportType TransportType { get; set; }
     }
 }

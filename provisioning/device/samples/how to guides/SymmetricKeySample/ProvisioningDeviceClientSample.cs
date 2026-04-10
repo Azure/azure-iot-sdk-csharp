@@ -1,11 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client;
-using Microsoft.Extensions.Logging;
+using Microsoft.Azure.Devices.Provisioning.Client.Transport;
+using Microsoft.Azure.Devices.Shared;
+using System;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
 {
@@ -16,75 +17,76 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
     internal class ProvisioningDeviceClientSample
     {
         private readonly Parameters _parameters;
-        private readonly ILogger _logger;
-        private static CancellationTokenSource s_appCancellation;
 
-        public ProvisioningDeviceClientSample(Parameters parameters, ILogger logger)
+        public ProvisioningDeviceClientSample(Parameters parameters)
         {
             _parameters = parameters;
-            _logger = logger;
         }
 
         public async Task RunSampleAsync()
         {
-            s_appCancellation = new CancellationTokenSource();
-            Console.CancelKeyPress += (sender, eventArgs) =>
-            {
-                eventArgs.Cancel = true;
-                s_appCancellation.Cancel();
-                _logger.LogWarning("Sample execution cancellation requested; will exit.");
-            };
+            Console.WriteLine($"Initializing the device provisioning client...");
 
-            _logger.LogInformation($"Initializing the device provisioning client...");
-
-            // For individual enrollments, the first parameter must be the registration Id, where in the enrollment
-            // the device Id is already chosen. However, for group enrollments the device Id can be requested by
-            // the device, as long as the key has been computed using that value.
-            // Also, the secondary could be included, but was left out for the simplicity of this sample.
-            var security = new AuthenticationProviderSymmetricKey(
-                _parameters.Id,
+            // For group enrollments, the second parameter must be the derived device key.
+            // See the ComputeDerivedSymmetricKeySample for how to generate the derived key.
+            // The secondary key could be included, but was left out for the simplicity of this sample.
+            using var security = new SecurityProviderSymmetricKey(
+                _parameters.RegistrationId,
                 _parameters.PrimaryKey,
                 null);
 
-            ProvisioningClientOptions clientOptions = _parameters.GetClientOptions();
+            using ProvisioningTransportHandler transportHandler = GetTransportHandler();
 
-            var provClient = new ProvisioningDeviceClient(
+            var provClient = ProvisioningDeviceClient.Create(
                 _parameters.GlobalDeviceEndpoint,
                 _parameters.IdScope,
                 security,
-                clientOptions);
+                transportHandler);
 
-            _logger.LogInformation($"Initialized for registration Id {security.GetRegistrationId()}.");
+            Console.WriteLine($"Initialized for registration Id {security.GetRegistrationID()}.");
 
-            _logger.LogInformation("Registering with the device provisioning service...");
+            Console.WriteLine("Registering with the device provisioning service...");
             DeviceRegistrationResult result = await provClient.RegisterAsync();
 
-            _logger.LogInformation($"Registration status: {result.Status}.");
-            if (result.Status != ProvisioningRegistrationStatus.Assigned)
+            Console.WriteLine($"Registration status: {result.Status}.");
+            if (result.Status != ProvisioningRegistrationStatusType.Assigned)
             {
-                _logger.LogError($"Registration status did not assign a hub. Exiting this sample.");
+                Console.WriteLine($"Registration status did not assign a hub, so exiting this sample.");
                 return;
             }
 
-            _logger.LogInformation($"Device {result.DeviceId} registered to {result.AssignedHub}.");
+            Console.WriteLine($"Device {result.DeviceId} registered to {result.AssignedHub}.");
 
-            _logger.LogInformation("Creating symmetric key authentication for IoT Hub...");
-            IAuthenticationMethod auth = new ClientAuthenticationWithSharedAccessKeyRefresh(
-                security.PrimaryKey,
-                result.DeviceId);
+            Console.WriteLine("Creating symmetric key authentication for IoT Hub...");
+            IAuthenticationMethod auth = new DeviceAuthenticationWithRegistrySymmetricKey(
+                result.DeviceId,
+                security.GetPrimaryKey());
 
-            _logger.LogInformation($"Testing the provisioned device with IoT Hub...");
-            var hubOptions = new IotHubClientOptions(_parameters.GetHubTransportSettings());
-            await using var iotHubClient = new IotHubDeviceClient(result.AssignedHub, auth, hubOptions);
+            Console.WriteLine($"Testing the provisioned device with IoT Hub...");
+            using var iotClient = DeviceClient.Create(result.AssignedHub, auth, _parameters.TransportType);
 
-            await iotHubClient.OpenAsync();
-            _logger.LogInformation("Sending a telemetry message...");
-            var message = new TelemetryMessage();
-            message.SetPayload("TestMessage");
-            await iotHubClient.SendTelemetryAsync(message);
+            Console.WriteLine("Sending a telemetry message...");
+            using var message = new Message(Encoding.UTF8.GetBytes("TestMessage"));
+            await iotClient.SendEventAsync(message);
 
-            await iotHubClient.CloseAsync();
-            _logger.LogInformation("Finished.");
+            await iotClient.CloseAsync();
+            Console.WriteLine("Finished.");
+        }
+
+        private ProvisioningTransportHandler GetTransportHandler()
+        {
+            Console.WriteLine($"Using transport type {_parameters.TransportType}.");
+            return _parameters.TransportType switch
+            {
+                TransportType.Mqtt => new ProvisioningTransportHandlerMqtt(),
+                TransportType.Mqtt_Tcp_Only => new ProvisioningTransportHandlerMqtt(TransportFallbackType.TcpOnly),
+                TransportType.Mqtt_WebSocket_Only => new ProvisioningTransportHandlerMqtt(TransportFallbackType.WebSocketOnly),
+                TransportType.Amqp => new ProvisioningTransportHandlerAmqp(),
+                TransportType.Amqp_Tcp_Only => new ProvisioningTransportHandlerAmqp(TransportFallbackType.TcpOnly),
+                TransportType.Amqp_WebSocket_Only => new ProvisioningTransportHandlerAmqp(TransportFallbackType.WebSocketOnly),
+                TransportType.Http1 => new ProvisioningTransportHandlerHttp(),
+                _ => throw new NotSupportedException($"Unsupported transport type {_parameters.TransportType}"),
+            };
         }
     }
 }

@@ -1,5 +1,5 @@
 <!--
-Thank you for helping us improve the Azure IoT .NET SDK!
+Thank you for helping us improve the Azure IoT C# SDK!
 
 Need support?
 - Have a feature request for SDKs? Please post it on [User Voice](https://feedback.azure.com/forums/321918-azure-iot) to help us prioritize.

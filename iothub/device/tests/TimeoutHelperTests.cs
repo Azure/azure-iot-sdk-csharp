@@ -2,9 +2,11 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Threading.Tasks;
-using FluentAssertions;
+using System.Collections.Generic;
+using System.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using FluentAssertions;
+using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.Client.Tests
 {
@@ -25,13 +27,13 @@ namespace Microsoft.Azure.Devices.Client.Tests
 
             // act
 
-            var toh = new TimeoutHelper(timeout);
+            var toh = new TimeoutHelper(timeout, startTimeout: false);
             await Task.Delay(timeout).ConfigureAwait(false);
 
             // assert
 
             // As timeout did not start, asking for it now should return the original time, and then set the deadline.
-            TimeSpan remainingTime = toh.GetRemainingTime();
+            var remainingTime = toh.GetRemainingTime();
             remainingTime.Should().Be(timeout);
 
             // Waiting a bit should show the
@@ -44,13 +46,16 @@ namespace Microsoft.Azure.Devices.Client.Tests
         public async Task TimeoutHelper_Ctor_StartsTimeout()
         {
             // arrange
+
             var timeout = TimeSpan.FromSeconds(1);
 
             // act
+
             var toh = new TimeoutHelper(timeout, startTimeout: true);
             await Task.Delay(1).ConfigureAwait(false);
 
             // assert
+
             // As timeout did start, asking for it now should return something less than the original time
             var remainingTime = toh.GetRemainingTime();
             remainingTime.Should().BeLessThan(timeout);
@@ -60,13 +65,16 @@ namespace Microsoft.Azure.Devices.Client.Tests
         public void Timeouthelper_Ctor_NoTimeOut()
         {
             // arrange
+
             var timeout = TimeSpan.MaxValue;
 
             // act
+
             var toh = new TimeoutHelper(timeout, true);
 
             // assert
-            TimeSpan remainingTime = toh.GetRemainingTime();
+
+            var remainingTime = toh.GetRemainingTime();
             remainingTime.Should().Be(timeout);
         }
 
@@ -80,11 +88,12 @@ namespace Microsoft.Azure.Devices.Client.Tests
             var toh = new TimeoutHelper(timeout, true);
 
             // assert
+
             TimeSpan remainingTime = toh.GetRemainingTime();
             remainingTime.Should().NotBe(TimeSpan.Zero);
 
             // ensure we're over the time, because the test will sometimes fail with some microseconds remaining
-            TimeSpan delay = timeout.Add(TimeSpan.FromMilliseconds(50));
+            var delay = timeout.Add(TimeSpan.FromMilliseconds(50));
             await Task.Delay(delay).ConfigureAwait(false);
 
             remainingTime = toh.GetRemainingTime();

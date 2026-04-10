@@ -52,6 +52,12 @@ jobs:
       X509_CHAIN_INTERMEDIATE2_PFX_CERTIFICATE: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.X509_CHAIN_INTERMEDIATE2_PFX_CERTIFICATE'] ]
       STORAGE_ACCOUNT_CONNECTION_STRING: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.STORAGE_ACCOUNT_CONNECTION_STRING'] ]
     timeoutInMinutes: ${{ parameters.jobTimeoutInMinutes }}
+    strategy:
+      matrix:
+        .NET 8.0:
+          FRAMEWORK: net8.0
+        .NET 4.7.2:
+          FRAMEWORK: net472
     pool:
       vmImage: windows-2022
     steps:
@@ -66,17 +72,28 @@ jobs:
             Write-Host "testNet80: ${{ variables.testNet80 }}"
             Write-Host "testNet472: ${{ variables.testNet472 }}"
 
-      - task: UseDotNet@2
-        displayName: 'Use .NET SDK 10.0'
-        inputs:
-          packageType: sdk
-          version: 10.x
-          performMultiLevelLookup: true
-          installationPath: $(Agent.ToolsDirectory)/dotnet
+      - ${{ if eq(variables['testNet80'], 'True') }}:
+        - task: UseDotNet@2
+          displayName: 'Use .NET SDK 8.0'
+          inputs:
+            packageType: sdk
+            version: 8.x
+            performMultiLevelLookup: true
+            installationPath: $(Agent.ToolsDirectory)/dotnet
+
+      - ${{ if eq(variables['testNet472'], 'True') }}:
+        - task: CmdLine@2
+          displayName: 'Install .NET 4.7.2'
+          inputs:
+            script: 'choco install -y netfx-4.7.2-devpack'
 
       - download: current
         displayName: 'Download test certificates'
         artifact: test-certificates
+
+      - powershell: ./vsts/start_tpm_windows.ps1
+        displayName: "Start TPM Simulator"
+        condition: succeeded()
 
       - task: JavaToolInstaller@0
         condition: succeeded()
@@ -100,7 +117,7 @@ jobs:
             # This prints the logs from the background run of the proxy in case some issue happens
             Receive-Job Job1
 
-            dotnet test --logger trx --framework net10.0
+            dotnet test --logger trx --framework $(FRAMEWORK)
             
             # Tear down test proxy background process
             Stop-Job Job1
@@ -127,14 +144,17 @@ jobs:
           X509_CHAIN_INTERMEDIATE2_PFX_CERTIFICATE: $(X509_CHAIN_INTERMEDIATE2_PFX_CERTIFICATE)
           STORAGE_ACCOUNT_CONNECTION_STRING: $(STORAGE_ACCOUNT_CONNECTION_STRING)
 
+          # Environment variables for the DevOps pipeline
+          FRAMEWORK: $(FRAMEWORK)
+
       - task: PublishTestResults@2
         displayName: "Publish Test Results **/*.trx"
         inputs:
           testRunner: VSTest
           testResultsFiles: "**/*.trx"
-          testRunTitle: "Windows Tests (Attempt $(System.JobAttempt))"
+          testRunTitle: "Windows Tests ($(FRAMEWORK)) (Attempt $(System.JobAttempt))"
           platform: Windows
-          configuration: "Debug UT + Release E2E"
+          configuration: "Debug UT + Release E2E ($(FRAMEWORK))"
         condition: always()
         
       - task: ComponentGovernanceComponentDetection@0
@@ -152,7 +172,6 @@ jobs:
       - DeployCloudTestResources
     variables:
       RESOURCE_GROUP_NAME: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.RESOURCE_GROUP_NAME'] ]
-      DEPLOYMENT_NAME: $[ dependencies.DeployCloudTestResources.outputs['deployCloudTestResources.DEPLOYMENT_NAME'] ]
     pool:
       vmImage: windows-2022
     steps:

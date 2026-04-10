@@ -5,54 +5,66 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Azure.Devices.Shared;
 
 namespace Microsoft.Azure.Devices.Client.Transport
 {
     internal class DefaultDelegatingHandler : IDelegatingHandler
     {
-        private volatile IDelegatingHandler _nextHandler;
+        protected internal const string ClientDisposedMessage = "The client has been disposed and is no longer usable.";
         protected volatile bool _isDisposed;
+        private volatile IDelegatingHandler _innerHandler;
 
-        protected internal DefaultDelegatingHandler(PipelineContext context, IDelegatingHandler nextHandler)
+        protected internal DefaultDelegatingHandler(PipelineContext context, IDelegatingHandler innerHandler)
         {
             Context = context;
-            _nextHandler = nextHandler;
+            _innerHandler = innerHandler;
 
             if (Logging.IsEnabled)
-                Logging.Associate(this, _nextHandler, nameof(NextHandler));
+                Logging.Associate(this, _innerHandler, nameof(InnerHandler));
         }
 
         public PipelineContext Context { get; protected set; }
 
         public ContinuationFactory<IDelegatingHandler> ContinuationFactory { get; set; }
 
-        public IDelegatingHandler NextHandler
+        public IDelegatingHandler InnerHandler
         {
-            get => _nextHandler;
+            get => _innerHandler;
             protected set
             {
-                _nextHandler = value;
+                _innerHandler = value;
 
                 if (Logging.IsEnabled)
-                    Logging.Associate(this, _nextHandler, nameof(NextHandler));
+                    Logging.Associate(this, _innerHandler, nameof(InnerHandler));
             }
         }
 
-        public virtual bool IsUsable => NextHandler?.IsUsable ?? true;
+        public virtual Task OpenAsync(TimeoutHelper timeoutHelper)
+        {
+            ThrowIfDisposed();
+            return InnerHandler?.OpenAsync(timeoutHelper) ?? TaskHelpers.CompletedTask;
+        }
 
         public virtual Task OpenAsync(CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
-            return NextHandler?.OpenAsync(cancellationToken) ?? Task.CompletedTask;
+            return InnerHandler?.OpenAsync(cancellationToken) ?? TaskHelpers.CompletedTask;
         }
 
         public virtual Task CloseAsync(CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
 
-            return NextHandler == null
-                ? Task.CompletedTask
-                : NextHandler.CloseAsync(cancellationToken);
+            if (InnerHandler == null)
+            {
+                return TaskHelpers.CompletedTask;
+            }
+            else
+            {
+                Task closeTask = InnerHandler.CloseAsync(cancellationToken);
+                return closeTask;
+            }
         }
 
         /// <summary>
@@ -61,13 +73,31 @@ namespace Microsoft.Azure.Devices.Client.Transport
         public virtual Task WaitForTransportClosedAsync()
         {
             ThrowIfDisposed();
-            return NextHandler?.WaitForTransportClosedAsync() ?? throw new InvalidOperationException();
+
+            if (InnerHandler == null)
+            {
+                throw new InvalidOperationException();
+            }
+
+            return InnerHandler.WaitForTransportClosedAsync();
+        }
+
+        public virtual Task<Message> ReceiveAsync(CancellationToken cancellationToken)
+        {
+            ThrowIfDisposed();
+            return InnerHandler.ReceiveAsync(cancellationToken);
+        }
+
+        public virtual Task<Message> ReceiveAsync(TimeoutHelper timeoutHelper)
+        {
+            ThrowIfDisposed();
+            return InnerHandler.ReceiveAsync(timeoutHelper);
         }
 
         public virtual Task EnableReceiveMessageAsync(CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
-            return NextHandler?.EnableReceiveMessageAsync(cancellationToken) ?? Task.CompletedTask;
+            return InnerHandler.EnableReceiveMessageAsync(cancellationToken);
         }
 
         // This is to ensure that if device connects over MQTT with CleanSession flag set to false,
@@ -75,110 +105,100 @@ namespace Microsoft.Azure.Devices.Client.Transport
         public virtual Task EnsurePendingMessagesAreDeliveredAsync(CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
-            return NextHandler?.EnsurePendingMessagesAreDeliveredAsync(cancellationToken);
+            return InnerHandler.EnsurePendingMessagesAreDeliveredAsync(cancellationToken);
         }
 
         public virtual Task DisableReceiveMessageAsync(CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
-            return NextHandler?.DisableReceiveMessageAsync(cancellationToken) ?? Task.CompletedTask;
+            return InnerHandler.DisableReceiveMessageAsync(cancellationToken);
         }
 
-        public virtual Task SendTelemetryAsync(TelemetryMessage message, CancellationToken cancellationToken)
+        public virtual Task CompleteAsync(string lockToken, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
-            return NextHandler?.SendTelemetryAsync(message, cancellationToken) ?? Task.CompletedTask;
+            return InnerHandler?.CompleteAsync(lockToken, cancellationToken) ?? TaskHelpers.CompletedTask;
         }
 
-        public virtual Task SendTelemetryAsync(IEnumerable<TelemetryMessage> messages, CancellationToken cancellationToken)
+        public virtual Task AbandonAsync(string lockToken, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
-            return NextHandler?.SendTelemetryAsync(messages, cancellationToken) ?? Task.CompletedTask;
+            return InnerHandler?.AbandonAsync(lockToken, cancellationToken) ?? TaskHelpers.CompletedTask;
+        }
+
+        public virtual Task RejectAsync(string lockToken, CancellationToken cancellationToken)
+        {
+            ThrowIfDisposed();
+            return InnerHandler?.RejectAsync(lockToken, cancellationToken) ?? TaskHelpers.CompletedTask;
+        }
+
+        public virtual Task SendEventAsync(Message message, CancellationToken cancellationToken)
+        {
+            ThrowIfDisposed();
+            return InnerHandler?.SendEventAsync(message, cancellationToken) ?? TaskHelpers.CompletedTask;
+        }
+
+        public virtual Task SendEventAsync(IEnumerable<Message> messages, CancellationToken cancellationToken)
+        {
+            ThrowIfDisposed();
+            return InnerHandler?.SendEventAsync(messages, cancellationToken) ?? TaskHelpers.CompletedTask;
         }
 
         public virtual Task EnableMethodsAsync(CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
-            return NextHandler?.EnableMethodsAsync(cancellationToken) ?? Task.CompletedTask;
+            return InnerHandler?.EnableMethodsAsync(cancellationToken) ?? TaskHelpers.CompletedTask;
         }
 
         public virtual Task DisableMethodsAsync(CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
-            return NextHandler?.DisableMethodsAsync(cancellationToken) ?? Task.CompletedTask;
+            return InnerHandler?.DisableMethodsAsync(cancellationToken) ?? TaskHelpers.CompletedTask;
         }
 
-        public virtual Task SendMethodResponseAsync(DirectMethodResponse methodResponse, CancellationToken cancellationToken)
+        public virtual Task SendMethodResponseAsync(MethodResponseInternal methodResponse, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
-            return NextHandler?.SendMethodResponseAsync(methodResponse, cancellationToken) ?? Task.CompletedTask;
+            return InnerHandler?.SendMethodResponseAsync(methodResponse, cancellationToken) ?? TaskHelpers.CompletedTask;
         }
 
         public virtual Task EnableTwinPatchAsync(CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
-            return NextHandler?.EnableTwinPatchAsync(cancellationToken) ?? Task.CompletedTask;
+            return InnerHandler?.EnableTwinPatchAsync(cancellationToken) ?? TaskHelpers.CompletedTask;
         }
 
         public virtual Task DisableTwinPatchAsync(CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
-            return NextHandler?.DisableTwinPatchAsync(cancellationToken) ?? Task.CompletedTask;
+            return InnerHandler?.DisableTwinPatchAsync(cancellationToken) ?? TaskHelpers.CompletedTask;
         }
 
-        public virtual Task<TwinProperties> GetTwinAsync(CancellationToken cancellationToken)
+        public virtual Task<Twin> SendTwinGetAsync(CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
-            return NextHandler?.GetTwinAsync(cancellationToken) ?? Task.FromResult((TwinProperties)null);
+            return InnerHandler?.SendTwinGetAsync(cancellationToken) ?? Task.FromResult((Twin)null);
         }
 
-        public virtual Task<long> UpdateReportedPropertiesAsync(PropertyCollection reportedProperties, CancellationToken cancellationToken)
+        public virtual Task SendTwinPatchAsync(TwinCollection reportedProperties, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
-            return NextHandler?.UpdateReportedPropertiesAsync(reportedProperties, cancellationToken) ?? Task.FromResult(0L);
+            return InnerHandler?.SendTwinPatchAsync(reportedProperties, cancellationToken) ?? TaskHelpers.CompletedTask;
         }
 
-        public virtual Task<FileUploadSasUriResponse> GetFileUploadSasUriAsync(FileUploadSasUriRequest request, CancellationToken cancellationToken)
+        public virtual Task EnableEventReceiveAsync(bool isAnEdgeModule, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
-            return NextHandler?.GetFileUploadSasUriAsync(request, cancellationToken) ?? Task.FromResult<FileUploadSasUriResponse>(null);
+            return InnerHandler?.EnableEventReceiveAsync(isAnEdgeModule, cancellationToken) ?? TaskHelpers.CompletedTask;
         }
 
-        public virtual Task CompleteFileUploadAsync(FileUploadCompletionNotification notification, CancellationToken cancellationToken)
+        public virtual Task DisableEventReceiveAsync(bool isAnEdgeModule, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
-            return NextHandler?.CompleteFileUploadAsync(notification, cancellationToken) ?? Task.CompletedTask;
+            return InnerHandler?.DisableEventReceiveAsync(isAnEdgeModule, cancellationToken) ?? TaskHelpers.CompletedTask;
         }
 
-        public virtual Task<DirectMethodResponse> InvokeMethodAsync(EdgeModuleDirectMethodRequest methodInvokeRequest, Uri uri, CancellationToken cancellationToken)
-        {
-            ThrowIfDisposed();
-            return NextHandler?.InvokeMethodAsync(methodInvokeRequest, uri, cancellationToken) ?? Task.FromResult<DirectMethodResponse>(null);
-        }
-
-        public virtual Task<DateTime> RefreshSasTokenAsync(CancellationToken cancellationToken)
-        {
-            ThrowIfDisposed();
-            return NextHandler?.RefreshSasTokenAsync(cancellationToken) ?? Task.FromResult(DateTime.UtcNow);
-        }
-
-        public virtual DateTime GetSasTokenRefreshesOn()
-        {
-            ThrowIfDisposed();
-            return NextHandler?.GetSasTokenRefreshesOn() ?? DateTime.UtcNow;
-        }
-
-        public virtual void SetSasTokenRefreshesOn()
-        {
-            ThrowIfDisposed();
-            NextHandler?.SetSasTokenRefreshesOn();
-        }
-
-        public virtual Task StopSasTokenLoopAsync()
-        {
-            ThrowIfDisposed();
-            return NextHandler?.StopSasTokenLoopAsync() ?? Task.CompletedTask;
-        }
+        public virtual bool IsUsable => InnerHandler?.IsUsable ?? true;
 
         public virtual void Dispose()
         {
@@ -186,23 +206,26 @@ namespace Microsoft.Azure.Devices.Client.Transport
             GC.SuppressFinalize(this);
         }
 
-        protected private void ThrowIfDisposed()
+        protected internal void ThrowIfDisposed()
         {
-            ObjectDisposedException.ThrowIf(_isDisposed, "IoT Client");
+            if (_isDisposed)
+            {
+                throw new ObjectDisposedException("IoT client", ClientDisposedMessage);
+            }
         }
 
-        protected private virtual void Dispose(bool disposing)
+        protected virtual void Dispose(bool disposing)
         {
-            if (Logging.IsEnabled)
-                Logging.Enter(this, $"Disposed={_isDisposed}; disposing={disposing}", $"{nameof(DefaultDelegatingHandler)}.{nameof(Dispose)}");
-
             try
             {
+                if (Logging.IsEnabled)
+                    Logging.Enter(this, $"Disposed={_isDisposed}; disposing={disposing}", $"{nameof(DefaultDelegatingHandler)}.{nameof(Dispose)}");
+
                 if (!_isDisposed)
                 {
                     if (disposing)
                     {
-                        _nextHandler?.Dispose();
+                        _innerHandler?.Dispose();
                     }
 
                     _isDisposed = true;

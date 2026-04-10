@@ -1,9 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System;
-using System.Collections.Concurrent;
 using Microsoft.Extensions.Logging;
+using System.Collections.Concurrent;
 
 namespace Microsoft.Azure.Devices.Logging
 {
@@ -40,7 +39,6 @@ namespace Microsoft.Azure.Devices.Logging
         public void Dispose()
         {
             _loggers.Clear();
-            GC.SuppressFinalize(this);
         }
     }
 }

@@ -9,12 +9,6 @@ using System.Reflection;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
 {
-    public enum Transport
-    {
-        Mqtt,
-        Amqp,
-    };
-
     /// <summary>
     /// Parameters for the application
     /// </summary>
@@ -28,47 +22,37 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
         public string IdScope { get; set; }
 
         [Option(
-            'n',
+            'c',
             "CertificateName",
             Default = "certificate.pfx",
-            Required = true,
-            HelpText = "The name to the PFX certificate to load for device provisioning authentication. You can also pass in the absolute path to the device PFX certificate file.")]
+            HelpText = "The PFX certificate to load for device provisioning authentication.")]
         public string CertificateName { get; set; }
 
         [Option(
             'p',
             "CertificatePassword",
-            Required = false,
             HelpText = "The password of the PFX certificate file. If not specified, the program will prompt at run time.")]
         public string CertificatePassword { get; set; }
 
         [Option(
             'g',
             "GlobalDeviceEndpoint",
-            Required = false,
             Default = "global.azure-devices-provisioning.net",
             HelpText = "The global endpoint for devices to connect to.")]
         public string GlobalDeviceEndpoint { get; set; }
 
         [Option(
-            "Transport",
-            Default = Transport.Mqtt,
-            Required = false,
-            HelpText = "The transport to use for the connection.")]
-        public Transport Transport { get; set; }
+            't',
+            "TransportType",
+            Default = TransportType.Mqtt,
+            HelpText = "The transport to use to communicate with the device provisioning instance. Possible values include Mqtt, Mqtt_WebSocket_Only, Mqtt_Tcp_Only, Amqp, Amqp_WebSocket_Only, Amqp_Tcp_only, and Http1.")]
+        public TransportType TransportType { get; set; }
 
-        [Option(
-            "TransportProtocol",
-            Required = false,
-            Default = ProvisioningClientTransportProtocol.Tcp,
-            HelpText = "The transport to use to communicate with the device provisioning instance.")]
-        public ProvisioningClientTransportProtocol TransportProtocol { get; set; }
-
-        internal string GetCertificatePath()
+        public string GetCertificatePath()
         {
             if (string.IsNullOrWhiteSpace(CertificateName))
             {
-                throw new ArgumentNullException("The certificate name has not been set.");
+                throw new InvalidOperationException("The certificate name has not been set.");
             }
 
             string codeBase = Assembly.GetExecutingAssembly().Location;
@@ -91,30 +75,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
             // Once we get to the root, the call to parent will return null
             // so that is our failure condition.
             throw new InvalidOperationException($"Could not find the certificate file {CertificateName} in the sample execution folder or any parent folder.");
-        }
-
-        internal ProvisioningClientOptions GetClientOptions()
-        {
-            return Transport switch
-            {
-                Transport.Mqtt => new ProvisioningClientOptions(new ProvisioningClientMqttSettings(TransportProtocol)),
-                Transport.Amqp => new ProvisioningClientOptions(new ProvisioningClientAmqpSettings(TransportProtocol)),
-                _ => throw new NotSupportedException($"Unsupported transport type {Transport}/{TransportProtocol}"),
-            };
-        }
-
-        internal IotHubClientTransportSettings GetHubTransportSettings()
-        {
-            IotHubClientTransportProtocol protocol = TransportProtocol == ProvisioningClientTransportProtocol.Tcp
-                ? IotHubClientTransportProtocol.Tcp
-                : IotHubClientTransportProtocol.WebSocket;
-
-            return Transport switch
-            {
-                Transport.Mqtt => new IotHubClientMqttSettings(protocol),
-                Transport.Amqp => new IotHubClientAmqpSettings(protocol),
-                _ => throw new NotSupportedException($"Unsupported transport type {Transport}/{TransportProtocol}"),
-            };
         }
     }
 }

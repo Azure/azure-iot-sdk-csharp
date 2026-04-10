@@ -10,8 +10,9 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using CommandLine;
+using Microsoft.Azure.Devices.Client;
 
-namespace Microsoft.Azure.Devices.Client.Samples
+namespace SimulatedDevice
 {
     /// <summary>
     /// This sample illustrates the very basics of a device app sending telemetry. For a more comprehensive device app sample, please see
@@ -30,12 +31,8 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
             Console.WriteLine("IoT Hub Quickstarts #1 - Simulated device.");
 
-            var options = new IotHubClientOptions(parameters.GetHubTransportSettings());
-
             // Connect to the IoT hub using the MQTT protocol by default
-            await using var deviceClient = new IotHubDeviceClient(
-                parameters.DeviceConnectionString,
-                options);
+            using var deviceClient = DeviceClient.CreateFromConnectionString(parameters.DeviceConnectionString, parameters.TransportType);
 
             // Set up a condition to quit the sample
             Console.WriteLine("Press control-C to exit.");
@@ -47,7 +44,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 Console.WriteLine("Exiting...");
             };
 
-            await deviceClient.SetDirectMethodCallbackAsync(DirectMethodCallback);
+            await deviceClient.SetMethodDefaultHandlerAsync(DirectMethodCallback, null);
 
             // Run the telemetry loop
             await SendDeviceToCloudMessagesAsync(deviceClient, cts.Token);
@@ -62,34 +59,33 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
             Console.WriteLine("Device simulator finished.");
         }
-        private static Task<DirectMethodResponse> DirectMethodCallback(DirectMethodRequest methodRequest)
-        {
-            Console.WriteLine($"Received direct method [{methodRequest.MethodName}] with payload [{Encoding.UTF8.GetString(methodRequest.Payload)}].");
 
-            switch (methodRequest.MethodName)
+        private static Task<MethodResponse> DirectMethodCallback(MethodRequest methodRequest, object userContext)
+        {
+            Console.WriteLine($"Received direct method [{methodRequest.Name}] with payload [{methodRequest.DataAsJson}].");
+
+            switch (methodRequest.Name)
             {
                 case "SetTelemetryInterval":
                     try
                     {
-                        if (methodRequest.TryDeserializePayload(out int telemetryIntervalSeconds))
-                        {
-                            s_telemetryInterval = TimeSpan.FromSeconds(telemetryIntervalSeconds);
-                            Console.WriteLine($"Setting the telemetry interval to {s_telemetryInterval}.");
-                            return Task.FromResult(new DirectMethodResponse(200));
-                        }
+                        int telemetryIntervalSeconds = JsonSerializer.Deserialize<int>(methodRequest.DataAsJson);
+                        s_telemetryInterval = TimeSpan.FromSeconds(telemetryIntervalSeconds);
+                        Console.WriteLine($"Setting the telemetry interval to {s_telemetryInterval}.");
+                        return Task.FromResult(new MethodResponse(200));
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine($"Failed to parse the payload for direct method {methodRequest.MethodName} due to {ex}");
+                        Console.WriteLine($"Failed ot parse the payload for direct method {methodRequest.Name} due to {ex}");
+                        break;
                     }
-                    break;
             }
 
-            return Task.FromResult(new DirectMethodResponse(400));
+            return Task.FromResult(new MethodResponse(400));
         }
 
         // Async method to send simulated telemetry
-        private static async Task SendDeviceToCloudMessagesAsync(IotHubDeviceClient deviceClient, CancellationToken ct)
+        private static async Task SendDeviceToCloudMessagesAsync(DeviceClient deviceClient, CancellationToken ct)
         {
             // Initial telemetry values
             double minTemperature = 20;
@@ -103,22 +99,26 @@ namespace Microsoft.Azure.Devices.Client.Samples
                     double currentTemperature = minTemperature + rand.NextDouble() * 15;
                     double currentHumidity = minHumidity + rand.NextDouble() * 20;
 
-                    var telemetryDataPoint = new
+                    // Create JSON message
+                    string messageBody = JsonSerializer.Serialize(
+                        new
+                        {
+                            temperature = currentTemperature,
+                            humidity = currentHumidity,
+                        });
+                    using var message = new Message(Encoding.ASCII.GetBytes(messageBody))
                     {
-                        temperature = currentTemperature,
-                        humidity = currentHumidity,
+                        ContentType = "application/json",
+                        ContentEncoding = "utf-8",
                     };
-                    var message = new TelemetryMessage();
-                    message.SetPayload(telemetryDataPoint);
 
                     // Add a custom application property to the message.
                     // An IoT hub can filter on these properties without access to the message body.
                     message.Properties.Add("temperatureAlert", (currentTemperature > 30) ? "true" : "false");
 
-                    await deviceClient.OpenAsync(ct);
                     // Send the telemetry message
-                    await deviceClient.SendTelemetryAsync(message, ct);
-                    Console.WriteLine($"{DateTime.Now} > Sending message: {JsonSerializer.Serialize(telemetryDataPoint)}");
+                    await deviceClient.SendEventAsync(message, ct);
+                    Console.WriteLine($"{DateTime.Now} > Sending message: {messageBody}");
 
                     await Task.Delay(s_telemetryInterval, ct);
                 }

@@ -4,7 +4,6 @@
 using System;
 using System.Security.Cryptography;
 using System.Text;
-using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
 {
@@ -19,19 +18,17 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
     internal class ComputeDerivedKeySample
     {
         private readonly Parameters _parameters;
-        private readonly ILogger _logger;
 
-        public ComputeDerivedKeySample(Parameters parameters, ILogger logger)
+        public ComputeDerivedKeySample(Parameters parameters)
         {
             _parameters = parameters;
-            _logger = logger;
         }
 
         public void RunSample()
         {
             string derivedKey = ComputeDerivedSymmetricKey(_parameters.PrimaryKey, _parameters.RegistrationId);
 
-            _logger.LogInformation($"Your derived device key is:'{derivedKey}'");
+            Console.WriteLine($"Your derived device key is:'{derivedKey}'");
         }
 
         /// <summary>
@@ -41,7 +38,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
         /// <param name="registrationId">The registration Id of the key to create.</param>
         /// <returns>The key for the specified device Id registration in the enrollment group.</returns>
         /// <seealso>
-        /// https://docs.microsoft.com/azure/iot-edge/how-to-auto-provision-symmetric-keys#derive-a-device-key
+        /// https://docs.microsoft.com/azure/iot-edge/how-to-auto-provision-symmetric-keys?view=iotedge-2018-06#derive-a-device-key
         /// </seealso>
         private static string ComputeDerivedSymmetricKey(string enrollmentKey, string registrationId)
         {

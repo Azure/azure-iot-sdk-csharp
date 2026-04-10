@@ -1,4 +1,4 @@
-## Service samples for Azure IoT Service SDK for .NET
+## Service samples for Azure IoT Service SDK for C#
 
 This folder contains simple samples showing how to use the various features of Microsoft Azure IoT Hub service to build backend applications in .NET. 
 

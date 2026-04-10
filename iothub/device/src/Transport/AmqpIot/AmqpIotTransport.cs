@@ -3,42 +3,39 @@
 
 using System;
 using System.Linq;
+using System.Net;
 using System.Net.Security;
 using System.Net.WebSockets;
+using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Amqp.Transport;
+using Microsoft.Azure.Devices.Shared;
 
 namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 {
-    internal sealed class AmqpIotTransport : IDisposable
+    internal class AmqpIotTransport : IDisposable
     {
-        private const string Amqpwsb10 = "AMQPWSB10";
-        private const string Scheme = "wss://";
-        private const string UriSuffix = "/$iothub/websocket";
-        private const string SecurePort = "443";
-
+        private readonly bool _disableServerCertificateValidation;
         private readonly string _hostName;
-        private readonly IConnectionCredentials _connectionCredentials;
         private readonly AmqpSettings _amqpSettings;
-        private readonly IotHubClientAmqpSettings _amqpTransportSettings;
+        private readonly AmqpTransportSettings _amqpTransportSettings;
         private readonly TlsTransportSettings _tlsTransportSettings;
-        private ClientWebSocket _websocket;
 
         private ClientWebSocketTransport _clientWebSocketTransport;
 
         public AmqpIotTransport(
-            IConnectionCredentials connectionCredentials,
             AmqpSettings amqpSettings,
-            IotHubClientAmqpSettings amqpTransportSettings,
-            string hostName)
+            AmqpTransportSettings amqpTransportSettings,
+            string hostName,
+            bool disableServerCertificateValidation)
         {
-            _connectionCredentials = connectionCredentials;
             _amqpSettings = amqpSettings;
             _amqpTransportSettings = amqpTransportSettings;
             _hostName = hostName;
+            _disableServerCertificateValidation = disableServerCertificateValidation;
 
             var tcpTransportSettings = new TcpTransportSettings
             {
@@ -46,25 +43,35 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                 Port = AmqpConstants.DefaultSecurePort,
             };
 
+            SslProtocols protocols = TlsVersions.Instance.Preferred;
+#if NET451
+            // Requires hardcoding in NET451 otherwise yields error:
+            //    System.ArgumentException: The specified value is not valid in the 'SslProtocolType' enumeration.
+            if (amqpTransportSettings.GetTransportType() == TransportType.Amqp_Tcp_Only
+                && protocols == SslProtocols.None)
+            {
+                protocols = TlsVersions.Instance.MinimumTlsVersions;
+            }
+#endif
+
             _tlsTransportSettings = new TlsTransportSettings(tcpTransportSettings)
             {
                 TargetHost = hostName,
                 Certificate = null,
                 CertificateValidationCallback = _amqpTransportSettings.RemoteCertificateValidationCallback
                     ?? OnRemoteCertificateValidation,
-                Protocols = amqpTransportSettings.SslProtocols,
+                Protocols = protocols,
             };
 
-            if (_connectionCredentials.ClientCertificate != null)
+            if (_amqpTransportSettings.ClientCertificate != null)
             {
-                _tlsTransportSettings.Certificate = _connectionCredentials.ClientCertificate;
+                _tlsTransportSettings.Certificate = _amqpTransportSettings.ClientCertificate;
             }
         }
 
         public void Dispose()
         {
             _clientWebSocketTransport?.Dispose();
-            _websocket?.Dispose();
             _clientWebSocketTransport = null;
         }
 
@@ -75,20 +82,20 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
             TransportBase transport;
 
-            switch (_amqpTransportSettings.Protocol)
+            switch (_amqpTransportSettings.GetTransportType())
             {
-                case IotHubClientTransportProtocol.Tcp:
-                    var amqpTransportInitiator = new AmqpTransportInitiator(_amqpSettings, _tlsTransportSettings);
-                    transport = await amqpTransportInitiator.ConnectAsync(cancellationToken).ConfigureAwait(false);
-                    break;
-
-                case IotHubClientTransportProtocol.WebSocket:
+                case TransportType.Amqp_WebSocket_Only:
                     transport = _clientWebSocketTransport = (ClientWebSocketTransport)await CreateClientWebSocketTransportAsync(cancellationToken)
                         .ConfigureAwait(false);
                     break;
 
+                case TransportType.Amqp_Tcp_Only:
+                    var amqpTransportInitiator = new AmqpTransportInitiator(_amqpSettings, _tlsTransportSettings);
+                    transport = await amqpTransportInitiator.ConnectAsync(cancellationToken).ConfigureAwait(false);
+                    break;
+
                 default:
-                    throw new InvalidOperationException("AmqpTransportSettings must specify either web socket or TCP.");
+                    throw new InvalidOperationException("AmqpTransportSettings must specify WebSocketOnly or TcpOnly");
             }
 
             if (Logging.IsEnabled)
@@ -107,11 +114,32 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                     Logging.Enter(this, nameof(CreateClientWebSocketTransportAsync));
 
                 string additionalQueryParams = "";
-                var websocketUri = new Uri($"{Scheme}{_hostName}:{SecurePort}{UriSuffix}{additionalQueryParams}");
-                _websocket = _amqpTransportSettings.ClientWebSocket ?? CreateClientWebSocket();
-
-                await _websocket.ConnectAsync(websocketUri, cancellationToken).ConfigureAwait(false);
-                return new ClientWebSocketTransport(_websocket, null, null);
+                var websocketUri = new Uri($"{WebSocketConstants.Scheme}{_hostName}:{WebSocketConstants.SecurePort}{WebSocketConstants.UriSuffix}{additionalQueryParams}");
+                // Use Legacy WebSocket if it is running on Windows 7 or older. Windows 7/Windows 2008 R2 is version 6.1
+#if NET451
+                if (Environment.OSVersion.Version.Major < 6
+                    || (Environment.OSVersion.Version.Major == 6
+                        && Environment.OSVersion.Version.Minor <= 1))
+                {
+                    IotHubClientWebSocket websocket = await CreateLegacyClientWebSocketAsync(
+                            websocketUri,
+                            this._amqpTransportSettings.ClientCertificate,
+                            cancellationToken)
+                        .ConfigureAwait(false);
+                    return new LegacyClientWebSocketTransport(
+                        websocket,
+                        this._amqpTransportSettings.OperationTimeout,
+                        null,
+                        null);
+                }
+                else
+                {
+#endif
+                ClientWebSocket websocket = await CreateClientWebSocketAsync(websocketUri, cancellationToken).ConfigureAwait(false);
+                return new ClientWebSocketTransport(websocket, null, null);
+#if NET451
+                }
+#endif
             }
             finally
             {
@@ -120,68 +148,97 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             }
         }
 
-        private ClientWebSocket CreateClientWebSocket()
+#if NET451
+        private static async Task<IotHubClientWebSocket> CreateLegacyClientWebSocketAsync(
+            Uri webSocketUri,
+            X509Certificate2 clientCertificate,
+            CancellationToken cancellationToken)
+        {
+            var websocket = new IotHubClientWebSocket(WebSocketConstants.SubProtocols.Amqpwsb10);
+            await websocket
+                .ConnectAsync(webSocketUri.Host, webSocketUri.Port, WebSocketConstants.Scheme, clientCertificate, cancellationToken)
+                .ConfigureAwait(false);
+            return websocket;
+        }
+#endif
+
+        private async Task<ClientWebSocket> CreateClientWebSocketAsync(Uri websocketUri, CancellationToken cancellationToken)
         {
             try
             {
                 if (Logging.IsEnabled)
-                    Logging.Enter(this, nameof(CreateClientWebSocket));
+                    Logging.Enter(this, nameof(CreateClientWebSocketAsync));
 
                 var websocket = new ClientWebSocket();
 
                 // Set SubProtocol to AMQPWSB10
-                websocket.Options.AddSubProtocol(Amqpwsb10);
+                websocket.Options.AddSubProtocol(WebSocketConstants.SubProtocols.Amqpwsb10);
 
-                if (_amqpTransportSettings.Proxy != null)
+                // Check if we're configured to use a proxy server
+                IWebProxy webProxy = _amqpTransportSettings.Proxy;
+
+                try
                 {
-                    try
+                    if (webProxy != DefaultWebProxySettings.Instance)
                     {
                         // Configure proxy server
-                        websocket.Options.Proxy = _amqpTransportSettings.Proxy;
+                        websocket.Options.Proxy = webProxy;
                         if (Logging.IsEnabled)
-                            Logging.Info(this, $"{nameof(CreateClientWebSocket)} Set ClientWebSocket.Options.Proxy to {_amqpTransportSettings.Proxy}");
+                            Logging.Info(this, $"{nameof(CreateClientWebSocketAsync)} Set ClientWebSocket.Options.Proxy to {webProxy}");
                     }
-                    catch (PlatformNotSupportedException ex)
-                    {
-                        websocket.Dispose();
-                        // Some .NET runtimes don't support this property.
-                        if (Logging.IsEnabled)
-                            Logging.Error(this, $"{nameof(CreateClientWebSocket)} PlatformNotSupportedException thrown as this framework doesn't support proxy.");
-                        throw new InvalidOperationException("The current .NET runtime does not support setting the proxy.", ex);
-                    }
+                }
+                catch (PlatformNotSupportedException)
+                {
+                    // .NET Core 2.0 doesn't support proxy. Ignore this setting.
+                    if (Logging.IsEnabled)
+                        Logging.Error(this, $"{nameof(CreateClientWebSocketAsync)} PlatformNotSupportedException thrown as .NET Core 2.0 doesn't support proxy");
                 }
 
                 if (_amqpTransportSettings.WebSocketKeepAlive.HasValue)
                 {
                     websocket.Options.KeepAliveInterval = _amqpTransportSettings.WebSocketKeepAlive.Value;
                     if (Logging.IsEnabled)
-                        Logging.Info(this, $"{nameof(CreateClientWebSocket)} Set websocket keep-alive to {_amqpTransportSettings.WebSocketKeepAlive}");
+                        Logging.Info(this, $"{nameof(CreateClientWebSocketAsync)} Set websocket keep-alive to {_amqpTransportSettings.WebSocketKeepAlive}");
                 }
 
-                if (_connectionCredentials.ClientCertificate != null)
+                if (_amqpTransportSettings.ClientCertificate != null)
                 {
-                    websocket.Options.ClientCertificates.Add(_connectionCredentials.ClientCertificate);
+                    websocket.Options.ClientCertificates.Add(_amqpTransportSettings.ClientCertificate);
                 }
+
+                // Support for RemoteCertificateValidationCallback for ClientWebSocket is introduced in .NET Standard 2.1
+#if NETSTANDARD2_1_OR_GREATER || NET5_0_OR_GREATER
+                if (_amqpTransportSettings.RemoteCertificateValidationCallback != null)
+                {
+                    websocket.Options.RemoteCertificateValidationCallback = _amqpTransportSettings.RemoteCertificateValidationCallback;
+                    if (Logging.IsEnabled)
+                        Logging.Info(this, $"{nameof(CreateClientWebSocketAsync)} Setting RemoteCertificateValidationCallback");
+                }
+#endif
+                await websocket.ConnectAsync(websocketUri, cancellationToken).ConfigureAwait(false);
 
                 return websocket;
             }
             finally
             {
                 if (Logging.IsEnabled)
-                    Logging.Exit(this, nameof(CreateClientWebSocket));
+                    Logging.Exit(this, nameof(CreateClientWebSocketAsync));
             }
         }
 
         private bool OnRemoteCertificateValidation(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
         {
-            // If there are no policy errors then return the remote certificate validation is a pass.
             if (sslPolicyErrors == SslPolicyErrors.None)
             {
                 return true;
             }
 
-            // If there are remote certificate chain errors due to unknown revocation status check, then it is a pass only if
-            // remote certificate revocation check has been turned off.
+            if (_disableServerCertificateValidation
+                && sslPolicyErrors == SslPolicyErrors.RemoteCertificateNameMismatch)
+            {
+                return true;
+            }
+
             if (!_amqpTransportSettings.CertificateRevocationCheck
                 && sslPolicyErrors == SslPolicyErrors.RemoteCertificateChainErrors
                 && CausedByRevocationCheckError(chain))
@@ -189,7 +246,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                 return true;
             }
 
-            // For all other cases, it is a fail.
             return false;
         }
 

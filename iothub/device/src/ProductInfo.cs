@@ -6,11 +6,13 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using Microsoft.Azure.Devices.Client.Extensions;
+using Microsoft.Azure.Devices.Shared;
 using Microsoft.Win32;
 
 namespace Microsoft.Azure.Devices.Client
 {
-    internal sealed class ProductInfo
+    internal class ProductInfo
     {
         public string Extra { get; set; } = "";
 
@@ -46,7 +48,7 @@ namespace Microsoft.Azure.Devices.Client
 
             try
             {
-                version = typeof(IotHubDeviceClient).GetTypeInfo().Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
+                version = typeof(DeviceClient).GetTypeInfo().Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
                 string runtime = RuntimeInformation.FrameworkDescription.Trim();
                 string operatingSystem = RuntimeInformation.OSDescription.Trim();
                 string processorArchitecture = RuntimeInformation.ProcessArchitecture.ToString().Trim();
@@ -55,11 +57,19 @@ namespace Microsoft.Azure.Devices.Client
 
                 if (!string.IsNullOrWhiteSpace(format))
                 {
+#if NETSTANDARD2_1_OR_GREATER || NET5_0_OR_GREATER
+                    infoParts = format
+                        .Replace("{runtime}", runtime, StringComparison.InvariantCultureIgnoreCase)
+                        .Replace("{operatingSystem}", operatingSystem + productType, StringComparison.InvariantCultureIgnoreCase)
+                        .Replace("{architecture}", processorArchitecture, StringComparison.InvariantCultureIgnoreCase)
+                        .Replace("{deviceId}", deviceId, StringComparison.InvariantCultureIgnoreCase);
+#else
                     infoParts = format
                         .Replace("{runtime}", runtime)
                         .Replace("{operatingSystem}", operatingSystem + productType)
                         .Replace("{architecture}", processorArchitecture)
                         .Replace("{deviceId}", deviceId);
+#endif
                 }
                 else
                 {
@@ -74,7 +84,7 @@ namespace Microsoft.Azure.Devices.Client
                     infoParts = string.Join("; ", agentInfoParts.Where(x => !string.IsNullOrEmpty(x)));
                 }
             }
-            catch (Exception ex) when (!Fx.IsFatal(ex))
+            catch (Exception ex) when (!ex.IsFatal())
             {
                 // no-op
             }
