@@ -67,10 +67,10 @@ jobs:
             Write-Host "testNet472: ${{ variables.testNet472 }}"
 
       - task: UseDotNet@2
-        displayName: 'Use .NET SDK 10.0'
+        displayName: 'Use .NET SDK 8.0'
         inputs:
           packageType: sdk
-          version: 10.x
+          version: 8.x
           performMultiLevelLookup: true
           installationPath: $(Agent.ToolsDirectory)/dotnet
 

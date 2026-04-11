@@ -83,10 +83,10 @@ jobs:
       # https://docs.microsoft.com/azure/devops/pipelines/tasks/tool/dotnet-core-tool-installer?view=azure-devops
 
       - task: UseDotNet@2
-        displayName: 'Use .NET SDK 10.0'
+        displayName: 'Use .NET SDK 8.0'
         inputs:
          packageType: sdk
-         version: 10.x
+         version: 8.x
          performMultiLevelLookup: true
          installationPath: $(Agent.ToolsDirectory)/dotnet
 
@@ -113,7 +113,7 @@ jobs:
         inputs:
           targetType: 'inline'
           script: |
-            dotnet test --logger trx --framework net10.0
+            dotnet test --logger trx --framework net8.0
 
         env:
           # Environment variables for IoT Hub E2E tests
