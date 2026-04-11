@@ -14,7 +14,10 @@ param(
     [string] $GroupCertificatePassword,
 
     [Parameter(Mandatory)]
-    [string] $TestCertificateOutputLocation
+    [string] $TestCertificateOutputLocation,
+
+    [Parameter(Mandatory)]
+    [string] $DeploymentName
 )
 
 $startTime = (Get-Date)
@@ -239,15 +242,11 @@ $resourceGroupId = az group show -n $ResourceGroup --query id --out tsv
 # Invoke-Deployment - Uses the .\.json template to create the necessary resources to run E2E tests.
 #######################################################################################################
 
-# Create a unique deployment name
-$randomSuffix = -join ((65..90) + (97..122) | Get-Random -Count 5 | ForEach-Object { [char]$_ })
-$deploymentName = "IotE2eInfra-$randomSuffix"
-
 # Deploy
 Write-Host @"
     `nStarting deployment which may take a while.
     1. Progress can be monitored from the Azure Portal (http://portal.azure.com); go to resource group | deployments | deployment name.
-    2. Info to track: subscription ($SubscriptionId), resource group ($ResourceGroup), deployment name ($deploymentName).
+    2. Info to track: subscription ($SubscriptionId), resource group ($ResourceGroup), deployment name ($DeploymentName).
 "@
 
 az deployment group create `
@@ -272,12 +271,12 @@ Write-Host "`nYour infrastructure is ready in subscription ($SubscriptionId), re
 #########################################################################################################
 
 Write-Host "`nGetting generated names and secrets from ARM template output."
-$iotHubConnectionString = az deployment group show -g $ResourceGroup -n $deploymentName --query 'properties.outputs.hubConnectionString.value' --output tsv
-$dpsName = az deployment group show -g $ResourceGroup -n $deploymentName --query 'properties.outputs.dpsName.value' --output tsv
-$dpsConnectionString = az deployment group show -g $ResourceGroup -n $deploymentName  --query 'properties.outputs.dpsConnectionString.value' --output tsv
-$storageAccountConnectionString = az deployment group show -g $ResourceGroup -n $deploymentName  --query 'properties.outputs.storageAccountConnectionString.value' --output tsv
-$workspaceId = az deployment group show -g $ResourceGroup -n $deploymentName --query 'properties.outputs.workspaceId.value' --output tsv
-$iotHubName = az deployment group show -g $ResourceGroup -n $deploymentName --query 'properties.outputs.hubName.value' --output tsv
+$iotHubConnectionString = az deployment group show -g $ResourceGroup -n $DeploymentName --query 'properties.outputs.hubConnectionString.value' --output tsv
+$dpsName = az deployment group show -g $ResourceGroup -n $DeploymentName --query 'properties.outputs.dpsName.value' --output tsv
+$dpsConnectionString = az deployment group show -g $ResourceGroup -n $DeploymentName  --query 'properties.outputs.dpsConnectionString.value' --output tsv
+$storageAccountConnectionString = az deployment group show -g $ResourceGroup -n $DeploymentName  --query 'properties.outputs.storageAccountConnectionString.value' --output tsv
+$workspaceId = az deployment group show -g $ResourceGroup -n $DeploymentName --query 'properties.outputs.workspaceId.value' --output tsv
+$iotHubName = az deployment group show -g $ResourceGroup -n $DeploymentName --query 'properties.outputs.hubName.value' --output tsv
 
 ##################################################################################################################################
 # Uploading root CA certificate to IoT hub and verifying.
