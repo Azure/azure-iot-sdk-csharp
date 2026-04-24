@@ -79,15 +79,11 @@
     </Compile>
   </ItemGroup>
 
-  <!-- All the "new" .NET targets -->
   <ItemGroup>
     <Compile Include="ModernDotNet\HsmAuthentication\Transport\HttpUdsMessageHandler.cs" />
     <Compile Include="ModernDotNet\HsmAuthentication\Transport\HttpBufferedStream.cs" />
     <Compile Include="ModernDotNet\HsmAuthentication\Transport\HttpRequestResponseSerializer.cs" />
     <Compile Include="ModernDotNet\HsmAuthentication\Transport\UnixDomainSocketEndPoint.cs" />
-    <PackageReference Include="DotNetty.Codecs.Mqtt" Version="0.7.6" />
-    <PackageReference Include="DotNetty.Common" Version="0.7.6" />
-    <PackageReference Include="DotNetty.Handlers" Version="0.7.6" />
   </ItemGroup>
 
   <ItemGroup>
@@ -95,7 +91,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Azure.Storage.Blobs" Version="12.23.0" />
+    <PackageReference Include="MQTTnet" Version="5.1.0.1559" />
     <PackageReference Include="Microsoft.Azure.Amqp" Version="2.6.9" />
     <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0">
       <PrivateAssets>all</PrivateAssets>
