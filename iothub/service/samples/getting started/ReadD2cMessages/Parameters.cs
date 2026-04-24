@@ -3,7 +3,7 @@
 
 using CommandLine;
 
-namespace Microsoft.Azure.Devices.Samples.ReadD2CMessages
+namespace ReadD2cMessages
 {
     /// <summary>
     /// Parameters for the application.

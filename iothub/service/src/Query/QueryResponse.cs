@@ -1,78 +1,45 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
-
-using System;
+using System.Collections;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net.Http;
-using Azure;
-using Azure.Core;
 
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
-    /// The local implementation of the Azure.Core Response type. Libraries in the azure-sdk-for-net repo have access to 
-    /// helper functions to instantiate the abstract class Response, but this library is not in that repo yet. Because of that,
-    /// we need to implement the abstract class.
+    /// Represents the template class for the results of an IQuery request
     /// </summary>
-    internal sealed class QueryResponse : Response
+    /// <typeparam name="T">The result type</typeparam>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        "Naming",
+        "CA1710:Identifiers should have correct suffix",
+        Justification = "Cannot rename public facing types since they are considered behavior changes.")]
+    public class QueryResponse<T> : IEnumerable<T>
     {
-        private HttpResponseMessage _httpResponse;
-        private List<HttpHeader> _httpHeaders;
+        private readonly IEnumerable<T> _queryResults;
 
-        internal QueryResponse(HttpResponseMessage httpResponse, Stream bodyStream) 
-        { 
-            _httpResponse = httpResponse;
-            ContentStream = bodyStream;
-
-            _httpHeaders = new List<HttpHeader>();
-            foreach (var header in _httpResponse.Headers)
-            {
-                _httpHeaders.Add(new HttpHeader(header.Key, header.Value.First()));
-            }
-        }
-
-        public override int Status => (int)_httpResponse.StatusCode;
-
-        public override string ReasonPhrase => _httpResponse.ReasonPhrase;
-
-        public override Stream ContentStream { get; set; }
-
-        public override string ClientRequestId 
-        { 
-            get => throw new NotImplementedException("This SDK does not define this feature"); 
-            set => throw new NotImplementedException("This SDK does not define this feature"); 
-        }
-
-        public override void Dispose()
+        /// <summary>
+        /// Instantiates a QueryResponse that represents the template class for the results of an IQuery request
+        /// </summary>
+        public QueryResponse(IEnumerable<T> queryResults, string continuationToken)
         {
-            _httpResponse?.Dispose();
-            ContentStream?.Dispose();
+            _queryResults = queryResults;
+            ContinuationToken = continuationToken;
         }
 
-        protected override bool ContainsHeader(string name)
+        /// <summary>
+        /// Gets the ContinuationToken to use for continuing the enumeration
+        /// </summary>
+        public string ContinuationToken { get; private set; }
+
+        /// <inheritdoc />
+        public IEnumerator<T> GetEnumerator()
         {
-            Argument.AssertNotNullOrWhiteSpace(name, nameof(name));
-            return _httpResponse.Headers.Contains(name);
+            return _queryResults.GetEnumerator();
         }
 
-        protected override IEnumerable<HttpHeader> EnumerateHeaders()
+        IEnumerator IEnumerable.GetEnumerator()
         {
-            return _httpHeaders;
-        }
-
-        protected override bool TryGetHeader(string name, out string value)
-        {
-            Argument.AssertNotNullOrWhiteSpace(name, nameof(name));
-            value = _httpResponse.Headers.SafeGetValue(name);
-            return string.IsNullOrWhiteSpace(value);
-        }
-
-        protected override bool TryGetHeaderValues(string name, out IEnumerable<string> values)
-        {
-            Argument.AssertNotNullOrWhiteSpace(name, nameof(name));
-            return _httpResponse.Headers.TryGetValues(name, out values);
+            return _queryResults.GetEnumerator();
         }
     }
 }

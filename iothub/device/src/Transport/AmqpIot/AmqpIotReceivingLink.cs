@@ -2,29 +2,29 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using System.IO;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Amqp.Framing;
-using System.Text.Json;
+using Microsoft.Azure.Devices.Client.Exceptions;
+using Microsoft.Azure.Devices.Client.Extensions;
+using Microsoft.Azure.Devices.Shared;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 {
-    internal sealed class AmqpIotReceivingLink
+    internal class AmqpIotReceivingLink
     {
         public event EventHandler Closed;
 
         private readonly ReceivingAmqpLink _receivingAmqpLink;
 
-        private Func<IncomingMessage, ArraySegment<byte>, Task> _onEventsReceived;
-        private Func<IncomingMessage, ArraySegment<byte>, Task> _onDeviceMessageReceived;
-        private Action<DirectMethodRequest> _onMethodReceived;
-        private Action<AmqpMessage, string, IotHubClientException> _onTwinMessageReceived;
+        private Action<Message> _onEventsReceived;
+        private Action<Message> _onDeviceMessageReceived;
+        private Action<MethodRequestInternal> _onMethodReceived;
+        private Action<Twin, string, TwinCollection, IotHubException> _onTwinMessageReceived;
 
         public AmqpIotReceivingLink(ReceivingAmqpLink receivingAmqpLink)
         {
@@ -32,18 +32,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             _receivingAmqpLink.Closed += ReceivingAmqpLinkClosed;
         }
 
-        // This event handler is not invoked by the AMQP library in an async fashion.
-        // This also co-relates with the fact that ReceivingAmqpLink.SafeClose() is a sync method.
         private void ReceivingAmqpLinkClosed(object sender, EventArgs e)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, nameof(ReceivingAmqpLinkClosed));
 
             Closed?.Invoke(this, e);
-
-            // After the Closed event handler has been invoked, the ReceivingAmqpLink has now been effectively cleaned up.
-            // This is a good point for us to detach the Closed event handler from the ReceivingAmqpLink instance.
-            _receivingAmqpLink.Closed -= ReceivingAmqpLinkClosed;
 
             if (Logging.IsEnabled)
                 Logging.Exit(this, nameof(ReceivingAmqpLinkClosed));
@@ -66,26 +60,81 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
         #region Receive Message
 
-        internal async Task DisposeMessageAsync(ArraySegment<byte> deliveryTag, Outcome outcome, CancellationToken cancellationToken)
+        internal async Task<Message> ReceiveAmqpMessageAsync(CancellationToken cancellationToken)
+        {
+            if (Logging.IsEnabled)
+                Logging.Enter(this, nameof(ReceiveAmqpMessageAsync));
+
+            try
+            {
+                AmqpMessage amqpMessage = await _receivingAmqpLink.ReceiveMessageAsync(cancellationToken).ConfigureAwait(false);
+                Message message = null;
+                if (amqpMessage != null)
+                {
+                    message = AmqpIotMessageConverter.AmqpMessageToMessage(amqpMessage);
+                    message.LockToken = new Guid(amqpMessage.DeliveryTag.Array).ToString();
+                }
+                return message;
+            }
+            catch (Exception e) when (!e.IsFatal())
+            {
+                Exception ex = AmqpIotExceptionAdapter.ConvertToIotHubException(e, _receivingAmqpLink);
+                if (ReferenceEquals(e, ex))
+                {
+                    throw;
+                }
+                else
+                {
+                    if (ex is AmqpIotResourceException)
+                    {
+                        _receivingAmqpLink.SafeClose();
+                        throw new IotHubCommunicationException(ex.Message, ex);
+                    }
+                    throw ex;
+                }
+            }
+            finally
+            {
+                if (Logging.IsEnabled)
+                    Logging.Exit(this, nameof(ReceiveAmqpMessageAsync));
+            }
+        }
+
+        internal async Task<AmqpIotOutcome> DisposeMessageAsync(string lockToken, Outcome outcome, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, outcome, nameof(DisposeMessageAsync));
 
-            Outcome disposeOutcome = await _receivingAmqpLink
-                .DisposeMessageAsync(
+            ArraySegment<byte> deliveryTag = ConvertToDeliveryTag(lockToken);
+            Outcome disposeOutcome =
+                await _receivingAmqpLink.DisposeMessageAsync(
                     deliveryTag,
                     outcome,
                     batchable: true,
-                    cancellationToken)
-                .ConfigureAwait(false);
-
-            Debug.Assert(disposeOutcome is Accepted, "IoT hub rejected the ack, which we don't expect and if we find it does, we should handle it.");
+                    cancellationToken).ConfigureAwait(false);
 
             if (Logging.IsEnabled)
                 Logging.Exit(this, outcome, nameof(DisposeMessageAsync));
+
+            return new AmqpIotOutcome(disposeOutcome);
         }
 
-        internal void RegisterReceiveMessageListener(Func<IncomingMessage, ArraySegment<byte>, Task> onDeviceMessageReceived)
+        private static ArraySegment<byte> ConvertToDeliveryTag(string lockToken)
+        {
+            if (lockToken == null)
+            {
+                throw new ArgumentNullException(nameof(lockToken));
+            }
+
+            if (!Guid.TryParse(lockToken, out Guid lockTokenGuid))
+            {
+                throw new ArgumentException("Should be a valid Guid", nameof(lockToken));
+            }
+
+            return new ArraySegment<byte>(lockTokenGuid.ToByteArray());
+        }
+
+        internal void RegisterReceiveMessageListener(Action<Message> onDeviceMessageReceived)
         {
             _onDeviceMessageReceived = onDeviceMessageReceived;
             _receivingAmqpLink.RegisterMessageListener(OnDeviceMessageReceived);
@@ -102,12 +151,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
             try
             {
-                IncomingMessage message = null;
+                Message message = null;
                 if (amqpMessage != null)
                 {
-                    message = AmqpIotMessageConverter.AmqpMessageToIncomingMessage(amqpMessage);
+                    message = AmqpIotMessageConverter.AmqpMessageToMessage(amqpMessage);
+                    message.LockToken = new Guid(amqpMessage.DeliveryTag.Array).ToString();
                 }
-                _onDeviceMessageReceived?.Invoke(message, amqpMessage.DeliveryTag);
+                _onDeviceMessageReceived?.Invoke(message);
             }
             finally
             {
@@ -120,7 +170,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
         #region EventHandling
 
-        internal void RegisterEventListener(Func<IncomingMessage, ArraySegment<byte>, Task> onEventsReceived)
+        internal void RegisterEventListener(Action<Message> onEventsReceived)
         {
             _onEventsReceived = onEventsReceived;
             _receivingAmqpLink.RegisterMessageListener(OnEventsReceived);
@@ -137,8 +187,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
             try
             {
-                IncomingMessage message = AmqpIotMessageConverter.AmqpMessageToIncomingMessage(amqpMessage);
-                _onEventsReceived?.Invoke(message, amqpMessage.DeliveryTag);
+                Message message = AmqpIotMessageConverter.AmqpMessageToMessage(amqpMessage);
+                message.LockToken = new Guid(amqpMessage.DeliveryTag.Array).ToString();
+                _onEventsReceived?.Invoke(message);
             }
             finally
             {
@@ -151,7 +202,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
         #region Method handling
 
-        internal void RegisterMethodListener(Action<DirectMethodRequest> onMethodReceived)
+        internal void RegisterMethodListener(Action<MethodRequestInternal> onMethodReceived)
         {
             _onMethodReceived = onMethodReceived;
             _receivingAmqpLink.RegisterMessageListener(OnMethodReceived);
@@ -168,9 +219,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
             try
             {
-                DirectMethodRequest directMethodRequest = AmqpIotMessageConverter.ConstructMethodRequestFromAmqpMessage(amqpMessage);
+                MethodRequestInternal methodRequestInternal = AmqpIotMessageConverter.ConstructMethodRequestFromAmqpMessage(
+                    amqpMessage,
+                    new CancellationToken(false));
                 DisposeDelivery(amqpMessage, true, AmqpConstants.AcceptedOutcome);
-                _onMethodReceived?.Invoke(directMethodRequest);
+                _onMethodReceived?.Invoke(methodRequestInternal);
             }
             finally
             {
@@ -188,7 +241,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
         #region Twin handling
 
-        internal void RegisterTwinListener(Action<AmqpMessage, string, IotHubClientException> onDesiredPropertyReceived)
+        internal void RegisterTwinListener(Action<Twin, string, TwinCollection, IotHubException> onDesiredPropertyReceived)
         {
             _onTwinMessageReceived = onDesiredPropertyReceived;
             _receivingAmqpLink.RegisterMessageListener(OnTwinChangesReceived);
@@ -201,9 +254,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
             try
             {
-                _receivingAmqpLink.DisposeDelivery(amqpMessage, true, AmqpIotConstants._acceptedOutcome);
+                _receivingAmqpLink.DisposeDelivery(amqpMessage, true, AmqpIotConstants.AcceptedOutcome);
                 string correlationId = amqpMessage.Properties?.CorrelationId?.ToString();
                 int status = GetStatus(amqpMessage);
+
+                Twin twin = null;
+                TwinCollection twinProperties = null;
 
                 if (status >= 400)
                 {
@@ -211,64 +267,52 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                     if (correlationId.StartsWith(AmqpTwinMessageType.Get.ToString(), StringComparison.OrdinalIgnoreCase)
                         || correlationId.StartsWith(AmqpTwinMessageType.Patch.ToString(), StringComparison.OrdinalIgnoreCase))
                     {
-                        IotHubClientErrorResponseMessage errorResponse = null;
-                        IotHubClientException twinException = null;
+                        string error = null;
+                        using var reader = new StreamReader(amqpMessage.BodyStream, System.Text.Encoding.UTF8);
+                        error = reader.ReadToEnd();
 
-                        // This will only ever contain an error message which is encoded based on service contract (UTF-8).
-                        if (amqpMessage.BodyStream.Length > 0)
-                        {
-                            using var reader = new StreamReader(amqpMessage.BodyStream, Encoding.UTF8);
-                            string errorResponseString = reader.ReadToEnd();
-
-                            try
-                            {
-                                errorResponse = JsonSerializer.Deserialize<IotHubClientErrorResponseMessage>(errorResponseString, JsonSerializerSettings.Options);
-                            }
-                            catch (JsonException ex)
-                            {
-                                if (Logging.IsEnabled)
-                                    Logging.Error(this, $"Failed to parse twin patch error response JSON. Message body: '{errorResponseString}'. Exception: {ex}. ");
-
-                                errorResponse = new IotHubClientErrorResponseMessage
-                                {
-                                    Message = errorResponseString,
-                                };
-                            }
-                        }
-
-                        // Check if we have an int to string error code translation for the service returned error code.
-                        // The error code could be a part of the service returned error message, or it can be a part of the amqp message annotations map.
-                        // We will check with the error code in the error message first (if present) since that is the more specific error code returned.
-                        if ((Enum.TryParse(errorResponse.ErrorCode.ToString(CultureInfo.InvariantCulture), out IotHubClientErrorCode errorCode)
-                            || Enum.TryParse(status.ToString(CultureInfo.InvariantCulture), out errorCode))
-                            && Enum.IsDefined<IotHubClientErrorCode>(errorCode))
-                        {
-                            twinException = new IotHubClientException(errorResponse.Message, errorCode)
-                            {
-                                TrackingId = errorResponse.TrackingId,
-                            };
-                        }
-                        else if (status >= 500)
-                        {
-                            twinException = new IotHubClientException(errorResponse.Message, IotHubClientErrorCode.ServerError)
-                            {
-                                TrackingId = errorResponse.TrackingId,
-                            };
-                        }
-                        else
-                        {
-                            twinException = new IotHubClientException(errorResponse.Message)
-                            {
-                                TrackingId = errorResponse.TrackingId,
-                            };
-                        }
-
-                        _onTwinMessageReceived.Invoke(null, correlationId, twinException);
+                        // Retry for Http status code request timeout, Too many requests and server errors
+                        var exception = new IotHubException(error, status >= 500 || status == 429 || status == 408);
+                        _onTwinMessageReceived.Invoke(null, correlationId, null, exception);
                     }
                 }
                 else
                 {
-                    _onTwinMessageReceived.Invoke(amqpMessage, correlationId, null);
+                    if (correlationId == null)
+                    {
+                        // Here we are getting desired property update notifications and want to handle it first
+                        using var reader = new StreamReader(amqpMessage.BodyStream, System.Text.Encoding.UTF8);
+                        string patch = reader.ReadToEnd();
+                        twinProperties = JsonConvert.DeserializeObject<TwinCollection>(patch, JsonSerializerSettingsInitializer.GetJsonSerializerSettings());
+                    }
+                    else if (correlationId.StartsWith(AmqpTwinMessageType.Get.ToString(), StringComparison.OrdinalIgnoreCase))
+                    {
+                        // This a response of a GET TWIN so return (set) the full twin
+                        using var reader = new StreamReader(amqpMessage.BodyStream, System.Text.Encoding.UTF8);
+                        string body = reader.ReadToEnd();
+                        TwinProperties properties = JsonConvert.DeserializeObject<TwinProperties>(body, JsonSerializerSettingsInitializer.GetJsonSerializerSettings());
+                        twin = new Twin(properties);
+                    }
+                    else if (correlationId.StartsWith(AmqpTwinMessageType.Patch.ToString(), StringComparison.OrdinalIgnoreCase))
+                    {
+                        // This can be used to coorelate success response with updating reported properties
+                        // However currently we do not have it as request response style implementation
+                        if (Logging.IsEnabled)
+                            Logging.Info("Updated twin reported properties successfully", nameof(OnTwinChangesReceived));
+                    }
+                    else if (correlationId.StartsWith(AmqpTwinMessageType.Put.ToString(), StringComparison.OrdinalIgnoreCase))
+                    {
+                        // This is an acknowledgement received from service for subscribing to desired property updates
+                        if (Logging.IsEnabled)
+                            Logging.Info("Subscribed for twin successfully", nameof(OnTwinChangesReceived));
+                    }
+                    else
+                    {
+                        // This shouldn't happen
+                        if (Logging.IsEnabled)
+                            Logging.Info("Received a correlation Id for Twin operation that does not match Get, Patch or Put request", nameof(OnTwinChangesReceived));
+                    }
+                    _onTwinMessageReceived.Invoke(twin, correlationId, twinProperties, null);
                 }
             }
             finally
@@ -282,10 +326,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
         internal static int GetStatus(AmqpMessage response)
         {
-            return response == null
-                    || !response.MessageAnnotations.Map.TryGetValue(AmqpIotConstants.ResponseStatusName, out int status)
-                ? -1
-                : status;
+            if (response != null
+                && response.MessageAnnotations.Map.TryGetValue(AmqpIotConstants.ResponseStatusName, out int status))
+            {
+                return status;
+            }
+
+            return -1;
         }
     }
 }

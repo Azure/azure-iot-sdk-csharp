@@ -1,21 +1,23 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace Microsoft.Azure.Devices.Client
+using DotNetty.Codecs.Mqtt.Packets;
+
+namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 {
     /// <summary>
-    /// An MQTT "will" message to be sent by this client before the client disconnects.
+    /// An MQTT "will" message, used when a client disconnects
     /// </summary>
     public interface IWillMessage
     {
         /// <summary>
-        /// The payload to be sent in the will message.
+        /// The message to be sent
         /// </summary>
-        byte[] Payload { get; set; }
+        Message Message { get; }
 
         /// <summary>
         /// An agreement between the sender of a message and the receiver of a message that defines the guarantee of delivery for a specific message
         /// </summary>
-        QualityOfService QualityOfService { get; set; }
+        QualityOfService QoS { get; set; }
     }
 }

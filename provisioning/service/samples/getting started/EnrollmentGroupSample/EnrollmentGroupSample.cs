@@ -3,82 +3,88 @@
 
 using System;
 using System.Linq;
-using System.Text.Json;
 using System.Threading.Tasks;
-using Azure;
-using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
 {
     internal class EnrollmentGroupSample
     {
-        private static readonly string s_enrollmentGroupId = $"enrollmentgrouptest-{Guid.NewGuid()}";
+        private static readonly string s_enrollmentGroupId = $"EnrollmentGroupSample-{Guid.NewGuid()}";
         private readonly ProvisioningServiceClient _provisioningServiceClient;
-        private readonly ILogger _logger;
 
-        public EnrollmentGroupSample(ProvisioningServiceClient provisioningServiceClient, ILogger logger)
+        public EnrollmentGroupSample(ProvisioningServiceClient provisioningServiceClient)
         {
             _provisioningServiceClient = provisioningServiceClient;
-            _logger = logger;
         }
 
         public async Task RunSampleAsync()
         {
-            await CreateEnrollmentGroupAsync().ConfigureAwait(false);
-            await GetEnrollmentGroupInfoAsync().ConfigureAwait(false);
-            await QueryEnrollmentGroupAsync().ConfigureAwait(false);
-            await DeleteEnrollmentGroupAsync().ConfigureAwait(false);
+            await CreateEnrollmentGroupAsync();
+            await GetEnrollmentGroupInfoAsync();
+            await QueryEnrollmentGroupAsync();
+            await DeleteEnrollmentGroupAsync();
         }
 
         public async Task CreateEnrollmentGroupAsync()
         {
-            Attestation attestation = new SymmetricKeyAttestation();
-            var enrollmentGroup = new EnrollmentGroup(s_enrollmentGroupId, attestation);
-            _logger.LogInformation($"Creating an enrollment group: {JsonSerializer.Serialize(enrollmentGroup)}");
+            Console.WriteLine("Creating a new enrollment group...");
+            Attestation attestation = new SymmetricKeyAttestation(null, null); // let the service generate keys
+            var group = new EnrollmentGroup(s_enrollmentGroupId, attestation);
 
-            EnrollmentGroup group = await _provisioningServiceClient.EnrollmentGroups.CreateOrUpdateAsync(enrollmentGroup);
-            _logger.LogInformation($"Created {group.Id}: {JsonSerializer.Serialize(group)}");
+            group = await _provisioningServiceClient.CreateOrUpdateEnrollmentGroupAsync(group);
+            Console.WriteLine($"Created {group.EnrollmentGroupId}: {JsonConvert.SerializeObject(group)}");
         }
 
         public async Task GetEnrollmentGroupInfoAsync()
         {
-            _logger.LogInformation("Getting the enrollment group information...");
-            EnrollmentGroup group = await _provisioningServiceClient.EnrollmentGroups.GetAsync(s_enrollmentGroupId);
-            _logger.LogInformation($"Got {group.Id}: {JsonSerializer.Serialize(group)}");
+            Console.WriteLine("Getting the enrollment group information...");
+            EnrollmentGroup group = await _provisioningServiceClient.GetEnrollmentGroupAsync(s_enrollmentGroupId);
+            Console.WriteLine($"Got {group.EnrollmentGroupId}: {JsonConvert.SerializeObject(group)}");
         }
 
         public async Task QueryEnrollmentGroupAsync()
         {
-            string queryText = "SELECT * FROM enrollmentGroups";
-            _logger.LogInformation($"Running a query for enrollment groups: {queryText}");
-            AsyncPageable<EnrollmentGroup> query = _provisioningServiceClient.EnrollmentGroups.CreateQuery(queryText);
-
-            await foreach (EnrollmentGroup enrollmentGroup in query)
+            var querySpecification = new QuerySpecification("SELECT * FROM enrollmentGroups");
+            Console.WriteLine($"Running a query for enrollment groups: {querySpecification.Query}");
+            using Query query = _provisioningServiceClient.CreateEnrollmentGroupQuery(querySpecification);
+            while (query.HasNext())
             {
-                _logger.LogInformation($"Found enrollment group {enrollmentGroup.Id} is {enrollmentGroup.ProvisioningStatus}.");
-                await EnumerateRegistrationsInGroupAsync(queryText, enrollmentGroup);
-            }
-        }
-
-        private async Task EnumerateRegistrationsInGroupAsync(string queryText, EnrollmentGroup group)
-        {
-            _logger.LogInformation($"Registrations within group {group.Id}:");
-            AsyncPageable<DeviceRegistrationState> registrationQuery = _provisioningServiceClient.DeviceRegistrationStates.CreateEnrollmentGroupQuery(queryText, group.Id);
-
-            await foreach (DeviceRegistrationState registration in registrationQuery)
-            {
-                _logger.LogInformation($"\t{registration.RegistrationId} for {registration.DeviceId} is {registration.Status}.");
-                if (registration.ErrorCode.HasValue)
+                QueryResult queryResult = await query.NextAsync();
+                foreach (EnrollmentGroup group in queryResult.Items.Cast<EnrollmentGroup>())
                 {
-                    _logger.LogError($"\t\tWith error ({registration.ErrorCode.Value}): {registration.ErrorMessage}");
+                    Console.WriteLine($"Found enrollment group {group.EnrollmentGroupId} is {group.ProvisioningStatus}.");
+                    await EnumerateRegistrationsInGroupAsync(querySpecification, group);
                 }
             }
         }
 
-        public async Task DeleteEnrollmentGroupAsync()
+        private async Task EnumerateRegistrationsInGroupAsync(QuerySpecification querySpecification, EnrollmentGroup group)
         {
-            _logger.LogInformation($"Deleting the enrollment group {s_enrollmentGroupId}...");
-            await _provisioningServiceClient.EnrollmentGroups.DeleteAsync(s_enrollmentGroupId);
+            Console.WriteLine($"Registrations within group {group.EnrollmentGroupId}:");
+            using Query query = _provisioningServiceClient.CreateEnrollmentGroupRegistrationStateQuery(
+                querySpecification,
+                group.EnrollmentGroupId);
+
+            while (query.HasNext())
+            {
+                QueryResult queryResult = await query.NextAsync();
+                foreach (DeviceRegistrationState registration in queryResult.Items.Cast<DeviceRegistrationState>())
+                {
+                    Console.WriteLine($"\t{registration.RegistrationId} for {registration.DeviceId} is {registration.Status}.");
+                    if (registration.ErrorCode.HasValue)
+                    {
+                        Console.WriteLine($"\t\tWith error ({registration.ErrorCode.Value}): {registration.ErrorMessage}");
+                    }
+                }
+            }
+        }
+
+        private async Task DeleteEnrollmentGroupAsync()
+        {
+            Console.WriteLine("Deleting the enrollmentGroup...");
+            await _provisioningServiceClient.DeleteEnrollmentGroupAsync(s_enrollmentGroupId);
+            Console.WriteLine($"Enrollment group {s_enrollmentGroupId} deleted.");
         }
     }
 }

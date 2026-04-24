@@ -2,36 +2,19 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net10.0</TargetFramework>
-    <LangVersion>9.0</LangVersion>
+    <TargetFramework>net8.0</TargetFramework>
+    <LangVersion>8.0</LangVersion>
     <RootNamespace>Microsoft.Azure.Devices.Provisioning.Client.Samples</RootNamespace>
-    <IsPackable>false</IsPackable>
-
-    <!--
-    Warning for using pre-release nugets can be ignored since this sample 
-    can't target a main release yet.
-    -->
-    <NoWarn>NU5104</NoWarn>
   </PropertyGroup>
-
   <ItemGroup>
     <PackageReference Include="CommandLineParser" Version="2.9.1" />
-  </ItemGroup>
+    <PackageReference Include="Microsoft.Azure.Devices.Client" Version="1.42.3" />
+    <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Client" Version="1.19.4" />
 
-  <!--<ItemGroup Condition="'$(Configuration)' == 'Release'">
-    <PackageReference Include="Microsoft.Azure.Devices.Client" Version="2.0.0-preview001" />
-    <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Client" Version="2.0.0-preview001" />
-    <PackageReference Include="Microsoft.Azure.Devices.Authentication" Version="2.0.0-preview001" />
-  </ItemGroup>-->
-
-  <ItemGroup>
-    <!--Condition="'$(Configuration)' == 'Debug'">-->
-    <ProjectReference Include="..\..\..\src\Microsoft.Azure.Devices.Provisioning.Client.csproj" />
-    <ProjectReference Include="..\..\..\..\..\iothub\device\src\Microsoft.Azure.Devices.Client.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\..\..\samples\helpers\ColorConsoleLogger\ColorConsoleLogger.csproj" />
+    <!-- Note: Applications should not need to import all 3 protocols. This was done to simplify protocol selection within the sample.-->
+    <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Transport.Amqp" Version="1.16.6" />
+    <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Transport.Http" Version="1.15.4" />
+    <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Transport.Mqtt" Version="1.17.5" />
   </ItemGroup>
 
 </Project>

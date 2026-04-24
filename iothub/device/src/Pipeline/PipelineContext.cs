@@ -2,30 +2,31 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Threading.Tasks;
+using System.Collections.Generic;
+using Microsoft.Azure.Devices.Shared;
 
 namespace Microsoft.Azure.Devices.Client
 {
-    internal sealed class PipelineContext
+    internal class PipelineContext
     {
-        internal IotHubConnectionCredentials IotHubConnectionCredentials { get; set; }
+        internal ITransportSettings TransportSettingsSelected { get; set; }
+
+        internal ITransportSettings[] TransportSettingsArray { get; set; }
 
         internal ProductInfo ProductInfo { get; set; }
 
-        internal string ModelId { get; set; }
+        internal IotHubConnectionString IotHubConnectionString { get; set; }
 
-        internal IotHubClientTransportSettings IotHubClientTransportSettings { get; set; }
+        internal ClientOptions ClientOptions { get; set; }
 
-        internal IotHubClientHttpSettings HttpOperationTransportSettings { get; set; }
+        internal ConnectionStatusChangesHandler ConnectionStatusChangesHandler { get; set; }
 
-        internal Action<ConnectionStatusInfo> ConnectionStatusChangeHandler { get; set; }
+        internal Action<TwinCollection> DesiredPropertyUpdateCallback { get; set; }
 
-        internal Action<PropertyCollection> DesiredPropertyUpdateCallback { get; set; }
+        internal InternalClient.OnMethodCalledDelegate MethodCallback { get; set; }
 
-        internal Func<DirectMethodRequest, Task> MethodCallback { get; set; }
+        internal InternalClient.OnModuleEventMessageReceivedDelegate ModuleEventCallback { get; set; }
 
-        internal Func<IncomingMessage, Task<MessageAcknowledgement>> MessageEventCallback { get; set; }
-
-        internal IIotHubClientRetryPolicy RetryPolicy { get; set; }
+        internal InternalClient.OnDeviceMessageReceivedDelegate DeviceEventCallback { get; set; }
     }
 }

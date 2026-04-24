@@ -1,39 +1,39 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
-    <LangVersion>9.0</LangVersion>
+    <TargetFrameworks Condition="'$(OS)' == 'Windows_NT'">net8.0;net472</TargetFrameworks>
+    <TargetFrameworks Condition="'$(OS)' != 'Windows_NT'">net8.0</TargetFrameworks>
+    <!-- By setting this as not a test project for other frameworks, we can run "dotnet test" for a specific framework from the root directory without dotnet throwing if any test project in the solution doesn't support that framework -->
+    <IsTestProject Condition="'$(OS)' != 'Windows_NT' And '$(TargetFramework)' != 'net6.0' And '$(TargetFramework)' != 'net8.0'">False</IsTestProject>
+    <LangVersion>8.0</LangVersion>
     <IsPackable>false</IsPackable>
-    <EnableNETAnalyzers>True</EnableNETAnalyzers>
-    <AnalysisLevel>latest-minimum</AnalysisLevel>
-
-    <!-- We will turn on this suppression once we are ready to GA-->
+    <RunAnalyzersDuringBuild>false</RunAnalyzersDuringBuild>
+    <RunAnalyzersDuringLiveAnalysis>false</RunAnalyzersDuringLiveAnalysis>
     <!-- Suppress framework end of life warnings as we have to keep supporting these frameworks for our customers -->
-    <!-- <CheckEolTargetFramework>false</CheckEolTargetFramework> -->
+    <CheckEolTargetFramework>false</CheckEolTargetFramework>
   </PropertyGroup>
 
-  <ItemGroup>
-    <Content Include="Registry\ComplexTwin.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net451' ">
+    <Compile Remove="DigitalTwin\UpdateOperationsUtilityTests.cs" />
   </ItemGroup>
 
-  <!--Project reference dependencies-->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
+    <PackageReference Include="MSTest.TestAdapter" Version="3.6.3" />
+    <PackageReference Include="MSTest.TestFramework" Version="3.6.3" />
+    <PackageReference Include="Moq" Version="4.20.72" />
+    <PackageReference Include="FluentAssertions" Version="5.10.0" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
+    <PackageReference Include="System.Net.Http" Version="4.3.4" />
+  </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\src\Microsoft.Azure.Devices.csproj" />
   </ItemGroup>
 
-  <!--Nuget package dependencies-->
   <ItemGroup>
-    <PackageReference Include="coverlet.collector" Version="3.2.0">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.5.0" />
-    <PackageReference Include="MSTest.TestAdapter" Version="3.0.2" />
-    <PackageReference Include="MSTest.TestFramework" Version="3.0.2" />
-    <PackageReference Include="Moq" Version="4.18.4" />
-    <PackageReference Include="FluentAssertions" Version="6.10.0" />
+    <Folder Include="TestResults\" />
   </ItemGroup>
-
 </Project>

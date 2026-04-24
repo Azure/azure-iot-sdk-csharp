@@ -10,12 +10,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 {
     internal interface IAmqpConnectionHolder : IDisposable
     {
-        Task<AmqpIotSession> OpenSessionAsync(IConnectionCredentials connectionCredentials, CancellationToken cancellationToken);
+        Task<AmqpIotSession> OpenSessionAsync(IDeviceIdentity deviceIdentity, CancellationToken cancellationToken);
 
         Task<AmqpIotConnection> EnsureConnectionAsync(CancellationToken cancellationToken);
 
-        Task<IAmqpAuthenticationRefresher> CreateRefresherAsync(IConnectionCredentials connectionCredentials, CancellationToken cancellationToken);
+        Task<IAmqpAuthenticationRefresher> CreateRefresherAsync(IDeviceIdentity deviceIdentity, CancellationToken cancellationToken);
 
-        void Shutdown();
+        Task ShutdownAsync();
     }
 }

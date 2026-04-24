@@ -24,6 +24,11 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 .WithParsed(parsedParams =>
                 {
                     parameters = parsedParams;
+                    if (parameters.TransportType == TransportType.Http1)
+                    {
+                        Console.WriteLine("Methods are not supported over HTTP.");
+                        Environment.Exit(1);
+                    }
                 })
                 .WithNotParsed(errors =>
                 {
@@ -34,10 +39,9 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 ? TimeSpan.FromSeconds((double)parameters.ApplicationRunningTime)
                 : Timeout.InfiniteTimeSpan;
 
-            var options = new IotHubClientOptions(parameters.GetHubTransportSettings());
-            await using var deviceClient = new IotHubDeviceClient(
+            using var deviceClient = DeviceClient.CreateFromConnectionString(
                 parameters.PrimaryConnectionString,
-                options);
+                parameters.TransportType);
             var sample = new MethodSample(deviceClient);
             await sample.RunSampleAsync(runningTime);
             await deviceClient.CloseAsync();

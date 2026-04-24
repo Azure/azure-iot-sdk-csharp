@@ -5,111 +5,99 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Azure;
-using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
 {
     internal class CleanupEnrollmentsSample
     {
+        // Maximum number of elements per query - DPS has a limit of 10.
+        private const int QueryPageSize = 10;
         private readonly ProvisioningServiceClient _provisioningServiceClient;
-        private readonly ILogger _logger;
         private static int s_individualEnrollmentsDeleted;
         private static int s_enrollmentGroupsDeleted;
-        private const int BulkOperationLimit = 10;  // Bulk operation limit
-
         private readonly List<string> _individualEnrollmentsToBeRetained = new()
         {
             "Save_iothubx509device1",
             "Save_SymmetricKeySampleIndividualEnrollment"
         };
-
         private readonly List<string> _groupEnrollmentsToBeRetained = new()
         {
             "Save_group-certificate-x509",
             "Save_Group1"
         };
 
-        public CleanupEnrollmentsSample(ProvisioningServiceClient provisioningServiceClient, ILogger logger)
+        public CleanupEnrollmentsSample(ProvisioningServiceClient provisioningServiceClient)
         {
             _provisioningServiceClient = provisioningServiceClient;
             s_individualEnrollmentsDeleted = 0;
             s_enrollmentGroupsDeleted = 0;
-            _logger = logger;
         }
 
         public async Task RunSampleAsync()
         {
             await QueryAndDeleteIndividualEnrollmentsAsync();
-            _logger.LogInformation($"Individual enrollments deleted: {s_individualEnrollmentsDeleted}");
+            Console.WriteLine($"Individual enrollments deleted: {s_individualEnrollmentsDeleted}");
             await QueryAndDeleteEnrollmentGroupsAsync();
-            _logger.LogInformation($"Enrollment groups deleted: {s_enrollmentGroupsDeleted}");
+            Console.WriteLine($"Enrollment groups deleted: {s_enrollmentGroupsDeleted}");
         }
 
         private async Task QueryAndDeleteIndividualEnrollmentsAsync()
         {
-            _logger.LogInformation("Creating a query for enrollments...");
-            AsyncPageable<IndividualEnrollment> query = _provisioningServiceClient.IndividualEnrollments.CreateQuery("SELECT * FROM enrollments");
-            var individualEnrollments = new List<IndividualEnrollment>();
-            await foreach (IndividualEnrollment enrollment in query)
+            Console.WriteLine("Creating a query for enrollments...");
+            var querySpecification = new QuerySpecification("SELECT * FROM enrollments");
+            using Query query = _provisioningServiceClient.CreateIndividualEnrollmentQuery(querySpecification, QueryPageSize);
+            while (query.HasNext())
             {
-                _logger.LogInformation("Querying the next enrollments...");
-                if (!_individualEnrollmentsToBeRetained.Contains(enrollment.RegistrationId, StringComparer.OrdinalIgnoreCase))
+                Console.WriteLine("Querying the next enrollments...");
+                QueryResult queryResult = await query.NextAsync();
+                IEnumerable<object> items = queryResult.Items;
+                var individualEnrollments = new List<IndividualEnrollment>();
+                foreach (IndividualEnrollment enrollment in items.Cast<IndividualEnrollment>())
                 {
-                    individualEnrollments.Add(enrollment);
-                    _logger.LogInformation($"Individual enrollment to be deleted: {enrollment.RegistrationId}");
-                    s_individualEnrollmentsDeleted++;
+                    if (!_individualEnrollmentsToBeRetained.Contains(enrollment.RegistrationId, StringComparer.OrdinalIgnoreCase))
+                    {
+                        individualEnrollments.Add(enrollment);
+                        Console.WriteLine($"Individual enrollment to be deleted: {enrollment.RegistrationId}");
+                        s_individualEnrollmentsDeleted++;
+                    }
                 }
-
-                if (individualEnrollments.Count == BulkOperationLimit)
+                if (individualEnrollments.Count > 0)
                 {
                     await DeleteBulkIndividualEnrollmentsAsync(individualEnrollments);
-                    individualEnrollments.Clear();
                 }
-                await Task.Delay(1000);
-            }
 
-            if (individualEnrollments.Count > 0)
-            {
-                await DeleteBulkIndividualEnrollmentsAsync(individualEnrollments);
+                await Task.Delay(1000);
             }
         }
 
         private async Task QueryAndDeleteEnrollmentGroupsAsync()
         {
-            _logger.LogInformation("Creating a query for enrollment groups...");
-            AsyncPageable<EnrollmentGroup> query = _provisioningServiceClient.EnrollmentGroups.CreateQuery("SELECT * FROM enrollmentGroups");
-            await foreach (EnrollmentGroup enrollment in query)
+            Console.WriteLine("Creating a query for enrollment groups...");
+            var querySpecification = new QuerySpecification("SELECT * FROM enrollmentGroups");
+            using Query query = _provisioningServiceClient.CreateEnrollmentGroupQuery(querySpecification, QueryPageSize);
+            while (query.HasNext())
             {
-                _logger.LogInformation("Querying the next enrollment groups...");
-                if (!_groupEnrollmentsToBeRetained.Contains(enrollment.Id, StringComparer.OrdinalIgnoreCase))
+                Console.WriteLine("Querying the next enrollment groups...");
+                QueryResult queryResult = await query.NextAsync();
+                IEnumerable<object> items = queryResult.Items;
+                foreach (EnrollmentGroup enrollment in items.Cast<EnrollmentGroup>())
                 {
-                    _logger.LogInformation($"Enrollment group to be deleted: {enrollment.Id}");
-                    s_enrollmentGroupsDeleted++;
-                    await _provisioningServiceClient.EnrollmentGroups.DeleteAsync(enrollment.Id);
+                    if (!_groupEnrollmentsToBeRetained.Contains(enrollment.EnrollmentGroupId, StringComparer.OrdinalIgnoreCase))
+                    {
+                        Console.WriteLine($"Enrollment group to be deleted: {enrollment.EnrollmentGroupId}");
+                        s_enrollmentGroupsDeleted++;
+                        await _provisioningServiceClient.DeleteEnrollmentGroupAsync(enrollment.EnrollmentGroupId);
+                    }
                 }
             }
         }
 
         private async Task DeleteBulkIndividualEnrollmentsAsync(List<IndividualEnrollment> individualEnrollments)
         {
-            _logger.LogInformation("Deleting the set of individualEnrollments...");
+            Console.WriteLine("Deleting the set of individualEnrollments...");
             BulkEnrollmentOperationResult bulkEnrollmentOperationResult = await _provisioningServiceClient
-                .IndividualEnrollments
-                .RunBulkOperationAsync(BulkOperationMode.Delete, individualEnrollments);
-
-            if (!bulkEnrollmentOperationResult.IsSuccessful)
-            {
-                foreach (BulkEnrollmentOperationError error in bulkEnrollmentOperationResult.Errors)
-                {
-                    _logger.LogError($"Registration with Id {error.RegistrationId} failed with " +
-                        $"error code {error.ErrorCode} and status {error.ErrorStatus}");
-                }
-            }
-            else 
-            {
-                _logger.LogInformation("Bulk operation succeeded.");
-            }
+                .RunBulkEnrollmentOperationAsync(BulkOperationMode.Delete, individualEnrollments);
+            Console.WriteLine(bulkEnrollmentOperationResult);
         }
     }
 }

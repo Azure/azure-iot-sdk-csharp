@@ -4,14 +4,27 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.Azure.Amqp;
+
+#if !NET451
+
 using System.Collections.Generic;
 using System.Linq;
 using Azure;
+using Microsoft.Azure.Devices.Common.Data;
+
+#endif
 
 namespace Microsoft.Azure.Devices
 {
-    internal sealed class IotHubSasCredentialProperties : IotHubConnectionProperties
+    internal class IotHubSasCredentialProperties : IotHubConnectionProperties
     {
+#if NET451
+
+        public IotHubSasCredentialProperties()
+        {
+            throw new InvalidOperationException("IotHubSasCredential is not supported on NET451");
+        }
+#else
         private readonly AzureSasCredential _credential;
 
         public IotHubSasCredentialProperties(string hostName, AzureSasCredential credential) : base(hostName)
@@ -20,13 +33,24 @@ namespace Microsoft.Azure.Devices
             AmqpAudience = new List<string> { AccessRights.ServiceConnect.ToString() };
         }
 
+#endif
+
         public override string GetAuthorizationHeader()
         {
+#if NET451
+            throw new InvalidOperationException($"IotHubSasCredential is not supported on NET451");
+
+#else
             return _credential.Signature;
+#endif
         }
 
         public override Task<CbsToken> GetTokenAsync(Uri namespaceAddress, string appliesTo, string[] requiredClaims)
         {
+#if NET451
+            throw new InvalidOperationException($"IotHubSasCredential is not supported on NET451");
+
+#else
             // Parse the SAS token to find the expiration date and time.
             // SharedAccessSignature sr=ENCODED(dh://myiothub.azure-devices.net/a/b/c?myvalue1=a)&sig=<Signature>&se=<ExpiryInSecondsFromEpochTime>[&skn=<KeyName>]
             var tokenParts = _credential.Signature.Split('&').ToList();
@@ -49,10 +73,12 @@ namespace Microsoft.Azure.Devices
             var timeToLiveFromEpochTime = TimeSpan.FromSeconds(secondsFromEpochTime);
             DateTime expiresAt = epochTime.Add(timeToLiveFromEpochTime);
 
-            return Task.FromResult(new CbsToken(
+            var token = new CbsToken(
                 _credential.Signature,
                 CbsConstants.IotHubSasTokenType,
-                expiresAt));
+                expiresAt);
+            return Task.FromResult(token);
+#endif
         }
     }
 }

@@ -2,15 +2,8 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net10.0</TargetFramework>
-    <LangVersion>9.0</LangVersion>
-    <IsPackable>false</IsPackable>
-
-    <!--
-    Warning for using pre-release nugets can be ignored since this sample 
-    can't target a main release yet.
-    -->
-    <NoWarn>NU5104,SYSLIB0057</NoWarn>
+    <TargetFramework>net8.0</TargetFramework>
+	<LangVersion>9.0</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -18,12 +11,11 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(Configuration)' == 'Release'">
-    <PackageReference Include="Microsoft.Azure.Devices.Client" Version="2.0.0-preview001" />
+	<PackageReference Include="Microsoft.Azure.Devices.Client" Version="1.41.2" />
   </ItemGroup>
 
-  <ItemGroup>
-    <!--Condition="'$(Configuration)' == 'Debug'">-->
-    <ProjectReference Include="..\..\..\src\Microsoft.Azure.Devices.Client.csproj" />
+  <ItemGroup Condition="'$(Configuration)' == 'Debug'">
+	<ProjectReference Include="..\..\..\src\Microsoft.Azure.Devices.Client.csproj" />
   </ItemGroup>
 
 </Project>
