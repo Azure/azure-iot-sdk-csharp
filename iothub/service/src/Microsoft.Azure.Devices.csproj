@@ -1,9 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <!--netcoreapp2.1 target framework here is solely so that this library can use the SocketsHttpHandler class to handle connection lease timeout issues.-->
-    <!--See #1874 for additional details-->
-    <TargetFrameworks>net8.0;netstandard2.1;netstandard2.0;net472</TargetFrameworks>
-    <TargetFrameworks Condition="'$(OS)' != 'Windows_NT'">net6.0;netstandard2.1;netstandard2.0</TargetFrameworks>
+    <TargetFramework>net10.0</TargetFramework>
+
     <LangVersion>8.0</LangVersion>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <RootNamespace>Microsoft.Azure.Devices</RootNamespace>
@@ -148,39 +146,13 @@
     <ProjectReference Include="$(RootDir)\shared\src\Microsoft.Azure.Devices.Shared.csproj" />
   </ItemGroup>
 
-  <!-- Net451 -->
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net451' ">
-    <Compile Include="$(Common)\DefaultWebProxySettings.cs" />
-    <Compile Include="net451\Common\ActionItem.cs" />
-    <Compile Include="net451\Common\IOThreadTimer.cs" />
-    <Compile Include="net451\Common\SynchronizedPool.cs" />
-    <Compile Include="net451\Common\Interop\UnsafeNativeMethods.cs" />
-  </ItemGroup>
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net451' ">
-    <Reference Include="System.Configuration" />
-    <Reference Include="System.Transactions" />
-    <Reference Include="System.Web" Version="4.0.0.0" />
-    <Reference Include="System.Net.Http" />
-    <PackageReference Include="Microsoft.AspNet.WebApi.Client" Version="5.2.3" />
-    <PackageReference Include="Microsoft.Owin" Version="4.2.2" />
-    <PackageReference Include="System.ValueTuple" Version="4.5.0" />
-  </ItemGroup>
-
-  <!-- net472 -->
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
-    <PackageReference Include="System.Net.Requests" Version="4.3.0" />
-    <Reference Include="System.Net.Http" />
-  </ItemGroup>
-
   <!-- NetStandard 2.1, NetStandard 2.0 and net472 -->
-  <ItemGroup Condition=" '$(TargetFramework)' != 'net451' ">
+  <ItemGroup>
     <Compile Include="$(Common)\DefaultWebProxySettings.cs" />
     <Compile Include="ModernDotNet\Common\IOThreadTimerSlim.cs" />
     <Compile Include="DigitalTwin\**\*.cs" />
   </ItemGroup>
-  <ItemGroup Condition=" '$(TargetFramework)' != 'net451' ">
-    <PackageReference Include="System.Diagnostics.TraceSource" Version="4.3.0" />
-    <PackageReference Include="System.Diagnostics.Contracts" Version="4.3.0" />
+  <ItemGroup>
     <PackageReference Include="Microsoft.Rest.ClientRuntime" Version="2.3.24" />
     <PackageReference Include="Azure.Core" Version="1.44.1" />
   </ItemGroup>

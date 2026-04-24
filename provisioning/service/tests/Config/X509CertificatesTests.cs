@@ -62,7 +62,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         public void X509CertificatesSucceedOnValidPrimaryX509Certificate()
         {
             // arrange
+#pragma warning disable SYSLIB0057 // Type or member is obsolete
             using var primary = new X509Certificate2(System.Text.Encoding.ASCII.GetBytes(PUBLIC_KEY_CERTIFICATE_STRING));
+#pragma warning restore SYSLIB0057 // Type or member is obsolete
 
             // act
             var x509Certificates = new X509Certificates(primary);
@@ -76,8 +78,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         public void X509CertificatesSucceedOnValidPrimaryAndSecondaryX509Certificate()
         {
             // arrange
+#pragma warning disable SYSLIB0057 // Type or member is obsolete
             using var primary = new X509Certificate2(System.Text.Encoding.ASCII.GetBytes(PUBLIC_KEY_CERTIFICATE_STRING));
             using var secondary = new X509Certificate2(System.Text.Encoding.ASCII.GetBytes(PUBLIC_KEY_CERTIFICATE_STRING));
+#pragma warning restore SYSLIB0057 // Type or member is obsolete
 
             // act
             var x509Certificates = new X509Certificates(primary, secondary);

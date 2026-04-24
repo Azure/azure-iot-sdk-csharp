@@ -33,11 +33,13 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             if (password == null)
             {
+#pragma warning disable SYSLIB0057 // Type or member is obsolete
                 return new X509Certificate2(buff);
             }
             else
             {
                 return new X509Certificate2(buff, password);
+#pragma warning restore SYSLIB0057 // Type or member is obsolete
             }
         }
     }

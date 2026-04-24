@@ -848,17 +848,8 @@ namespace Microsoft.Azure.Devices.Client
 
                 if (customCertificateValidation != null)
                 {
-                    TlsVersions.Instance.SetLegacyAcceptableVersions();
-
-#if !NET451
                     httpMessageHandler.ServerCertificateCustomValidationCallback = customCertificateValidation;
                     httpMessageHandler.SslProtocols = TlsVersions.Instance.Preferred;
-#else
-                    httpMessageHandler.ServerCertificateValidationCallback = (sender, certificate, chain, errors) =>
-                    {
-                        return customCertificateValidation(sender, certificate, chain, errors);
-                    };
-#endif
                 }
 
                 // We need to add the certificate to the httpTransport if DeviceAuthenticationWithX509Certificate

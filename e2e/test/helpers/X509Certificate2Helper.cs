@@ -122,11 +122,9 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
         {
             byte[] buff = Convert.FromBase64String(pfxCertificateBase64);
 
-#if NET451
-            var pfxCertificate = new X509Certificate2(buff, certificatePassword);
-#else
+#pragma warning disable SYSLIB0057 // Type or member is obsolete
             using var pfxCertificate = new X509Certificate2(buff, certificatePassword);
-#endif
+#pragma warning restore SYSLIB0057 // Type or member is obsolete
 
             string pfxFile = Path.Combine(destinationCertificateFolder.FullName, $"{pfxCertificate.Subject}.pfx");
             string keyFile = Path.Combine(destinationCertificateFolder.FullName, $"{pfxCertificate.Subject}.key");
@@ -166,12 +164,16 @@ namespace Microsoft.Azure.Devices.E2ETests.Helpers
 
         internal static X509Certificate2 CreateX509Certificate2FromPfxFile(string subjectName, DirectoryInfo certificateFolder)
         {
+#pragma warning disable SYSLIB0057 // Type or member is obsolete
             return new X509Certificate2(Path.Combine(certificateFolder.FullName, $"{subjectName}.pfx"));
+#pragma warning restore SYSLIB0057 // Type or member is obsolete
         }
 
         internal static X509Certificate2 CreateX509Certificate2FromCerFile(string subjectName, DirectoryInfo certificateFolder)
         {
+#pragma warning disable SYSLIB0057 // Type or member is obsolete
             return new X509Certificate2(Path.Combine(certificateFolder.FullName, $"{subjectName}.cer"));
+#pragma warning restore SYSLIB0057 // Type or member is obsolete
         }
 
         private static Process CreateErrorObservantProcess(string processName, string arguments)

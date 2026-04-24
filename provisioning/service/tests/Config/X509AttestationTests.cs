@@ -14,6 +14,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
     [TestCategory("Unit")]
     public class X509AttestationTests
     {
+#pragma warning disable SYSLIB0057 // Type or member is obsolete
         private const string SUBJECT_NAME = "CN=ROOT_00000000-0000-0000-0000-000000000000, OU=Azure IoT, O=MSFT, C=US";
         private const string SHA1THUMBPRINT = "0000000000000000000000000000000000";
         private const string SHA256THUMBPRINT = "validEnrollmentGroupId";
@@ -522,5 +523,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             // act - assert
             TestAssert.Throws<ProvisioningServiceClientException>(() => Newtonsoft.Json.JsonConvert.DeserializeObject<X509Attestation>(json));
         }
+#pragma warning restore SYSLIB0057 // Type or member is obsolete
     }
 }

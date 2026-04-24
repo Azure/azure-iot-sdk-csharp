@@ -111,7 +111,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         public void X509CertificateWithInfoConstructorSucceedOnValidX509Certificate()
         {
             // arrange
+#pragma warning disable SYSLIB0057 // Type or member is obsolete
             using var certificate = new X509Certificate2(System.Text.Encoding.ASCII.GetBytes(PUBLIC_KEY_CERTIFICATE));
+#pragma warning restore SYSLIB0057 // Type or member is obsolete
 
             // act
             var x509CertificateWithInfo = new X509CertificateWithInfo(certificate);

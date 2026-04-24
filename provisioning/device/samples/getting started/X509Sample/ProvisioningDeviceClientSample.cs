@@ -90,10 +90,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
             ReadCertificatePassword();
 
             var certificateCollection = new X509Certificate2Collection();
+#pragma warning disable SYSLIB0057 // Type or member is obsolete
             certificateCollection.Import(
                 _parameters.GetCertificatePath(),
                 _parameters.CertificatePassword,
                 X509KeyStorageFlags.UserKeySet);
+#pragma warning restore SYSLIB0057 // Type or member is obsolete
 
             X509Certificate2 certificate = null;
 

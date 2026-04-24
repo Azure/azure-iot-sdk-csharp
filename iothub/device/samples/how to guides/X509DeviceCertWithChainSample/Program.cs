@@ -34,10 +34,12 @@ namespace X509DeviceCertWithChainSample
                 });
 
             var chainCerts = new X509Certificate2Collection();
+#pragma warning disable SYSLIB0057 // Type or member is obsolete
             chainCerts.Add(new X509Certificate2(parameters.RootCertPath));
             chainCerts.Add(new X509Certificate2(parameters.Intermediate1CertPath));
             chainCerts.Add(new X509Certificate2(parameters.Intermediate2CertPath));
             using var deviceCert = new X509Certificate2(parameters.DevicePfxPath, parameters.DevicePfxPassword);
+#pragma warning restore SYSLIB0057 // Type or member is obsolete
             using var auth = new DeviceAuthenticationWithX509Certificate(parameters.DeviceName, deviceCert, chainCerts);
 
             using var deviceClient = DeviceClient.Create(

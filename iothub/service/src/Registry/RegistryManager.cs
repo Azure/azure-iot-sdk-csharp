@@ -128,7 +128,6 @@ namespace Microsoft.Azure.Devices
             {
                 throw new ArgumentNullException(nameof(transportSettings), "The HTTP transport settings cannot be null.");
             }
-            TlsVersions.Instance.SetLegacyAcceptableVersions();
 
             var iotHubConnectionString = IotHubConnectionString.Parse(connectionString);
             return new RegistryManager(iotHubConnectionString, transportSettings);
