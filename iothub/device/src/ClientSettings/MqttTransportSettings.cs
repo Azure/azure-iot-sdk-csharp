@@ -90,6 +90,16 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         }
 
         /// <summary>
+        /// Cloud-to-device message queue size for storing offline messages when the client connects with <see cref="CleanSession" /> set to <c>false</c>.
+        /// </summary>
+        /// <remarks>
+        /// If incoming message callback is not set, messages from service are received and stored in a queue until a callback is set. 
+        /// If the number of messages sent is greater than queue size, older messages are removed as newer messages are added. 
+        /// Setting this to a low value can cause offline undelivered messages to get lost.
+        /// </remarks>
+        public int IncomingMessageQueueSize { get; set; } = 10;
+
+        /// <summary>
         /// Indicates if a device can timeout while waiting for a acknowledgment from service.
         /// The default value is <c>false</c>.
         /// </summary>
@@ -239,7 +249,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         /// <summary>
         /// The client certificate to be used for authenticating the TLS connection.
         /// </summary>
-        public X509Certificate ClientCertificate { get; set; }
+        public X509Certificate2 ClientCertificate { get; set; }
 
         /// <inheritdoc/>
         public IWebProxy Proxy { get; set; }

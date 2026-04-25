@@ -18,7 +18,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         /// <summary>
         /// Constructor for get twin operations.
         /// </summary>
-        public PendingMqttTwinOperation(TaskCompletionSource<Twin> twinResponseTask)
+        public PendingMqttTwinOperation(TaskCompletionSource<GetTwinResponse> twinResponseTask)
         {
             TwinResponseTask = twinResponseTask;
         }
@@ -37,7 +37,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         /// <remarks>
         /// Will be null if this if this class is not being used for get twin.
         /// </remarks>
-        public TaskCompletionSource<Twin> TwinResponseTask { get; }
+        public TaskCompletionSource<GetTwinResponse> TwinResponseTask { get; }
 
         /// <summary>
         /// The pending task for patching a twin to be signaled when complete.
