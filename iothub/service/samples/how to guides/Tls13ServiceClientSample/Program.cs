@@ -9,7 +9,7 @@ string? serviceConnectionString = Environment.GetEnvironmentVariable("IOTHUB_SER
 
 if (string.IsNullOrEmpty(serviceConnectionString) || !serviceConnectionString.Contains(".service.azure-devices."))
 {
-    Console.WriteLine("Must set environment variable \"IOTHUB_SERVICE_CONNECTION_STRING\" with value that matches the pattern \"<hub name>.service.azure-devices.<dnsSuffix>\". Connection strings that look like \"<hub name>.azure-devices.<dnsSuffix>\" do not support TLS 1.3");
+    Console.WriteLine("Must set environment variable \"IOTHUB_SERVICE_CONNECTION_STRING\" with value that matches the pattern \"<hub name>.service.azure-devices.<dnsSuffix>\". Endpoints with connection strings that look like \"<hub name>.azure-devices.<dnsSuffix>\" do not support TLS 1.3");
     return -1;
 }
 
