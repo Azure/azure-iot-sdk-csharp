@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.1.32328.378
+# Visual Studio Version 18
+VisualStudioVersion = 18.4.11702.344 oobstable
 MinimumVisualStudioVersion = 15.0.26124.0
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "iothub", "iothub", "{537FA828-124D-4C70-9FC1-89301D9E776D}"
 EndProject
@@ -208,6 +208,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "prerequisites", "prerequisi
 		e2e\test\prerequisites\E2ETestsSetup\test-resources.bicep = e2e\test\prerequisites\E2ETestsSetup\test-resources.bicep
 		e2e\test\prerequisites\E2ETestsSetup\test-resources.json = e2e\test\prerequisites\E2ETestsSetup\test-resources.json
 	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tls13Sample", "iothub\device\samples\how to guides\Tls13Sample\Tls13Sample.csproj", "{553DD24F-4040-6207-906D-FD5E4EF49350}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tls13ServiceClientSample", "iothub\service\samples\how to guides\Tls13ServiceClientSample\Tls13ServiceClientSample.csproj", "{34162CFA-C6FC-D37A-D6CC-493775DBF707}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -438,6 +442,14 @@ Global
 		{184F07FC-A5CA-43F5-8742-0B6DF6825A1F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{184F07FC-A5CA-43F5-8742-0B6DF6825A1F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{184F07FC-A5CA-43F5-8742-0B6DF6825A1F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{553DD24F-4040-6207-906D-FD5E4EF49350}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{553DD24F-4040-6207-906D-FD5E4EF49350}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{553DD24F-4040-6207-906D-FD5E4EF49350}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{553DD24F-4040-6207-906D-FD5E4EF49350}.Release|Any CPU.Build.0 = Release|Any CPU
+		{34162CFA-C6FC-D37A-D6CC-493775DBF707}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{34162CFA-C6FC-D37A-D6CC-493775DBF707}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{34162CFA-C6FC-D37A-D6CC-493775DBF707}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{34162CFA-C6FC-D37A-D6CC-493775DBF707}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -529,6 +541,8 @@ Global
 		{89643F18-7B22-41BD-8342-49251943C984} = {4CF9A9B8-9D3F-44F6-B965-DF2B7EEA024E}
 		{184F07FC-A5CA-43F5-8742-0B6DF6825A1F} = {89643F18-7B22-41BD-8342-49251943C984}
 		{CA137E4E-4684-442D-92FC-20ADACCB5D62} = {9C260BF0-1CCA-45A2-AAB8-6419291B8B88}
+		{553DD24F-4040-6207-906D-FD5E4EF49350} = {FA7C7E33-CC9C-4ACD-A761-C2B4C55E82F6}
+		{34162CFA-C6FC-D37A-D6CC-493775DBF707} = {73EFBF28-CA06-4A08-88BC-CCDA2C498C76}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {AF61665D-340A-494B-9705-571456BDC752}
