@@ -3,12 +3,14 @@
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
+namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 {
     [TestClass]
     [TestCategory("Unit")]
     public class X509CAReferencesTests
     {
+        /* SRS_X509_CAREFERENCE_21_002: [The constructor shall store the primary and secondary CA references.] */
+
         [TestMethod]
         public void X509CAReferencesSucceedOnValidPrimaryReferences()
         {
@@ -16,7 +18,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
             string primary = "valid-ca-reference-1";
 
             // act
-            var x509CAReferences = new X509CaReferences(primary);
+            var x509CAReferences = new X509CAReferences(primary);
 
             // assert
             Assert.AreEqual(primary, x509CAReferences.Primary);
@@ -31,7 +33,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
             string secondary = "valid-ca-reference-1";
 
             // act
-            var x509CAReferences = new X509CaReferences(primary, secondary);
+            var x509CAReferences = new X509CAReferences(primary, secondary);
 
             // assert
             Assert.AreEqual(primary, x509CAReferences.Primary);

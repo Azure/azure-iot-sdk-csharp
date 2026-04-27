@@ -1,34 +1,47 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net10.0</TargetFrameworks>
-    <LangVersion>9.0</LangVersion>
+    <TargetFrameworks Condition="'$(OS)' == 'Windows_NT'">net8.0;net472</TargetFrameworks>
+    <TargetFrameworks Condition="'$(OS)' != 'Windows_NT'">net8.0</TargetFrameworks>
+    <!-- By setting this as not a test project for other frameworks, we can run "dotnet test" for a specific framework from the root directory without dotnet throwing if any test project in the solution doesn't support that framework -->
+    <IsTestProject Condition="'$(OS)' != 'Windows_NT' And '$(TargetFramework)' != 'net6.0' And '$(TargetFramework)' != 'net8.0'">False</IsTestProject>
+
+    <LangVersion>8.0</LangVersion>
     <IsPackable>false</IsPackable>
-    <EnableNETAnalyzers>True</EnableNETAnalyzers>
-    <AnalysisLevel>latest-minimum</AnalysisLevel>
+    <RunAnalyzersDuringBuild>false</RunAnalyzersDuringBuild>
+    <RunAnalyzersDuringLiveAnalysis>false</RunAnalyzersDuringLiveAnalysis>
 
-    <!-- We will turn on this suppression once we are ready to GA-->
+    <!-- Don't auto-compile platform specific files: -->
+    <DefaultItemExcludes>Authentication/HsmAuthentication/**;$(DefaultItemExcludes)</DefaultItemExcludes>
     <!-- Suppress framework end of life warnings as we have to keep supporting these frameworks for our customers -->
-    <!-- <CheckEolTargetFramework>false</CheckEolTargetFramework> -->
-
-    <NoWarn>SYSLIB0057</NoWarn>
+    <CheckEolTargetFramework>false</CheckEolTargetFramework>
   </PropertyGroup>
 
-  <!--Project reference dependencies-->
   <ItemGroup>
-    <ProjectReference Include="..\src\Microsoft.Azure.Devices.Client.csproj" />
+    <Compile Include="Authentication\HsmAuthentication\**" />
+    <Compile Remove="ClientWebSocketTransportTests.cs" />
+    <Compile Remove="Mqtt\ClientWebSocketChannelTests.cs" />
+    <PackageReference Include="DotNetty.Codecs.Mqtt" Version="0.7.6" />
+    <PackageReference Include="DotNetty.Common" Version="0.7.6" />
+    <PackageReference Include="DotNetty.Handlers" Version="0.7.6" />
   </ItemGroup>
 
-  <!--Nuget package dependencies-->
   <ItemGroup>
-    <PackageReference Include="coverlet.collector" Version="3.2.0">
+    <PackageReference Include="FluentAssertions" Version="5.10.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
+    <PackageReference Include="MSTest.TestAdapter" Version="3.6.3" />
+    <PackageReference Include="MSTest.TestFramework" Version="3.6.3" />
+    <PackageReference Include="NSubstitute" Version="5.3.0" />
+    <PackageReference Include="Moq" Version="4.20.72" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="NSubstitute.Analyzers.CSharp" Version="1.0.17">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="FluentAssertions" Version="6.10.0" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.5.0" />
-    <PackageReference Include="MSTest.TestAdapter" Version="3.0.2" />
-    <PackageReference Include="MSTest.TestFramework" Version="3.0.2" />
-    <PackageReference Include="Moq" Version="4.18.4" />
+    <ProjectReference Include="..\src\Microsoft.Azure.Devices.Client.csproj" />
   </ItemGroup>
-  
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net451' Or '$(TargetFramework)' == 'net472' ">
+    <Reference Include="System.Web" />
+    <PackageReference Include="System.Net.Http" Version="4.3.4" />
+  </ItemGroup>
 </Project>

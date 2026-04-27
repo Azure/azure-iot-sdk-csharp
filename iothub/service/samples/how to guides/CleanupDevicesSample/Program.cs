@@ -1,12 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Azure.Storage.Blobs;
 using CommandLine;
 using Microsoft.Azure.Devices.Client.Samples;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.Samples
 {
@@ -32,22 +33,15 @@ namespace Microsoft.Azure.Devices.Samples
                     Environment.Exit(1);
                 });
 
-            using var hubClient = new IotHubServiceClient(parameters.HubConnectionString);
+            using RegistryManager registryManager = RegistryManager.CreateFromConnectionString(parameters.HubConnectionString);
             var saveDevicesWithPrefix = new List<string> { "Save_" };
 
             var blobServiceClient = new BlobServiceClient(parameters.StorageAccountConnectionString);
             string blobContainerName = $"cleanupdevice{Guid.NewGuid()}";
             BlobContainerClient blobContainerClient = await blobServiceClient.CreateBlobContainerAsync(blobContainerName);
 
-            try
-            {
-                var sample = new CleanupDevicesSample(hubClient, blobContainerClient, saveDevicesWithPrefix);
-                await sample.RunCleanUpAsync();
-            }
-            finally
-            {
-                await blobContainerClient.DeleteAsync();
-            }
+            var sample = new CleanupDevicesSample(registryManager, blobContainerClient, saveDevicesWithPrefix);
+            await sample.RunCleanUpAsync();
 
             Console.WriteLine("Done.");
             return 0;

@@ -5,14 +5,11 @@
 // For samples see: https://github.com/Azure/azure-iot-sdk-csharp/tree/main/iothub/service
 
 using System;
-using System.Diagnostics;
-using System.Text;
 using System.Threading.Tasks;
 using CommandLine;
-using System.Text.Json.Serialization;
-using System.Text.Json;
+using Microsoft.Azure.Devices;
 
-namespace Microsoft.Azure.Devices.Samples.InvokeDeviceMethod
+namespace InvokeDeviceMethod
 {
     /// <summary>
     /// This sample illustrates the very basics of a service app invoking a method on a device.
@@ -29,36 +26,34 @@ namespace Microsoft.Azure.Devices.Samples.InvokeDeviceMethod
                 .WithParsed(parsedParams => parameters = parsedParams)
                 .WithNotParsed(errors => Environment.Exit(1));
 
-            Debug.Assert(!string.IsNullOrWhiteSpace(parameters.HubConnectionString),
-                    "An IoT hub connection string needs to be specified, " +
-                    "please set the environment variable \"IOTHUB_DEVICE_CONNECTION_STRING\" " +
-                    "or pass in \"-c | --DeviceConnectionString\" through command line.");
+            // This sample accepts the service connection string as a parameter, if present.
+            Parameters.ValidateConnectionString(parameters.HubConnectionString);
 
             // Create a ServiceClient to communicate with service-facing endpoint on your hub.
-            using var serviceClient = new IotHubServiceClient(parameters.HubConnectionString);
+            using var serviceClient = ServiceClient.CreateFromConnectionString(parameters.HubConnectionString);
 
-            await InvokeMethodAsync(serviceClient, parameters.DeviceId);
+            await InvokeMethodAsync(parameters.DeviceId, serviceClient);
 
             Console.WriteLine("Press Enter to exit.");
             Console.ReadLine();
         }
 
         // Invoke the direct method on the device, passing the payload.
-        private static async Task InvokeMethodAsync(IotHubServiceClient serviceClient, string deviceId)
+        private static async Task InvokeMethodAsync(string deviceId, ServiceClient serviceClient)
         {
-            var methodInvocation = new DirectMethodServiceRequest("SetTelemetryInterval")
+            var methodInvocation = new CloudToDeviceMethod("SetTelemetryInterval")
             {
-                ResponseTimeoutInSeconds = 30,
+                ResponseTimeout = TimeSpan.FromSeconds(30),
             };
-
-            methodInvocation.SetPayload(10);
+            methodInvocation.SetPayloadJson("10");
 
             Console.WriteLine($"Invoking direct method for device: {deviceId}");
 
             // Invoke the direct method asynchronously and get the response from the simulated device.
-            DirectMethodClientResponse response = await serviceClient.DirectMethods.InvokeAsync(deviceId, methodInvocation);
+            CloudToDeviceMethodResult response = await serviceClient.InvokeDeviceMethodAsync(deviceId, methodInvocation);
 
-            Console.WriteLine($"Response status: {response.Status}, payload:\n\t{JsonSerializer.Serialize(response.JsonPayload.GetRawText())}");
+            Console.WriteLine($"Response status: {response.Status}, payload:\n\t{response.GetPayloadAsJson()}");
+
         }
     }
 }

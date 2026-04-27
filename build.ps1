@@ -16,8 +16,8 @@ Parameters:
     -clean: Runs dotnet clean. Use `git clean -xdf` if this is not sufficient.
     -build: Builds projects (use if re-running tests after a successful build).
     -unittests: Runs unit tests
-    -prtests: Runs all tests selected for PR validation at our gates. Requires prerequisites and environment variables.
-    -e2etests: Runs the complete E2E test suite. This includes E2E tests, FaultInjection tests and InvalidServiceCertificate tests. Requires prerequisites and environment variables.
+    -prtests: Runs all tests selected for PR validation
+    -e2etests: Runs E2E tests. Requires prerequisites and environment variables.
     -stresstests: Runs Stress tests.
     -publish: (Internal use, requires nuget toolset) Publishes the nuget packages.
     -verbosity: Sets the verbosity level of the command. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic].
@@ -31,6 +31,9 @@ Build will automatically detect if the machine is Windows vs Unix. On Windows de
 
 The following environment variables can tune the build behavior:
     - AZURE_IOT_DONOTSIGN: disables delay-signing if set to 'TRUE'
+    - AZURE_IOT_LOCALPACKAGES: the path to the local nuget source. 
+        Add a new source using: `nuget sources add -name MySource -Source <path>`
+        Remove a source using: `nuget sources remove -name MySource`
 
 .EXAMPLE
 .\build
@@ -69,8 +72,7 @@ Param(
     [switch] $skipIotHubTests,
     [switch] $skipDPSTests,
     [switch] $noBuildBeforeTesting,
-    [switch] $runAllSamples,
-    [switch] $runCleanupSamples
+    [switch] $runSamples
 )
 
 Function IsWindows()
@@ -100,6 +102,11 @@ Function CheckTools($commands)
             throw "Toolset not found: '$command' is missing."
         }
     }
+}
+
+Function CheckLocalPackagesAvailableForTesting()
+{
+    return (-not [string]::IsNullOrWhiteSpace($env:AZURE_IOT_LOCALPACKAGES))
 }
 
 Function DidBuildFail($buildOutputFileName)
@@ -133,72 +140,61 @@ Function BuildProject($path, $message)
     }
 }
 
-Function RunSamples($message, $runAll)
+Function RunSamples($path, $message)
 {
     $label = "RUNNING SAMPLES: --- $message $configuration ---"
 
     Write-Host
     Write-Host -ForegroundColor Cyan $label
 
-    try 
-    {
-        Write-Host -ForegroundColor Cyan "Running cleanup samples"
-
-        # Run the cleanup samples so that identities and enrollments created for the samples are cleaned up.
-        RunSample 'provisioning\service\samples\getting started\CleanupEnrollmentsSample' "Provisioning\Service\CleanupEnrollmentsSample" "-c ""$env:PROVISIONING_CONNECTION_STRING"""
-        RunSample 'iothub\service\samples\how to guides\CleanupDevicesSample' "IoTHub\Service\CleanupDevicesSample" "-c ""$env:IOTHUB_CONNECTION_STRING"" -a ""$env:STORAGE_ACCOUNT_CONNECTION_STRING"""
-        
-        if ($runAll)
-        {
-            Write-Host -ForegroundColor Cyan "Running all samples"
-
+    try {
             $sampleRunningTimeInSeconds = 30
-
+            
             # Run the iot-hub\device samples
             RunSample 'iothub\device\samples\getting started\FileUploadSample' "IoTHub\Device\FileUploadSample" "-c ""$env:IOTHUB_DEVICE_CONN_STRING"""
             RunSample 'iothub\device\samples\getting started\MessageReceiveSample' "IoTHub\Device\MessageReceiveSample" "-c ""$env:IOTHUB_DEVICE_CONN_STRING"" -r $sampleRunningTimeInSeconds"
             RunSample 'iothub\device\samples\getting started\MethodSample' "IoTHub\Device\MethodSample" "-c ""$env:IOTHUB_DEVICE_CONN_STRING"" -r $sampleRunningTimeInSeconds"
             RunSample 'iothub\device\samples\getting started\TwinSample' "IoTHub\Device\TwinSample" "-c ""$env:IOTHUB_DEVICE_CONN_STRING"" -r $sampleRunningTimeInSeconds"
-
+    
             $pnpDeviceSecurityType = "connectionString"
             RunSample iothub\device\samples\solutions\PnpDeviceSamples\TemperatureController "IoTHub\Device\PnpDeviceSamples\TemperatureController" "--DeviceSecurityType $pnpDeviceSecurityType -c ""$env:PNP_TC_DEVICE_CONN_STRING"" -r $sampleRunningTimeInSeconds"
             RunSample iothub\device\samples\solutions\PnpDeviceSamples\Thermostat "IoTHub\Device\PnpDeviceSamples\Thermostat" "--DeviceSecurityType $pnpDeviceSecurityType -c ""$env:PNP_THERMOSTAT_DEVICE_CONN_STRING"" -r $sampleRunningTimeInSeconds"
-            
             # Run the iot-hub\service samples
             $deviceId = ($Env:IOTHUB_DEVICE_CONN_STRING.Split(';') | Where-Object {$_ -like "DeviceId=*"}).Split("=")[1]
             $iothubHost = ($Env:IOTHUB_CONNECTION_STRING.Split(';') | Where-Object {$_ -like "HostName=*"}).Split("=")[1]
-            RunSample 'iothub\service\samples\how to guides\AutomaticDeviceManagementSample' "IoTHub\Service\AutomaticDeviceManagementSample" "-c ""$env:IOTHUB_CONNECTION_STRING"""
-
+            RunSample 'iothub\service\samples\how to guides\AutomaticDeviceManagementSample' "IoTHub\Service\AutomaticDeviceManagementSample"
+    
             Write-Warning "Using device $deviceId for the AzureSasCredentialAuthenticationSample."
-            RunSample 'iothub\service\samples\how to guides\AzureSasCredentialAuthenticationSample' "IoTHub\Service\AzureSasCredentialAuthenticationSample" "-r $iothubHost -d $deviceId -s ""$env:IOTHUB_SAS_KEY"" -n ""$env:IOTHUB_SAS_KEY_NAME"""
-
+            RunSample 'iothub\service\samples\how to guides\AzureSasCredentialAuthenticationSample' "IoTHub\Service\AzureSasCredentialAuthenticationSample" "-r $iothubHost -d $deviceId -s ""$env:IOT_HUB_SAS_KEY"" -n ""$env:IOT_HUB_SAS_KEY_NAME"""
+    
             RunSample 'iothub\service\samples\getting started\EdgeDeploymentSample' "IoTHub\Service\EdgeDeploymentSample"
             RunSample 'iothub\service\samples\getting started\JobsSample' "IoTHub\Service\JobsSample"
             RunSample 'iothub\service\samples\how to guides\RegistryManagerSample' "IoTHub\Service\RegistryManagerSample" "-c ""$env:IOTHUB_CONNECTION_STRING"" -p ""$env:IOTHUB_X509_DEVICE_PFX_THUMBPRINT"""
 
             Write-Warning "Using device $deviceId for the RoleBasedAuthenticationSample."
             RunSample 'iothub\service\samples\how to guides\RoleBasedAuthenticationSample' "IoTHub\Service\RoleBasedAuthenticationSample" "-h $iothubHost -d $deviceId --ClientId ""$env:E2E_TEST_AAD_APP_CLIENT_ID"" --TenantId ""$env:MSFT_TENANT_ID"" --ClientSecret ""$env:E2E_TEST_AAD_APP_CLIENT_SECRET"""
-
+    
             Write-Warning "Using device $deviceId for the ServiceClientSample."
             RunSample 'iothub\service\samples\getting started\ServiceClientSample' "IoTHub\Service\ServiceClientSample" "-c ""$env:IOTHUB_CONNECTION_STRING"" -d $deviceId -r $sampleRunningTimeInSeconds"
-
+            
             # Run provisioning\device samples
-
+    
             # ComputeDerivedSymmetricKeySample uses the supplied group enrollment key to compute the SHA256 based hash of the supplied device Id.
             # For the sake of running this sample on the pipeline, we will only test the hash computation by passing in a base-64 string and a string to be hashed.
             RunSample 'provisioning\device\samples\getting started\ComputeDerivedSymmetricKeySample' "Provisioning\Device\ComputeDerivedSymmetricKeySample" "-r ""$env:DPS_SYMMETRIC_KEY_INDIVIDUAL_ENROLLMENT_REGISTRATION_ID"" -p ""$env:DPS_SYMMETRIC_KEY_INDIVIDUAL_ENROLLEMNT_PRIMARY_KEY"""
-
+        
             # Run provisioning\service samples
             RunSample 'provisioning\service\samples\how to guides\BulkOperationSample' "Provisioning\Service\BulkOperationSample" "-c ""$env:PROVISIONING_CONNECTION_STRING"""
+            RunSample 'provisioning\service\samples\getting started\EnrollmentSample' "Provisioning\Service\EnrollmentSample" "-c ""$env:PROVISIONING_CONNECTION_STRING"""
 
-        }
-    }
-    catch [Exception]
-    {
+            # Run the cleanup again so that identities and enrollments created for the samples are cleaned up.
+            RunSample 'provisioning\service\samples\getting started\CleanupEnrollmentsSample' "Provisioning\Service\CleanupEnrollmentsSample" "-c ""$env:PROVISIONING_CONNECTION_STRING"""
+            RunSample 'iothub\service\samples\how to guides\CleanupDevicesSample' "IoTHub\Service\CleanupDevicesSample" "-c ""$env:IOTHUB_CONNECTION_STRING"" -a ""$env:STORAGE_ACCOUNT_CONNECTION_STRING"""
+    }  
+    catch [Exception]{
         throw "Running Samples Failed: $label"
     }
-    finally 
-    {
+    finally {
         Set-Location $rootDir
     }
 }
@@ -212,16 +208,16 @@ Function BuildPackage($path, $message)
 
     $projectPath = Join-Path $rootDir $path
     $projectName = (Get-ChildItem (Join-Path $projectPath *.csproj))[0].BaseName
-    Set-Location $projectPath
 
     if ($sign)
     {
+        Set-Location $projectPath
         Write-Host -ForegroundColor Magenta "`tSigning binaries for: $projectName"
         $filesToSign = Get-ChildItem -Path "$projectPath\bin\$configuration\*\$projectName.dll" -Recurse
         SignDotNetBinary $filesToSign
     }
 
-    & dotnet pack --verbosity $verbosity --configuration $configuration --no-build --include-symbols --include-source --output $localPackages
+    & dotnet pack --verbosity $verbosity --configuration $configuration --no-build --include-symbols --include-source --property:PackageOutputPath=$localPackages
 
     if ($LASTEXITCODE -ne 0)
     {
@@ -243,7 +239,7 @@ Function RunTests($message, $framework = "*", $filterTestCategory = "*")
     Write-Host
     Write-Host -ForegroundColor Cyan $label
 
-    $runTestCmd = "dotnet test -s test.runsettings --verbosity $verbosity --configuration $configuration --logger trx --collect 'Code Coverage'"
+    $runTestCmd = "dotnet test -s test.runsettings --verbosity $verbosity --configuration $configuration --logger trx"
 
     if ($noBuildBeforeTesting)
     {
@@ -262,6 +258,12 @@ Function RunTests($message, $framework = "*", $filterTestCategory = "*")
     Set-Location $rootDir
 
     Write-Host "Invoking expression: $runTestCmd ----------"
+
+    # Ensure the E2E tests can log to Application Insights
+    if ([string]::IsNullOrWhiteSpace($env:E2E_IKEY))
+    {
+        throw "Application Insights is not configured for logging in E2E tests."
+    }
 
     Invoke-Expression $runTestCmd
 
@@ -287,8 +289,8 @@ Function RunApp($path, $message, $framework = "netcoreapp3.1")
     }
 }
 
-Function RunSample($path, $message, $params)
-{
+Function RunSample($path, $message, $params) {
+
     $label = "RUN: --- $message $configuration ($params)---"
 
     Write-Host
@@ -296,15 +298,14 @@ Function RunSample($path, $message, $params)
     Write-Host "PATH: [$path]"
     Write-Host "MESSAGE: [$message]"
     Write-Host "PARAMS: [$params]"
-
+   
     Set-Location (Join-Path $rootDir $path)
     Write-Host -ForegroundColor Cyan $label
 
     $runCommand = "dotnet run -- $params"
     Invoke-Expression $runCommand
 
-    if ($LASTEXITCODE -ne 0)
-    {
+    if ($LASTEXITCODE -ne 0) {
         throw "Tests failed: $label"
     }
 }
@@ -314,11 +315,19 @@ $localPackages = Join-Path $rootDir "bin\pkg"
 $startTime = Get-Date
 $buildFailed = $true
 $errorMessage = ""
+$localPackagesAvailableForTesting = CheckLocalPackagesAvailableForTesting
+
+Write-Host -ForegroundColor Magenta "Local packages being used for testing: $localPackagesAvailableForTesting"
 
 try
 {
     if ($sign)
     {
+        if (-not $localPackagesAvailableForTesting)
+        {
+            throw "Local NuGet package source path is not set, required when signing packages."
+        }
+
         if ($configuration -ne "Release")
         {
             throw "Do not sign assemblies that aren't release."
@@ -334,21 +343,17 @@ try
 
     if ($build)
     {
+        # We must disable package testing here as the E2E csproj may reference new APIs that are not available in existing NuGet packages.
+        $packageTempPath = $env:AZURE_IOT_LOCALPACKAGES
+        $env:AZURE_IOT_LOCALPACKAGES = ""
         # SDK binaries
-        BuildProject . "Azure IoT .NET SDK Solution"
-
-        # Samples
-        # TODO: BuildProject <path> "<desc>"
+        BuildProject . "Azure IoT C# SDK Solution"
+        $env:AZURE_IOT_LOCALPACKAGES = $packageTempPath
     }
 
-    if ($runAllSamples)
+    if ($runSamples)
     {
-        RunSamples "Azure IoT .NET SDK Samples" $true
-    }
-
-    if ($runCleanupSamples)
-    {
-        RunSamples "Azure IoT .NET SDK Cleanup Samples" $false
+        RunSamples . "Azure IoT C# SDK Samples"
     }
 
     # Unit Tests require InternalsVisibleTo and can only run in Debug builds.
@@ -379,25 +384,16 @@ try
         $testCategory += "TestCategory=Unit"
         $testCategory += "|"
         $testCategory += "TestCategory=E2E"
-        $testCategory += "|"
-        $testCategory += "TestCategory=FaultInjectionBVT"
         $testCategory += ")"
 
         # test categories to exclude
         $testCategory += "&TestCategory!=LongRunning"
+        $testCategory += "&TestCategory!=FaultInjection"
         $testCategory += "&TestCategory!=Flaky"
-
-        # Invalid certificate tests are currently disabled on both Windows and Linux
-        # Windows - Invalid cert tests don't currently work with docker on Windows within pipeline agent setup because of virtual host networking configuration issue
-        # Linux - The hosted agents are currently referencing a pre-installed newer version of docker (20.10.21+azure-1) which has some compatibility issues with commands
-        # that were used with older versions of docker. We're disabling this task until those compatibility issues can be investigated and resolved.
-
-        # Tests categories to exclude
-        $testCategory += "&TestCategory!=InvalidServiceCertificate"
 
         if ($skipIotHubTests)
         {
-            $testCategory += "&TestCategory!=IoTHub-Client&TestCategory!=IoTHub-Service"
+            $testCategory += "&TestCategory!=IoTHub"
         }
 
         if ($skipDPSTests)
@@ -408,34 +404,67 @@ try
         RunTests "PR tests" -filterTestCategory $testCategory -framework $framework
     }
 
+    if ($package)
+    {
+        BuildPackage shared\src "Shared Assembly"
+        BuildPackage iothub\device\src "IoT Hub DeviceClient SDK"
+        BuildPackage iothub\service\src "IoT Hub ServiceClient SDK"
+        BuildPackage security\tpm\src "SecurityProvider for TPM"
+        BuildPackage provisioning\device\src "Provisioning Device Client SDK"
+        BuildPackage provisioning\transport\amqp\src "Provisioning Transport for AMQP"
+        BuildPackage provisioning\transport\http\src "Provisioning Transport for HTTP"
+        BuildPackage provisioning\transport\mqtt\src "Provisioning Transport for MQTT"
+        BuildPackage provisioning\service\src "Provisioning Service Client SDK"
+    }
+
+    if ($localPackagesAvailableForTesting)
+    {
+        Write-Host
+        Write-Host -ForegroundColor Cyan "Preparing local package source"
+        Write-Host
+
+        if (-not (Test-Path $env:AZURE_IOT_LOCALPACKAGES))
+        {
+            throw "Local NuGet package source path invalid: $($env:AZURE_IOT_LOCALPACKAGES)"
+        }
+
+        Write-Host Following local packages found:
+        Get-ChildItem -Path $env:AZURE_IOT_LOCALPACKAGES
+    }
+
     if ($e2etests)
     {
         Write-Host
         Write-Host -ForegroundColor Cyan "End-to-end Test execution"
         Write-Host
 
-        # Override verbosity to display individual test execution.
-        $oldVerbosity = $verbosity
-        $verbosity = "normal"
+        if ($localPackagesAvailableForTesting)
+        {
+            Write-Host -ForegroundColor Magenta "IMPORTANT: Using local packages."
+        }
 
         # Tests categories to include
         $testCategory = "("
         $testCategory += "TestCategory=E2E"
-        $testCategory += "|"
-        $testCategory += "TestCategory=FaultInjection"
+        # Invalid Service Cert Tests currently work with docker on Linux agent only.
+        # TODO: remove this condition in future docker on windows version when this is working.
+        if (-not(IsWindows)) 
+        {
+            $testCategory += "|"
+            $testCategory += "TestCategory=InvalidServiceCertificate"
+        }
         $testCategory += ")"
 
-        # Invalid certificate tests are currently disabled on both Windows and Linux
-        # Windows - Invalid cert tests don't currently work with docker on Windows within pipeline agent setup because of virtual host networking configuration issue
-        # Linux - The hosted agents are currently referencing a pre-installed newer version of docker (20.10.21+azure-1) which has some compatibility issues with commands
-        # that were used with older versions of docker. We're disabling this task until those compatibility issues can be investigated and resolved.
-
-        # Tests categories to exclude
-        $testCategory += "&TestCategory!=InvalidServiceCertificate"
+        # Override verbosity to display individual test execution.
+        $oldVerbosity = $verbosity
+        $verbosity = "normal"
 
         RunTests "E2E tests" -filterTestCategory $testCategory -framework $framework
 
         $verbosity = $oldVerbosity
+
+        # Samples
+        BuildProject security\tpm\samples "SecurityProvider for TPM Samples"
     }
 
     if ($stresstests)
@@ -445,14 +474,6 @@ try
         Write-Host
 
         RunApp e2e\stress\MemoryLeakTest "MemoryLeakTest test"
-    }
-
-    if ($package)
-    {
-        BuildPackage iothub\device\src "IoT Hub DeviceClient SDK"
-        BuildPackage iothub\service\src "IoT Hub ServiceClient SDK"
-        BuildPackage provisioning\device\src "Provisioning Device Client SDK"
-        BuildPackage provisioning\service\src "Provisioning Service Client SDK"
     }
 
     if ($publish)

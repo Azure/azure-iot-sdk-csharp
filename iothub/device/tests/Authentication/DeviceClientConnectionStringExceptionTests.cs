@@ -1,145 +1,149 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Threading.Tasks;
-using FluentAssertions;
-
-namespace Microsoft.Azure.Devices.Client.Tests.ConnectionString
+namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
 {
+    using System;
+
+    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using Microsoft.Azure.Devices.Client;
+
     [TestClass]
     [TestCategory("Unit")]
     public class DeviceClientConnectionStringExceptionTests
     {
-        private const string HostName = "acme.azure-devices.net";
-        private const string DeviceId = "device1";
-        private const string ModuleId = "moduleId";
-        private const string SharedAccessKeyName = "AllAccessKey";
-        private const string SharedAccessKey = "dGVzdFN0cmluZzE=";
-
         [TestMethod]
-        public async Task DeviceClientConnectionString_ExtraModuleId_ExceptionTest()
+        [ExpectedException(typeof(ArgumentException))]
+        public void DeviceClientConnectionStringDefaultScopeDefaultCredentialTypeMissingEndpointExceptionTest()
         {
-            string connectionString = $"HostName={HostName};DeviceId={DeviceId};ModuleId={ModuleId};SharedAccessKeyName={SharedAccessKeyName};SharedAccessKey={SharedAccessKey}";
-            Func<Task> act = async () => { await using var deviceClient = new IotHubDeviceClient(connectionString); };
-            await act.Should().ThrowAsync<InvalidOperationException>();
+            string connectionString = "SharedAccessKeyName=AllAccessKey;DeviceId=device1;SharedAccessKey=dGVzdFN0cmluZzE=";
+            var deviceClient = DeviceClient.CreateFromConnectionString(connectionString);
         }
 
         [TestMethod]
-        public async Task DeviceClientConnectionString_MissingEndpoint_ExceptionTest()
+        [ExpectedException(typeof(ArgumentException))]
+        public void DeviceClientConnectionStringDefaultScopeDefaultCredentialTypeMissingDeviceIdExceptionTest()
         {
-            string connectionString = $"DeviceId={DeviceId};SharedAccessKeyName={SharedAccessKeyName};SharedAccessKey={SharedAccessKey}";
-            Func<Task> act = async () => { await using var deviceClient = new IotHubDeviceClient(connectionString); };
-            await act.Should().ThrowAsync<FormatException>();
+            string connectionString = "HostName=acme.azure-devices.net;SharedAccessKey=dGVzdFN0cmluZzE=";
+            var deviceClient = DeviceClient.CreateFromConnectionString(connectionString);
         }
 
         [TestMethod]
-        public async Task DeviceClientConnectionString_MissingDeviceId_ExceptionTest()
+        [ExpectedException(typeof(ArgumentException))]
+        public void DeviceClientConnectionStringDefaultScopeDefaultCredentialTypeMissingSharedAccessKeyExceptionTest()
         {
-            string connectionString = $"HostName={HostName};SharedAccessKeyName={SharedAccessKeyName};SharedAccessKey={SharedAccessKey}";
-            Func<Task> act = async () => { await using var deviceClient = new IotHubDeviceClient(connectionString); };
-            await act.Should().ThrowAsync<ArgumentNullException>();
+            string connectionString = "HostName=acme.azure-devices.net;DeviceId=device1;SharedAccessKeyName=AllAccessKey";
+            var deviceClient = DeviceClient.CreateFromConnectionString(connectionString);
         }
 
         [TestMethod]
-        public async Task DeviceClientConnectionString_MissingSharedAccessKey_ExceptionTest()
+        [ExpectedException(typeof(ArgumentException))]
+        public void DeviceClientConnectionStringDefaultScopeDefaultCredentialTypeMissingSharedAccessKeyNameAndKeyExceptionTest()
         {
-            string connectionString = $"HostName={HostName};DeviceId={DeviceId};SharedAccessKeyName={SharedAccessKeyName}";
-            Func<Task> act = async () => { await using var deviceClient = new IotHubDeviceClient(connectionString); };
-            await act.Should().ThrowAsync<FormatException>();
+            string connectionString = "HostName=acme.azure-devices.net;DeviceId=device1";
+            var deviceClient = DeviceClient.CreateFromConnectionString(connectionString);
         }
 
         [TestMethod]
-        public async Task DeviceClientConnectionString_MissingSharedAccessKeyNameAndKey_ExceptionTest()
+        [ExpectedException(typeof(ArgumentException))]
+        public void DeviceClientConnectionStringIotHubScopeSharedAccessSignatureCredentialTypeMissingSharedAccessKeyExceptionTest()
         {
-            string connectionString = $"HostName={HostName};DeviceId={DeviceId}";
-            Func<Task> act = async () => { await using var deviceClient = new IotHubDeviceClient(connectionString); };
-            await act.Should().ThrowAsync<FormatException>();
+            string connectionString = "HostName=acme.azure-devices.net;DeviceId=device1;SharedAccessKeyName=AllAccessKey";
+            var deviceClient = DeviceClient.CreateFromConnectionString(connectionString);
         }
 
         [TestMethod]
-        public async Task DeviceClientConnectionString_EmptySharedAccessKeyName_ExceptionTest()
+        [ExpectedException(typeof(ArgumentException))]
+        public void DeviceClientConnectionStringIotHubScopeSharedAccessKeyCredentialTypeMissingSharedAccessKeyNameAndKeyExceptionTest()
         {
-            string connectionString = $"HostName={HostName};DeviceId={DeviceId};SharedAccessKeyName=;SharedAccessKey={SharedAccessKey}";;
-            Func<Task> act = async () => { await using var deviceClient = new IotHubDeviceClient(connectionString); };
-            await act.Should().ThrowAsync<ArgumentException>();
+            string connectionString = "HostName=acme.azure-devices.net;DeviceId=device1";
+            var deviceClient = DeviceClient.CreateFromConnectionString(connectionString);
         }
 
         [TestMethod]
-        public async Task DeviceClientConnectionString_EmptySharedAccessKey_ExceptionTest()
+        [ExpectedException(typeof(ArgumentException))]
+        public void DeviceClientConnectionStringDeviceScopeSharedAccessKeyCredentialTypeMissingSharedAccessKeyExceptionTest()
         {
-            string connectionString = $"HostName={HostName};DeviceId={DeviceId};SharedAccessKey="; ;
-            Func<Task> act = async () => { await using var deviceClient = new IotHubDeviceClient(connectionString); };
-            await act.Should().ThrowAsync<ArgumentException>();
+            string connectionString = "HostName=acme.azure-devices.net;CredentialType=SharedAccessKey;DeviceId=device1";
+            var deviceClient = DeviceClient.CreateFromConnectionString(connectionString);
         }
 
         [TestMethod]
-        public async Task DeviceClientConnectionString_EmptyDeviceId_ExceptionTest()
+        [ExpectedException(typeof(ArgumentException))]
+        public void DeviceClientConnectionStringDeviceScopeSharedAccessKeyCredentialTypeNotAllowedSharedAccessKeyNameExceptionTest()
         {
-            string connectionString = $"HostName={HostName};DeviceId=;SharedAccessKey={SharedAccessKey}"; ;
-            Func<Task> act = async () => { await using var deviceClient = new IotHubDeviceClient(connectionString); };
-            await act.Should().ThrowAsync<ArgumentException>();
+            string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=device1";
+            var deviceClient = DeviceClient.CreateFromConnectionString(connectionString);
         }
 
         [TestMethod]
-        public async Task DeviceClientConnectionString_EmptyEndpoint_ExceptionTest()
+        [ExpectedException(typeof(FormatException))]
+        public void DeviceClientConnectionStringDeviceScopeSharedAccessSignatureCredentialTypeInvalidSharedAccessKeyExceptionTest()
         {
-            string connectionString = $"HostName=;DeviceId={DeviceId};SharedAccessKey={SharedAccessKey}"; ;
-            Func<Task> act = async () => { await using var deviceClient = new IotHubDeviceClient(connectionString); };
-            await act.Should().ThrowAsync<FormatException>();
+            string connectionString = "HostName=acme.azure-devices.net;SharedAccessKey=INVALID;DeviceId=device1";
+            var deviceClient = DeviceClient.CreateFromConnectionString(connectionString);
         }
 
         [TestMethod]
-        public async Task DeviceClientConnectionString_InvalidSharedAccessKey_ExceptionTest()
+        public void DeviceClientMalformedConnectionStringTest()
         {
-            string connectionString = $"HostName={HostName};DeviceId={DeviceId};SharedAccessKey=INVALID";
-            Func<Task> act = async () => { await using var deviceClient = new IotHubDeviceClient(connectionString); };
-            await act.Should().ThrowAsync<FormatException>();
-        }
-
-        [TestMethod]
-        public async Task DeviceClientMalformedConnectionStringTest()
-        {
-            const string connectionString = "TODO: IoT hub connection string to connect to";
+            string connectionString = "TODO: IoT hub connection string to connect to";
             try
             {
-                await using var deviceClient = new IotHubDeviceClient(connectionString);
+                var deviceClient = DeviceClient.CreateFromConnectionString(connectionString);
             }
             catch (FormatException fe)
             {
-                fe.Message.Contains("Malformed Token").Should().BeTrue("Exception should mention 'Malformed Token' Actual :" + fe.Message);
+                Assert.IsTrue(fe.Message.Contains("Malformed Token"), "Exception should mention 'Malformed Token' Actual :" + fe.Message);
             }
         }
 
         [TestMethod]
-        public async Task DeviceClientConnectionString_InvalidSharedAccessSignature_ExceptionTest()
+        [ExpectedException(typeof(ArgumentException))]
+        public void DeviceClientConnectionStringDeviceScopeImplicitSharedAccessSignatureCredentialTypeInvalidSharedAccessSignatureExceptionTest()
         {
-            string connectionString = $"HostName={HostName};SharedAccessSignature=INVALID;DeviceId={DeviceId}";
-            Func<Task> act = async () => { await using var deviceClient = new IotHubDeviceClient(connectionString); };
-            await act.Should().ThrowAsync<InvalidOperationException>();
+            string connectionString = "HostName=acme.azure-devices.net;SharedAccessSignature=INVALID;DeviceId=device1";
+            var deviceClient = DeviceClient.CreateFromConnectionString(connectionString);
         }
 
         [TestMethod]
-         public async Task DeviceClientConnectionString_NullConnectionString_ExceptionTest()
+        [ExpectedException(typeof(ArgumentNullException))]
+        public void DeviceClientConnectionStringEmptyConnectionStringExceptionTest()
         {
-            Func<Task> act = async () => { await using var deviceClient = new IotHubDeviceClient(null); };
-            await act.Should().ThrowAsync<ArgumentNullException>();
+            string connectionString = "";
+            var deviceClient = DeviceClient.CreateFromConnectionString(connectionString);
         }
 
         [TestMethod]
-        public async Task DeviceClientConnectionString_EmptyConnectionString_ExceptionTest()
+        [ExpectedException(typeof(ArgumentNullException))]
+        public void DeviceClientConnectionStringNullConnectionStringExceptionTest()
         {
-            Func<Task> act = async () => { await using var deviceClient = new IotHubDeviceClient(""); };
-            await act.Should().ThrowAsync<ArgumentException>();
+            string connectionString = null;
+            var deviceClient = DeviceClient.CreateFromConnectionString(connectionString);
         }
 
         [TestMethod]
-        public async Task DeviceClientConnectionString_X509CertFalse_Test()
+        [ExpectedException(typeof(ArgumentException))]
+        public void DeviceClientConnectionStringSASKeyX509CertExceptionTest()
         {
-            string connectionString = $"HostName={HostName};X509Cert=false;DeviceId={DeviceId}";
-            Func<Task> act = async () => { await using var deviceClient = new IotHubDeviceClient(connectionString); };
-            await act.Should().ThrowAsync<FormatException>();
+            string connectionString = "HostName=acme.azure-devices.net;X509=true;DeviceId=device;SharedAccessKey=dGVzdFN0cmluZzE=";
+            var deviceClient = DeviceClient.CreateFromConnectionString(connectionString);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentException))]
+        public void DeviceClientConnectionStringSasSignatureX509ExceptionTest()
+        {
+            string connectionString = "HostName=acme.azure-devices.net;DeviceId=device1;X509=true;SharedAccessSignature=SharedAccessSignature sr=dh%3a%2f%2facme.azure-devices.net&sig=dGVzdFN0cmluZzU=&se=87824124985&skn=AllAccessKey";
+            var deviceClient = DeviceClient.CreateFromConnectionString(connectionString);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentException))]
+        public void DeviceClientConnectionStringX509CertFalseTest()
+        {
+            string connectionString = "HostName=acme.azure-devices.net;X509Cert=false;DeviceId=device";
+            var deviceClient = DeviceClient.CreateFromConnectionString(connectionString);
         }
     }
 }

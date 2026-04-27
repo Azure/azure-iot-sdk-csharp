@@ -7,9 +7,9 @@ using System.Diagnostics;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
 
-namespace Microsoft.Azure.Devices.Client
+namespace Microsoft.Azure.Devices.Client.Edge
 {
-    internal sealed class InstalledCertificateValidator : ICertificateValidator
+    internal class InstalledCertificateValidator : ICertificateValidator
     {
         private readonly IList<X509Certificate2> _certs;
 
@@ -18,33 +18,26 @@ namespace Microsoft.Azure.Devices.Client
             _certs = certs;
         }
 
-        internal static InstalledCertificateValidator Create(IList<X509Certificate2> certs)
+        public static InstalledCertificateValidator Create(IList<X509Certificate2> certs)
         {
             var instance = new InstalledCertificateValidator(certs);
             instance.SetupCertificateValidation();
             return instance;
         }
 
-        /// <inheritdoc/>
-        public void Dispose()
-        {
-            foreach (X509Certificate2 item in _certs)
-            {
-                item.Dispose();
-            }
-        }
-
-        Func<object, X509Certificate, X509Chain, SslPolicyErrors, bool> ICertificateValidator.GetCustomCertificateValidation()
+        public Func<object, X509Certificate, X509Chain, SslPolicyErrors, bool> GetCustomCertificateValidation()
         {
             return null;
         }
 
         private void SetupCertificateValidation()
         {
-            if (Logging.IsEnabled)
-                Logging.Info("InstalledCertificateValidator.SetupCertificateValidation()");
-
+            Debug.WriteLine("InstalledCertificateValidator.SetupCertificateValidation()");
+#if NET451
+            var store = new X509Store(StoreName.Root, StoreLocation.CurrentUser);
+#else
             using var store = new X509Store(StoreName.Root, StoreLocation.CurrentUser);
+#endif
             try
             {
                 foreach (X509Certificate2 cert in _certs)

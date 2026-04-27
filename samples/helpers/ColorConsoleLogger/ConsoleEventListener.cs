@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using Microsoft.Extensions.Logging;
 using System;
 using System.Diagnostics.Tracing;
 using System.Linq;
-using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Azure.Devices.Logging
 {
@@ -15,7 +15,7 @@ namespace Microsoft.Azure.Devices.Logging
     {
         private readonly string[] _eventFilters;
         private readonly ILogger _logger;
-        private readonly object _lock = new();
+        private readonly object _lock = new object();
 
         public ConsoleEventListener(string filter, ILogger logger)
         {
@@ -29,10 +29,7 @@ namespace Microsoft.Azure.Devices.Logging
         public ConsoleEventListener(string[] filters, ILogger logger)
         {
             _eventFilters = filters ?? throw new ArgumentNullException(nameof(filters));
-            if (!_eventFilters.Any())
-            {
-                throw new ArgumentException("Filters cannot be empty", nameof(filters));
-            }
+            if (_eventFilters.Length == 0) throw new ArgumentException("Filters cannot be empty", nameof(filters));
 
             foreach (string filter in _eventFilters)
             {
@@ -57,22 +54,30 @@ namespace Microsoft.Azure.Devices.Logging
         protected override void OnEventSourceCreated(EventSource eventSource)
         {
             base.OnEventSourceCreated(eventSource);
-            EnableEvents(eventSource, EventLevel.LogAlways, EventKeywords.All);
+            EnableEvents(
+                eventSource,
+                EventLevel.LogAlways
+#if !NET451
+                , EventKeywords.All
+#endif
+                );
         }
 
         protected override void OnEventWritten(EventWrittenEventArgs eventData)
         {
-            if (_eventFilters == null)
-            {
-                return;
-            }
+            if (_eventFilters == null) return;
 
             lock (_lock)
             {
                 if (_eventFilters.Any(ef => eventData.EventSource.Name.StartsWith(ef, StringComparison.Ordinal)))
                 {
                     string eventIdent;
+#if NET451
+                    // net451 doesn't have EventName, so we'll settle for EventId
+                    eventIdent = eventData.EventId.ToString(CultureInfo.InvariantCulture);
+#else
                     eventIdent = eventData.EventName;
+#endif
                     string text = $"[{eventData.EventSource.Name}-{eventIdent}]{(eventData.Payload != null ? $" ({string.Join(", ", eventData.Payload)})." : "")}";
                     _logger.LogTrace(text);
                 }

@@ -1,34 +1,27 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
-    <LangVersion>9.0</LangVersion>
-    <EnableNETAnalyzers>True</EnableNETAnalyzers>
-    <AnalysisLevel>latest-minimum</AnalysisLevel>
+    <TargetFrameworks>net8.0</TargetFrameworks>
+    <!-- By setting this as not a test project for other frameworks, we can run "dotnet test" for a specific framework from the root directory without dotnet throwing if any test project in the solution doesn't support that framework -->
+    <IsTestProject Condition="'$(TargetFramework)' != 'net6.0' And '$(TargetFramework)' != 'net8.0'">False</IsTestProject>    <LangVersion>8.0</LangVersion>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <IsPackable>false</IsPackable>
-    <!-- We will turn on this suppression once we are ready to GA-->
     <!-- Suppress framework end of life warnings as we have to keep supporting these frameworks for our customers -->
-    <!-- <CheckEolTargetFramework>false</CheckEolTargetFramework> -->
-
-    <NoWarn>SYSLIB0057</NoWarn>
+    <CheckEolTargetFramework>false</CheckEolTargetFramework>
   </PropertyGroup>
 
-  <!--Project reference dependencies-->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
+    <PackageReference Include="MSTest.TestAdapter" Version="3.6.3" />
+    <PackageReference Include="MSTest.TestFramework" Version="3.6.3" />
+    <PackageReference Include="NSubstitute" Version="5.3.0" />
+  </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\src\Microsoft.Azure.Devices.Provisioning.Service.csproj" />
   </ItemGroup>
 
-  <!--Nuget package dependencies-->
   <ItemGroup>
-    <PackageReference Include="coverlet.collector" Version="3.2.0">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.5.0" />
-    <PackageReference Include="MSTest.TestAdapter" Version="3.0.2" />
-    <PackageReference Include="MSTest.TestFramework" Version="3.0.2" />
-    <PackageReference Include="FluentAssertions" Version="6.10.0" />
+    <Folder Include="Manager\" />
   </ItemGroup>
-
 </Project>

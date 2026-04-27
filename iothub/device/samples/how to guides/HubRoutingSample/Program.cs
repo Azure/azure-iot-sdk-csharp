@@ -4,10 +4,11 @@
 using System;
 using System.IO;
 using System.Text;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using CommandLine;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Devices.Client.Samples
 {
@@ -26,9 +27,9 @@ namespace Microsoft.Azure.Devices.Client.Samples
     ///   * It will read the file, decode the first row in the file, and write it out to a new file
     ///       in ASCII so you can view it.
     /// </summary>
-    public class Program
+    internal class Program
     {
-        public static async Task Main(string[] args)
+        private static async Task Main(string[] args)
         {
             // Parse application parameters
             Parameters parameters = null;
@@ -68,12 +69,8 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 //  This is set in the tutorial that goes with this sample:
                 //  http://docs.microsoft.com/azure/iot-hub/tutorial-routing
 
-                Console.WriteLine("Routing Tutorial: Simulated device");
-                var options = new IotHubClientOptions(parameters.GetHubTransportSettings());
-
-                await using var deviceClient = new IotHubDeviceClient(
-                    parameters.PrimaryConnectionString,
-                    options);
+                Console.WriteLine("Routing Tutorial: Simulated device\n");
+                using var deviceClient = DeviceClient.CreateFromConnectionString(parameters.PrimaryConnectionString);
 
                 using var cts = new CancellationTokenSource();
                 Console.CancelKeyPress += (sender, eventArgs) =>
@@ -87,18 +84,17 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
                 try
                 {
-                    await deviceClient.OpenAsync(cts.Token);
                     await SendDeviceToCloudMessagesAsync(deviceClient, cts.Token);
                 }
                 catch (OperationCanceledException) { }
-                await deviceClient.CloseAsync();
+                await deviceClient.CloseAsync(cts.Token);
             }
         }
 
         /// <summary>
         /// Send message to the Iot hub. This generates the object to be sent to the hub in the message.
         /// </summary>
-        private static async Task SendDeviceToCloudMessagesAsync(IotHubDeviceClient deviceClient, CancellationToken token)
+        private static async Task SendDeviceToCloudMessagesAsync(DeviceClient deviceClient, CancellationToken token)
         {
             double minTemperature = 20;
             double minHumidity = 60;
@@ -137,8 +133,16 @@ namespace Microsoft.Azure.Devices.Client.Samples
                     humidity = currentHumidity,
                     pointInfo = infoString
                 };
-                var message = new TelemetryMessage();
-                message.SetPayload(telemetryDataPoint);
+                // serialize the telemetry data and convert it to JSON.
+                string telemetryDataString = JsonConvert.SerializeObject(telemetryDataPoint);
+
+                // Encode the serialized object using UTF-8 so it can be parsed by IoT Hub when
+                // processing messaging rules.
+                using var message = new Message(Encoding.UTF8.GetBytes(telemetryDataString))
+                {
+                    ContentEncoding = "utf-8",
+                    ContentType = "application/json",
+                };
 
                 // Add one property to the message.
                 message.Properties.Add("level", levelValue);
@@ -146,10 +150,10 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 try
                 {
                     // Submit the message to the hub.
-                    await deviceClient.SendTelemetryAsync(message, token);
+                    await deviceClient.SendEventAsync(message, token);
 
                     // Print out the message.
-                    Console.WriteLine("{0} > Sent message: {1}", DateTime.UtcNow, JsonSerializer.Serialize(telemetryDataPoint));
+                    Console.WriteLine("{0} > Sent message: {1}", DateTime.UtcNow, telemetryDataString);
                 }
                 catch (OperationCanceledException) { }
 
@@ -183,8 +187,8 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
             // Parse the first line into a message object. Retrieve the body as a string.
             //   This string was encoded as Base64 when it was written.
-            JsonDocument messageObject = JsonDocument.Parse(fileLines[0]);
-            string body = messageObject.RootElement.GetProperty("Body").GetString();
+            JObject messageObject = JObject.Parse(fileLines[0]);
+            string body = messageObject.Value<string>("Body");
 
             // Convert the body from Base64, then from UTF-32 to text, and write it out to the new file
             //   so you can view the result.

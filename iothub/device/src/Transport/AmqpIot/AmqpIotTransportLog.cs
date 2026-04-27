@@ -2,11 +2,12 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using Microsoft.Azure.Devices.Shared;
 using Microsoft.Azure.Amqp;
 
 namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 {
-    internal sealed class AmqpIotTransportLog : AmqpTrace
+    internal class AmqpIotTransportLog : AmqpTrace
     {
         public override void AmqpAbortThrowingException(string exception)
         {

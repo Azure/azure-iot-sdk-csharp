@@ -5,8 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using System.Text.Json;
-using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Samples
 {
@@ -28,7 +27,7 @@ namespace Microsoft.Azure.Devices.Samples
 
             foreach (ExportImportDevice device in devices)
             {
-                devicesFileSb.AppendLine(JsonSerializer.Serialize(device));
+                devicesFileSb.AppendLine(JsonConvert.SerializeObject(device));
             }
 
             byte[] devicesFileInBytes = Encoding.Default.GetBytes(devicesFileSb.ToString());
@@ -55,7 +54,7 @@ namespace Microsoft.Azure.Devices.Samples
                     continue;
                 }
 
-                var device = JsonSerializer.Deserialize<ExportImportDevice>(serializedDeivce);
+                var device = JsonConvert.DeserializeObject<ExportImportDevice>(serializedDeivce);
                 exportedDevices.Add(device);
             }
 

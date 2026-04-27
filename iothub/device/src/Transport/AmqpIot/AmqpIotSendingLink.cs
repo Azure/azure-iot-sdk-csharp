@@ -5,14 +5,19 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Amqp.Framing;
+using Microsoft.Azure.Devices.Client.Exceptions;
+using Microsoft.Azure.Devices.Client.Extensions;
+using Microsoft.Azure.Devices.Shared;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 {
-    internal sealed class AmqpIotSendingLink
+    internal class AmqpIotSendingLink
     {
         public event EventHandler Closed;
 
@@ -24,18 +29,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             _sendingAmqpLink.Closed += SendingAmqpLinkClosed;
         }
 
-        // This event handler is not invoked by the AMQP library in an async fashion.
-        // This also co-relates with the fact that SendingAmqpLink.SafeClose() is a sync method.
         private void SendingAmqpLinkClosed(object sender, EventArgs e)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, nameof(SendingAmqpLinkClosed));
 
             Closed?.Invoke(this, e);
-
-            // After the Closed event handler has been invoked, the SendingAmqpLink has now been effectively cleaned up.
-            // This is a good point for us to detach the Closed event handler from the SendingAmqpLink instance.
-            _sendingAmqpLink.Closed -= SendingAmqpLinkClosed;
 
             if (Logging.IsEnabled)
                 Logging.Exit(this, nameof(SendingAmqpLinkClosed));
@@ -67,14 +66,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
         #region Telemetry handling
 
-        internal async Task<AmqpIotOutcome> SendMessageAsync(TelemetryMessage message, CancellationToken cancellationToken)
+        internal async Task<AmqpIotOutcome> SendMessageAsync(Message message, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, message, nameof(SendMessageAsync));
 
             // After this message is sent, we will return the outcome that has no references to the message
             // So it can safely be disposed.
-            using AmqpMessage amqpMessage = AmqpIotMessageConverter.OutgoingMessageToAmqpMessage(message);
+            using AmqpMessage amqpMessage = AmqpIotMessageConverter.MessageToAmqpMessage(message);
             Outcome outcome = await SendAmqpMessageAsync(amqpMessage, cancellationToken).ConfigureAwait(false);
 
             if (Logging.IsEnabled)
@@ -83,7 +82,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             return new AmqpIotOutcome(outcome);
         }
 
-        internal async Task<AmqpIotOutcome> SendMessagesAsync(IEnumerable<TelemetryMessage> messages, CancellationToken cancellationToken)
+        internal async Task<AmqpIotOutcome> SendMessagesAsync(IEnumerable<Message> messages, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, nameof(SendMessagesAsync));
@@ -93,10 +92,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
             // List to hold messages in AMQP friendly format
             var messageList = new List<Data>(messages.Count());
 
-            foreach (TelemetryMessage message in messages)
+            foreach (Message message in messages)
             {
 #pragma warning disable CA2000 // Dispose objects before losing scope
-                using AmqpMessage amqpMessage = AmqpIotMessageConverter.OutgoingMessageToAmqpMessage(message);
+                using AmqpMessage amqpMessage = AmqpIotMessageConverter.MessageToAmqpMessage(message);
 #pragma warning restore CA2000 // Dispose objects before losing scope
                 var data = new Data
                 {
@@ -132,30 +131,22 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                         cancellationToken)
                     .ConfigureAwait(false);
             }
-            catch (Exception ex) when (!Fx.IsFatal(ex))
+            catch (Exception e) when (!e.IsFatal())
             {
-                Exception iotEx = AmqpIotExceptionAdapter.ConvertToIotHubException(ex, _sendingAmqpLink);
-
-                if (iotEx is OperationCanceledException && !cancellationToken.IsCancellationRequested)
-                {
-                    // OperationCanceledException may be thrown here when there is networking disconnect
-                    // even if cancellation has not been requested yet. This case is treated as a transient
-                    // network error rather than an OperationCanceledException.
-                    throw new IotHubClientException(iotEx.Message, IotHubClientErrorCode.NetworkErrors, iotEx);
-                }
-
-                if (ReferenceEquals(ex, iotEx))
+                Exception ex = AmqpIotExceptionAdapter.ConvertToIotHubException(e, _sendingAmqpLink);
+                if (ReferenceEquals(e, ex))
                 {
                     throw;
                 }
-
-                if (iotEx is IotHubClientException hubEx && hubEx.InnerException is AmqpException)
+                else
                 {
-                    _sendingAmqpLink.SafeClose();
-                    throw iotEx;
+                    if (ex is AmqpIotResourceException)
+                    {
+                        _sendingAmqpLink.SafeClose();
+                        throw new IotHubCommunicationException(ex.Message, ex);
+                    }
+                    throw ex;
                 }
-
-                throw iotEx;
             }
             finally
             {
@@ -168,14 +159,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
         #region Method handling
 
-        internal async Task<AmqpIotOutcome> SendMethodResponseAsync(DirectMethodResponse methodResponse, CancellationToken cancellationToken)
+        internal async Task<AmqpIotOutcome> SendMethodResponseAsync(MethodResponseInternal methodResponse, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, methodResponse, nameof(SendMethodResponseAsync));
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            using AmqpMessage amqpMessage = AmqpIotMessageConverter.ConvertDirectMethodResponseToAmqpMessage(methodResponse);
+            using AmqpMessage amqpMessage = AmqpIotMessageConverter.ConvertMethodResponseInternalToAmqpMessage(methodResponse);
             AmqpIotMessageConverter.PopulateAmqpMessageFromMethodResponse(amqpMessage, methodResponse);
 
             Outcome outcome = await SendAmqpMessageAsync(amqpMessage, cancellationToken).ConfigureAwait(false);
@@ -209,13 +200,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
 
         internal async Task<AmqpIotOutcome> SendTwinPatchMessageAsync(
             string correlationId,
-            PropertyCollection reportedProperties,
+            TwinCollection reportedProperties,
             CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, nameof(SendTwinPatchMessageAsync));
 
-            var bodyStream = new MemoryStream(reportedProperties.GetObjectBytes());
+            string body = JsonConvert.SerializeObject(reportedProperties, JsonSerializerSettingsInitializer.GetJsonSerializerSettings());
+            var bodyStream = new MemoryStream(Encoding.UTF8.GetBytes(body));
 
             using var amqpMessage = AmqpMessage.Create(bodyStream, true);
             amqpMessage.Properties.CorrelationId = correlationId;

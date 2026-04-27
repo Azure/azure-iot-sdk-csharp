@@ -2,27 +2,26 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Security.Cryptography.X509Certificates;
-using System.Text.Json;
-using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Newtonsoft.Json;
+using System.Security.Cryptography.X509Certificates;
 
-namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
+namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 {
     [TestClass]
     [TestCategory("Unit")]
     public class X509CertificatesTests
     {
-        private const string SubjectName = "CN=ROOT_00000000-0000-0000-0000-000000000000, OU=Azure IoT, O=MSFT, C=US";
-        private const string Sha1Thumbprint = "0000000000000000000000000000000000";
-        private const string Sha256Thumbprint = "validEnrollmentGroupId";
-        private const string IssuerName = "CN=ROOT_00000000-0000-0000-0000-000000000000, OU=Azure IoT, O=MSFT, C=US";
-        private const string NotBeforeUtcString = "2017-11-14T12:34:18.123Z";
-        private const string NotAfterUtcString = "2017-11-14T12:34:18.321Z";
-        private const string SerialNumber = "000000000000000000";
-        private const int Version = 3;
+        private const string SUBJECT_NAME = "CN=ROOT_00000000-0000-0000-0000-000000000000, OU=Azure IoT, O=MSFT, C=US";
+        private const string SHA1THUMBPRINT = "0000000000000000000000000000000000";
+        private const string SHA256THUMBPRINT = "validEnrollmentGroupId";
+        private const string ISSUER_NAME = "CN=ROOT_00000000-0000-0000-0000-000000000000, OU=Azure IoT, O=MSFT, C=US";
+        private const string NOT_BEFORE_UTC_STRING = "2017-11-14T12:34:18.123Z";
+        private const string NOT_AFTER_UTC_STRING = "2017-11-14T12:34:18.321Z";
+        private const string SERIAL_NUMBER = "000000000000000000";
+        private const int VERSION = 3;
 
-        private const string PublicKeyCertificate =
+        private const string PUBLIC_KEY_CERTIFICATE_STRING =
             "-----BEGIN CERTIFICATE-----\n" +
             "MIIBiDCCAS2gAwIBAgIFWks8LR4wCgYIKoZIzj0EAwIwNjEUMBIGA1UEAwwLcmlv\n" +
             "dGNvcmVuZXcxETAPBgNVBAoMCE1TUl9URVNUMQswCQYDVQQGEwJVUzAgFw0xNzAx\n" +
@@ -35,7 +34,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
             "BDhWZbt4eyCvXZtZ\n" +
             "-----END CERTIFICATE-----\n";
 
-        private static string MakeCertInfoJson(
+        private string MakeCertInfoJson(
             string subjectName, string sha1Thumbprint, string sha256Thumbprint,
             string issuerName, string notBeforeUtcString, string notAfterUtcString, string serialNumber, int version)
         {
@@ -57,11 +56,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
             return json;
         }
 
+        /* SRS_X509_CERTIFICATES_21_001: [The constructor shall store the provided primary and secondary certificates as X509CertificateWithInfo.] */
+
         [TestMethod]
         public void X509CertificatesSucceedOnValidPrimaryX509Certificate()
         {
             // arrange
-            using var primary = new X509Certificate2(System.Text.Encoding.ASCII.GetBytes(PublicKeyCertificate));
+            using var primary = new X509Certificate2(System.Text.Encoding.ASCII.GetBytes(PUBLIC_KEY_CERTIFICATE_STRING));
 
             // act
             var x509Certificates = new X509Certificates(primary);
@@ -75,8 +76,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
         public void X509CertificatesSucceedOnValidPrimaryAndSecondaryX509Certificate()
         {
             // arrange
-            using var primary = new X509Certificate2(System.Text.Encoding.ASCII.GetBytes(PublicKeyCertificate));
-            using var secondary = new X509Certificate2(System.Text.Encoding.ASCII.GetBytes(PublicKeyCertificate));
+            using var primary = new X509Certificate2(System.Text.Encoding.ASCII.GetBytes(PUBLIC_KEY_CERTIFICATE_STRING));
+            using var secondary = new X509Certificate2(System.Text.Encoding.ASCII.GetBytes(PUBLIC_KEY_CERTIFICATE_STRING));
 
             // act
             var x509Certificates = new X509Certificates(primary, secondary);
@@ -90,7 +91,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
         public void X509CertificatesSucceedOnValidPrimaryString()
         {
             // arrange
-            string primary = PublicKeyCertificate;
+            string primary = PUBLIC_KEY_CERTIFICATE_STRING;
 
             // act
             var x509Certificates = new X509Certificates(primary);
@@ -104,8 +105,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
         public void X509CertificatesSucceedOnValidPrimaryAndSecondaryX509CertificateWithInfo()
         {
             // arrange
-            string primary = PublicKeyCertificate;
-            string secondary = PublicKeyCertificate;
+            string primary = PUBLIC_KEY_CERTIFICATE_STRING;
+            string secondary = PUBLIC_KEY_CERTIFICATE_STRING;
 
             // act
             var x509Certificates = new X509Certificates(primary, secondary);
@@ -122,11 +123,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
             string json =
                 "{" +
                 "  \"primary\": " +
-                MakeCertInfoJson(SubjectName, Sha1Thumbprint, Sha256Thumbprint, IssuerName, NotBeforeUtcString, NotAfterUtcString, SerialNumber, Version) +
+                MakeCertInfoJson(SUBJECT_NAME, SHA1THUMBPRINT, SHA256THUMBPRINT, ISSUER_NAME, NOT_BEFORE_UTC_STRING, NOT_AFTER_UTC_STRING, SERIAL_NUMBER, VERSION) +
                 "}";
 
             // act
-            X509Certificates x509Certificates = JsonSerializer.Deserialize<X509Certificates>(json, JsonSerializerSettings.Options);
+            X509Certificates x509Certificates = JsonConvert.DeserializeObject<X509Certificates>(json);
 
             // assert
             Assert.IsNotNull(x509Certificates.Primary);
@@ -140,14 +141,14 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
             string json =
                 "{" +
                 "  \"primary\": " +
-                MakeCertInfoJson(SubjectName, Sha1Thumbprint, Sha256Thumbprint, IssuerName, NotBeforeUtcString, NotAfterUtcString, SerialNumber, Version) +
+                MakeCertInfoJson(SUBJECT_NAME, SHA1THUMBPRINT, SHA256THUMBPRINT, ISSUER_NAME, NOT_BEFORE_UTC_STRING, NOT_AFTER_UTC_STRING, SERIAL_NUMBER, VERSION) +
                 "," +
                 "  \"secondary\": " +
-                MakeCertInfoJson(SubjectName, Sha1Thumbprint, Sha256Thumbprint, IssuerName, NotBeforeUtcString, NotAfterUtcString, SerialNumber, Version) +
+                MakeCertInfoJson(SUBJECT_NAME, SHA1THUMBPRINT, SHA256THUMBPRINT, ISSUER_NAME, NOT_BEFORE_UTC_STRING, NOT_AFTER_UTC_STRING, SERIAL_NUMBER, VERSION) +
                 "}";
 
             // act
-            X509Certificates x509Certificates = JsonSerializer.Deserialize<X509Certificates>(json, JsonSerializerSettings.Options);
+            X509Certificates x509Certificates = JsonConvert.DeserializeObject<X509Certificates>(json);
 
             // assert
             Assert.IsNotNull(x509Certificates.Primary);
@@ -163,8 +164,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
             X509Certificate2 primary = null;
 
             // act - assert
-            Action act = () => _ = new X509Certificates(primary);
-            act.Should().Throw<ArgumentNullException>();
+#pragma warning disable CA1806 // Do not ignore method results
+            TestAssert.Throws<ArgumentException>(() => new X509Certificates(primary));
+#pragma warning restore CA1806 // Do not ignore method results
         }
 
         [TestMethod]
@@ -174,8 +176,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
             string primary = null;
 
             // act - assert
-            Action act = () => _ = new X509Certificates(primary);
-            act.Should().Throw<ArgumentNullException>();
+#pragma warning disable CA1806 // Do not ignore method results
+            TestAssert.Throws<ArgumentException>(() => new X509Certificates(primary));
+#pragma warning restore CA1806 // Do not ignore method results
         }
 
         [TestMethod]
@@ -185,12 +188,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
             string json =
                 "{" +
                 "  \"secondary\": " +
-                MakeCertInfoJson(SubjectName, Sha1Thumbprint, Sha256Thumbprint, IssuerName, NotBeforeUtcString, NotAfterUtcString, SerialNumber, Version) +
+                MakeCertInfoJson(SUBJECT_NAME, SHA1THUMBPRINT, SHA256THUMBPRINT, ISSUER_NAME, NOT_BEFORE_UTC_STRING, NOT_AFTER_UTC_STRING, SERIAL_NUMBER, VERSION) +
                 "}";
 
             // act - assert
-            Action act = () => JsonSerializer.Deserialize<X509Certificates>(json, JsonSerializerSettings.Options);
-            act.Should().Throw<ArgumentNullException>();
+            TestAssert.Throws<ProvisioningServiceClientException>(() => JsonConvert.DeserializeObject<X509Certificates>(json));
         }
     }
 }

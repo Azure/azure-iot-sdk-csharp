@@ -1,32 +1,31 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-
-using System.Text.Json.Serialization;
-
 namespace Microsoft.Azure.Devices
 {
+    using Newtonsoft.Json;
+
     /// <summary>
-    /// The device registry statistics that can be retrieved from IoT hub.
+    /// Contains device registry statistics that can be retrieved from IotHub.
     /// </summary>
     public class RegistryStatistics
     {
         /// <summary>
-        /// Gets or sets the count of all devices.
+        /// Gets or sets the count of all Devices
         /// </summary>
-        [JsonPropertyName("totalDeviceCount")]
+        [JsonProperty(PropertyName = "totalDeviceCount")]
         public long TotalDeviceCount { get; set; }
 
         /// <summary>
-        /// Gets or sets the count of all enabled devices.
+        /// Gets or sets the count of all enabled Devices
         /// </summary>
-        [JsonPropertyName("enabledDeviceCount")]
+        [JsonProperty(PropertyName = "enabledDeviceCount")]
         public long EnabledDeviceCount { get; set; }
 
         /// <summary>
-        /// Gets or sets the count of all disabled devices.
+        /// Gets or sets the count of all disabled Devices
         /// </summary>
-        [JsonPropertyName("disabledDeviceCount")]
+        [JsonProperty(PropertyName = "disabledDeviceCount")]
         public long DisabledDeviceCount { get; set; }
     }
 }

@@ -1,67 +1,67 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
 using System.Collections.Generic;
-using System.Text.Json;
-using System.Text.RegularExpressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
+namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 {
     [TestClass]
     [TestCategory("Unit")]
     public class BulkEnrollmentOperationTests
     {
-        private static readonly string s_primaryKey = CryptoKeyGenerator.GenerateKey(32);
-        private static readonly string s_secondaryKey = CryptoKeyGenerator.GenerateKey(32);
-        private static readonly IndividualEnrollment s_individualEnrollment1 = new("regid1", new SymmetricKeyAttestation(s_primaryKey, s_secondaryKey));
-        private static readonly IndividualEnrollment s_individualEnrollment2 = new("regid2", new SymmetricKeyAttestation(s_primaryKey, s_secondaryKey));
-        private static readonly List<IndividualEnrollment> s_individualEnrollments = new() { s_individualEnrollment1, s_individualEnrollment2 };
+        private static IndividualEnrollment individualEnrollment1 = new IndividualEnrollment("regid1", new TpmAttestation("abc="));
+        private static IndividualEnrollment individualEnrollment2 = new IndividualEnrollment("regid2", new TpmAttestation("abc="));
+        private static IEnumerable<IndividualEnrollment> individualEnrollments = new List<IndividualEnrollment>() { individualEnrollment1, individualEnrollment2 };
 
+
+        /* SRS_BULK_OPERATION_21_001: [The toJsonElement shall throw ArgumentException if the provided collection of 
+                                        individualEnrollments is null or empty.] */
+        [TestMethod]
+        public void BulkEnrollmentOperationToJsonThrowsOnInvalidParameters()
+        {
+            // arrange - act - assert
+            TestAssert.Throws<ArgumentException>(() => BulkEnrollmentOperation.ToJson(BulkOperationMode.Create, null));
+            TestAssert.Throws<ArgumentException>(() => BulkEnrollmentOperation.ToJson(BulkOperationMode.Create, new List<IndividualEnrollment>()));
+        }
+
+        /* SRS_BULK_OPERATION_21_002: [The toJson shall return a String with the mode and the collection of individualEnrollments 
+                                        using a JSON format.] */
         [TestMethod]
         public void BulkEnrollmentOperationConstructorSucceed()
         {
             // arrange
-            string initialJson =
+            string expectedJson =
                 "{" +
-                "  \"mode\":\"create\"," +
+                "    \"mode\":\"create\"," +
                 "    \"enrollments\": [ " +
-                "    {\n" +
-                "      \"attestation\": {" +
-                "        \"type\": \"symmetricKey\"," +
-                "        \"symmetricKey\": {\n" +
-                $"          \"primaryKey\": \"{s_primaryKey}\",\n" +
-                $"          \"secondaryKey\": \"{s_secondaryKey}\"\n" +
+                "      {\n" +
+                "        \"registrationId\": \"regid1\",\n" +
+                "        \"attestation\": {\n" +
+                "          \"type\": \"tpm\",\n" +
+                "          \"tpm\": {\n" +
+                "            \"endorsementKey\": \"abc=\"\n" +
+                "          }\n" +
                 "        }\n" +
-                "      },\n" +
-                "      \"registrationId\": \"regid1\"\n" +
-                "    }," +
-                "    {\n" +
-                "      \"attestation\": {" +
-                "        \"type\": \"symmetricKey\"," +
-                "        \"symmetricKey\": {\n" +
-                $"         \"primaryKey\": \"{s_primaryKey}\",\n" +
-                $"         \"secondaryKey\": \"{s_secondaryKey}\"\n" +
+                "      }," +
+                "      {\n" +
+                "        \"registrationId\": \"regid2\",\n" +
+                "        \"attestation\": {\n" +
+                "          \"type\": \"tpm\",\n" +
+                "          \"tpm\": {\n" +
+                "            \"endorsementKey\": \"abc=\"\n" +
+                "          }\n" +
                 "        }\n" +
-                "      },\n" +
-                "      \"registrationId\": \"regid2\"\n" +
-                "    }" +
-                "  ]" +
+                "      }" +
+                "    ]" +
                 "}";
-            var stripWhiteSpace = new Regex(@"\s", RegexOptions.Multiline);
-            string expected = stripWhiteSpace.Replace(initialJson, "");
 
             // act
-            var operation = new IndividualEnrollmentBulkOperation
-            {
-                Mode = BulkOperationMode.Create,
-                Enrollments = s_individualEnrollments,
-            };
-
-            string actual = JsonSerializer.Serialize(operation, JsonSerializerSettings.Options);
+            string bulkJson = BulkEnrollmentOperation.ToJson(BulkOperationMode.Create, individualEnrollments);
 
             // assert
-            TestAssert.AreEqualJson(expected, actual);
+            TestAssert.AreEqualJson(expectedJson, bulkJson);
         }
     }
 }

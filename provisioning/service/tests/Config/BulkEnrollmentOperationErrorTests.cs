@@ -1,10 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System.Text.Json;
+using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Newtonsoft.Json;
 
-namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
+namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 {
     [TestClass]
     [TestCategory("Unit")]
@@ -14,6 +15,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
         private const int SampleErrorCode = 400;
         private const string SampleErrorStatus = "Bad message format exception.";
 
+        /* SRS_BULK_ENROLLMENT_OPERATION_ERRO_21_002: [The BulkEnrollmentOperationError shall store the provided information.] */
         [TestMethod]
         public void BulkEnrollmentOperationErrorConstructorSucceed()
         {
@@ -26,7 +28,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
                 "}";
 
             // act
-            BulkEnrollmentOperationError bulkError = JsonSerializer.Deserialize<BulkEnrollmentOperationError>(erroJson, JsonSerializerSettings.Options);
+            BulkEnrollmentOperationError bulkError = JsonConvert.DeserializeObject<BulkEnrollmentOperationError>(erroJson);
 
             // assert
             Assert.IsNotNull(bulkError);
@@ -45,7 +47,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Tests
                 "}";
 
             // act
-            BulkEnrollmentOperationError bulkError = JsonSerializer.Deserialize<BulkEnrollmentOperationError>(erroJson, JsonSerializerSettings.Options);
+            BulkEnrollmentOperationError bulkError = JsonConvert.DeserializeObject<BulkEnrollmentOperationError>(erroJson);
 
             // assert
             Assert.IsNotNull(bulkError);

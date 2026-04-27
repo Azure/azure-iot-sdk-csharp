@@ -1,40 +1,55 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System.Globalization;
-using System.Text.Json.Nodes;
+using System;
+using System.Threading.Tasks;
+using Microsoft.Azure.Devices.Client.Extensions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Microsoft.Azure.Devices.Client.Tests
+namespace Microsoft.Azure.Devices.Client.Test
 {
     public static class TestAssert
     {
-        private static string FormatInvariant(this string format, params object[] args)
+        public static TException Throws<TException>(Action action, string errorMessage = null) where TException : Exception
         {
-            return string.Format(CultureInfo.InvariantCulture, format, args);
-        }
-
-        private static string FormatExpectedActual(string expected, string actual)
-        {
-            return FormatInvariant("Expected:<{0}>.Actual:<{1}>.", expected, actual);
-        }
-
-        public static void AreEqualJson(string expectedJson, string actualJson)
-        {
-            if (expectedJson == null)
+            errorMessage = errorMessage ?? "Failed";
+            try
             {
-                Assert.IsNull(actualJson, FormatExpectedActual("null", actualJson));
+                action();
+            }
+            catch (TException ex)
+            {
+                return ex;
+            }
+            catch (Exception ex)
+            {
+                throw new AssertFailedException(
+                    "{0}. Expected:<{1}> Actual<{2}>".FormatInvariant(errorMessage, typeof(TException).ToString(), ex.GetType().ToString()),
+                    ex);
             }
 
-            if (expectedJson.Length == 0)
+            throw new AssertFailedException("{0}. Expected {1} exception but no exception is thrown".FormatInvariant(errorMessage, typeof(TException).ToString()));
+        }
+
+        public static async Task<TException> ThrowsAsync<TException>(Func<Task> action, string errorMessage = null) where TException : Exception
+        {
+            errorMessage = errorMessage ?? "Failed";
+            try
             {
-                Assert.AreEqual(actualJson.Length, 0, FormatExpectedActual("empty string", actualJson));
+                await action().ConfigureAwait(false);
+            }
+            catch (TException ex)
+            {
+                return ex;
+            }
+            catch (Exception ex)
+            {
+                throw new AssertFailedException(
+                    "{0}. Expected:<{1}> Actual<{2}>".FormatInvariant(errorMessage, typeof(TException).ToString(), ex.GetType().ToString()),
+                    ex);
             }
 
-            JsonNode expectedJObject = JsonNode.Parse(expectedJson);
-            JsonNode actualJObject = JsonNode.Parse(actualJson);
-
-            Assert.IsTrue(JsonNode.DeepEquals(expectedJObject, actualJObject), $"The provided json strings are not equivalent. \n {expectedJson} \nvs \n{actualJson}");
+            throw new AssertFailedException("{0}. Expected {1} exception but no exception is thrown".FormatInvariant(errorMessage, typeof(TException).ToString()));
         }
     }
 }

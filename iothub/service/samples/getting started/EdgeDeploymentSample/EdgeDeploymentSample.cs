@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Microsoft.Azure.Devices.Shared;
 
 namespace Microsoft.Azure.Devices.Samples
 {
@@ -12,13 +13,13 @@ namespace Microsoft.Azure.Devices.Samples
         private const string ConfigurationIdPrefix = "edgedeploymentsampleconfiguration-";
         private const int NumOfEdgeDevices = 10;
         private const int BasePriority = 2;
-        private readonly IotHubServiceClient _serviceClient;
+        private readonly RegistryManager _registryManager;
 
-        private readonly List<Configuration> _configurationsToDelete = new();
+        private readonly List<Configuration> _configurationsToDelete = new List<Configuration>();
 
-        public EdgeDeploymentSample(IotHubServiceClient serviceClient)
+        public EdgeDeploymentSample(RegistryManager registryManager)
         {
-            _serviceClient = serviceClient ?? throw new ArgumentNullException(nameof(serviceClient));
+            _registryManager = registryManager ?? throw new ArgumentNullException(nameof(registryManager));
         }
 
         public async Task RunSampleAsync()
@@ -31,8 +32,8 @@ namespace Microsoft.Azure.Devices.Samples
                 string targetCondition = $"tags.{conditionPropertyName}='{conditionPropertyValue}'";
 
                 var edgeDevices = devices.ToList();
-                BulkRegistryOperationResult createResult = await _serviceClient.Devices.CreateAsync(edgeDevices);
-                if (createResult.Errors.Count > 0)
+                BulkRegistryOperationResult createResult = await CreateEdgeDevicesAsync(edgeDevices);
+                if (createResult.Errors.Length > 0)
                 {
                     foreach (DeviceRegistryOperationError err in createResult.Errors)
                     {
@@ -43,12 +44,14 @@ namespace Microsoft.Azure.Devices.Samples
                 foreach (Device device in edgeDevices)
                 {
                     Console.WriteLine($"Created edge device {device.Id}");
-                    ClientTwin twin = await _serviceClient.Twins.GetAsync(device.Id);
-                    Console.WriteLine($"\tTwin is {JsonSerializer.Serialize(twin)}");
+                    Twin twin = await _registryManager.GetTwinAsync(device.Id);
+                    Console.WriteLine($"\tTwin is {twin.ToJson()}");
 
                     twin.Tags[conditionPropertyName] = conditionPropertyValue;
-                    await _serviceClient.Twins.UpdateAsync(device.Id, twin);
-                    Console.WriteLine($"\tUpdated twin to {JsonSerializer.Serialize(twin)}\n");
+                    await _registryManager.UpdateTwinAsync(device.Id, twin, twin.ETag);
+                    Console.WriteLine($"\tUpdated twin to {twin.ToJson()}");
+
+                    Console.WriteLine();
                 }
 
                 var baseConfiguration = new Configuration($"{ConfigurationIdPrefix}base-{Guid.NewGuid()}")
@@ -77,8 +80,8 @@ namespace Microsoft.Azure.Devices.Samples
                 Console.WriteLine($"Adding add-on configuration {JsonSerializer.Serialize(addOnConfiguration)}");
                 Console.WriteLine();
 
-                Task<Configuration> baseConfigTask = _serviceClient.Configurations.CreateAsync(baseConfiguration);
-                Task<Configuration> addOnConfigTask = _serviceClient.Configurations.CreateAsync(addOnConfiguration);
+                Task<Configuration> baseConfigTask = _registryManager.AddConfigurationAsync(baseConfiguration);
+                Task<Configuration> addOnConfigTask = _registryManager.AddConfigurationAsync(addOnConfiguration);
                 await Task.WhenAll(baseConfigTask, addOnConfigTask);
 
                 Console.WriteLine($"Cleaning up configuration created...");
@@ -94,7 +97,7 @@ namespace Microsoft.Azure.Devices.Samples
 
         private async Task CleanUpConfigurationsAsync()
         {
-            IEnumerable<Configuration> configurations = await _serviceClient.Configurations.GetAsync(100);
+            IEnumerable<Configuration> configurations = await _registryManager.GetConfigurationsAsync(100);
             {
                 foreach (Configuration configuration in configurations)
                 {
@@ -111,7 +114,7 @@ namespace Microsoft.Azure.Devices.Samples
                 configuration =>
                 {
                     Console.WriteLine($"Remove: {configuration.Id}");
-                    removeConfigTasks.Add(_serviceClient.Configurations.DeleteAsync(configuration.Id));
+                    removeConfigTasks.Add(_registryManager.RemoveConfigurationAsync(configuration.Id));
                 });
 
             await Task.WhenAll(removeConfigTasks);
@@ -127,9 +130,9 @@ namespace Microsoft.Azure.Devices.Samples
                 string deviceName = $"{deviceIdPrefix}_{i:D8}-{Guid.NewGuid()}";
                 var device = new Device(deviceName)
                 {
-                    Capabilities = new ClientCapabilities
+                    Capabilities = new DeviceCapabilities
                     {
-                        IsIotEdge = true,
+                        IotEdge = true,
                     }
                 };
 
@@ -139,21 +142,26 @@ namespace Microsoft.Azure.Devices.Samples
             return edgeDevices;
         }
 
+        private Task<BulkRegistryOperationResult> CreateEdgeDevicesAsync(IEnumerable<Device> edgeDevices)
+        {
+            return _registryManager.AddDevices2Async(edgeDevices);
+        }
+
         private static ConfigurationContent GetBaseConfigurationContent()
         {
             return new ConfigurationContent
             {
-                ModulesContent = new Dictionary<string, JsonDictionary>
+                ModulesContent = new Dictionary<string, IDictionary<string, object>>
                 {
-                    ["$edgeAgent"] = new JsonDictionary
+                    ["$edgeAgent"] = new Dictionary<string, object>
                     {
                         ["properties.desired"] = GetEdgeAgentConfiguration(),
                     },
-                    ["$edgeHub"] = new JsonDictionary
+                    ["$edgeHub"] = new Dictionary<string, object>
                     {
                         ["properties.desired"] = GetEdgeHubConfiguration(),
                     },
-                    ["mongoserver"] = new JsonDictionary
+                    ["mongoserver"] = new Dictionary<string, object>
                     {
                         ["properties.desired"] = GetTwinConfiguration("mongoserver"),
                     }
@@ -165,17 +173,17 @@ namespace Microsoft.Azure.Devices.Samples
         {
             return new ConfigurationContent
             {
-                ModulesContent = new Dictionary<string, JsonDictionary>
+                ModulesContent = new Dictionary<string, IDictionary<string, object>>
                 {
-                    ["$edgeAgent"] = new JsonDictionary
+                    ["$edgeAgent"] = new Dictionary<string, object>
                     {
                         ["properties.desired.modules.asa"] = GetEdgeAgentAddOnConfiguration(),
                     },
-                    ["asa"] = new JsonDictionary
+                    ["asa"] = new Dictionary<string, object>
                     {
                         ["properties.desired"] = GetTwinConfiguration("asa"),
                     },
-                    ["$edgeHub"] = new JsonDictionary
+                    ["$edgeHub"] = new Dictionary<string, object>
                     {
                         ["properties.desired.routes.route1"] = "from /* INTO $upstream",
                     }

@@ -5,6 +5,9 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+
+#if !NET451
+
 using Azure.Core;
 
 namespace Microsoft.Azure.Devices.Tests
@@ -15,7 +18,7 @@ namespace Microsoft.Azure.Devices.Tests
     public class TestTokenCredential : TokenCredential
     {
         public const string TokenValue = "token";
-        private readonly DateTimeOffset _expiry;
+        private DateTimeOffset _expiry;
 
         public TestTokenCredential(DateTimeOffset expiry)
         {
@@ -33,3 +36,5 @@ namespace Microsoft.Azure.Devices.Tests
         }
     }
 }
+
+#endif

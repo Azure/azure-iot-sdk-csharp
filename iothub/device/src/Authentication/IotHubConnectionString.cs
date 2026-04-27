@@ -1,94 +1,151 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System.Text;
+using System;
+using System.Diagnostics;
+using Microsoft.Azure.Devices.Client.Extensions;
+using Microsoft.Azure.Devices.Shared;
 
 namespace Microsoft.Azure.Devices.Client
 {
-    /// <summary>
-    /// A data object that holds the different components that make up a device/module specific connection string.
-    /// </summary>
-    internal sealed class IotHubConnectionString
+    internal sealed partial class IotHubConnectionString : IAuthorizationProvider
     {
-        internal IotHubConnectionString(
-            string iotHubHostName,
-            string gatewayHostName,
-            string deviceId,
-            string moduleId,
-            string sharedAccessKeyName,
-            string sharedAccessKey,
-            string sharedAccessSignature)
+        private const int DefaultSecurePort = 5671;
+
+        public IotHubConnectionString(IotHubConnectionStringBuilder builder)
         {
-            IotHubHostName = iotHubHostName;
-            GatewayHostName = gatewayHostName;
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            Audience = builder.HostName;
+            IsUsingGateway = !string.IsNullOrEmpty(builder.GatewayHostName);
+            HostName = IsUsingGateway
+                ? builder.GatewayHostName
+                : builder.HostName;
+            SharedAccessKeyName = builder.SharedAccessKeyName;
+            SharedAccessKey = builder.SharedAccessKey;
+            IotHubName = builder.IotHubName;
+            DeviceId = builder.DeviceId;
+            ModuleId = builder.ModuleId;
+
+            HttpsEndpoint = new UriBuilder(Uri.UriSchemeHttps, HostName).Uri;
+
+            AmqpEndpoint = new UriBuilder(CommonConstants.AmqpsScheme, HostName, DefaultSecurePort).Uri;
+
+            if (builder.AuthenticationMethod is AuthenticationWithTokenRefresh authWithTokenRefresh)
+            {
+                TokenRefresher = authWithTokenRefresh;
+                if (Logging.IsEnabled)
+                {
+                    Logging.Info(
+                        this,
+                        $"{nameof(IAuthenticationMethod)} is {nameof(AuthenticationWithTokenRefresh)}: {Logging.IdOf(TokenRefresher)}");
+                    Logging.Associate(this, TokenRefresher, nameof(TokenRefresher));
+                }
+
+                Debug.Assert(TokenRefresher != null);
+            }
+            else if (!string.IsNullOrEmpty(SharedAccessKey))
+            {
+                if (string.IsNullOrWhiteSpace(ModuleId))
+                {
+                    // Since the SDK creates the instance of disposable DeviceAuthenticationWithSakRefresh, the SDK needs to
+                    // dispose it once the client is disposed.
+                    TokenRefresher = new DeviceAuthenticationWithSakRefresh(
+                        DeviceId,
+                        this,
+                        builder.SasTokenTimeToLive,
+                        builder.SasTokenRenewalBuffer,
+                        disposeWithClient: true);
+
+                    if (Logging.IsEnabled)
+                        Logging.Info(
+                            this,
+                            $"{nameof(IAuthenticationMethod)} is {nameof(DeviceAuthenticationWithSakRefresh)}: {Logging.IdOf(TokenRefresher)}");
+                }
+                else
+                {
+                    // Since the SDK creates the instance of disposable ModuleAuthenticationWithSakRefresh, the SDK needs to
+                    // dispose it once the client is disposed.
+                    TokenRefresher = new ModuleAuthenticationWithSakRefresh(
+                        DeviceId, 
+                        ModuleId, 
+                        this, 
+                        builder.SasTokenTimeToLive, 
+                        builder.SasTokenRenewalBuffer, 
+                        disposeWithClient: true);
+
+                    if (Logging.IsEnabled)
+                        Logging.Info(this, $"{nameof(IAuthenticationMethod)} is {nameof(ModuleAuthenticationWithSakRefresh)}: {Logging.IdOf(TokenRefresher)}");
+                }
+
+                if (Logging.IsEnabled)
+                    Logging.Associate(this, TokenRefresher, nameof(TokenRefresher));
+
+                Debug.Assert(TokenRefresher != null);
+            }
+            // SharedAccessSignature should be set only if it is non-null and the authentication method of the device client is
+            // not of type AuthenticationWithTokenRefresh.
+            // Setting the sas value for an AuthenticationWithTokenRefresh authentication type will result in tokens not being renewed.
+            // This flow can be hit if the same authentication method is always used to initialize the client;
+            // as in, on disposal and reinitialization. This is because the value of the sas token computed is stored within the authentication method,
+            // and on reinitialization the client is incorrectly identified as a fixed-sas-token-initialized client,
+            // instead of being identified as a sas-token-refresh-enabled-client.
+            else if (!string.IsNullOrWhiteSpace(builder.SharedAccessSignature))
+            {
+                SharedAccessSignature = builder.SharedAccessSignature;
+            }
+        }
+
+        // This constructor is only used for unit testing.
+        internal IotHubConnectionString(
+            string ioTHubName = null,
+            string deviceId = null,
+            string moduleId = null,
+            string hostName = null,
+            Uri httpsEndpoint = null,
+            Uri amqpEndpoint = null,
+            string audience = null,
+            string sharedAccessKeyName = null,
+            string sharedAccessKey = null,
+            string sharedAccessSignature = null,
+            bool isUsingGateway = false)
+        {
+            IotHubName = ioTHubName;
             DeviceId = deviceId;
             ModuleId = moduleId;
+            HostName = hostName;
+            HttpsEndpoint = httpsEndpoint;
+            AmqpEndpoint = amqpEndpoint;
+            Audience = audience;
             SharedAccessKeyName = sharedAccessKeyName;
             SharedAccessKey = sharedAccessKey;
             SharedAccessSignature = sharedAccessSignature;
+            IsUsingGateway = isUsingGateway;
         }
 
-        /// <summary>
-        /// The value of the fully-qualified DNS host name of the IoT hub service.
-        /// </summary>
-        public string IotHubHostName { get; }
+        public string IotHubName { get; private set; }
 
-        /// <summary>
-        /// The optional name of the gateway service to connect to.
-        /// </summary>
-        public string GatewayHostName { get; }
+        public string DeviceId { get; private set; }
 
-        /// <summary>
-        /// The device identifier of the device connecting to the service.
-        /// </summary>
-        public string DeviceId { get; }
+        public string ModuleId { get; private set; }
 
-        /// <summary>
-        /// The module identifier of the module connecting to the service.
-        /// </summary>
-        public string ModuleId { get; }
+        public string HostName { get; private set; }
 
-        /// <summary>
-        /// The shared access key name used to connect the device to the IoT hub service.
-        /// </summary>
-        public string SharedAccessKeyName { get; }
+        public Uri HttpsEndpoint { get; private set; }
 
-        /// <summary>
-        /// The shared access key used to connect to the IoT hub service.
-        /// </summary>
-        public string SharedAccessKey { get; }
+        public Uri AmqpEndpoint { get; private set; }
 
-        /// <summary>
-        /// The shared access signature used to connect to the IoT hub service.
-        /// </summary>
-        /// <remarks>
-        /// This is used when a device app creates its own limited-lifespan SAS token, instead of letting
-        /// this SDK derive one from a shared access token. When a device client is initialized with a
-        /// SAS token, when that token expires, the client must be disposed, and if desired, recreated
-        /// with a newly derived SAS token.
-        /// </remarks>
-        public string SharedAccessSignature { get; }
+        public string Audience { get; private set; }
 
-        /// <summary>
-        /// Produces the connection string based on the values of the instance properties.
-        /// </summary>
-        /// <returns>A properly formatted connection string.</returns>
-        public override sealed string ToString()
-        {
-            var sb = new StringBuilder();
-            sb.AppendKeyValuePairIfNotEmpty(IotHubConnectionStringConstants.HostNamePropertyName, IotHubHostName);
-            sb.AppendKeyValuePairIfNotEmpty(IotHubConnectionStringConstants.DeviceIdPropertyName, DeviceId);
-            sb.AppendKeyValuePairIfNotEmpty(IotHubConnectionStringConstants.ModuleIdPropertyName, ModuleId);
-            sb.AppendKeyValuePairIfNotEmpty(IotHubConnectionStringConstants.SharedAccessKeyNamePropertyName, SharedAccessKeyName);
-            sb.AppendKeyValuePairIfNotEmpty(IotHubConnectionStringConstants.SharedAccessKeyPropertyName, SharedAccessKey);
-            sb.AppendKeyValuePairIfNotEmpty(IotHubConnectionStringConstants.SharedAccessSignaturePropertyName, SharedAccessSignature);
-            sb.AppendKeyValuePairIfNotEmpty(IotHubConnectionStringConstants.GatewayHostNamePropertyName, GatewayHostName);
-            if (sb.Length > 0)
-            {
-                sb.Remove(sb.Length - 1, 1);
-            }
+        public string SharedAccessKeyName { get; private set; }
 
-            return sb.ToString();
-        }
+        public string SharedAccessKey { get; private set; }
+
+        public string SharedAccessSignature { get; private set; }
+
+        public bool IsUsingGateway { get; private set; }
     }
 }

@@ -2,6 +2,8 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Runtime.Serialization;
 
 namespace Microsoft.Azure.Devices.Client.HsmAuthentication
 {
@@ -9,18 +11,31 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication
     /// The exception that is thrown when communication fails with HSM HTTP server.
     /// </summary>
     [Serializable]
-    internal sealed class HttpHsmComunicationException : Exception
+    public class HttpHsmComunicationException : Exception
     {
         /// <summary>
         /// Creates an instance of this class with the supplied error message and status code.
         /// </summary>
         /// <param name="message">The message that describes the error.</param>
         /// <param name="statusCode">Status code of the communication failure.</param>
-        /// <param name="innerException">The inner exception, if any.</param>
-        public HttpHsmComunicationException(string message, int statusCode, Exception innerException = default)
-            : base($"{message}, StatusCode: {statusCode}", innerException)
+        public HttpHsmComunicationException(string message, int statusCode) : base($"{message}, StatusCode: {statusCode}")
         {
             StatusCode = statusCode;
+        }
+
+        internal HttpHsmComunicationException()
+            : base()
+        {
+        }
+
+        internal HttpHsmComunicationException(string message)
+            : base(message)
+        {
+        }
+
+        internal HttpHsmComunicationException(string message, Exception innerException)
+            : base(message, innerException)
+        {
         }
 
         /// <summary>
