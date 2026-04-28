@@ -20,6 +20,7 @@ using System.Threading.Tasks;
 using System.Web;
 using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Devices.Client.Extensions;
+using Microsoft.Azure.Devices.Client.Transport.AmqpIot;
 using Microsoft.Azure.Devices.Client.Transport.Mqtt;
 using Microsoft.Azure.Devices.Shared;
 using MQTTnet;
@@ -322,6 +323,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 {
                     // Symmetric key authenticated connections need to set client Id, username, and password
                     string password = _hubConnectionString.SharedAccessSignature;
+                    _mqttClientOptionsBuilder.WithCredentials(username, password);
+                }
+                else if (_hubConnectionString.TokenRefresher != null)
+                {
+                    string password = await _hubConnectionString.TokenRefresher.GetTokenAsync(_hubConnectionString.Audience).ConfigureAwait(false);
                     _mqttClientOptionsBuilder.WithCredentials(username, password);
                 }
                 else
