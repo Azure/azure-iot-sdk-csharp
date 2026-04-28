@@ -222,31 +222,24 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     options.WithUri(uriString);
 
                     IWebProxy proxy = _mqttTransportSettings.Proxy;
-                    if (proxy != null)
+                    if (proxy != DefaultWebProxySettings.Instance)
                     {
                         Uri serviceUri = new(uriString);
-                        try
+                        Uri proxyUri = _mqttTransportSettings.Proxy.GetProxy(serviceUri);
+
+                        options.WithProxyOptions(proxyOptions =>
                         {
-                            Uri proxyUri = proxy.GetProxy(serviceUri);
-                            options.WithProxyOptions(proxyOptions =>
+                            if (proxy.Credentials != null)
                             {
+                                NetworkCredential credentials = proxy.Credentials.GetCredential(serviceUri, BasicProxyAuthentication);
+                                string username = credentials.UserName;
+                                string password = credentials.Password;
+                                proxyOptions.WithUsername(username);
+                                proxyOptions.WithPassword(password);
+                            }
 
-                                if (proxy.Credentials != null)
-                                {
-                                    NetworkCredential credentials = proxy.Credentials.GetCredential(serviceUri, BasicProxyAuthentication);
-                                    string username = credentials.UserName;
-                                    string password = credentials.Password;
-                                    proxyOptions.WithUsername(username);
-                                    proxyOptions.WithPassword(password);
-                                }
-
-                                proxyOptions.WithAddress(proxyUri.AbsoluteUri);
-                            });
-                        }
-                        catch (NotSupportedException)
-                        {
-                            //proxy was the default proxy (no actual configured proxy)
-                        }
+                            proxyOptions.WithAddress(proxyUri.AbsoluteUri);
+                        });
                     }
                 });
             }
