@@ -9,7 +9,6 @@ using System.Net.Sockets;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
-using DotNetty.Transport.Channels;
 using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Devices.Client.Transport;
 using Microsoft.Azure.Devices.Shared;
@@ -537,7 +536,6 @@ namespace Microsoft.Azure.Devices.Client
         /// <exception cref="SocketException">Thrown if a socket error occurs.</exception>
         /// <exception cref="WebSocketException">Thrown if an error occurs when performing an operation on a WebSocket connection.</exception>
         /// <exception cref="IOException">Thrown if an I/O error occurs.</exception>
-        /// <exception cref="ClosedChannelException">Thrown if the MQTT transport layer closes unexpectedly.</exception>
         /// <exception cref="IotHubException">Thrown if an error occurs when communicating with IoT hub service.
         /// If <see cref="IotHubException.IsTransient"/> is set to <c>true</c> then it is a transient exception.
         /// If <see cref="IotHubException.IsTransient"/> is set to <c>false</c> then it is a non-transient exception.</exception>
@@ -565,7 +563,6 @@ namespace Microsoft.Azure.Devices.Client
         /// <exception cref="SocketException">Thrown if a socket error occurs.</exception>
         /// <exception cref="WebSocketException">Thrown if an error occurs when performing an operation on a WebSocket connection.</exception>
         /// <exception cref="IOException">Thrown if an I/O error occurs.</exception>
-        /// <exception cref="ClosedChannelException">Thrown if the MQTT transport layer closes unexpectedly.</exception>
         /// <exception cref="IotHubException">Thrown if an error occurs when communicating with IoT hub service.
         /// If <see cref="IotHubException.IsTransient"/> is set to <c>true</c> then it is a transient exception.
         /// If <see cref="IotHubException.IsTransient"/> is set to <c>false</c> then it is a non-transient exception.</exception>
@@ -592,49 +589,6 @@ namespace Microsoft.Azure.Devices.Client
         /// <exception cref="ObjectDisposedException">When the client has been disposed.</exception>
         public Task SendEventBatchAsync(IEnumerable<Message> messages, CancellationToken cancellationToken) =>
             InternalClient.SendEventBatchAsync(messages, cancellationToken);
-
-        /// <summary>
-        /// Uploads a stream to a block blob in a storage account associated with the IoTHub for that device.
-        /// If the blob already exists, it will be overwritten.
-        /// </summary>
-        /// <remarks>
-        /// This API has been deprecated. Users should migrate to the new workflow which involves calling
-        /// <see cref="GetFileUploadSasUriAsync(FileUploadSasUriRequest, CancellationToken)"/>, using an Azure Storage library
-        /// of your choice to upload the file, and calling <see cref="CompleteFileUploadAsync(FileUploadCompletionNotification, CancellationToken)"/>.
-        /// <para>
-        /// This method uses a very outdated Azure Storage SDK version that is otherwise unused by this client. When users
-        /// move to the new method, they are in control of the file upload operation and can keep their choice of Azure Storage SDK
-        /// up to date.
-        /// </para>
-        /// </remarks>
-        /// <param name="blobName">The name of the blob to upload.</param>
-        /// <param name="source">A stream with blob contents. Should be disposed after upload completes.</param>
-        /// <exception cref="ObjectDisposedException">When the client has been disposed.</exception>
-        [Obsolete("This API has been split into three APIs: GetFileUploadSasUri, uploading to blob directly using the Azure Storage SDK, and CompleteFileUploadAsync")]
-        public Task UploadToBlobAsync(string blobName, Stream source) => InternalClient.UploadToBlobAsync(blobName, source);
-
-        /// <summary>
-        /// Uploads a stream to a block blob in a storage account associated with the IoTHub for that device.
-        /// If the blob already exists, it will be overwritten.
-        /// </summary>
-        /// <remarks>
-        /// This API has been deprecated. Users should migrate to the new workflow which involves calling
-        /// <see cref="GetFileUploadSasUriAsync(FileUploadSasUriRequest, CancellationToken)"/>, using an Azure Storage library
-        /// of your choice to upload the file, and calling <see cref="CompleteFileUploadAsync(FileUploadCompletionNotification, CancellationToken)"/>.
-        /// <para>
-        /// This method uses a very outdated Azure Storage SDK version that is otherwise unused by this client. When users
-        /// move to the new method, they are in control of the file upload operation and can keep their choice of Azure Storage SDK
-        /// up to date.
-        /// </para>
-        /// </remarks>
-        /// <param name="blobName">The name of the blob to upload</param>
-        /// <param name="source">A stream with blob contents.. Should be disposed after upload completes.</param>
-        /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
-        /// <exception cref="ObjectDisposedException">When the client has been disposed.</exception>
-        [Obsolete("This API has been split into three APIs: GetFileUploadSasUri, uploading to blob directly using the Azure Storage SDK, and CompleteFileUploadAsync")]
-        public Task UploadToBlobAsync(string blobName, Stream source, CancellationToken cancellationToken) =>
-            InternalClient.UploadToBlobAsync(blobName, source, cancellationToken);
 
         /// <summary>
         /// Get a file upload SAS URI which the Azure Storage SDK can use to upload a file to blob for this device

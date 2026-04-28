@@ -278,6 +278,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIot
                 }
                 else
                 {
+                    //TODO twin message deserialization
                     if (correlationId == null)
                     {
                         // Here we are getting desired property update notifications and want to handle it first

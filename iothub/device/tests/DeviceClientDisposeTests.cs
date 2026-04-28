@@ -172,17 +172,6 @@ namespace Microsoft.Azure.Devices.Client.Tests
         }
 
         [TestMethod]
-        public async Task DeviceClient_UploadToBlobAsync_ThrowsWhenClientIsDisposed()
-        {
-            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(1));
-            using var stream = new MemoryStream();
-#pragma warning disable CS0618 // Type or member is obsolete
-            Func<Task> op = async () => await s_client.UploadToBlobAsync("blobName", stream, cts.Token).ConfigureAwait(false);
-#pragma warning restore CS0618 // Type or member is obsolete
-            await op.Should().ThrowAsync<ObjectDisposedException>().ConfigureAwait(false);
-        }
-
-        [TestMethod]
         public async Task DeviceClient_GetFileUploadSasUriAsync_ThrowsWhenClientIsDisposed()
         {
             using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(1));

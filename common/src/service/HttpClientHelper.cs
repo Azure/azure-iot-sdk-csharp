@@ -61,8 +61,6 @@ namespace Microsoft.Azure.Devices
             _httpClientWithNoTimeout.Timeout = Timeout.InfiniteTimeSpan;
             _httpClientWithNoTimeout.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(CommonConstants.MediaTypeForDeviceManagementApis));
             _httpClientWithNoTimeout.DefaultRequestHeaders.ExpectContinue = false;
-
-            TlsVersions.Instance.SetLegacyAcceptableVersions();
         }
 
         public Task<T> GetAsync<T>(

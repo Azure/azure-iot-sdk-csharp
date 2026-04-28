@@ -78,12 +78,14 @@ namespace Microsoft.Azure.Devices.Client.Edge
             string delimiter = "-----END CERTIFICATE-----";
             string[] rawCerts = pemCerts.Split(new[] { delimiter }, StringSplitOptions.None);
 
+#pragma warning disable SYSLIB0057 // Type or member is obsolete
             return rawCerts
                .Take(rawCerts.Length - 1) // Drop the invalid entry
                .Select(c => $"{c}{delimiter}") // Re-add the certificate end-marker which was removed by split
                .Select(c => System.Text.Encoding.UTF8.GetBytes(c))
                .Select(c => new X509Certificate2(c))
                .ToList();
+#pragma warning restore SYSLIB0057 // Type or member is obsolete
         }
 
         private class ErrorDetectionStrategy : ITransientErrorDetectionStrategy

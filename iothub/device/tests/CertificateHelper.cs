@@ -19,7 +19,9 @@ namespace Microsoft.Azure.Devices.Client.ApiTest
                 return certificate;
             }
 
+#pragma warning disable SYSLIB0057 // Type or member is obsolete
             certificate = new X509Certificate2(fileName, password, X509KeyStorageFlags.Exportable);
+#pragma warning restore SYSLIB0057 // Type or member is obsolete
             certificatesFromFiles[fileName] = certificate;
             return certificate;
         }
