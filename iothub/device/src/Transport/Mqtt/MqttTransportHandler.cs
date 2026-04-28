@@ -225,22 +225,28 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     if (proxy != null)
                     {
                         Uri serviceUri = new(uriString);
-                        Uri proxyUri = _mqttTransportSettings.Proxy.GetProxy(serviceUri);
-
-                        options.WithProxyOptions(proxyOptions =>
+                        try
                         {
-
-                            if (proxy.Credentials != null)
+                            Uri proxyUri = proxy.GetProxy(serviceUri);
+                            options.WithProxyOptions(proxyOptions =>
                             {
-                                NetworkCredential credentials = proxy.Credentials.GetCredential(serviceUri, BasicProxyAuthentication);
-                                string username = credentials.UserName;
-                                string password = credentials.Password;
-                                proxyOptions.WithUsername(username);
-                                proxyOptions.WithPassword(password);
-                            }
 
-                            proxyOptions.WithAddress(proxyUri.AbsoluteUri);
-                        });
+                                if (proxy.Credentials != null)
+                                {
+                                    NetworkCredential credentials = proxy.Credentials.GetCredential(serviceUri, BasicProxyAuthentication);
+                                    string username = credentials.UserName;
+                                    string password = credentials.Password;
+                                    proxyOptions.WithUsername(username);
+                                    proxyOptions.WithPassword(password);
+                                }
+
+                                proxyOptions.WithAddress(proxyUri.AbsoluteUri);
+                            });
+                        }
+                        catch (NotSupportedException)
+                        {
+                            //proxy was the default proxy (no actual configured proxy)
+                        }
                     }
                 });
             }
