@@ -222,10 +222,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     options.WithUri(uriString);
 
                     IWebProxy proxy = _mqttTransportSettings.Proxy;
-                    if (proxy != DefaultWebProxySettings.Instance)
+                    if (proxy != null && proxy != DefaultWebProxySettings.Instance)
                     {
                         Uri serviceUri = new(uriString);
-                        Uri proxyUri = _mqttTransportSettings.Proxy.GetProxy(serviceUri);
+                        Uri proxyUri = proxy.GetProxy(serviceUri);
 
                         options.WithProxyOptions(proxyOptions =>
                         {
