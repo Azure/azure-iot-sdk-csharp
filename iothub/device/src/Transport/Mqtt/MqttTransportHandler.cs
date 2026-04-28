@@ -1353,7 +1353,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         }
                         else
                         {
-                            TwinProperties getTwin = System.Text.Json.JsonSerializer.Deserialize<TwinProperties>(payloadBytes);
+                            TwinProperties getTwin = JsonConvert.DeserializeObject<TwinProperties>(Encoding.UTF8.GetString(payloadBytes), JsonSerializerSettingsInitializer.GetJsonSerializerSettings());
 
                             getTwinResponse.Twin = new Twin(getTwin);
 
