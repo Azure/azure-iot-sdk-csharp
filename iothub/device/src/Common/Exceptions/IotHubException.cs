@@ -93,7 +93,7 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
         /// <param name="message">The message that describes the error.</param>
         /// <param name="innerException">The exception that is the cause of the current exception.</param>
         /// <param name="isTransient">Indicates if the error is transient and should be retried.</param>
-        protected IotHubException(string message, Exception innerException, bool isTransient)
+        public IotHubException(string message, Exception innerException, bool isTransient)
             : this(message, innerException, isTransient, trackingId: string.Empty)
         {
         }
