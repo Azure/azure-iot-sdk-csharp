@@ -631,7 +631,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             await _deviceReceiveMessageSemaphore.WaitAsync(cancellationToken);
             try
             {
-                await SubscribeAsync(_deviceBoundMessagesTopic + "#", cancellationToken).ConfigureAwait(false);
+                await SubscribeAsync(_deviceBoundMessagesTopic, cancellationToken).ConfigureAwait(false);
                 _isDeviceReceiveMessageCallbackSet = true;
             }
             catch (Exception ex) when (ex is not IotHubException && ex is not OperationCanceledException)
@@ -682,7 +682,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             if (!_isSubscribedToCloudToDeviceMessages)
             {
-                await _mqttClient.SubscribeAsync(new MqttClientSubscribeOptionsBuilder().WithTopicFilter(_deviceBoundMessagesTopic + "#", _receivingQualityOfService).Build(), cancellationToken);
+                await _mqttClient.SubscribeAsync(new MqttClientSubscribeOptionsBuilder().WithTopicFilter(_deviceBoundMessagesTopic, _receivingQualityOfService).Build(), cancellationToken);
                 _isSubscribedToCloudToDeviceMessages = true;
             }
 
@@ -741,7 +741,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             await _deviceReceiveMessageSemaphore.WaitAsync(cancellationToken);
             try
             {
-                await UnsubscribeAsync(_deviceBoundMessagesTopic + "#", cancellationToken).ConfigureAwait(false);
+                await UnsubscribeAsync(_deviceBoundMessagesTopic, cancellationToken).ConfigureAwait(false);
                 _isSubscribedToCloudToDeviceMessages = false;
                 _isDeviceReceiveMessageCallbackSet = false;
             }
