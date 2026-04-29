@@ -693,13 +693,23 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 CancellationToken disconnectToken = _disconnectAwaitersCancellationSource.Token;
 
                 using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, disconnectToken);
-                await _receivingSemaphore.WaitAsync(cancellationToken);
 
-                using var ctb = new CancellationTokenBundle(_transportSettings.DefaultReceiveTimeout, cancellationToken);
+                try
+                {
+                    await _receivingSemaphore.WaitAsync(linkedCts.Token);
+                }
+                catch (OperationCanceledException)
+                {
+                    // If connection was lost, or cancellation was signalled, just return null
+                    break;
+                }
+
+#pragma warning disable CA2000 // Dispose objects before losing scope. Reason: User is responsible for disposing this message
                 if (_messageQueue.TryDequeue(out message))
                 { 
                     break;
                 }
+#pragma warning restore CA2000 // Dispose objects before losing scope
             }
 
             if (Logging.IsEnabled)
