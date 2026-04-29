@@ -682,7 +682,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             if (!_isSubscribedToCloudToDeviceMessages)
             {
-                await _mqttClient.SubscribeAsync(new MqttClientSubscribeOptionsBuilder().WithTopicFilter(_deviceBoundMessagesTopic, _receivingQualityOfService).Build(), cancellationToken);
+                await _mqttClient.SubscribeAsync(new MqttClientSubscribeOptionsBuilder().WithTopicFilter(_deviceBoundMessagesTopic + "#", _receivingQualityOfService).Build(), cancellationToken);
                 _isSubscribedToCloudToDeviceMessages = true;
             }
 
