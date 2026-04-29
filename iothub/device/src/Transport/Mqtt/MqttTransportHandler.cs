@@ -57,8 +57,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
         private const string ModuleEventMessageTopicFormat = "devices/{0}/modules/{1}/";
         private readonly string _moduleEventMessageTopic;
 
-        private readonly bool _isEdgeModule;
-
         // Topic names for retrieving a device's twin properties.
         // The client first subscribes to "$iothub/twin/res/#", to receive the operation's responses.
         // It then sends an empty message to the topic "$iothub/twin/GET/?$rid={request id}, with a populated value for request Id.
@@ -91,9 +89,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
         private const string RequestIdTopicKey = "$rid";
         private const string VersionTopicKey = "$version";
 
-        private readonly string _generationId = Guid.NewGuid().ToString();
-        private static readonly int s_generationPrefixLength = Guid.NewGuid().ToString().Length;
-
         private const string BasicProxyAuthentication = "Basic";
 
         private const string ConnectTimedOutErrorMessage = "Timed out waiting for MQTT connection to open.";
@@ -111,12 +106,17 @@ namespace Microsoft.Azure.Devices.Client.Transport
         private readonly Func<string, Message, Task> _moduleMessageListener;
         private readonly Action<TwinCollection> _onDesiredStatePatchListener;
 
-        private readonly ConcurrentDictionary<string, TaskCompletionSource<Twin>> _twinResponseCompletions = new ConcurrentDictionary<string, TaskCompletionSource<Twin>>();
-
         private ConcurrentDictionary<string, MqttApplicationMessageReceivedEventArgs> unacknowledgedCloudToDeviceMessages = new();
+
+        private SemaphoreSlim _deviceReceiveMessageSemaphore = new SemaphoreSlim(1, 1);
 
         private bool _isSubscribedToTwinResponses;
         private bool _isDeviceReceiveMessageCallbackSet;
+        private bool _isSubscribedToCloudToDeviceMessages;
+
+        private SemaphoreSlim _receivingSemaphore = new SemaphoreSlim(0);
+
+        private CancellationTokenSource _disconnectAwaitersCancellationSource = new CancellationTokenSource();
 
         private readonly string _deviceId;
         private readonly string _moduleId;
@@ -206,8 +206,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             _hubConnectionString = iotHubConnectionString;
             _hostName = iotHubConnectionString.HostName;
-
-            _isEdgeModule = !string.IsNullOrWhiteSpace(iotHubConnectionString.ModuleId) && iotHubConnectionString.IsUsingGateway;
 
             _mqttClient.ApplicationMessageReceivedAsync += HandleReceivedMessageAsync;
             _mqttClient.DisconnectedAsync += HandleDisconnectionAsync;
@@ -630,9 +628,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             ObjectDisposedException.ThrowIf(_isDisposed, this);
 
+            await _deviceReceiveMessageSemaphore.WaitAsync(cancellationToken);
             try
             {
-                await SubscribeAsync(_deviceBoundMessagesTopic, cancellationToken).ConfigureAwait(false);
+                await SubscribeAsync(_deviceBoundMessagesTopic + "#", cancellationToken).ConfigureAwait(false);
                 _isDeviceReceiveMessageCallbackSet = true;
             }
             catch (Exception ex) when (ex is not IotHubException && ex is not OperationCanceledException)
@@ -644,6 +643,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
             finally
             {
+                _deviceReceiveMessageSemaphore.Release();
                 if (Logging.IsEnabled)
                     Logging.Exit(this, cancellationToken, nameof(EnableReceiveMessageAsync));
             }
@@ -672,14 +672,28 @@ namespace Microsoft.Azure.Devices.Client.Transport
             
             ObjectDisposedException.ThrowIf(_isDisposed, this);
 
-            // TODO only subscribe once
-            await _mqttClient.SubscribeAsync(new MqttClientSubscribeOptionsBuilder().WithTopicFilter(_deviceBoundMessagesTopic + "#", _receivingQualityOfService).Build(), cancellationToken);
+            if (_isDeviceReceiveMessageCallbackSet)
+            {
+                if (Logging.IsEnabled)
+                    Logging.Error(this, "Callback handler set for receiving C2D messages; ReceiveAsync() will now always return null", nameof(ReceiveAsync));
+
+                return null;
+            }
+
+            if (!_isSubscribedToCloudToDeviceMessages)
+            {
+                await _mqttClient.SubscribeAsync(new MqttClientSubscribeOptionsBuilder().WithTopicFilter(_deviceBoundMessagesTopic + "#", _receivingQualityOfService).Build(), cancellationToken);
+                _isSubscribedToCloudToDeviceMessages = true;
+            }
 
             Message message = null;
             while (true)
             {
-                //TODO semaphore to wake this thread up when a message has been received
-                cancellationToken.ThrowIfCancellationRequested();
+                // Waiting for a c2d message should be canceled by either the user signaling the cancellation token or by a disconnection happening
+                CancellationToken disconnectToken = _disconnectAwaitersCancellationSource.Token;
+
+                using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, disconnectToken);
+                await _receivingSemaphore.WaitAsync(cancellationToken);
 
                 using var ctb = new CancellationTokenBundle(_transportSettings.DefaultReceiveTimeout, cancellationToken);
                 if (_messageQueue.TryDequeue(out message))
@@ -724,9 +738,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
             
             ObjectDisposedException.ThrowIf(_isDisposed, this);
 
+            await _deviceReceiveMessageSemaphore.WaitAsync(cancellationToken);
             try
             {
-                await UnsubscribeAsync(_deviceBoundMessagesTopic, cancellationToken).ConfigureAwait(false);
+                await UnsubscribeAsync(_deviceBoundMessagesTopic + "#", cancellationToken).ConfigureAwait(false);
+                _isSubscribedToCloudToDeviceMessages = false;
                 _isDeviceReceiveMessageCallbackSet = false;
             }
             catch (Exception ex) when (ex is not IotHubException && ex is not OperationCanceledException)
@@ -738,6 +754,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
             finally
             {
+                _deviceReceiveMessageSemaphore.Release();
                 if (Logging.IsEnabled)
                     Logging.Exit(this, cancellationToken, nameof(DisableReceiveMessageAsync));
             }
@@ -1103,6 +1120,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     }
                 }
 
+                _deviceReceiveMessageSemaphore.Dispose();
+                _disconnectAwaitersCancellationSource.Dispose();
+                _receivingSemaphore.Dispose();
+
                 _isDisposed = true;
             }
         }
@@ -1230,6 +1251,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
             if (Logging.IsEnabled)
                 Logging.Info(this, $"MQTT connection was lost {disconnectedEventArgs.Exception}", nameof(HandleDisconnectionAsync));
 
+            // Cancel any pending ReceiveAsync calls since the connection was interrupted
+            _disconnectAwaitersCancellationSource.Cancel();
+
             OnTransportDisconnected();
 
             // During a disconnection, any pending twin updates won't be received, so we'll preemptively
@@ -1260,7 +1284,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 // If C2D message callback is not set, messages are added to a queue to be processed later.
                 // However, the messages are still being ack'ed right away.
 #pragma warning disable CA2000 // Dispose objects before losing scope
-                //TODO disposal of c2d message when?
+                // user is responsible for disposing this message
                 Message c2dMessage = ProcessC2DMessage(receivedEventArgs);
 #pragma warning restore CA2000 // Dispose objects before losing scope
                 c2dMessage.LockToken = Guid.NewGuid().ToString();
@@ -1297,12 +1321,15 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             if (_deviceMessageListener != null && _isDeviceReceiveMessageCallbackSet)
             {
-                await _deviceMessageListener.Invoke(receivedCloudToDeviceMessage);
+                // We are intentionally not awaiting _deviceMessageReceivedListener callback.
+                // This is a user-supplied callback that isn't required to be awaited by us. We can simply invoke it and continue.
+                _ = _deviceMessageListener.Invoke(receivedCloudToDeviceMessage);
             }
             else if(!_isDeviceReceiveMessageCallbackSet)
             {
                 _messageQueue.Enqueue(receivedCloudToDeviceMessage);
-                while(_messageQueue.Count > _mqttTransportSettings.IncomingMessageQueueSize)
+                _receivingSemaphore.Release();
+                while (_messageQueue.Count > _mqttTransportSettings.IncomingMessageQueueSize)
                 {
                     _messageQueue.TryDequeue(out _);
                     if (Logging.IsEnabled)
