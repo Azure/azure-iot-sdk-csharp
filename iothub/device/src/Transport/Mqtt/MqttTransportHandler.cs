@@ -301,6 +301,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
             if (Logging.IsEnabled)
                 Logging.Enter(this, cancellationToken, nameof(OpenAsync));
 
+            ObjectDisposedException.ThrowIf(_isDisposed, this);
+
             try
             {
                 string clientId = string.IsNullOrWhiteSpace(_moduleId)
@@ -408,6 +410,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 Logging.Enter(this, message, cancellationToken, nameof(SendEventAsync));
 
             cancellationToken.ThrowIfCancellationRequested();
+            
+            ObjectDisposedException.ThrowIf(_isDisposed, this);
 
             try
             {
@@ -487,6 +491,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, cancellationToken, nameof(EnableMethodsAsync));
+            
+            ObjectDisposedException.ThrowIf(_isDisposed, this);
 
             try
             {
@@ -511,6 +517,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
             if (Logging.IsEnabled)
                 Logging.Enter(this, cancellationToken, nameof(DisableMethodsAsync));
 
+            ObjectDisposedException.ThrowIf(_isDisposed, this);
+
             try
             {
                 await UnsubscribeAsync(DirectMethodsRequestTopic, cancellationToken).ConfigureAwait(false);
@@ -533,6 +541,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, methodResponse, cancellationToken, nameof(SendMethodResponseAsync));
+
+            ObjectDisposedException.ThrowIf(_isDisposed, this);
 
             string topic = DirectMethodsResponseTopicFormat.FormatInvariant(methodResponse.Status, methodResponse.RequestId);
             byte[] serializedPayload = methodResponse.GetBytes();
@@ -584,6 +594,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         public override async Task EnableEventReceiveAsync(bool isAnEdgeModule, CancellationToken cancellationToken)
         {
+            ObjectDisposedException.ThrowIf(_isDisposed, this);
+
             if (isAnEdgeModule)
             {
                 await SubscribeAsync(_edgeModuleInputEventsTopic, cancellationToken);
@@ -596,6 +608,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         public override async Task DisableEventReceiveAsync(bool isAnEdgeModule, CancellationToken cancellationToken)
         {
+            ObjectDisposedException.ThrowIf(_isDisposed, this);
+
             if (isAnEdgeModule)
             {
                 await UnsubscribeAsync(_edgeModuleInputEventsTopic, cancellationToken);
@@ -610,6 +624,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, cancellationToken, nameof(EnableReceiveMessageAsync));
+
+            ObjectDisposedException.ThrowIf(_isDisposed, this);
 
             try
             {
@@ -635,6 +651,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
             if (Logging.IsEnabled)
                 Logging.Enter(this, timeoutHelper, timeoutHelper.GetRemainingTime(), nameof(ReceiveAsync));
 
+            ObjectDisposedException.ThrowIf(_isDisposed, this);
+
             using var cts = new CancellationTokenSource(timeoutHelper.GetRemainingTime());
             Message message = await ReceiveAsync(cts.Token).ConfigureAwait(false);
 
@@ -648,6 +666,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, cancellationToken, nameof(ReceiveAsync));
+            
+            ObjectDisposedException.ThrowIf(_isDisposed, this);
 
             // TODO only subscribe once
             await _mqttClient.SubscribeAsync(new MqttClientSubscribeOptionsBuilder().WithTopicFilter(_deviceBoundMessagesTopic + "#", _receivingQualityOfService).Build(), cancellationToken);
@@ -674,6 +694,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
         public override async Task EnsurePendingMessagesAreDeliveredAsync(CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
+            
+            ObjectDisposedException.ThrowIf(_isDisposed, this);
 
             // If the device connects with a CleanSession flag set to false, we will need to deliver the messages
             // that were sent before the client had subscribed to the C2D message receive topic.
@@ -696,6 +718,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, cancellationToken, nameof(DisableReceiveMessageAsync));
+            
+            ObjectDisposedException.ThrowIf(_isDisposed, this);
 
             try
             {
@@ -721,6 +745,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
             if (Logging.IsEnabled)
                 Logging.Enter(this, cancellationToken, nameof(EnableTwinPatchAsync));
 
+            ObjectDisposedException.ThrowIf(_isDisposed, this);
+
             try
             {
                 await SubscribeAsync(TwinDesiredPropertiesPatchTopic, cancellationToken).ConfigureAwait(false);
@@ -744,6 +770,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
             if (Logging.IsEnabled)
                 Logging.Enter(this, cancellationToken, nameof(DisableTwinPatchAsync));
 
+            ObjectDisposedException.ThrowIf(_isDisposed, this);
+
             try
             {
                 await UnsubscribeAsync(TwinDesiredPropertiesPatchTopic, cancellationToken).ConfigureAwait(false);
@@ -766,6 +794,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, cancellationToken, nameof(SendTwinGetAsync));
+
+            ObjectDisposedException.ThrowIf(_isDisposed, this);
 
             try
             {
@@ -869,6 +899,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, reportedProperties, cancellationToken, nameof(SendTwinPatchAsync));
+
+            ObjectDisposedException.ThrowIf(_isDisposed, this);
 
             try
             {
@@ -977,6 +1009,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
             if (Logging.IsEnabled)
                 Logging.Enter(this, $"Completing a message with lockToken: {lockToken}", nameof(CompleteAsync));
 
+            ObjectDisposedException.ThrowIf(_isDisposed, this);
+
             cancellationToken.ThrowIfCancellationRequested();
 
             if (_receivingQualityOfService == MqttQualityOfServiceLevel.AtMostOnce)
@@ -1015,6 +1049,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             if (Logging.IsEnabled)
                 Logging.Enter(this, cancellationToken, nameof(CloseAsync));
+            
+            ObjectDisposedException.ThrowIf(_isDisposed, this);
 
             OnTransportClosedGracefully();
 
@@ -1039,13 +1075,30 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
+        public override bool IsUsable => !_isDisposed;
+
+
         protected override void Dispose(bool disposing)
         {
-            base.Dispose(disposing);
-            _mqttClient.ApplicationMessageReceivedAsync -= HandleReceivedMessageAsync;
-            _mqttClient.DisconnectedAsync -= HandleDisconnectionAsync;
-            _mqttClient?.Dispose();
-            _twinTimeoutTimer.Dispose();
+            if (!_isDisposed)
+            {
+                base.Dispose(disposing);
+
+                if (disposing)
+                {
+                    _mqttClient.ApplicationMessageReceivedAsync -= HandleReceivedMessageAsync;
+                    _mqttClient.DisconnectedAsync -= HandleDisconnectionAsync;
+                    _mqttClient?.Dispose();
+                    _twinTimeoutTimer.Dispose();
+                    if (_hubConnectionString?.TokenRefresher != null
+                        && _hubConnectionString.TokenRefresher.DisposalWithClient)
+                    {
+                        _hubConnectionString.TokenRefresher.Dispose();
+                    }
+                }
+
+                _isDisposed = true;
+            }
         }
 
         private bool CertificateValidationHandler(MqttClientCertificateValidationEventArgs args)
