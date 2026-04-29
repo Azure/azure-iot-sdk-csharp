@@ -349,9 +349,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
                             case MqttClientConnectResultCode.BadUserNameOrPassword:
                             case MqttClientConnectResultCode.NotAuthorized:
                             case MqttClientConnectResultCode.ClientIdentifierNotValid:
-                                throw new IotHubClientException(
-                                    "Failed to open the MQTT connection due to incorrect or unauthorized credentials",
-                                    IotHubClientErrorCode.Unauthorized);
+                                throw new UnauthorizedException(
+                                    "Failed to open the MQTT connection due to incorrect or unauthorized credentials");
                             case MqttClientConnectResultCode.UnsupportedProtocolVersion:
                                 // Should never happen since the protocol version (3.1.1) is hardcoded
                                 throw new IotHubClientException(
