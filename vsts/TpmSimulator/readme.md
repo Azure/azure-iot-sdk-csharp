@@ -1,0 +1,1 @@
+This folder contains the TSS.MSR TPM2 simulator obtained from https://www.microsoft.com/en-us/download/details.aspx?id=52507.

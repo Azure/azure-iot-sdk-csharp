@@ -77,6 +77,10 @@ jobs:
       - download: current
         displayName: 'Download test certificates'
         artifact: test-certificates
+      
+      - powershell: Start vsts\TpmSimulator\Simulator.exe
+        displayName: "Start TPM Simulator"
+        condition: succeeded()
 
       - task: JavaToolInstaller@0
         condition: succeeded()
