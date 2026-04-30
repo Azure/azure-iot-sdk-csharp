@@ -848,6 +848,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 await testDeviceCallbackHandler.WaitForReceiveMessageCallbackAsync(cts.Token).ConfigureAwait(false);
             };
             using Client.Message receivedThirdMessage = await deviceClient.ReceiveAsync(s_tenSeconds).ConfigureAwait(false);
+            Assert.IsNotNull(receivedThirdMessage, "Never received the expected cloud to device message");
             receivedThirdMessage.MessageId.Should().Be(thirdMessage.MessageId);
             receiveMessageOverCallback.Should().Throw<OperationCanceledException>();
             await deviceClient.CompleteAsync(receivedThirdMessage).ConfigureAwait(false);
