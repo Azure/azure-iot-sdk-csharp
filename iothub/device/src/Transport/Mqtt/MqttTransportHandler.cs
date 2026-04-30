@@ -483,7 +483,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         public override Task SendEventAsync(IEnumerable<Message> messages, CancellationToken cancellationToken)
         {
-            Debug.Fail("This should be caught by the client, but added here just in case.");
             throw new InvalidOperationException("This operation is not supported over MQTT. Please refer to the API comments for additional details.");
         }
 
