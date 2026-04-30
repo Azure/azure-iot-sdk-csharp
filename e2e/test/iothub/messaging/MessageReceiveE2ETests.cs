@@ -792,6 +792,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
             using var serviceClient = ServiceClient.CreateFromConnectionString(TestConfiguration.IotHub.ConnectionString);
 
+            await deviceClient.OpenAsync();
+
             // For Mqtt - we will need to subscribe to the Mqtt receive telemetry topic
             // before the device can begin receiving c2d messages.
             if (transport == Client.TransportType.Mqtt_Tcp_Only
