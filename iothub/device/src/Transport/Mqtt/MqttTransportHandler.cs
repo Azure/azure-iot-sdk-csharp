@@ -481,9 +481,13 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
-        public override Task SendEventAsync(IEnumerable<Message> messages, CancellationToken cancellationToken)
+        public override async Task SendEventAsync(IEnumerable<Message> messages, CancellationToken cancellationToken)
         {
-            throw new InvalidOperationException("This operation is not supported over MQTT. Please refer to the API comments for additional details.");
+            foreach (Message message in messages)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                await SendEventAsync(message, cancellationToken).ConfigureAwait(false);
+            }
         }
 
         public override async Task EnableMethodsAsync(CancellationToken cancellationToken)
