@@ -792,6 +792,8 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
             using var serviceClient = ServiceClient.CreateFromConnectionString(TestConfiguration.IotHub.ConnectionString);
 
+            await deviceClient.OpenAsync();
+
             // For Mqtt - we will need to subscribe to the Mqtt receive telemetry topic
             // before the device can begin receiving c2d messages.
             if (transport == Client.TransportType.Mqtt_Tcp_Only
@@ -848,6 +850,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
                 await testDeviceCallbackHandler.WaitForReceiveMessageCallbackAsync(cts.Token).ConfigureAwait(false);
             };
             using Client.Message receivedThirdMessage = await deviceClient.ReceiveAsync(s_tenSeconds).ConfigureAwait(false);
+            Assert.IsNotNull(receivedThirdMessage, "Never received the expected cloud to device message");
             receivedThirdMessage.MessageId.Should().Be(thirdMessage.MessageId);
             receiveMessageOverCallback.Should().Throw<OperationCanceledException>();
             await deviceClient.CompleteAsync(receivedThirdMessage).ConfigureAwait(false);

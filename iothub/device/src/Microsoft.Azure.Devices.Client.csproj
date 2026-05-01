@@ -1,8 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks Condition="'$(OS)' == 'Windows_NT'">net8.0;netstandard2.1;netstandard2.0;net472</TargetFrameworks>
-    <TargetFrameworks Condition="'$(OS)' != 'Windows_NT'">net8.0;netstandard2.1;netstandard2.0</TargetFrameworks>
-    <LangVersion>8.0</LangVersion>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>9.0</LangVersion>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <RootNamespace>Microsoft.Azure.Devices.Client</RootNamespace>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -80,15 +79,11 @@
     </Compile>
   </ItemGroup>
 
-  <!-- All the "new" .NET targets -->
-  <ItemGroup Condition=" '$(TargetFramework)' != 'net451' ">
+  <ItemGroup>
     <Compile Include="ModernDotNet\HsmAuthentication\Transport\HttpUdsMessageHandler.cs" />
     <Compile Include="ModernDotNet\HsmAuthentication\Transport\HttpBufferedStream.cs" />
     <Compile Include="ModernDotNet\HsmAuthentication\Transport\HttpRequestResponseSerializer.cs" />
     <Compile Include="ModernDotNet\HsmAuthentication\Transport\UnixDomainSocketEndPoint.cs" />
-    <PackageReference Include="DotNetty.Codecs.Mqtt" Version="0.7.6" />
-    <PackageReference Include="DotNetty.Common" Version="0.7.6" />
-    <PackageReference Include="DotNetty.Handlers" Version="0.7.6" />
   </ItemGroup>
 
   <ItemGroup>
@@ -96,7 +91,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Azure.Storage.Blobs" Version="12.23.0" />
+    <PackageReference Include="MQTTnet" Version="5.1.0.1559" />
     <PackageReference Include="Microsoft.Azure.Amqp" Version="2.6.9" />
     <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0">
       <PrivateAssets>all</PrivateAssets>
@@ -105,21 +100,7 @@
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
-    <Reference Include="System.Web" />
-  </ItemGroup>
-
-  <ItemGroup Condition=" '$(TargetFramework)' != 'net451' ">
+  <ItemGroup>
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.4.1" />
-    <PackageReference Include="Microsoft.Win32.Registry" Version="5.0.0" />
-  </ItemGroup>
-
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net451' ">
-    <Reference Include="System.Configuration" />
-    <Reference Include="System.Net.Http.WebRequest" />
-    <Reference Include="System.Transactions" />
-    <Reference Include="System.Web" />
-    <PackageReference Include="Microsoft.AspNet.WebApi.Client" Version="5.2.3" />
-    <PackageReference Include="Microsoft.Owin" Version="4.2.2" />
   </ItemGroup>
 </Project>

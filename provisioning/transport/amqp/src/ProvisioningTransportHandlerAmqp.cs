@@ -264,7 +264,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
                 using var streamReader = new StreamReader(amqpResponse.BodyStream);
                 string jsonResponse = await streamReader
-                    .ReadToEndAsync()
+                    .ReadToEndAsync(cancellationToken)
                     .ConfigureAwait(false);
                 RegistrationOperationStatus status = JsonConvert.DeserializeObject<RegistrationOperationStatus>(jsonResponse, JsonSerializerSettingsInitializer.GetJsonSerializerSettings());
                 status.RetryAfter = ProvisioningErrorDetailsAmqp.GetRetryAfterFromApplicationProperties(amqpResponse, s_defaultOperationPollingInterval);
@@ -306,7 +306,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
             using var streamReader = new StreamReader(amqpResponse.BodyStream);
 
-            string jsonResponse = await streamReader.ReadToEndAsync().ConfigureAwait(false);
+            string jsonResponse = await streamReader.ReadToEndAsync(cancellationToken).ConfigureAwait(false);
             RegistrationOperationStatus status = JsonConvert.DeserializeObject<RegistrationOperationStatus>(jsonResponse, JsonSerializerSettingsInitializer.GetJsonSerializerSettings());
             status.RetryAfter = ProvisioningErrorDetailsAmqp.GetRetryAfterFromApplicationProperties(amqpResponse, s_defaultOperationPollingInterval);
 

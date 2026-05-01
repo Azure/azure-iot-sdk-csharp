@@ -162,8 +162,6 @@ namespace Microsoft.Azure.Devices.Client
             if (Logging.IsEnabled)
                 Logging.Enter(this, transportSettings, pipelineBuilder, nameof(InternalClient) + "_ctor");
 
-            TlsVersions.Instance.SetLegacyAcceptableVersions();
-
             _transportSettings = transportSettings;
             _clientOptions = options;
             IotHubConnectionString = iotHubConnectionString;
@@ -1394,72 +1392,6 @@ namespace Microsoft.Azure.Devices.Client
             }
 
             return _fileUploadHttpTransportHandler.CompleteFileUploadAsync(notification, cancellationToken);
-        }
-
-        /// <summary>
-        /// Uploads a stream to a block blob in a storage account associated with the IoT hub for that device.
-        /// If the blob already exists, it will be overwritten.
-        /// </summary>
-        /// <param name="blobName"></param>
-        /// <param name="source"></param>
-        /// <returns>AsncTask</returns>
-        [Obsolete("This API has been split into three APIs: GetFileUploadSasUri, uploading to blob directly using the Azure Storage SDK, and CompleteFileUploadAsync")]
-        public Task UploadToBlobAsync(string blobName, Stream source)
-        {
-            return UploadToBlobAsync(blobName, source, CancellationToken.None);
-        }
-
-        /// <summary>
-        /// Uploads a stream to a block blob in a storage account associated with the IoTHub for that device.
-        /// If the blob already exists, it will be overwritten.
-        /// </summary>
-        /// <param name="blobName"></param>
-        /// <param name="source"></param>
-        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to
-        /// receive notice of cancellation.</param>
-        /// <returns>AsncTask</returns>
-        [Obsolete("This API has been split into three APIs: GetFileUploadSasUri, uploading to blob directly using the Azure Storage SDK, and CompleteFileUploadAsync")]
-        public Task UploadToBlobAsync(string blobName, Stream source, CancellationToken cancellationToken)
-        {
-            if (Logging.IsEnabled)
-                Logging.Enter(this, blobName, source, nameof(UploadToBlobAsync));
-
-            try
-            {
-                if (IsDisposed)
-                {
-                    throw new ObjectDisposedException("IoT client", DefaultDelegatingHandler.ClientDisposedMessage);
-                }
-
-                if (string.IsNullOrEmpty(blobName))
-                {
-                    throw Fx.Exception.ArgumentNull(nameof(blobName));
-                }
-                if (source == null)
-                {
-                    throw Fx.Exception.ArgumentNull(nameof(source));
-                }
-                if (blobName.Length > 1024)
-                {
-                    throw Fx.Exception.Argument(nameof(blobName), "Length cannot exceed 1024 characters");
-                }
-                if (blobName.Split('/').Length > 254)
-                {
-                    throw Fx.Exception.Argument(nameof(blobName), "Path segment count cannot exceed 254");
-                }
-
-                return _fileUploadHttpTransportHandler.UploadToBlobAsync(blobName, source, cancellationToken);
-            }
-            catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                throw;
-            }
-            finally
-            {
-                if (Logging.IsEnabled)
-                    Logging.Exit(this, blobName, nameof(UploadToBlobAsync));
-            }
         }
 
         #endregion Device Specific API

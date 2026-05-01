@@ -74,7 +74,9 @@ namespace Microsoft.Azure.Devices.Client.Edge
                 if (!string.IsNullOrWhiteSpace(certPath))
                 {
                     Debug.WriteLine("EdgeModuleClientFactory setupTrustBundle from file");
+#pragma warning disable SYSLIB0057 // Type or member is obsolete
                     var expectedRoot = new X509Certificate2(certPath);
+#pragma warning restore SYSLIB0057 // Type or member is obsolete
                     certificateValidator = GetCertificateValidator(new List<X509Certificate2>() { expectedRoot });
                 }
 

@@ -15,7 +15,6 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using DotNetty.Transport.Channels;
 using Microsoft.Azure.Devices.Client.Edge;
 using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Devices.Client.Extensions;
@@ -391,7 +390,6 @@ namespace Microsoft.Azure.Devices.Client
         /// <exception cref="SocketException">Thrown if a socket error occurs.</exception>
         /// <exception cref="WebSocketException">Thrown if an error occurs when performing an operation on a WebSocket connection.</exception>
         /// <exception cref="IOException">Thrown if an I/O error occurs.</exception>
-        /// <exception cref="ClosedChannelException">Thrown if the MQTT transport layer closes unexpectedly.</exception>
         /// <exception cref="IotHubException">Thrown if an error occurs when communicating with IoT hub service.
         /// If <see cref="IotHubException.IsTransient"/> is set to <c>true</c> then it is a transient exception.
         /// If <see cref="IotHubException.IsTransient"/> is set to <c>false</c> then it is a non-transient exception.</exception>
@@ -416,7 +414,6 @@ namespace Microsoft.Azure.Devices.Client
         /// <exception cref="SocketException">Thrown if a socket error occurs.</exception>
         /// <exception cref="WebSocketException">Thrown if an error occurs when performing an operation on a WebSocket connection.</exception>
         /// <exception cref="IOException">Thrown if an I/O error occurs.</exception>
-        /// <exception cref="ClosedChannelException">Thrown if the MQTT transport layer closes unexpectedly.</exception>
         /// <exception cref="IotHubException">Thrown if an error occurs when communicating with IoT hub service.
         /// If <see cref="IotHubException.IsTransient"/> is set to <c>true</c> then it is a transient exception.
         /// If <see cref="IotHubException.IsTransient"/> is set to <c>false</c> then it is a non-transient exception.</exception>
@@ -652,7 +649,6 @@ namespace Microsoft.Azure.Devices.Client
         /// <exception cref="SocketException">Thrown if a socket error occurs.</exception>
         /// <exception cref="WebSocketException">Thrown if an error occurs when performing an operation on a WebSocket connection.</exception>
         /// <exception cref="IOException">Thrown if an I/O error occurs.</exception>
-        /// <exception cref="ClosedChannelException">Thrown if the MQTT transport layer closes unexpectedly.</exception>
         /// <exception cref="IotHubException">Thrown if an error occurs when communicating with IoT hub service.
         /// If <see cref="IotHubException.IsTransient"/> is set to <c>true</c> then it is a transient exception.
         /// If <see cref="IotHubException.IsTransient"/> is set to <c>false</c> then it is a non-transient exception.</exception>
@@ -679,7 +675,6 @@ namespace Microsoft.Azure.Devices.Client
         /// <exception cref="SocketException">Thrown if a socket error occurs.</exception>
         /// <exception cref="WebSocketException">Thrown if an error occurs when performing an operation on a WebSocket connection.</exception>
         /// <exception cref="IOException">Thrown if an I/O error occurs.</exception>
-        /// <exception cref="ClosedChannelException">Thrown if the MQTT transport layer closes unexpectedly.</exception>
         /// <exception cref="IotHubException">Thrown if an error occurs when communicating with IoT hub service.
         /// If <see cref="IotHubException.IsTransient"/> is set to <c>true</c> then it is a transient exception.
         /// If <see cref="IotHubException.IsTransient"/> is set to <c>false</c> then it is a non-transient exception.</exception>
@@ -848,17 +843,8 @@ namespace Microsoft.Azure.Devices.Client
 
                 if (customCertificateValidation != null)
                 {
-                    TlsVersions.Instance.SetLegacyAcceptableVersions();
-
-#if !NET451
                     httpMessageHandler.ServerCertificateCustomValidationCallback = customCertificateValidation;
                     httpMessageHandler.SslProtocols = TlsVersions.Instance.Preferred;
-#else
-                    httpMessageHandler.ServerCertificateValidationCallback = (sender, certificate, chain, errors) =>
-                    {
-                        return customCertificateValidation(sender, certificate, chain, errors);
-                    };
-#endif
                 }
 
                 // We need to add the certificate to the httpTransport if DeviceAuthenticationWithX509Certificate

@@ -1,9 +1,9 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using DotNetty.Codecs.Mqtt.Packets;
 using Microsoft.Azure.Devices.Client.Extensions;
 using Microsoft.Azure.Devices.Shared;
+using MQTTnet.Protocol;
 using System;
 using System.Net;
 using System.Net.Security;
@@ -24,8 +24,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         private const bool DefaultMaxOutboundRetransmissionEnforced = false;
         private const int DefaultKeepAliveInSeconds = 300;
         private const int DefaultMaxPendingInboundMessages = 50;
-        private const QualityOfService DefaultPublishToServerQoS = QualityOfService.AtLeastOnce;
-        private const QualityOfService DefaultReceivingQoS = QualityOfService.AtLeastOnce;
+        private const MqttQualityOfServiceLevel DefaultPublishToServerQoS = MqttQualityOfServiceLevel.AtLeastOnce;
+        private const MqttQualityOfServiceLevel DefaultReceivingQoS = MqttQualityOfServiceLevel.AtLeastOnce;
 
         // The CONNACK timeout has been chosen to be 60 seconds to be in alignment with the service implemented timeout for processing connection requests.
         private static readonly TimeSpan s_defaultConnectArrivalTimeout = TimeSpan.FromSeconds(60);
@@ -90,6 +90,16 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         }
 
         /// <summary>
+        /// Cloud-to-device message queue size for storing offline messages when the client connects with <see cref="CleanSession" /> set to <c>false</c>.
+        /// </summary>
+        /// <remarks>
+        /// If incoming message callback is not set, messages from service are received and stored in a queue until a callback is set. 
+        /// If the number of messages sent is greater than queue size, older messages are removed as newer messages are added. 
+        /// Setting this to a low value can cause offline undelivered messages to get lost.
+        /// </remarks>
+        public int IncomingMessageQueueSize { get; set; } = 10;
+
+        /// <summary>
         /// Indicates if a device can timeout while waiting for a acknowledgment from service.
         /// The default value is <c>false</c>.
         /// </summary>
@@ -109,15 +119,15 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         /// <summary>
         /// The QoS to be used when sending packets to service.
-        /// The default value is <see cref="QualityOfService.AtLeastOnce"/>.
+        /// The default value is <see cref="MqttQualityOfServiceLevel.AtLeastOnce"/>.
         /// </summary>
-        public QualityOfService PublishToServerQoS { get; set; }
+        public MqttQualityOfServiceLevel PublishToServerQoS { get; set; }
 
         /// <summary>
         /// The QoS to be used when subscribing to receive packets from the service.
-        /// The default value is <see cref="QualityOfService.AtLeastOnce"/>.
+        /// The default value is <see cref="MqttQualityOfServiceLevel.AtLeastOnce"/>.
         /// </summary>
-        public QualityOfService ReceivingQoS { get; set; }
+        public MqttQualityOfServiceLevel ReceivingQoS { get; set; }
 
         /// <summary>
         /// The property on a message that indicates the publish packet has requested to be retained.
@@ -239,7 +249,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         /// <summary>
         /// The client certificate to be used for authenticating the TLS connection.
         /// </summary>
-        public X509Certificate ClientCertificate { get; set; }
+        public X509Certificate2 ClientCertificate { get; set; }
 
         /// <inheritdoc/>
         public IWebProxy Proxy { get; set; }

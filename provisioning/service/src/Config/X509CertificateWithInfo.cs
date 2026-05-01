@@ -105,7 +105,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         private static void ValidateCertificate(string certificate)
         {
             byte[] certBytes = System.Text.Encoding.ASCII.GetBytes(certificate ?? throw new ArgumentException("Certificate cannot be null."));
+#pragma warning disable SYSLIB0057 // Type or member is obsolete
             var cert = new X509Certificate2(certBytes);
+#pragma warning restore SYSLIB0057 // Type or member is obsolete
             ValidateCertificate(cert);
             cert.Dispose();
         }

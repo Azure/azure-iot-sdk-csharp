@@ -122,7 +122,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.Transport
                         {
                             throw new HttpRequestException($"Header value is invalid for {headerName}.");
                         }
-                        await httpResponse.Content.LoadIntoBufferAsync(contentLength).ConfigureAwait(false);
+                        await httpResponse.Content.LoadIntoBufferAsync(contentLength, cancellationToken).ConfigureAwait(false);
                     }
 
                     httpResponse.Content.Headers.TryAddWithoutValidation(headerName, headerValue);

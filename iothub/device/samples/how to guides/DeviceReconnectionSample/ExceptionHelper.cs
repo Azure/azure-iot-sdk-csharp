@@ -11,7 +11,6 @@ using System.Net.Sockets;
 using System.Net.WebSockets;
 using System.Runtime.InteropServices;
 using System.Security.Authentication;
-using DotNetty.Transport.Channels;
 
 namespace Microsoft.Azure.Devices.Client.Samples
 {
@@ -22,7 +21,6 @@ namespace Microsoft.Azure.Devices.Client.Samples
         {
             typeof(IOException),
             typeof(SocketException),
-            typeof(ClosedChannelException),
             typeof(TimeoutException),
             typeof(OperationCanceledException),
             typeof(HttpRequestException),
