@@ -15,6 +15,13 @@ parameters:
     - true
     - false
   default: false
+- name: publishShared
+  displayName: Publish Microsoft.Azure.Devices.Shared package
+  type: string
+  values:
+    - true
+    - false
+  default: false
 - name: publishDpsDevice
   displayName: Publish Microsoft.Azure.Devices.Provisioning.Client package
   type: string
@@ -62,6 +69,11 @@ jobs:
         dotnet pack --configuration  Release $(Build.SourcesDirectory)/iothub/service/src/Microsoft.Azure.Devices.csproj -o $(Build.SourcesDirectory)/_nupkgs/ -p:IncludeSymbols=false 
       displayName: Build and pack Microsoft.Azure.Devices.Client
       condition: eq(${{ parameters.publishHubService }}, 'true')
+
+    - bash: |
+        dotnet pack --configuration  Release $(Build.SourcesDirectory)/shared/src/Microsoft.Azure.Devices.Shared.csproj -o $(Build.SourcesDirectory)/_nupkgs/ -p:IncludeSymbols=false 
+      displayName: Build and pack Microsoft.Azure.Devices.Shared
+      condition: eq(${{ parameters.publishShared }}, 'true')
     
     - bash: |
         dotnet pack --configuration  Release $(Build.SourcesDirectory)/provisioning/device/src/Microsoft.Azure.Devices.Provisioning.Client.csproj -o $(Build.SourcesDirectory)/_nupkgs/ -p:IncludeSymbols=false 
