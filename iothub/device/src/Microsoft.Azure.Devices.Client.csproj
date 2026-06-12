@@ -33,7 +33,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <Version>1.43.0-edgeLts</Version>
+    <Version>1.43.1-edgeLts</Version>
     <Title>Microsoft Azure IoT Device Client SDK</Title>
     <IncludeSource>True</IncludeSource>
     <IncludeSymbols>True</IncludeSymbols>
