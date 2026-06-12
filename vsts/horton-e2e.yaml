@@ -1,6 +1,6 @@
 variables:
   Horton.FrameworkRoot: $(Agent.BuildDirectory)/e2e-fx
-  Horton.FrameworkRef: timtay/temp
+  Horton.FrameworkRef: timtay/temp # This is deliberately not targeting main because the main branch builds for an older version of .NET than this branch of the azure-iot-sdk-csharp repo targets
   Horton.Language: csharp
   Horton.Repo: $(Build.Repository.Uri)
   Horton.Commit: $(Build.SourceBranch)
