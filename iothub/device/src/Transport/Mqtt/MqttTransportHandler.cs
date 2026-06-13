@@ -1298,26 +1298,26 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
             else if (topic.StartsWith(TwinDesiredPropertiesPatchTopic, StringComparison.InvariantCulture))
             {
-                HandleReceivedDesiredPropertiesUpdateRequest(receivedEventArgs);
                 await receivedEventArgs.AcknowledgeAsync(CancellationToken.None);
+                HandleReceivedDesiredPropertiesUpdateRequest(receivedEventArgs);
             }
             else if (topic.StartsWith(TwinResponseTopic, StringComparison.InvariantCulture))
             {
-                HandleTwinResponse(receivedEventArgs);
                 await receivedEventArgs.AcknowledgeAsync(CancellationToken.None);
+                HandleTwinResponse(receivedEventArgs);
             }
             else if (topic.StartsWith(DirectMethodsRequestTopic, StringComparison.InvariantCulture))
             {
-                HandleReceivedDirectMethodRequest(receivedEventArgs);
                 await receivedEventArgs.AcknowledgeAsync(CancellationToken.None);
+                HandleReceivedDirectMethodRequest(receivedEventArgs);
             }
             else if (topic.StartsWith(_moduleEventMessageTopic, StringComparison.InvariantCulture)
                 || topic.StartsWith(_edgeModuleInputEventsTopic, StringComparison.InvariantCulture))
             {
                 // This works regardless of if the event is on a particular Edge module input or if
                 // the module is not an Edge module.
-                await HandleIncomingEventMessageAsync(receivedEventArgs).ConfigureAwait(false);
                 await receivedEventArgs.AcknowledgeAsync(CancellationToken.None);
+                await HandleIncomingEventMessageAsync(receivedEventArgs).ConfigureAwait(false);
             }
             else if (Logging.IsEnabled)
             {
