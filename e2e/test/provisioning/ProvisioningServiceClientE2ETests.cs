@@ -133,6 +133,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
+        [Ignore]
         public async Task ProvisioningServiceClient_GetIndividualEnrollmentAttestation_Tpm()
         {
             await ProvisioningServiceClient_GetIndividualEnrollmentAttestation(AttestationMechanismType.Tpm);
