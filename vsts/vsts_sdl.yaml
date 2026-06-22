@@ -25,7 +25,7 @@ jobs:
     pool:
       vmImage: windows-2022
     steps:
-      - powershell: .\build.ps1 -clean -build -configutaion Debug -package
+      - powershell: dotnet build
         displayName: Build Package
 
       - task: ComponentGovernanceComponentDetection@0
