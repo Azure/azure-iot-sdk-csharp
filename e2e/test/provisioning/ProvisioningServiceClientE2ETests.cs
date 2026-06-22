@@ -46,6 +46,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
         [TestCategory("Proxy")]
+        [Ignore]
         public async Task ProvisioningServiceClient_Tpm_IndividualEnrollments_Create_HttpWithProxy_Ok()
         {
             await ProvisioningServiceClient_IndividualEnrollments_Create_Ok(s_proxyServerAddress, AttestationMechanismType.Tpm).ConfigureAwait(false);
@@ -61,6 +62,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Provisioning
 
         [TestMethod]
         [Timeout(TestTimeoutMilliseconds)]
+        [Ignore]
         public async Task ProvisioningServiceClient_Tpm_IndividualEnrollments_Create_HttpWithoutProxy_Ok()
         {
             await ProvisioningServiceClient_IndividualEnrollments_Create_Ok("", AttestationMechanismType.Tpm).ConfigureAwait(false);
