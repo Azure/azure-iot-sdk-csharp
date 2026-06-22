@@ -1281,6 +1281,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         private async Task HandleReceivedMessageAsync(MqttApplicationMessageReceivedEventArgs receivedEventArgs)
         {
+            receivedEventArgs.AutoAcknowledge = false;
             string topic = receivedEventArgs.ApplicationMessage.Topic;
 
             if (topic.StartsWith(_deviceBoundMessagesTopic, StringComparison.InvariantCulture))
@@ -1298,17 +1299,14 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
             else if (topic.StartsWith(TwinDesiredPropertiesPatchTopic, StringComparison.InvariantCulture))
             {
-                await receivedEventArgs.AcknowledgeAsync(CancellationToken.None);
                 HandleReceivedDesiredPropertiesUpdateRequest(receivedEventArgs);
             }
             else if (topic.StartsWith(TwinResponseTopic, StringComparison.InvariantCulture))
             {
-                await receivedEventArgs.AcknowledgeAsync(CancellationToken.None);
                 HandleTwinResponse(receivedEventArgs);
             }
             else if (topic.StartsWith(DirectMethodsRequestTopic, StringComparison.InvariantCulture))
             {
-                await receivedEventArgs.AcknowledgeAsync(CancellationToken.None);
                 HandleReceivedDirectMethodRequest(receivedEventArgs);
             }
             else if (topic.StartsWith(_moduleEventMessageTopic, StringComparison.InvariantCulture)
@@ -1316,7 +1314,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 // This works regardless of if the event is on a particular Edge module input or if
                 // the module is not an Edge module.
-                await receivedEventArgs.AcknowledgeAsync(CancellationToken.None);
                 await HandleIncomingEventMessageAsync(receivedEventArgs).ConfigureAwait(false);
             }
             else if (Logging.IsEnabled)
@@ -1355,6 +1352,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         private void HandleReceivedDirectMethodRequest(MqttApplicationMessageReceivedEventArgs receivedEventArgs)
         {
+            // This message is always QoS 0, so no ack will be sent.
+            receivedEventArgs.AutoAcknowledge = true;
+
             byte[] payload = receivedEventArgs.ApplicationMessage.Payload.ToArray();
 
             string[] tokens = Regex.Split(receivedEventArgs.ApplicationMessage.Topic, "/", RegexOptions.Compiled);
@@ -1372,6 +1372,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         private void HandleReceivedDesiredPropertiesUpdateRequest(MqttApplicationMessageReceivedEventArgs receivedEventArgs)
         {
+            // This message is always QoS 0, so no ack will be sent.
+            receivedEventArgs.AutoAcknowledge = true;
             var twinProperties = JsonConvert.DeserializeObject<TwinCollection>(Encoding.UTF8.GetString(receivedEventArgs.ApplicationMessage.Payload.ToArray()), JsonSerializerSettingsInitializer.GetJsonSerializerSettings());
 
             _onDesiredStatePatchListener.Invoke(twinProperties);
@@ -1379,6 +1381,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         private void HandleTwinResponse(MqttApplicationMessageReceivedEventArgs receivedEventArgs)
         {
+            // This message is always QoS 0, so no ack will be sent.
+            receivedEventArgs.AutoAcknowledge = true;
+
             if (ParseResponseTopic(receivedEventArgs.ApplicationMessage.Topic, out string receivedRequestId, out int status, out long version))
             {
                 byte[] payloadBytes = receivedEventArgs.ApplicationMessage.Payload.ToArray() ?? Array.Empty<byte>();
@@ -1491,11 +1496,15 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         private async Task HandleIncomingEventMessageAsync(MqttApplicationMessageReceivedEventArgs receivedEventArgs)
         {
+            receivedEventArgs.AutoAcknowledge = true;
+
             using var iotHubMessage = new Message(receivedEventArgs.ApplicationMessage.Payload.ToArray());
 
             // The MqttTopic is in the format - devices/deviceId/modules/moduleId/inputs/inputName
             // We try to get the endpoint from the topic, if the topic is in the above format.
             string[] tokens = receivedEventArgs.ApplicationMessage.Topic.Split('/');
+
+            PopulateMessagePropertiesFromMqttMessage(iotHubMessage, receivedEventArgs.ApplicationMessage);
 
             // if there is an input name in the topic string, set the system property accordingly
             if (tokens.Length >= 6)
