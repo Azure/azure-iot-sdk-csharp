@@ -6,22 +6,18 @@ using System.Buffers;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
-using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Devices.Client.Extensions;
-using Microsoft.Azure.Devices.Client.Transport.Amqp;
-using Microsoft.Azure.Devices.Client.Transport.AmqpIot;
 using Microsoft.Azure.Devices.Client.Transport.Mqtt;
 using Microsoft.Azure.Devices.Shared;
 using MQTTnet;
@@ -1295,23 +1291,27 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 c2dMessage.LockToken = Guid.NewGuid().ToString();
                 unacknowledgedCloudToDeviceMessages.TryAdd(c2dMessage.LockToken, receivedEventArgs);
                 await HandleReceivedCloudToDeviceMessageAsync(c2dMessage).ConfigureAwait(false);
-                receivedEventArgs.AutoAcknowledge = false; // delay the ack until user calls "CompleteAsync"
             }
             else if (topic.StartsWith(TwinDesiredPropertiesPatchTopic, StringComparison.InvariantCulture))
             {
+                await receivedEventArgs.AcknowledgeAsync(CancellationToken.None);
                 HandleReceivedDesiredPropertiesUpdateRequest(receivedEventArgs);
             }
             else if (topic.StartsWith(TwinResponseTopic, StringComparison.InvariantCulture))
             {
+                await receivedEventArgs.AcknowledgeAsync(CancellationToken.None);
                 HandleTwinResponse(receivedEventArgs);
             }
             else if (topic.StartsWith(DirectMethodsRequestTopic, StringComparison.InvariantCulture))
             {
+                await receivedEventArgs.AcknowledgeAsync(CancellationToken.None);
                 HandleReceivedDirectMethodRequest(receivedEventArgs);
             }
             else if (topic.StartsWith(_moduleEventMessageTopic, StringComparison.InvariantCulture)
                 || topic.StartsWith(_edgeModuleInputEventsTopic, StringComparison.InvariantCulture))
             {
+                await receivedEventArgs.AcknowledgeAsync(CancellationToken.None);
+
                 // This works regardless of if the event is on a particular Edge module input or if
                 // the module is not an Edge module.
                 await HandleIncomingEventMessageAsync(receivedEventArgs).ConfigureAwait(false);
@@ -1503,6 +1503,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
             // The MqttTopic is in the format - devices/deviceId/modules/moduleId/inputs/inputName
             // We try to get the endpoint from the topic, if the topic is in the above format.
             string[] tokens = receivedEventArgs.ApplicationMessage.Topic.Split('/');
+
+            PopulateMessagePropertiesFromMqttMessage(iotHubMessage, receivedEventArgs.ApplicationMessage);
 
             // if there is an input name in the topic string, set the system property accordingly
             if (tokens.Length >= 6)

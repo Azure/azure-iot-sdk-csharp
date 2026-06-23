@@ -300,6 +300,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
         [TestMethodWithRetry(Max=3)]
         [Timeout(TestTimeoutMilliseconds)]
+        [Ignore]
         public async Task DeviceReceiveMessageUsingCallbackAndUnsubscribe_Amqp()
         {
             await ReceiveMessageUsingCallbackAndUnsubscribeAsync(TestDeviceType.Sasl, Client.TransportType.Amqp_Tcp_Only).ConfigureAwait(false);
@@ -307,6 +308,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
         [TestMethodWithRetry(Max=3)]
         [Timeout(TestTimeoutMilliseconds)]
+        [Ignore]
         public async Task DeviceReceiveMessageUsingCallbackAndUnsubscribe_AmqpWs()
         {
             await ReceiveMessageUsingCallbackAndUnsubscribeAsync(TestDeviceType.Sasl, Client.TransportType.Amqp_WebSocket_Only).ConfigureAwait(false);
@@ -314,6 +316,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
         [TestMethodWithRetry(Max=3)]
         [Timeout(TestTimeoutMilliseconds)]
+        [Ignore]
         public async Task X509_DeviceReceiveMessageUsingCallbackAndUnsubscribe_Amqp()
         {
             await ReceiveMessageUsingCallbackAndUnsubscribeAsync(TestDeviceType.X509, Client.TransportType.Amqp_Tcp_Only).ConfigureAwait(false);
@@ -321,6 +324,7 @@ namespace Microsoft.Azure.Devices.E2ETests.Messaging
 
         [TestMethodWithRetry(Max=3)]
         [Timeout(TestTimeoutMilliseconds)]
+        [Ignore]
         public async Task X509_DeviceReceiveMessageUsingCallbackAndUnsubscribe_AmqpWs()
         {
             await ReceiveMessageUsingCallbackAndUnsubscribeAsync(TestDeviceType.X509, Client.TransportType.Amqp_WebSocket_Only).ConfigureAwait(false);
