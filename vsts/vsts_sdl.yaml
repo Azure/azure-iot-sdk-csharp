@@ -21,12 +21,38 @@ jobs:
   - job: DOTNet_SDL_Analyzers
     displayName: .Net SDL Analyzers
     condition: succeeded()
-    timeoutInMinutes: 60
+    # CodeQL traces the builds below, which roughly doubles their wall time.
+    timeoutInMinutes: 90
+    variables:
+      # Owns the 'csharp' and 'java' CodeQL snapshots for this repo
+      # (Microsoft.Security.CodeQL.10000). Declaring the tasks explicitly, rather
+      # than leaning on the auto-injected CodeQL, keeps the snapshot S360 records
+      # tied to this job -- the one that actually builds the product. S360 keeps
+      # arg_max(SnapshotDate) per (repo, language), so without this the most
+      # recent incidental attempt wins instead.
+      # Only on main; this pipeline also runs on PRs, which need no snapshot.
+      # See https://aka.ms/codeql3000 and https://aka.ms/sdlfaqcodeql.
+      Codeql.Enabled: $[eq(variables['Build.SourceBranch'], 'refs/heads/main')]
+      Codeql.Language: csharp,java
     pool:
       vmImage: windows-2022
     steps:
+      - task: CodeQL3000Init@0
+        displayName: Initialize CodeQL
+
       - powershell: .\build.ps1 -clean -build -configutaion Debug -package
         displayName: Build Package
+
+      # GitHub reports 'java' among this repo's languages because of testProxy/
+      # (a single Main.java used by the E2E tests), so S360 grades us on it and
+      # CodeQL needs a traced java build to produce that database. This is the
+      # same command vsts/vsts.yaml already runs on a windows-2022 agent.
+      - powershell: mvn -f $(Build.SourcesDirectory)/testProxy/pom.xml clean install -q
+        displayName: Build test proxy (java, for CodeQL)
+
+      - task: CodeQL3000Finalize@0
+        displayName: Finalize CodeQL
+        condition: always()
 
       - task: ComponentGovernanceComponentDetection@0
         displayName: "Component Detection"
