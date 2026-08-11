@@ -39,20 +39,33 @@ jobs:
     steps:
       - task: CodeQL3000Init@0
         displayName: Initialize CodeQL
+        condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
 
-      - powershell: .\build.ps1 -clean -build -configutaion Debug -package
+      - powershell: .\build.ps1 -clean -build -configuration Debug -package
         displayName: Build Package
 
       # GitHub reports 'java' among this repo's languages because of testProxy/
       # (a single Main.java used by the E2E tests), so S360 grades us on it and
-      # CodeQL needs a traced java build to produce that database. This is the
-      # same command vsts/vsts.yaml already runs on a windows-2022 agent.
+      # CodeQL needs a traced java build to produce that database.
+      # testProxy/pom.xml sets maven.compiler.target=11, and the windows-2022
+      # image defaults JAVA_HOME to JDK 8 ('invalid target release: 11'), so the
+      # JDK has to be selected explicitly. Both steps run only on main, where
+      # CodeQL is enabled -- PR builds should not pay for a java build.
+      - task: JavaToolInstaller@0
+        displayName: Use JDK 11 (for the test proxy build)
+        condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+        inputs:
+          versionSpec: '11'
+          jdkArchitectureOption: 'x64'
+          jdkSourceOption: 'PreInstalled'
+
       - powershell: mvn -f $(Build.SourcesDirectory)/testProxy/pom.xml clean install -q
         displayName: Build test proxy (java, for CodeQL)
+        condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
 
       - task: CodeQL3000Finalize@0
         displayName: Finalize CodeQL
-        condition: always()
+        condition: and(always(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
 
       - task: ComponentGovernanceComponentDetection@0
         displayName: "Component Detection"
