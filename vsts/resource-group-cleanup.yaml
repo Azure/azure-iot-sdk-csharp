@@ -4,6 +4,16 @@ resources:
   - repo: self
     clean: true
 
+variables:
+  # This pipeline only deletes leftover Azure resource groups -- it builds
+  # nothing. The auto-injected CodeQL here was producing the "Database failed to
+  # finalize or no source code was built!" entries for this repo in the
+  # Microsoft.Security.CodeQL.10000 S360 report, because S360 records the most
+  # recent attempt per (repo, language). The real snapshot comes from the
+  # 'Dotnet SDL' pipeline (vsts/vsts_sdl.yaml).
+  # See https://aka.ms/codeql3000 and https://aka.ms/sdlfaqcodeql.
+  Codeql.Enabled: false
+
 jobs:
   - job: Cleanup
     displayName: Cleanup

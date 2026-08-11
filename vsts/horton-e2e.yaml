@@ -5,6 +5,11 @@ variables:
   Horton.Repo: $(Build.Repository.Uri)
   Horton.Commit: $(Build.SourceBranch)
   Horton.ForcedImage: ''
+  # This is an e2e gate, not the SDL scanning pipeline. Auto-injected CodeQL here
+  # produces incidental databases that displace the ones from 'Dotnet SDL'
+  # (vsts/vsts_sdl.yaml), because S360 records arg_max(SnapshotDate) per
+  # (repo, language). See https://aka.ms/codeql3000.
+  Codeql.Enabled: false
 
 resources:
   repositories:
