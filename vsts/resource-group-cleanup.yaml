@@ -188,7 +188,7 @@ jobs:
           Write-Host ""
           Write-Host "==== Cleanup summary ===="
           Write-Host "Queued for deletion        : $($deleted.Count)"
-          Write-Host "Skipped (still too new)    : $($skipped.Count)"
+          Write-Host "Skipped / not processed    : $($skipped.Count)"
           Write-Host "Stamped (untagged, ageing) : $($stamped.Count)"
           Write-Host "Failed to queue            : $($failed.Count)"
           if ($deleted.Count -gt 0) { Write-Host "Deleted: $($deleted -join ', ')" }
