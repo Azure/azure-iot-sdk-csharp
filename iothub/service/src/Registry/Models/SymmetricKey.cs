@@ -29,7 +29,6 @@ namespace Microsoft.Azure.Devices
 
             set
             {
-                ValidateDeviceAuthenticationKey(value, "PrimaryKey");
                 this.primaryKey = value;
             }
         }
@@ -47,7 +46,6 @@ namespace Microsoft.Azure.Devices
 
             set
             {
-                ValidateDeviceAuthenticationKey(value, "SecondaryKey");
                 this.secondaryKey = value;
             }
         }
@@ -86,23 +84,6 @@ namespace Microsoft.Azure.Devices
         public bool IsEmpty()
         {
             return string.IsNullOrWhiteSpace(this.PrimaryKey) && string.IsNullOrWhiteSpace(this.SecondaryKey);
-        }
-
-        static void ValidateDeviceAuthenticationKey(string key, string paramName)
-        {
-            if (key != null)
-            {
-                int keyLength;
-                if (!Utils.IsValidBase64(key, out keyLength))
-                {
-                    throw new ArgumentException(CommonResources.GetString(Resources.StringIsNotBase64, key), paramName);
-                }
-
-                if (keyLength < SecurityConstants.MinKeyLengthInBytes || keyLength > SecurityConstants.MaxKeyLengthInBytes)
-                {
-                    throw new ArgumentException(CommonResources.GetString(Resources.DeviceKeyLengthInvalid, SecurityConstants.MinKeyLengthInBytes, SecurityConstants.MaxKeyLengthInBytes));
-                }
-            }
         }
     }
 }

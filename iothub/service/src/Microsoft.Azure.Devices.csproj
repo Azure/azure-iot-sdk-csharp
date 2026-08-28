@@ -34,7 +34,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <Version>1.41.0</Version>
+    <Version>1.41.1</Version>
     <Title>Microsoft Azure IoT Service Client SDK</Title>
     <IncludeSource>True</IncludeSource>
     <IncludeSymbols>True</IncludeSymbols>
@@ -140,8 +140,8 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="Microsoft.Azure.Amqp" Version="2.6.9" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+    <PackageReference Include="Microsoft.Azure.Amqp" Version="2.7.3" />
   </ItemGroup>
 
   <ItemGroup>
