@@ -71,9 +71,9 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="timeBufferPercentage">
         /// The time buffer before expiry when the token should be renewed, expressed as a percentage of the time to live.
         /// The default behavior is that the token will be renewed when it has 15% or less of its lifespan left.
-        ///</param>
-        ///<param name="disposeWithClient ">
-        ///<c>true</c> if the authentication method should be disposed of by the client
+        /// </param>
+        /// <param name="disposeWithClient">
+        /// <c>true</c> if the authentication method should be disposed of by the client
         /// when the client using this instance is itself disposed; <c>false</c> if you intend to reuse the authentication method.
         /// </param>
         public ModuleAuthenticationWithTokenRefresh(
