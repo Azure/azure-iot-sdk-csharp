@@ -332,5 +332,33 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// </summary>
         [JsonProperty(PropertyName = "customAllocationDefinition", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public CustomAllocationDefinition CustomAllocationDefinition { get; set; }
+
+        /// <summary>
+        /// The name of the namespace this enrollment group is associated with (optional). Length 3-64 characters.
+        /// </summary>
+        [JsonProperty(PropertyName = "namespaceName", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        public string NamespaceName { get; set; }
+
+        /// <summary>
+        /// The name of the certificate authority this enrollment group is associated with (optional). Length 3-63 characters.
+        /// </summary>
+        [JsonProperty(PropertyName = "certificateAuthorityName", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        public string CertificateAuthorityName { get; set; }
+
+        /// <summary>
+        /// The name of the certificate policy this enrollment group is associated with (optional). Length 3-63 characters.
+        /// </summary>
+        [JsonProperty(PropertyName = "certificatePolicyName", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        public string CertificatePolicyName { get; set; }
+
+#pragma warning disable CA2227 // Collection properties should be read only. Would change public API.
+
+        /// <summary>
+        /// The device type references this enrollment group is associated with (optional). At most one item is supported.
+        /// </summary>
+        [JsonProperty(PropertyName = "deviceTypeRefs", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        public ICollection<string> DeviceTypeRefs { get; set; }
+
+#pragma warning restore CA2227 // Collection properties should be read only
     }
 }
