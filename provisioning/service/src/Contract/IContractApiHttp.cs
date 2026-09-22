@@ -11,6 +11,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 {
     internal interface IContractApiHttp : IDisposable
     {
+        /// <summary>
+        /// The service API version this contract issues requests for.
+        /// </summary>
+        ServiceVersion ServiceVersion { get; }
+
         Task<ContractApiResponse> RequestAsync(
             HttpMethod httpMethod,
             Uri requestUri,

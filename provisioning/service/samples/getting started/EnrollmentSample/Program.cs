@@ -29,8 +29,16 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
                 Environment.Exit(1);
             }
 
-            using var provisioningServiceClient = ProvisioningServiceClient.CreateFromConnectionString(parameters.ProvisioningConnectionString);
-            var sample = new IndividualEnrollmentSample(provisioningServiceClient);
+            // Select the service API version. The default (2019-03-31) preserves legacy wire behavior;
+            // 2026-11-01 and 2026-11-02-preview are explicit opt-in versions (the preview additionally
+            // enables preview-only fields).
+            var options = new ProvisioningServiceClientOptions
+            {
+                Version = parameters.GetServiceVersion(),
+            };
+
+            using var provisioningServiceClient = ProvisioningServiceClient.CreateFromConnectionString(parameters.ProvisioningConnectionString, options);
+            var sample = new IndividualEnrollmentSample(provisioningServiceClient, parameters);
             await sample.RunSampleAsync();
 
             Console.WriteLine("Done.\n");

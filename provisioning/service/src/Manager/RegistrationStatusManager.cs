@@ -27,7 +27,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             ContractApiResponse contractApiResponse = await contractApiHttp
                 .RequestAsync(
                     HttpMethod.Get,
-                    GetDeviceRegistrationStatusUri(id),
+                    GetDeviceRegistrationStatusUri(id, contractApiHttp.ServiceVersion),
                     null,
                     null,
                     null,
@@ -55,7 +55,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             await contractApiHttp
                 .RequestAsync(
                     HttpMethod.Delete,
-                    GetDeviceRegistrationStatusUri(deviceRegistrationState.RegistrationId),
+                    GetDeviceRegistrationStatusUri(deviceRegistrationState.RegistrationId, contractApiHttp.ServiceVersion),
                     null,
                     null,
                     deviceRegistrationState.ETag,
@@ -72,7 +72,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             await contractApiHttp
                 .RequestAsync(
                     HttpMethod.Delete,
-                    GetDeviceRegistrationStatusUri(id),
+                    GetDeviceRegistrationStatusUri(id, contractApiHttp.ServiceVersion),
                     null,
                     null,
                     eTag,
@@ -88,7 +88,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             HttpTransportSettings httpTransportSettings,
             CancellationToken cancellationToken,
             string enrollmentGroupId,
-            int pageSize = 0)
+            int pageSize = 0,
+            ServiceVersion serviceVersion = ServiceVersion.V2019_03_31)
         {
             if (querySpecification == null)
             {
@@ -106,14 +107,15 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 querySpecification,
                 httpTransportSettings,
                 pageSize,
-                cancellationToken);
+                cancellationToken,
+                serviceVersion);
         }
 
-        private static Uri GetDeviceRegistrationStatusUri(string id)
+        private static Uri GetDeviceRegistrationStatusUri(string id, ServiceVersion serviceVersion)
         {
             id = WebUtility.UrlEncode(id);
             return new Uri(
-                DeviceRegistrationStatusUriFormat.FormatInvariant(ServiceName, id, SdkUtils.ApiVersionQueryString),
+                DeviceRegistrationStatusUriFormat.FormatInvariant(ServiceName, id, SdkUtils.GetApiVersionQueryString(serviceVersion)),
                 UriKind.Relative);
         }
 

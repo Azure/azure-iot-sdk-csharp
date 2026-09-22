@@ -3,6 +3,7 @@
 
 using Microsoft.Azure.Devices.Shared;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
@@ -24,10 +25,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
         private readonly DeviceCapabilities _optionalEdgeCapabilityDisabled = new() { IotEdge = false };
 
         private readonly ProvisioningServiceClient _provisioningServiceClient;
+        private readonly Parameters _parameters;
 
-        public IndividualEnrollmentSample(ProvisioningServiceClient provisioningServiceClient)
+        public IndividualEnrollmentSample(ProvisioningServiceClient provisioningServiceClient, Parameters parameters)
         {
             _provisioningServiceClient = provisioningServiceClient;
+            _parameters = parameters;
         }
 
         public async Task RunSampleAsync()
@@ -73,6 +76,36 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
                         ["Color"] = "White",
                     })
             };
+
+            // The following fields are available starting with service API version 2026-11-01. They are only
+            // set when a 2026 (or later) ServiceVersion is selected AND a value is supplied, so the default
+            // 2019-03-31 path is unaffected and never sends them. Select 2026-11-02-preview to exercise these
+            // fields against the preview today. The values reference resources that must already exist in your
+            // provisioning service.
+            ServiceVersion serviceVersion = _parameters.GetServiceVersion();
+            if (serviceVersion != ServiceVersion.V2019_03_31)
+            {
+                if (!string.IsNullOrWhiteSpace(_parameters.NamespaceName))
+                {
+                    individualEnrollment.NamespaceName = _parameters.NamespaceName;
+                }
+                if (!string.IsNullOrWhiteSpace(_parameters.CertificateAuthorityName))
+                {
+                    individualEnrollment.CertificateAuthorityName = _parameters.CertificateAuthorityName;
+                }
+                if (!string.IsNullOrWhiteSpace(_parameters.CertificatePolicyName))
+                {
+                    individualEnrollment.CertificatePolicyName = _parameters.CertificatePolicyName;
+                }
+            }
+
+            // deviceTypeRefs is preview-only (2026-11-02-preview) and at most one item is supported. It is
+            // only serialized when the preview ServiceVersion is selected.
+            if (serviceVersion == ServiceVersion.V2026_11_02_Preview
+                && !string.IsNullOrWhiteSpace(_parameters.DeviceTypeRef))
+            {
+                individualEnrollment.DeviceTypeRefs = new List<string> { _parameters.DeviceTypeRef };
+            }
 
             Console.WriteLine("Adding new individualEnrollment...");
             IndividualEnrollment individualEnrollmentResult =

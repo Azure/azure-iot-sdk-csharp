@@ -83,6 +83,27 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <exception cref="ArgumentException">if the individualEnrollments is invalid.</exception>
         public static string ToJson(BulkOperationMode mode, IEnumerable<IndividualEnrollment> individualEnrollments)
         {
+            return ToJson(mode, individualEnrollments, ServiceVersion.V2019_03_31);
+        }
+
+        /// <summary>
+        /// Serializer
+        /// </summary>
+        /// <remarks>
+        /// Creates a <c>string</c>, whose content represents the mode and the collection of
+        ///     individualEnrollments in a JSON format. Preview-only enrollment properties are only serialized when a
+        ///     preview <paramref name="serviceVersion"/> is selected.
+        /// </remarks>
+        /// <param name="mode">the <see cref="BulkOperationMode"/> that defines the single operation to do over the
+        ///     individualEnrollments.</param>
+        /// <param name="individualEnrollments">the collection of <see cref="IndividualEnrollment"/> that contains the description
+        ///     of each individualEnrollment.</param>
+        /// <param name="serviceVersion">the <see cref="ServiceVersion"/> that gates preview-only serialization.</param>
+        /// <returns>The <c>string</c> with the content of this class.</returns>
+        /// <exception cref="ArgumentNullException">if the individualEnrollments is null.</exception>
+        /// <exception cref="ArgumentException">if the individualEnrollments is invalid.</exception>
+        public static string ToJson(BulkOperationMode mode, IEnumerable<IndividualEnrollment> individualEnrollments, ServiceVersion serviceVersion)
+        {
             if (!(individualEnrollments ?? throw new ArgumentNullException(nameof(individualEnrollments))).Any())
             {
                 throw new ArgumentException("The collection is null or empty.", nameof(individualEnrollments));
@@ -93,7 +114,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 Mode = mode,
                 Enrollments = individualEnrollments,
             };
-            return JsonConvert.SerializeObject(bulkOperation, JsonSerializerSettingsInitializer.GetJsonSerializerSettings());
+            return JsonConvert.SerializeObject(bulkOperation, JsonSerializerSettingsInitializer.GetJsonSerializerSettings(serviceVersion));
         }
     }
 }

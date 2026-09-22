@@ -228,7 +228,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <returns>The <c>string</c> with the content of this class in a pretty print format.</returns>
         public override string ToString()
         {
-            string jsonPrettyPrint = JsonConvert.SerializeObject(this, Formatting.Indented);
+            // Serialize through the stable resolver so preview-only properties (for example DeviceTypeRefs)
+            // do not leak into this version-agnostic diagnostic output. Formatting is unaffected for all
+            // other properties.
+            string jsonPrettyPrint = JsonConvert.SerializeObject(
+                this,
+                Formatting.Indented,
+                JsonSerializerSettingsInitializer.GetJsonSerializerSettings(ServiceVersion.V2019_03_31));
             return jsonPrettyPrint;
         }
 
@@ -332,5 +338,47 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// </summary>
         [JsonProperty(PropertyName = "customAllocationDefinition", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public CustomAllocationDefinition CustomAllocationDefinition { get; set; }
+
+        /// <summary>
+        /// The name of the namespace this enrollment group is associated with (optional). Length 3-64 characters.
+        /// </summary>
+        /// <remarks>
+        /// Available starting with service API version 2026-11-01.
+        /// </remarks>
+        [JsonProperty(PropertyName = "namespaceName", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        public string NamespaceName { get; set; }
+
+        /// <summary>
+        /// The name of the certificate authority this enrollment group is associated with (optional). Length 3-63 characters.
+        /// </summary>
+        /// <remarks>
+        /// Available starting with service API version 2026-11-01.
+        /// </remarks>
+        [JsonProperty(PropertyName = "certificateAuthorityName", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        public string CertificateAuthorityName { get; set; }
+
+        /// <summary>
+        /// The name of the certificate policy this enrollment group is associated with (optional). Length 3-63 characters.
+        /// </summary>
+        /// <remarks>
+        /// Available starting with service API version 2026-11-01.
+        /// </remarks>
+        [JsonProperty(PropertyName = "certificatePolicyName", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        public string CertificatePolicyName { get; set; }
+
+#pragma warning disable CA2227 // Collection properties should be read only. Would change public API.
+
+        /// <summary>
+        /// The device type references this enrollment group is associated with (optional). At most one item is supported.
+        /// </summary>
+        /// <remarks>
+        /// Available only with the preview service API version 2026-11-02-preview. This value is only serialized when a
+        /// preview <see cref="ServiceVersion"/> is selected.
+        /// </remarks>
+        [PreviewApiOnly]
+        [JsonProperty(PropertyName = "deviceTypeRefs", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        public ICollection<string> DeviceTypeRefs { get; set; }
+
+#pragma warning restore CA2227 // Collection properties should be read only
     }
 }

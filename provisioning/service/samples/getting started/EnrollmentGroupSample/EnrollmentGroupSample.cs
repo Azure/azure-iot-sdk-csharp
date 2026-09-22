@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
@@ -12,10 +13,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
     {
         private static readonly string s_enrollmentGroupId = $"EnrollmentGroupSample-{Guid.NewGuid()}";
         private readonly ProvisioningServiceClient _provisioningServiceClient;
+        private readonly Parameters _parameters;
 
-        public EnrollmentGroupSample(ProvisioningServiceClient provisioningServiceClient)
+        public EnrollmentGroupSample(ProvisioningServiceClient provisioningServiceClient, Parameters parameters)
         {
             _provisioningServiceClient = provisioningServiceClient;
+            _parameters = parameters;
         }
 
         public async Task RunSampleAsync()
@@ -31,6 +34,36 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
             Console.WriteLine("Creating a new enrollment group...");
             Attestation attestation = new SymmetricKeyAttestation(null, null); // let the service generate keys
             var group = new EnrollmentGroup(s_enrollmentGroupId, attestation);
+
+            // The following fields are available starting with service API version 2026-11-01. They are only
+            // set when a 2026 (or later) ServiceVersion is selected AND a value is supplied, so the default
+            // 2019-03-31 path is unaffected and never sends them. Select 2026-11-02-preview to exercise these
+            // fields against the preview today. The values reference resources that must already exist in your
+            // provisioning service.
+            ServiceVersion serviceVersion = _parameters.GetServiceVersion();
+            if (serviceVersion != ServiceVersion.V2019_03_31)
+            {
+                if (!string.IsNullOrWhiteSpace(_parameters.NamespaceName))
+                {
+                    group.NamespaceName = _parameters.NamespaceName;
+                }
+                if (!string.IsNullOrWhiteSpace(_parameters.CertificateAuthorityName))
+                {
+                    group.CertificateAuthorityName = _parameters.CertificateAuthorityName;
+                }
+                if (!string.IsNullOrWhiteSpace(_parameters.CertificatePolicyName))
+                {
+                    group.CertificatePolicyName = _parameters.CertificatePolicyName;
+                }
+            }
+
+            // deviceTypeRefs is preview-only (2026-11-02-preview) and at most one item is supported. It is
+            // only serialized when the preview ServiceVersion is selected.
+            if (serviceVersion == ServiceVersion.V2026_11_02_Preview
+                && !string.IsNullOrWhiteSpace(_parameters.DeviceTypeRef))
+            {
+                group.DeviceTypeRefs = new List<string> { _parameters.DeviceTypeRef };
+            }
 
             group = await _provisioningServiceClient.CreateOrUpdateEnrollmentGroupAsync(group);
             Console.WriteLine($"Created {group.EnrollmentGroupId}: {JsonConvert.SerializeObject(group)}");
@@ -72,6 +105,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
                 foreach (DeviceRegistrationState registration in queryResult.Items.Cast<DeviceRegistrationState>())
                 {
                     Console.WriteLine($"\t{registration.RegistrationId} for {registration.DeviceId} is {registration.Status}.");
+
+                    // ConnectionProfile is a read-only, response-only field populated by the service starting
+                    // with the 2026-11-02-preview API version. It is extensible: known values include "classic"
+                    // and "mqttV5", and unknown future values are tolerated as-is. A missing/null value
+                    // semantically resolves to "classic".
+                    Console.WriteLine($"\t\tConnection profile: {registration.ConnectionProfile ?? "classic (default)"}");
+
                     if (registration.ErrorCode.HasValue)
                     {
                         Console.WriteLine($"\t\tWith error ({registration.ErrorCode.Value}): {registration.ErrorMessage}");

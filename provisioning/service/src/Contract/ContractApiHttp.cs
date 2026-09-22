@@ -30,13 +30,18 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
         private static readonly TimeSpan s_defaultOperationTimeout = TimeSpan.FromSeconds(100);
 
+        /// <inheritdoc/>
+        public ServiceVersion ServiceVersion { get; }
+
         public ContractApiHttp(
             Uri baseAddress,
             IAuthorizationHeaderProvider authenticationHeaderProvider,
-            HttpTransportSettings httpTransportSettings)
+            HttpTransportSettings httpTransportSettings,
+            ServiceVersion serviceVersion)
         {
             _baseAddress = baseAddress;
             _authenticationHeaderProvider = authenticationHeaderProvider;
+            ServiceVersion = serviceVersion;
 
             _httpClientHandler = new HttpClientHandler
             {

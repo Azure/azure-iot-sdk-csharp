@@ -42,9 +42,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             ContractApiResponse contractApiResponse = await contractApiHttp
                 .RequestAsync(
                     HttpMethod.Put,
-                    GetEnrollmentUri(individualEnrollment.RegistrationId),
+                    GetEnrollmentUri(individualEnrollment.RegistrationId, contractApiHttp.ServiceVersion),
                     null,
-                    JsonConvert.SerializeObject(individualEnrollment, JsonSerializerSettingsInitializer.GetJsonSerializerSettings()),
+                    JsonConvert.SerializeObject(individualEnrollment, JsonSerializerSettingsInitializer.GetJsonSerializerSettings(contractApiHttp.ServiceVersion)),
                     individualEnrollment.ETag,
                     cancellationToken)
                 .ConfigureAwait(false);
@@ -76,9 +76,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             ContractApiResponse contractApiResponse = await contractApiHttp
                 .RequestAsync(
                     HttpMethod.Post,
-                    GetEnrollmentUri(),
+                    GetEnrollmentUri(contractApiHttp.ServiceVersion),
                     null,
-                    BulkEnrollmentOperation.ToJson(bulkOperationMode, individualEnrollments),
+                    BulkEnrollmentOperation.ToJson(bulkOperationMode, individualEnrollments, contractApiHttp.ServiceVersion),
                     null,
                     cancellationToken)
                 .ConfigureAwait(false);
@@ -99,7 +99,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             ContractApiResponse contractApiResponse = await contractApiHttp
                 .RequestAsync(
                     HttpMethod.Get,
-                    GetEnrollmentUri(registrationId),
+                    GetEnrollmentUri(registrationId, contractApiHttp.ServiceVersion),
                     null,
                     null,
                     null,
@@ -127,7 +127,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             await contractApiHttp
                 .RequestAsync(
                     HttpMethod.Delete,
-                    GetEnrollmentUri(individualEnrollment.RegistrationId),
+                    GetEnrollmentUri(individualEnrollment.RegistrationId, contractApiHttp.ServiceVersion),
                     null,
                     null,
                     individualEnrollment.ETag,
@@ -144,7 +144,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             await contractApiHttp
                 .RequestAsync(
                     HttpMethod.Delete,
-                    GetEnrollmentUri(registrationId),
+                    GetEnrollmentUri(registrationId, contractApiHttp.ServiceVersion),
                     null,
                     null,
                     eTag,
@@ -157,7 +157,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             QuerySpecification querySpecification,
             HttpTransportSettings httpTransportSettings,
             CancellationToken cancellationToken,
-            int pageSize = 0)
+            int pageSize = 0,
+            ServiceVersion serviceVersion = ServiceVersion.V2019_03_31)
         {
             if (querySpecification == null)
             {
@@ -169,18 +170,18 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 throw new ArgumentException($"{nameof(pageSize)} cannot be negative");
             }
 
-            return new Query(provisioningConnectionString, ServiceName, querySpecification, httpTransportSettings, pageSize, cancellationToken);
+            return new Query(provisioningConnectionString, ServiceName, querySpecification, httpTransportSettings, pageSize, cancellationToken, serviceVersion);
         }
 
-        private static Uri GetEnrollmentUri(string registrationId)
+        private static Uri GetEnrollmentUri(string registrationId, ServiceVersion serviceVersion)
         {
             registrationId = WebUtility.UrlEncode(registrationId);
-            return new Uri(EnrollmentIdUriFormat.FormatInvariant(ServiceName, registrationId, SdkUtils.ApiVersionQueryString), UriKind.Relative);
+            return new Uri(EnrollmentIdUriFormat.FormatInvariant(ServiceName, registrationId, SdkUtils.GetApiVersionQueryString(serviceVersion)), UriKind.Relative);
         }
 
-        private static Uri GetEnrollmentUri()
+        private static Uri GetEnrollmentUri(ServiceVersion serviceVersion)
         {
-            return new Uri(EnrollmentUriFormat.FormatInvariant(ServiceName, SdkUtils.ApiVersionQueryString), UriKind.Relative);
+            return new Uri(EnrollmentUriFormat.FormatInvariant(ServiceName, SdkUtils.GetApiVersionQueryString(serviceVersion)), UriKind.Relative);
         }
 
         internal static async Task<AttestationMechanism> GetEnrollmentAttestationAsync(
@@ -191,7 +192,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             ContractApiResponse contractApiResponse = await contractApiHttp
                 .RequestAsync(
                     HttpMethod.Post,
-                    GetEnrollmentAttestationUri(registrationId),
+                    GetEnrollmentAttestationUri(registrationId, contractApiHttp.ServiceVersion),
                     null,
                     null,
                     null,
@@ -206,11 +207,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             return JsonConvert.DeserializeObject<AttestationMechanism>(contractApiResponse.Body, JsonSerializerSettingsInitializer.GetJsonSerializerSettings());
         }
 
-        private static Uri GetEnrollmentAttestationUri(string enrollmentGroupId)
+        private static Uri GetEnrollmentAttestationUri(string enrollmentGroupId, ServiceVersion serviceVersion)
         {
             enrollmentGroupId = WebUtility.UrlEncode(enrollmentGroupId);
             return new Uri(
-                EnrollmentAttestationUriFormat.FormatInvariant(ServiceName, enrollmentGroupId, EnrollmentAttestationName, SdkUtils.ApiVersionQueryString),
+                EnrollmentAttestationUriFormat.FormatInvariant(ServiceName, enrollmentGroupId, EnrollmentAttestationName, SdkUtils.GetApiVersionQueryString(serviceVersion)),
                 UriKind.Relative);
         }
     }

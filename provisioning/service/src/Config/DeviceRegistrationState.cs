@@ -73,5 +73,17 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// </summary>
         [JsonProperty(PropertyName = "etag", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public string ETag { get; internal set; }
+
+        /// <summary>
+        /// The connection profile the device registered with (optional, read-only).
+        /// </summary>
+        /// <remarks>
+        /// Available only with the preview service API version 2026-11-02-preview. Known values are
+        /// <c>classic</c> and <c>mqttV5</c>; other values may be returned by the service in the future and are
+        /// surfaced as-is. When the service does not emit this value it is <c>null</c>, which is semantically
+        /// equivalent to <c>classic</c>.
+        /// </remarks>
+        [JsonProperty(PropertyName = "connectionProfile", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        public string ConnectionProfile { get; internal set; }
     }
 }

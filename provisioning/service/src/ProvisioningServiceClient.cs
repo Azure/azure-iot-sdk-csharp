@@ -67,6 +67,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     {
         private readonly ServiceConnectionString _provisioningConnectionString;
         private readonly IContractApiHttp _contractApiHttp;
+        private readonly ServiceVersion _serviceVersion;
 
         /// <summary>
         /// Create a new instance of the <c>ProvisioningServiceClient</c> that exposes
@@ -82,7 +83,26 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <exception cref="ArgumentException">If the connectionString is <c>null</c> or empty.</exception>
         public static ProvisioningServiceClient CreateFromConnectionString(string connectionString)
         {
-            return new ProvisioningServiceClient(connectionString, new HttpTransportSettings());
+            return new ProvisioningServiceClient(connectionString, new HttpTransportSettings(), new ProvisioningServiceClientOptions());
+        }
+
+        /// <summary>
+        /// Create a new instance of the <c>ProvisioningServiceClient</c> that exposes
+        /// the API to the Device Provisioning Service.
+        /// </summary>
+        /// <remarks>
+        /// The Device Provisioning Service Client is created based on a <b>Provisioning Connection string</b>.
+        /// Once you create a Device Provisioning Service on Azure, you can get the connection string on the Azure portal.
+        /// </remarks>
+        ///
+        /// <param name="connectionString">The <c>string</c> that cares the connection string of the Device Provisioning Service.</param>
+        /// <param name="options">The <see cref="ProvisioningServiceClientOptions"/> that allow configuration of the client instance, including the target service API version.</param>
+        /// <returns>The <c>ProvisioningServiceClient</c> with the new instance of this object.</returns>
+        /// <exception cref="ArgumentException">If the connectionString is <c>null</c> or empty.</exception>
+        /// <exception cref="ArgumentNullException">If the <paramref name="options"/> is <c>null</c>.</exception>
+        public static ProvisioningServiceClient CreateFromConnectionString(string connectionString, ProvisioningServiceClientOptions options)
+        {
+            return new ProvisioningServiceClient(connectionString, new HttpTransportSettings(), options);
         }
 
         /// <summary>
@@ -100,21 +120,48 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <exception cref="ArgumentException">If the connectionString is <c>null</c> or empty.</exception>
         public static ProvisioningServiceClient CreateFromConnectionString(string connectionString, HttpTransportSettings httpTransportSettings)
         {
-            return new ProvisioningServiceClient(connectionString, httpTransportSettings);
+            return new ProvisioningServiceClient(connectionString, httpTransportSettings, new ProvisioningServiceClientOptions());
         }
 
-        private ProvisioningServiceClient(string connectionString, HttpTransportSettings httpTransportSettings)
+        /// <summary>
+        /// Create a new instance of the <c>ProvisioningServiceClient</c> that exposes
+        /// the API to the Device Provisioning Service.
+        /// </summary>
+        /// <remarks>
+        /// The Device Provisioning Service Client is created based on a <b>Provisioning Connection string</b>.
+        /// Once you create a Device Provisioning Service on Azure, you can get the connection string on the Azure portal.
+        /// </remarks>
+        ///
+        /// <param name="connectionString">The <c>string</c> that cares the connection string of the Device Provisioning Service.</param>
+        /// <param name="httpTransportSettings"> Specifies the HTTP transport settings for the request</param>
+        /// <param name="options">The <see cref="ProvisioningServiceClientOptions"/> that allow configuration of the client instance, including the target service API version.</param>
+        /// <returns>The <c>ProvisioningServiceClient</c> with the new instance of this object.</returns>
+        /// <exception cref="ArgumentException">If the connectionString is <c>null</c> or empty.</exception>
+        /// <exception cref="ArgumentNullException">If the <paramref name="options"/> is <c>null</c>.</exception>
+        public static ProvisioningServiceClient CreateFromConnectionString(string connectionString, HttpTransportSettings httpTransportSettings, ProvisioningServiceClientOptions options)
+        {
+            return new ProvisioningServiceClient(connectionString, httpTransportSettings, options);
+        }
+
+        private ProvisioningServiceClient(string connectionString, HttpTransportSettings httpTransportSettings, ProvisioningServiceClientOptions options)
         {
             if (string.IsNullOrWhiteSpace(connectionString ?? throw new ArgumentNullException(nameof(connectionString))))
             {
                 throw new ArgumentException($"{nameof(connectionString)} cannot be empty string");
             }
 
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
+            _serviceVersion = options.Version;
             _provisioningConnectionString = ServiceConnectionString.Parse(connectionString);
             _contractApiHttp = new ContractApiHttp(
                 _provisioningConnectionString.HttpsEndpoint,
                 _provisioningConnectionString,
-                httpTransportSettings);
+                httpTransportSettings,
+                _serviceVersion);
         }
 
         /// <summary>
@@ -451,7 +498,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 _provisioningConnectionString,
                 querySpecification,
                 new HttpTransportSettings(),
-                CancellationToken.None);
+                CancellationToken.None,
+                serviceVersion: _serviceVersion);
         }
 
         /// <summary>
@@ -474,7 +522,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 _provisioningConnectionString,
                 querySpecification,
                 httpTransportSettings,
-                CancellationToken.None);
+                CancellationToken.None,
+                serviceVersion: _serviceVersion);
         }
 
         /// <summary>
@@ -497,7 +546,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 _provisioningConnectionString,
                 querySpecification,
                 new HttpTransportSettings(),
-                cancellationToken);
+                cancellationToken,
+                serviceVersion: _serviceVersion);
         }
 
         /// <summary>
@@ -525,7 +575,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 querySpecification,
                 new HttpTransportSettings(),
                 CancellationToken.None,
-                pageSize);
+                pageSize,
+                serviceVersion: _serviceVersion);
         }
 
         /// <summary>
@@ -554,7 +605,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 querySpecification,
                 new HttpTransportSettings(),
                 cancellationToken,
-                pageSize);
+                pageSize,
+                serviceVersion: _serviceVersion);
         }
 
         /// <summary>
@@ -583,7 +635,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 querySpecification,
                 httpTransportSettings,
                 CancellationToken.None,
-                pageSize);
+                pageSize,
+                serviceVersion: _serviceVersion);
         }
 
         /// <summary>
@@ -817,7 +870,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 _provisioningConnectionString,
                 querySpecification,
                 new HttpTransportSettings(),
-                CancellationToken.None);
+                CancellationToken.None,
+                serviceVersion: _serviceVersion);
         }
 
         /// <summary>
@@ -840,7 +894,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 _provisioningConnectionString,
                 querySpecification,
                 httpTransportSettings,
-                CancellationToken.None);
+                CancellationToken.None,
+                serviceVersion: _serviceVersion);
         }
 
         /// <summary>
@@ -863,7 +918,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 _provisioningConnectionString,
                 querySpecification,
                 new HttpTransportSettings(),
-                cancellationToken);
+                cancellationToken,
+                serviceVersion: _serviceVersion);
         }
 
         /// <summary>
@@ -891,7 +947,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 querySpecification,
                 new HttpTransportSettings(),
                 CancellationToken.None,
-                pageSize);
+                pageSize,
+                serviceVersion: _serviceVersion);
         }
 
         /// <summary>
@@ -920,7 +977,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 querySpecification,
                 new HttpTransportSettings(),
                 cancellationToken,
-                pageSize);
+                pageSize,
+                serviceVersion: _serviceVersion);
         }
 
         /// <summary>
@@ -949,7 +1007,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 querySpecification,
                 httpTransportSettings,
                 CancellationToken.None,
-                pageSize);
+                pageSize,
+                serviceVersion: _serviceVersion);
         }
 
         /// <summary>
@@ -1132,7 +1191,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 querySpecification,
                 new HttpTransportSettings(),
                 CancellationToken.None,
-                enrollmentGroupId);
+                enrollmentGroupId,
+                serviceVersion: _serviceVersion);
         }
 
         /// <summary>
@@ -1156,7 +1216,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 querySpecification,
                 httpTransportSettings,
                 CancellationToken.None,
-                enrollmentGroupId);
+                enrollmentGroupId,
+                serviceVersion: _serviceVersion);
         }
 
         /// <summary>
@@ -1183,7 +1244,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 querySpecification,
                 new HttpTransportSettings(),
                 cancellationToken,
-                enrollmentGroupId);
+                enrollmentGroupId,
+                serviceVersion: _serviceVersion);
         }
 
         /// <summary>
@@ -1213,7 +1275,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 new HttpTransportSettings(),
                 CancellationToken.None,
                 enrollmentGroupId,
-                pageSize);
+                pageSize,
+                serviceVersion: _serviceVersion);
         }
 
         /// <summary>
@@ -1248,7 +1311,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 httpTransportSettings,
                 CancellationToken.None,
                 enrollmentGroupId,
-                pageSize);
+                pageSize,
+                serviceVersion: _serviceVersion);
         }
 
         /// <summary>
@@ -1283,7 +1347,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 new HttpTransportSettings(),
                 cancellationToken,
                 enrollmentGroupId,
-                pageSize);
+                pageSize,
+                serviceVersion: _serviceVersion);
         }
 
         /// <summary>

@@ -77,7 +77,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             QuerySpecification querySpecification,
             HttpTransportSettings httpTransportSettings,
             int pageSize,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken,
+            ServiceVersion serviceVersion = ServiceVersion.V2019_03_31)
         {
             if (serviceConnectionString == null)
             {
@@ -102,14 +103,14 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             // TODO: Refactor ContractApiHttp being created again
             _contractApiHttp = new ContractApiHttp(
                 serviceConnectionString.HttpsEndpoint,
-                serviceConnectionString, httpTransportSettings);
+                serviceConnectionString, httpTransportSettings, serviceVersion);
 
             PageSize = pageSize;
             _cancellationToken = cancellationToken;
 
             _querySpecificationJson = JsonConvert.SerializeObject(querySpecification, JsonSerializerSettingsInitializer.GetJsonSerializerSettings());
 
-            _queryPath = GetQueryUri(serviceName);
+            _queryPath = GetQueryUri(serviceName, serviceVersion);
 
             ContinuationToken = null;
 
@@ -229,9 +230,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             }
         }
 
-        private static Uri GetQueryUri(string path)
+        private static Uri GetQueryUri(string path, ServiceVersion serviceVersion)
         {
-            return new Uri(QueryUriFormat.FormatInvariant(path, SdkUtils.ApiVersionQueryString), UriKind.Relative);
+            return new Uri(QueryUriFormat.FormatInvariant(path, SdkUtils.GetApiVersionQueryString(serviceVersion)), UriKind.Relative);
         }
     }
 }
