@@ -14,6 +14,16 @@ variables:
   # See https://aka.ms/codeql3000 and https://aka.ms/sdlfaqcodeql.
   Codeql.Enabled: false
 
+  # A resource group is only deleted once it is at least this old, so that a gate
+  # run still in flight is never torn down underneath itself.
+  MinimumAgeHours: 3
+
+  # How long a resource group with no usable 'CreatedOn' tag is left alone after
+  # this cleanup first sees it. Longer than MinimumAgeHours because the real age
+  # of such a group is unknown, so this grace period is the only thing standing
+  # between an in-flight run and deletion.
+  UntaggedMinimumAgeHours: 24
+
 jobs:
   - job: Cleanup
     displayName: Cleanup
@@ -29,15 +39,162 @@ jobs:
         scriptLocation: 'inlineScript'
         pwsh: true
         inlineScript: |
-          $jsonContent = az group list
-          $jsonArray = $jsonContent | ConvertFrom-Json
+          $ErrorActionPreference = 'Stop'
 
-          # Loop through each item
-          foreach ($resourceGroupJsonObject in $jsonArray) {
-              $rgName = $($resourceGroupJsonObject.name)
-              if ($rgName.StartsWith("javasdkgate") -or $rgName.StartsWith("dotnetsdkgate")) 
-              {
-                  Write-Host "Deleting resource group with name:" $rgName
-                  az group delete --name $rgName --yes
+          # Only resource groups whose name starts with one of these is ever considered.
+          $prefixes = @('javasdkgate', 'dotnetsdkgate')
+
+          $minimumAgeHours = [int]'$(MinimumAgeHours)'
+          $untaggedMinimumAgeHours = [int]'$(UntaggedMinimumAgeHours)'
+
+          # Written by this cleanup on a matching group that has no usable 'CreatedOn'.
+          # It records when the group was first seen, which is what lets an untagged group
+          # age out instead of being either deleted on sight or skipped forever.
+          $firstObservedTagName = 'CleanupFirstObservedOn'
+
+          $now = [datetime]::UtcNow
+          $cutoff = $now.AddHours(-$minimumAgeHours)
+          $untaggedCutoff = $now.AddHours(-$untaggedMinimumAgeHours)
+
+          Write-Host "Cleanup run (UTC)     : $($now.ToString('o'))"
+          Write-Host "Prefixes              : $($prefixes -join ', ')"
+          Write-Host "Minimum age to delete : $minimumAgeHours hour(s) (delete when created at or before $($cutoff.ToString('o')))"
+          Write-Host "Untagged grace period : $untaggedMinimumAgeHours hour(s) after this cleanup first observes the group"
+
+          function ConvertTo-UtcDateTime {
+              # Returns $null rather than throwing when the value is missing or unparseable,
+              # so the caller decides what an unknown timestamp means.
+              param($Value)
+
+              if ($null -eq $Value -or [string]::IsNullOrWhiteSpace([string]$Value)) {
+                  return $null
               }
+
+              try {
+                  if ($Value -is [datetimeoffset]) { return $Value.UtcDateTime }
+                  if ($Value -is [datetime]) { return ([datetimeoffset]$Value).UtcDateTime }
+
+                  return [datetimeoffset]::Parse(
+                      [string]$Value,
+                      [System.Globalization.CultureInfo]::InvariantCulture,
+                      [System.Globalization.DateTimeStyles]::AssumeUniversal).UtcDateTime
+              } catch {
+                  return $null
+              }
+          }
+
+          function Add-ResourceGroupTag {
+              # Uses the tags endpoint with an explicit Merge so the group's other tags
+              # survive; PATCHing the group itself would replace the whole tags collection.
+              # The body goes through a file because passing tags as '--tags key=value'
+              # arguments collapses them into a single tag value under the AzureCLI@2 task.
+              param([string]$ResourceGroupId, [hashtable]$Tags)
+
+              $bodyFile = New-TemporaryFile
+              try {
+                  $payload = @{ operation = 'Merge'; properties = @{ tags = $Tags } } | ConvertTo-Json -Compress -Depth 5
+                  Set-Content -Path $bodyFile -Value $payload -Encoding utf8 -NoNewline
+                  az rest `
+                      --method PATCH `
+                      --url "https://management.azure.com$ResourceGroupId/providers/Microsoft.Resources/tags/default?api-version=2021-04-01" `
+                      --body "@$bodyFile" `
+                      --only-show-errors | Out-Null
+              }
+              finally {
+                  Remove-Item -Path $bodyFile -ErrorAction SilentlyContinue
+              }
+          }
+
+          $rawJson = az group list --query "[].{name:name, id:id, createdOn:tags.CreatedOn, firstObservedOn:tags.$firstObservedTagName}" -o json --only-show-errors
+          if ($LASTEXITCODE -ne 0) {
+              throw "Failed to list Azure resource groups (az exit code $LASTEXITCODE)."
+          }
+
+          $groups = @($rawJson | ConvertFrom-Json | Where-Object {
+              $name = $_.name
+              $name -and @($prefixes | Where-Object { $name.StartsWith($_, [System.StringComparison]::OrdinalIgnoreCase) }).Count -gt 0
+          })
+
+          Write-Host "Found $($groups.Count) resource group(s) matching the prefixes."
+
+          $deleted = [System.Collections.Generic.List[string]]::new()
+          $skipped = [System.Collections.Generic.List[string]]::new()
+          $stamped = [System.Collections.Generic.List[string]]::new()
+          $failed = [System.Collections.Generic.List[string]]::new()
+
+          function Remove-Group {
+              param([string]$Name, [string]$Because)
+
+              Write-Host "DELETE $Name : $Because."
+              az group delete --name $Name --yes --no-wait --only-show-errors | Out-Null
+              if ($LASTEXITCODE -ne 0) {
+                  Write-Warning "Failed to queue deletion of $Name (az exit code $LASTEXITCODE)."
+                  $script:failed.Add($Name)
+              } else {
+                  $script:deleted.Add($Name)
+              }
+          }
+
+          foreach ($group in $groups) {
+              $name = $group.name
+              $createdOnValue = $group.createdOn
+              $createdOn = ConvertTo-UtcDateTime -Value $createdOnValue
+
+              if ($null -eq $createdOn) {
+                  $reason = if ([string]::IsNullOrWhiteSpace([string]$createdOnValue)) {
+                      "no 'CreatedOn' tag"
+                  } else {
+                      "unparseable 'CreatedOn' tag value '$createdOnValue'"
+                  }
+
+                  $firstObserved = ConvertTo-UtcDateTime -Value $group.firstObservedOn
+
+                  if ($null -eq $firstObserved) {
+                      Write-Host "STAMP  $name : $reason; recording first-observed time, eligible for deletion after $untaggedMinimumAgeHours h."
+                      Add-ResourceGroupTag -ResourceGroupId $group.id -Tags @{ $firstObservedTagName = $now.ToString('o') }
+                      if ($LASTEXITCODE -ne 0) {
+                          Write-Warning "Failed to stamp $name (az exit code $LASTEXITCODE); it will be retried on the next run."
+                          $global:LASTEXITCODE = 0
+                          $skipped.Add($name)
+                      } else {
+                          $stamped.Add($name)
+                      }
+                      continue
+                  }
+
+                  $observedAgeHours = [math]::Round(($now - $firstObserved).TotalHours, 2)
+
+                  if ($firstObserved -ge $untaggedCutoff) {
+                      Write-Host "SKIP   $name : $reason; first observed $observedAgeHours h ago, within the $untaggedMinimumAgeHours h untagged grace period."
+                      $skipped.Add($name)
+                      continue
+                  }
+
+                  Remove-Group -Name $name -Because "$reason; first observed $observedAgeHours h ago, exceeding the $untaggedMinimumAgeHours h untagged grace period"
+                  continue
+              }
+
+              $ageHours = [math]::Round(($now - $createdOn).TotalHours, 2)
+
+              if ($createdOn -ge $cutoff) {
+                  Write-Host "SKIP   $name : age $ageHours h is within the $minimumAgeHours h threshold (created $($createdOn.ToString('o')))."
+                  $skipped.Add($name)
+                  continue
+              }
+
+              Remove-Group -Name $name -Because "age $ageHours h exceeds $minimumAgeHours h (created $($createdOn.ToString('o')))"
+          }
+
+          Write-Host ""
+          Write-Host "==== Cleanup summary ===="
+          Write-Host "Queued for deletion        : $($deleted.Count)"
+          Write-Host "Skipped / not processed    : $($skipped.Count)"
+          Write-Host "Stamped (untagged, ageing) : $($stamped.Count)"
+          Write-Host "Failed to queue            : $($failed.Count)"
+          if ($deleted.Count -gt 0) { Write-Host "Deleted: $($deleted -join ', ')" }
+          if ($stamped.Count -gt 0) { Write-Host "Stamped: $($stamped -join ', ')" }
+          if ($failed.Count -gt 0) { Write-Host "Failed : $($failed -join ', ')" }
+
+          if ($failed.Count -gt 0) {
+              throw "$($failed.Count) resource group deletion(s) could not be queued."
           }
