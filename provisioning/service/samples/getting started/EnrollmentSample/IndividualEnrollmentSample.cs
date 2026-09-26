@@ -3,6 +3,7 @@
 
 using Microsoft.Azure.Devices.Shared;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
@@ -23,6 +24,18 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
         private readonly DeviceCapabilities _optionalEdgeCapabilityEnabled = new() { IotEdge = true };
         private readonly DeviceCapabilities _optionalEdgeCapabilityDisabled = new() { IotEdge = false };
 
+        // Optional fields introduced by the 2026-11-02-preview service API version. This package issues that
+        // API version on every request, so any value you supply here is serialized automatically. They are left
+        // null by default because they reference resources that must already exist in your provisioning service;
+        // set them to real resource names to exercise the fields.
+#pragma warning disable CS0649 // default values never changed
+        private static readonly string s_optionalNamespaceName;
+        private static readonly string s_optionalCertificateAuthorityName;
+        private static readonly string s_optionalCertificatePolicyName;
+
+        // deviceTypeRefs supports at most one item.
+        private static readonly string s_optionalDeviceTypeRef;
+#pragma warning restore CS0649 // default values never changed
         private readonly ProvisioningServiceClient _provisioningServiceClient;
 
         public IndividualEnrollmentSample(ProvisioningServiceClient provisioningServiceClient)
@@ -73,6 +86,24 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
                         ["Color"] = "White",
                     })
             };
+
+            // Optional 2026-11-02-preview fields. Only populated values are serialized.
+            if (!string.IsNullOrWhiteSpace(s_optionalNamespaceName))
+            {
+                individualEnrollment.NamespaceName = s_optionalNamespaceName;
+            }
+            if (!string.IsNullOrWhiteSpace(s_optionalCertificateAuthorityName))
+            {
+                individualEnrollment.CertificateAuthorityName = s_optionalCertificateAuthorityName;
+            }
+            if (!string.IsNullOrWhiteSpace(s_optionalCertificatePolicyName))
+            {
+                individualEnrollment.CertificatePolicyName = s_optionalCertificatePolicyName;
+            }
+            if (!string.IsNullOrWhiteSpace(s_optionalDeviceTypeRef))
+            {
+                individualEnrollment.DeviceTypeRefs = new List<string> { s_optionalDeviceTypeRef };
+            }
 
             Console.WriteLine("Adding new individualEnrollment...");
             IndividualEnrollment individualEnrollmentResult =

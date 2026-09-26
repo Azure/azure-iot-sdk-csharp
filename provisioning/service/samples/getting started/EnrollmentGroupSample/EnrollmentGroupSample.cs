@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
@@ -11,6 +12,20 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
     internal class EnrollmentGroupSample
     {
         private static readonly string s_enrollmentGroupId = $"EnrollmentGroupSample-{Guid.NewGuid()}";
+
+        // Optional fields introduced by the 2026-11-02-preview service API version. This package issues that
+        // API version on every request, so any value you supply here is serialized automatically. They are left
+        // null by default because they reference resources that must already exist in your provisioning service;
+        // set them to real resource names to exercise the fields.
+#pragma warning disable CS0649 // default values never changed
+        private static readonly string s_optionalNamespaceName;
+        private static readonly string s_optionalCertificateAuthorityName;
+        private static readonly string s_optionalCertificatePolicyName;
+
+        // deviceTypeRefs supports at most one item.
+        private static readonly string s_optionalDeviceTypeRef;
+#pragma warning restore CS0649 // default values never changed
+
         private readonly ProvisioningServiceClient _provisioningServiceClient;
 
         public EnrollmentGroupSample(ProvisioningServiceClient provisioningServiceClient)
@@ -31,6 +46,24 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
             Console.WriteLine("Creating a new enrollment group...");
             Attestation attestation = new SymmetricKeyAttestation(null, null); // let the service generate keys
             var group = new EnrollmentGroup(s_enrollmentGroupId, attestation);
+
+            // Optional 2026-11-02-preview fields. Only populated values are serialized.
+            if (!string.IsNullOrWhiteSpace(s_optionalNamespaceName))
+            {
+                group.NamespaceName = s_optionalNamespaceName;
+            }
+            if (!string.IsNullOrWhiteSpace(s_optionalCertificateAuthorityName))
+            {
+                group.CertificateAuthorityName = s_optionalCertificateAuthorityName;
+            }
+            if (!string.IsNullOrWhiteSpace(s_optionalCertificatePolicyName))
+            {
+                group.CertificatePolicyName = s_optionalCertificatePolicyName;
+            }
+            if (!string.IsNullOrWhiteSpace(s_optionalDeviceTypeRef))
+            {
+                group.DeviceTypeRefs = new List<string> { s_optionalDeviceTypeRef };
+            }
 
             group = await _provisioningServiceClient.CreateOrUpdateEnrollmentGroupAsync(group);
             Console.WriteLine($"Created {group.EnrollmentGroupId}: {JsonConvert.SerializeObject(group)}");
@@ -72,6 +105,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
                 foreach (DeviceRegistrationState registration in queryResult.Items.Cast<DeviceRegistrationState>())
                 {
                     Console.WriteLine($"\t{registration.RegistrationId} for {registration.DeviceId} is {registration.Status}.");
+
+                    // ConnectionProfile is a read-only, response-only field populated by the service. It is
+                    // extensible: known values include "classic" and "mqttV5", and unknown future values are
+                    // tolerated as-is. A missing/null value semantically resolves to "classic".
+                    Console.WriteLine($"\t\tConnection profile: {registration.ConnectionProfile ?? "classic (default)"}");
+
                     if (registration.ErrorCode.HasValue)
                     {
                         Console.WriteLine($"\t\tWith error ({registration.ErrorCode.Value}): {registration.ErrorMessage}");
