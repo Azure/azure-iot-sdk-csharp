@@ -17,12 +17,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
         // API version on every request, so any value you supply here is serialized automatically. They are left
         // null by default because they reference resources that must already exist in your provisioning service;
         // set them to real resource names to exercise the fields.
-        private static readonly string s_optionalNamespaceName = null;
-        private static readonly string s_optionalCertificateAuthorityName = null;
-        private static readonly string s_optionalCertificatePolicyName = null;
+        private static readonly string s_optionalNamespaceName;
+        private static readonly string s_optionalCertificateAuthorityName;
+        private static readonly string s_optionalCertificatePolicyName;
 
         // deviceTypeRefs supports at most one item.
-        private static readonly string s_optionalDeviceTypeRef = null;
+        private static readonly string s_optionalDeviceTypeRef;
 
         private readonly ProvisioningServiceClient _provisioningServiceClient;
 
