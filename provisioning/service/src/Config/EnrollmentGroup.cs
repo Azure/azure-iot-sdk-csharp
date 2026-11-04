@@ -332,5 +332,26 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// </summary>
         [JsonProperty(PropertyName = "customAllocationDefinition", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public CustomAllocationDefinition CustomAllocationDefinition { get; set; }
+
+        /// <summary>
+        /// The optional Azure Device Registry namespace for this enrollment group. Length 3-64 characters.
+        /// </summary>
+        /// <remarks>Available in the DPS service API version 2026-11-01.</remarks>
+        [JsonProperty(PropertyName = "namespaceName", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        public string NamespaceName { get; set; }
+
+        /// <summary>
+        /// The optional Azure Device Registry certificate authority for this enrollment group. Length 3-63 characters.
+        /// </summary>
+        /// <remarks>Available in the DPS service API version 2026-11-01.</remarks>
+        [JsonProperty(PropertyName = "certificateAuthorityName", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        public string CertificateAuthorityName { get; set; }
+
+        /// <summary>
+        /// The optional Azure Device Registry certificate policy for this enrollment group. Length 3-63 characters.
+        /// </summary>
+        /// <remarks>Available in the DPS service API version 2026-11-01.</remarks>
+        [JsonProperty(PropertyName = "certificatePolicyName", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        public string CertificatePolicyName { get; set; }
     }
 }

@@ -301,6 +301,27 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 #pragma warning restore CA2227 // Collection properties should be read only
 
         /// <summary>
+        /// The optional Azure Device Registry namespace for this enrollment. Length 3-64 characters.
+        /// </summary>
+        /// <remarks>Available in the DPS service API version 2026-11-01.</remarks>
+        [JsonProperty(PropertyName = "namespaceName", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        public string NamespaceName { get; set; }
+
+        /// <summary>
+        /// The optional Azure Device Registry certificate authority for this enrollment. Length 3-63 characters.
+        /// </summary>
+        /// <remarks>Available in the DPS service API version 2026-11-01.</remarks>
+        [JsonProperty(PropertyName = "certificateAuthorityName", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        public string CertificateAuthorityName { get; set; }
+
+        /// <summary>
+        /// The optional Azure Device Registry certificate policy for this enrollment. Length 3-63 characters.
+        /// </summary>
+        /// <remarks>Available in the DPS service API version 2026-11-01.</remarks>
+        [JsonProperty(PropertyName = "certificatePolicyName", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        public string CertificatePolicyName { get; set; }
+
+        /// <summary>
         /// Convert this object in a pretty print format.
         /// </summary>
         /// <returns>The <c>string</c> with the content of this class in a pretty print format.</returns>

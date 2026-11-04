@@ -2,6 +2,10 @@
 
 ### Service provisioning samples
 
+All provisioning service client requests use the stable DPS data-plane API version `2026-11-01`.
+`IndividualEnrollment` and `EnrollmentGroup` expose the optional `NamespaceName`,
+`CertificateAuthorityName`, and `CertificatePolicyName` properties from this API version.
+
 - [Group certificate verification][group-cert-sample] sample
 - [Bulk operation][bulk-op-sample] sample
 - [Individual enrollment][enrollment-sample] sample
