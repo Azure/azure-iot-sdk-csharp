@@ -91,12 +91,19 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// </description></item>
         /// </list>
         /// </remarks>
-        public IEnumerable<object> Items { get; private set; }
+        public virtual IEnumerable<object> Items { get; private set; }
 
         /// <summary>
         /// Getter for the query result continuationToken.
         /// </summary>
         public string ContinuationToken { get; private set; }
+        /// <summary>
+        /// For Mocking
+        /// </summary>
+        public QueryResult()
+        {
+
+        }
 
         /// <summary>
         /// CONSTRUCTOR
