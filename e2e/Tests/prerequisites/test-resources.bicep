@@ -43,6 +43,7 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2021-02-01' = {
   }
   kind: 'StorageV2'
   properties: {
+    allowBlobPublicAccess: false
     supportsHttpsTrafficOnly: true
     encryption: {
       services: {
