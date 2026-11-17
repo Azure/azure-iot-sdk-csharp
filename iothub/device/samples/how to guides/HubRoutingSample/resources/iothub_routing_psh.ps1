@@ -46,7 +46,8 @@ $storageAccount = New-AzStorageAccount -ResourceGroupName $resourceGroup `
     -Name $storageAccountName `
     -Location $location `
     -SkuName Standard_LRS `
-    -Kind Storage
+    -Kind Storage `
+    -AllowBlobPublicAccess $false
 # Retrieve the connection string from the context. 
 $storageConnectionString = $storageAccount.Context.ConnectionString
 Write-Host "storage connection string = " $storageConnectionString 
