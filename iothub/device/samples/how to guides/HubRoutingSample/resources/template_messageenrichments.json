@@ -109,14 +109,16 @@
     {       
         "type": "Microsoft.Storage/storageAccounts",
         "name": "[variables('storageAccountName')]",
-        "apiVersion": "2018-07-01",
+        "apiVersion": "2021-02-01",
         "location": "[parameters('location')]",
         "sku": {
             "name": "Standard_LRS",
             "tier": "Standard"
         },
         "kind": "Storage",
-        "properties": {},
+        "properties": {
+            "allowBlobPublicAccess": false
+        },
         "resources": [
             {
             "type": "blobServices/containers",

@@ -47,7 +47,8 @@ echo "Storage account name = " $storageAccountName
 az storage account create --name $storageAccountName \
     --resource-group $resourceGroup \
     --location $location \
-    --sku Standard_LRS
+    --sku Standard_LRS \
+    --allow-blob-public-access false
 
 # Get the primary storage account key.
 #    You need this to create the containers.
