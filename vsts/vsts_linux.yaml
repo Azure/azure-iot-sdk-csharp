@@ -22,6 +22,11 @@ resources:
   - repo: self
     clean: true
 
+variables:
+  # Restore NuGet packages from the Central Feed Services mirror of nuget.org instead of the
+  # public source in nuget.config, which stays as is because external contributors build this repo.
+  RestoreSources: https://packagefeedproxy.microsoft.io/nuget/v3/index.json
+
 jobs:
   - job: DeployCloudTestResources
     pool:
